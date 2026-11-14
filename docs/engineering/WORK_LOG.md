@@ -773,3 +773,14 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` reached READY on exact merge SHA; production alias `wird-app.vercel.app` was assigned. This does not prove live Ruqyah route/audio behavior.
 - PR #374 remains Draft/HOLD at `6673bb149a2ffa58177c35b9f68c76423dfb2a0b`; compare against new main shows 8 commits behind and 7 ahead. Do not merge its stale lockfile or obsolete `docs/engineering/README.md`. Port only verified temporary-media deletion and workspace-name cleanup onto current main after regeneration and exact-head validation.
 - No Firebase production Rules/data, secrets, Vercel settings, sync flags, or Google AI Studio settings were changed. Google AI Studio synchronization and live Ruqyah route/audio remain NOT VERIFIED.
+
+
+## 2026-11-14 — Artwork-preserving hygiene reconstruction (2026-11-14 22:24 +02:00)
+
+- Re-fetched repository and confirmed main HEAD `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- Re-fetched PR #377: open Draft, base main, head `f543f23b7ea4d33806217cce9a2815489c2bf5a8`, four commits ahead / zero behind.
+- Inspected exact changed-file list and confirmed the deleted JPG is the gold Arabic حُكم logo artwork. Rejected deletion; PR #377 remains on safety hold.
+- Re-checked Quality Gate run `43636848964`, job `132575423877`: all executed steps succeeded; desktop/mobile Playwright 160 passed / 2 skipped; 604 Mushaf coordinate-map validation was explicitly skipped.
+- Re-fetched Vercel: PR #377 Preview deployment `dpl_5Jd8Hoh8mWtp9UuxaRB1jxrTG9x4` READY; Production deployment `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj` READY on main SHA. No Production changes made.
+- Created replacement branch `chore/retain-hukm-artwork-hygiene-20261114` from main. Changed only the root package name in package.json and root workspace name in bun.lock to `wird-app`; added an audit explicitly preserving the artwork. No runtime code or sensitive settings/data changed.
+- New candidate CI and Preview are pending. No merge performed.
