@@ -1,52 +1,64 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-14  
+**Current snapshot reconciled:** 2026-11-14 21:40 +02:00  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
-> This leading section is the sole current-state summary. Everything below the historical divider is retained evidence and may contain old SHAs, PR states, or conclusions. Re-fetch live GitHub, Vercel, and Firebase state before acting.
+> This leading section is the sole current-state summary. Older snapshots below the historical divider are retained evidence and must not override these facts. Re-fetch live state before action.
 
 ## Repository and documentation status
 
 | Item | Observed value | Status |
 |---|---|---|
-| GitHub main | `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b` | PASS |
-| PR #363 | OPEN / DRAFT; mergeable; base main; not behind | PASS |
-| PR #363 exact head | `086d92a522f2d795f4c96f6358342338a6de8e4c` (re-fetch after next commit) | PASS (observed 2026-11-14) |
-| Current PR #363 Quality Gate | No workflow run returned for exact head `086d92a522f2d795f4c96f6358342338a6de8e4c`; earlier success does not transfer | NOT VERIFIED |
-| 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
-| Current docs Preview | READY, deployment `dpl_9w8QarojoWq6pCuHoEsfFqGMuGPF`, source SHA matches `086d92a522f2d795f4c96f6358342338a6de8e4c` | PASS (exact head) |
+| GitHub main | `fb8e57640db78545fc93ce3f482b7ab3a9f59ded` | PASS |
+| PR #363 | MERGED, squash commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded` | PASS |
+| Canonical documentation operating standard | Present on main and linked from README/AGENTS/GEMINI | PASS |
+| Exact-head GitHub Actions | Run `43632493503`, job `132562026967`, passed on pre-merge PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d` | PASS |
+| 604 Mushaf coordinate-map check | Explicitly SKIPPED in that workflow | NOT VERIFIED |
+| Vercel Preview | READY, `dpl_xUZ388H5z3tqvUSqqeG6nVc3itcu`, exact PR-head SHA | PASS |
+| Vercel Production | READY, `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, still serves pre-merge main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; documentation-only merge has not been Production-verified | PASS (existing deployment identity only) |
+| Google AI Studio sync | GitHub merge confirmed; Studio pull not observed | NOT VERIFIED |
+| Local checkout/tests | No local checkout; no local execution claimed | NOT VERIFIED |
+| Firebase Production Rules | Not independently verified in this checkpoint | NOT VERIFIED |
 
-| Vercel Production | READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA matches main; alias `wird-app.vercel.app` | PASS |
-| Project access protection | Password protection OFF; SSO ON for non-custom domains | PASS (configuration observed) |
-| Canonical docs on main | `docs/CONTINUE_HERE.md` and root `README.md` returned 404 | FAIL (not integrated yet) |
-| Local checkout/tests | No local checkout; no local test run | NOT VERIFIED |
-| Current Firebase Rules deployment | Not independently refreshed | NOT VERIFIED |
+## Current scope and safety
 
-## Open PRs — re-fetched 2026-11-14
+- PR #363 changed 46 documentation/instruction paths only; no runtime code, Quran corpus, Firebase Rules/data, Vercel settings, secrets, sync flags, or Production deployment was changed.
+- Previous read-only Vercel inventory reported both `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` as `true` in Production. No change is authorized or made; do not perform sync-related Production actions or alter either flag without explicit owner approval.
+- The full repository stale-document audit is not complete. The newly merged standard is active; remaining docs need classification into current snapshots, historical evidence, and obsolete instructions.
 
-All 16 below were OPEN / DRAFT at inventory time. Re-fetch exact heads, paths and checks before acting.
+## Open PR inventory — refreshed 2026-11-14
 
 | PR | Head SHA | Disposition |
 |---:|---|---|
-| #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; reconcile package/lockfile with #372 |
-| #373 | `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca` | Ruqyah; exact-head gate/live verification required |
-| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI candidate |
-| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Codec not integrated into persistence |
+| #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; reconcile with #372 |
+| #373 | `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca` | Ruqyah lazy loading/restoration; exact-head gate and live-safe smoke |
+| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI candidate; reconcile dependency graph |
+| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Codec-only; not end-to-end persistence |
 | #370 | `32bad0846b9f9a64b8ac1b78c292ea1f1c603e0c` | Session display settings |
-| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-range; generated-index E2E outstanding |
-| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Offline audio; lifecycle/cross-tab gaps |
-| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Payload cap only, not chunking |
+| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-Surah/Juz/ranges; generated-index E2E outstanding |
+| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Unified offline audio; lifecycle/cross-tab gaps |
+| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Interim payload cap only |
 | #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline; reconcile with #368 |
-| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; no verified publishable content |
-| #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor security; full verification outstanding |
-| #363 | `84452fcf45c1e73bbefabd850b7c218aa1d760b5` | Docs consolidation; gate success, one coordinate step skipped |
-| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio; do not merge beside #368 |
-| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio; do not merge beside #368 |
+| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; outside current focused scope pending owner decision |
+| #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor/API security; full verification outstanding |
+| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio store; do not merge beside #368 |
+| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio store; do not merge beside #368 |
 | #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy; do not merge wholesale |
 
-PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerged. PRs #361 and #362 are MERGED.
+PR #363 is merged. PR #375 and #360 are closed/superseded; #361/#362 are merged.
 
-## PR #363 documentation consolidation
+## Next execution order
+
+1. #373 Ruqyah: exact-head source/diff/CI/Preview audit; ensure ayah text comes only from local verified Quran data; fix index 500 and validate short/medium/long audio continuity.
+2. #372/#374 dependency hygiene: reconcile lockfile/package ownership before any merge.
+3. #366/#368 offline audio: one canonical store and recovery protocol; no parallel duplicate DBs.
+4. #364 Advisor security: complete adversarial and exact-head checks.
+5. #369/#370 memorization/session UX: generated index, boundaries, browser E2E and persistence.
+6. #367/#371 archive: do not claim chunked sync until actual storage adapter, manifest, atomic publish, recovery, and multi-client tests exist.
+7. Full stale-document audit and release certification; preserve historical evidence and remove only truly obsolete instructions after migration.
+
+
+## Historical PR #363 documentation consolidation — merged 2026-11-14
 
 - 46 changed paths, including root `README.md` and the mandatory documentation operating standard.
 - The 534-line deletion from `docs/engineering/progress/WORK_LOG.md` is a compatibility-pointer conversion; canonical `docs/engineering/WORK_LOG.md` preserves the historical log. Verify this relationship and retain the pointer.

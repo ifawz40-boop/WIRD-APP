@@ -1,28 +1,32 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-14  
-**Current release decision:** BLOCKED
+**Last verified:** 2026-11-14 21:40 +02:00  
+**Current release decision:** BLOCKED (application release gates remain open; documentation PR #363 is merged)
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
 
 ## A. Repository and change control
 
-- [x] PASS — main SHA recorded: `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
+- [x] PASS — main SHA recorded after docs merge: `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
 - [x] PASS — Production deployment identity matches that main SHA.
-- [ ] BLOCKED — every candidate PR must be re-fetched and reviewed at its exact current head.
-- [ ] BLOCKED — no merge until required exact-head CI checks are inspectable and pass.
-- [ ] NOT VERIFIED — Google AI Studio synchronization after merge.
+- [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
+- [ ] BLOCKED — every remaining candidate PR must be re-fetched and reviewed at its exact current head.
+- [x] PASS — PR #363 exact-head Quality Gate run `43632493503` passed, including desktop/mobile Playwright; this authorizes only the documentation merge already completed.
+- [ ] BLOCKED — no remaining implementation PR merge until its own exact-head CI checks are inspectable and pass.
+- [ ] NOT VERIFIED — Google AI Studio synchronization of main commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
 
 ## B. CI and build
 
-- [ ] BLOCKED — GitHub Actions currently fails before recording steps/logs on several PR heads; retry did not restore observability.
+- [x] PASS — PR #363 run `43632493503`, job `132562026967`, recorded complete successful steps on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
+- [ ] BLOCKED — several other PR heads still have runner/log observability issues; assess each exact head independently.
 - [ ] NOT VERIFIED — full test suite on a local complete checkout.
 - [ ] NOT VERIFIED — TypeScript/lint exact-head run.
 - [ ] NOT VERIFIED — Firestore Rules Emulator exact-head run.
-- [ ] NOT VERIFIED — Playwright desktop/mobile exact-head run.
+- [x] PASS — PR #363 desktop/mobile Playwright smoke completed on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
+- [ ] NOT VERIFIED — implementation PR Playwright checks remain independent.
 - [x] PASS — PR #373 exact-head Vercel Preview build completed on `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca`.
 - [x] PASS — PR #364 exact-head Vercel Preview build completed on `ad33875b0304020f930c7b606ef8782d36148707`.
-- [x] PASS — main Production build/deployment is READY on `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
+- [x] PASS — existing Production deployment is READY on pre-merge main parent `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; documentation-only merge does not claim a new Production deployment.
 
 ## C. Quran and Ruqyah
 

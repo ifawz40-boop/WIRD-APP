@@ -12,7 +12,7 @@
 3. **GitHub branch protection:** the latest branch-protection API read returned 403 `Resource not accessible by integration`. A 2026-11-13 snapshot recorded main protection/required-check enforcement as disabled, but current settings are NOT VERIFIED in this session. Do not change branch protection or rulesets without an authorized read and owner decision.
 4. **Firebase:** repository code and applet config expect project `wird-quran-app` and the default Firestore database. The Vercel `VITE_FIREBASE_PROJECT_ID` entry is encrypted and was not decrypted; the deployed Production Firestore Rules release is NOT VERIFIED. No Firebase configuration, Rules, or data was changed.
 5. **API credentials:** Vercel has sensitive `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` entries for Preview and Production. Values were not read and upstream validity was not tested. Do not paste secrets into chat or prompts.
-6. **Google AI Studio synchronization:** GitHub does not prove that AI Studio has pulled the latest main. Verify its connected repository/branch and sync only after the canonical docs merge.
+6. **Google AI Studio synchronization:** GitHub does not prove that AI Studio has pulled the latest main. The canonical docs merge is complete at main SHA `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`. Verify the connected repository/branch and pull this main state into Google AI Studio; GitHub does not prove Studio has synchronized.
 7. **Real-device validation:** physical Android/iOS restart, airplane-mode, audio-download and cross-device sync scenarios remain NOT VERIFIED. Prefer automated multi-client/emulator coverage; request owner device testing only when no automated substitute exists.
 
 ## Approval boundaries

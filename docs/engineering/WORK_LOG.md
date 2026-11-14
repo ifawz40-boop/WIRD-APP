@@ -716,3 +716,16 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - The standard makes new-session bootstrap, automatic documentation for every request (including out-of-roadmap requests), current-snapshot replacement, append-only history, API inventory, and open-source-first research mandatory without owner reminders.
 - Exact docs PR head at this checkpoint: `086d92a522f2d795f4c96f6358342338a6de8e4c`; PR #363 remains OPEN/DRAFT, 46 changed paths, 373 commits ahead / 0 behind main. Preview deployment `dpl_9w8QarojoWq6pCuHoEsfFqGMuGPF` is READY on that exact SHA. No GitHub workflow run was returned for this SHA; exact-head CI is NOT VERIFIED. Earlier successful CI does not transfer.
 - Link scan across the nine canonical/entrypoint files found zero broken relative links. No runtime code, Production settings, Firebase Rules/data, secrets, sync flags, or user data changed.
+
+
+## 2026-11-14 21:40 +02:00 — PR #363 merged; mandatory documentation standard now on main
+
+- Merged PR #363 using Squash with expected head SHA `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
+- Merge commit / current main observed: `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
+- PR #363 exact-head GitHub Actions run `43632493503`, job `132562026967`: completed SUCCESS. Desktop/mobile browser smoke completed SUCCESS; automated suites, dependency audit, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build and server startup all completed SUCCESS.
+- The 604 printed Mushaf coordinate-map check was SKIPPED; it remains NOT VERIFIED and is not represented as a pass.
+- Vercel Preview `dpl_xUZ388H5z3tqvUSqqeG6nVc3itcu` was READY on the exact pre-merge PR head. Existing Production deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu` remains READY on the pre-merge main parent SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; no new Production deployment/live verification is claimed.
+- Readback confirmed `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md`, root `AGENTS.md`, `GEMINI.md`, and `README.md` are available from main.
+- Open PR inventory was refreshed: #374, #373, #372, #371, #370, #369, #368, #367, #366, #365, #364, #359, #358 and #2 remain OPEN/DRAFT at the recorded heads. Re-fetch before any action.
+- Documentation-only merge; no runtime code, Quran data, Firebase Rules/data, Vercel settings, secrets, sync flags or Production deployment changed.
+- Next: continue exact-head Ruqyah review (#373), reconcile #372/#374, then audit coupled offline PRs (#366/#368) and remaining active work. Full repository stale-doc audit remains IN PROGRESS.
