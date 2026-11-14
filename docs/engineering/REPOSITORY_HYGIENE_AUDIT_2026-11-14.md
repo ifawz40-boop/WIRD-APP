@@ -25,3 +25,8 @@
 - Preserve Quran text and metadata, verified religious sources, Mushaf assets, user data, Firebase recovery paths, backup/restore logic, CI workflows, tests, scripts, artwork, and historical engineering evidence unless a separate evidence-led review proves a specific item safe to remove.
 - Lack of code references or a temporary-looking directory name is not sufficient evidence to delete a user-facing asset.
 - No runtime source or user data is deleted by this audit.
+
+
+## CI validation request
+
+The PR title includes `Mushaf` to request execution of the workflow's optional 604 printed-Mushaf coordinate-map validation step. Confirm the step is `success` in the final exact-head run; a skipped result is not accepted as coverage evidence.
