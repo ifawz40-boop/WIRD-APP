@@ -101,3 +101,14 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 ## I. Production verification
 
 - [x] PASS — Production deployment is READY on the exact main SHA.
+
+## Hygiene replacement release gate — 2026-11-14 22:24 +02:00
+
+- [x] PASS — current main SHA re-fetched: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- [x] PASS — PR #377 exact-head CI run `43636848964` completed successfully; 160 Playwright passed, 2 skipped.
+- [ ] BLOCKED — PR #377 must not merge because its diff deletes visually confirmed حُكم brand artwork.
+- [x] PASS — Vercel reports PR #377 Preview READY (`dpl_5Jd8Hoh8mWtp9UuxaRB1jxrTG9x4`).
+- [x] PASS — Production remains READY on main SHA (`dpl_3mxckEPrdrR92kHX3T9sY55YJXUj`); no production mutation performed.
+- [ ] NOT VERIFIED — 604 Mushaf coordinate-map validation: workflow step skipped.
+- [ ] BLOCKED — artwork-preserving replacement branch `chore/retain-hukm-artwork-hygiene-20261114` awaits exact-head CI and Preview.
+- [ ] BLOCKED — do not close obsolete PR #374 until the safe replacement is merged.
