@@ -8,7 +8,7 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 ## A. Repository and change control
 
 - [x] PASS — main SHA recorded after docs merge: `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
-- [x] PASS — Production deployment identity matches that main SHA.
+- [ ] NOT VERIFIED — Production deployment identity does not yet match the post-merge documentation main SHA; the latest observed Production deployment remains on pre-merge runtime SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`. This documentation-only change has not been promoted/verified in Production.
 - [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
 - [ ] BLOCKED — every remaining candidate PR must be re-fetched and reviewed at its exact current head.
 - [x] PASS — PR #363 exact-head Quality Gate run `43632493503` passed, including desktop/mobile Playwright; this authorizes only the documentation merge already completed.

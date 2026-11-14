@@ -9,7 +9,7 @@
 
 | Item | Observed value | Status |
 |---|---|---|
-| GitHub main | `fb8e57640db78545fc93ce3f482b7ab3a9f59ded` | PASS |
+| GitHub main | `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e` | PASS |
 | PR #363 | MERGED, squash commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded` | PASS |
 | Canonical documentation operating standard | Present on main and linked from README/AGENTS/GEMINI | PASS |
 | Exact-head GitHub Actions | Run `43632493503`, job `132562026967`, passed on pre-merge PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d` | PASS |
@@ -24,7 +24,7 @@
 
 - PR #363 changed 46 documentation/instruction paths only; no runtime code, Quran corpus, Firebase Rules/data, Vercel settings, secrets, sync flags, or Production deployment was changed.
 - Previous read-only Vercel inventory reported both `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` as `true` in Production. No change is authorized or made; do not perform sync-related Production actions or alter either flag without explicit owner approval.
-- The full repository stale-document audit is not complete. The newly merged standard is active; remaining docs need classification into current snapshots, historical evidence, and obsolete instructions.
+- The post-merge documentation checkpoint commit `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e` is on main; no GitHub Actions run has yet been observed for that follow-up commit and Vercel status is PENDING. The full repository stale-document audit is not complete. The newly merged standard is active; remaining docs need classification into current snapshots, historical evidence, and obsolete instructions.
 
 ## Open PR inventory — refreshed 2026-11-14
 

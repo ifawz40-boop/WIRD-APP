@@ -729,3 +729,11 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Open PR inventory was refreshed: #374, #373, #372, #371, #370, #369, #368, #367, #366, #365, #364, #359, #358 and #2 remain OPEN/DRAFT at the recorded heads. Re-fetch before any action.
 - Documentation-only merge; no runtime code, Quran data, Firebase Rules/data, Vercel settings, secrets, sync flags or Production deployment changed.
 - Next: continue exact-head Ruqyah review (#373), reconcile #372/#374, then audit coupled offline PRs (#366/#368) and remaining active work. Full repository stale-doc audit remains IN PROGRESS.
+
+
+## 2026-11-14 21:42 +02:00 — Post-merge canonical snapshot refresh
+
+- Updated the leading continuation queue, master state, release checklist, owner actions, and this append-only log after PR #363 merged.
+- Follow-up docs-only commit: `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e`. Main ref update was confirmed; this is the current recorded docs checkpoint SHA.
+- No GitHub Actions run was returned for this follow-up SHA at verification time; combined Vercel status was PENDING. Do not claim CI or Preview success for this follow-up commit.
+- Corrected the release checklist to distinguish the existing Production deployment (still on pre-merge runtime SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`) from the new documentation-only main commits. No Production deployment is claimed.
