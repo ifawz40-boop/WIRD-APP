@@ -1,9 +1,9 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-14 20:16 +02:00  
+**Last reconciled:** 2026-11-14 22:24 +02:00  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
 **Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
-**Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
+**Verified main HEAD:** `f32988e8586431b0e5cadebe0cf84c6208e0341c`.  
 **PR #363:** MERGED at `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`  
 **PR #373:** MERGED at `d265bdf37e9410ad6cd99273bb595526dce63b50`  
 **PR #372:** MERGED at `f264e4bdea7496090f60940e9e8db03e2fb15696`
@@ -105,3 +105,14 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - #359 overlaps #363 at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; preserve the #363 unified plan and reconcile any useful #359 detail explicitly.
 - Legacy #2 overlaps #363 at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`; do not merge #2 wholesale.
 - #373, #372, #371, #370, #369, #368, #367, #366, #365, #364 and #358 have no changed-path overlap with the current #363 changed-file list. This is a path snapshot only; re-fetch before action.
+
+
+## Current continuation checkpoint — 2026-11-14 22:24 +02:00
+
+- Verified `main` HEAD: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- PR #377 remains OPEN / Draft / HOLD. Its branch head is `f543f23b7ea4d33806217cce9a2815489c2bf5a8`; it deletes a visually confirmed gold Arabic حُكم brand artwork and must not merge.
+- PR #377 Quality Gate run `43636848964` passed on that exact head. Job `132575423877`: 160 Playwright passed, 2 skipped; the dedicated 604 Mushaf coordinate-map validation was SKIPPED and is not a pass.
+- PR #377 Preview deployment `dpl_5Jd8Hoh8mWtp9UuxaRB1jxrTG9x4` is provider-reported READY. Production deployment `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj` remains READY on main SHA above.
+- Safe replacement branch created from main: `chore/retain-hukm-artwork-hygiene-20261114`. It changes only root package/workspace names and adds an artwork-preserving audit; no image deletion is included.
+- New candidate CI/Preview are pending. Do not merge until exact-head gates pass and the artwork-preserving diff is verified.
+- PR #374 remains obsolete; do not merge. Close it only after the safe replacement is integrated and its supersession is verified.
