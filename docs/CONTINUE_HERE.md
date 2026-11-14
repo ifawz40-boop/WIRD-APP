@@ -1,15 +1,22 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-14 21:58 +02:00  
+**Last reconciled:** 2026-11-14 20:16 +02:00  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
-**Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
-**Last observed main HEAD before this docs-only checkpoint:** `1c025e0e476ebdaa1250fffce2e154848ca52eee` (re-fetch branch HEAD before acting).  
+**Latest application-code merge on main:** `f264e4bdea7496090f60940e9e8db03e2fb15696`  
+**Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
 **PR #363:** MERGED at `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`  
-**PR #373:** MERGED at `d265bdf37e9410ad6cd99273bb595526dce63b50`
+**PR #373:** MERGED at `d265bdf37e9410ad6cd99273bb595526dce63b50`  
+**PR #372:** MERGED at `f264e4bdea7496090f60940e9e8db03e2fb15696`
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before every new task.
 
 ## Verified current state — 2026-11-14
+
+- PR #372 Bun CI migration: MERGED at `f264e4bdea7496090f60940e9e8db03e2fb15696`; exact tested head `950640ea78d29e87d426a89d8887c15e4de2abac`; Quality Gate run `43391729769` SUCCESS. Bun frozen install, audit, automated tests, API imports, Quran audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium install, and desktop/mobile Playwright all passed. The optional 604 Mushaf coordinate-map step was SKIPPED.
+- Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` READY on exact main SHA `f264e4bdea7496090f60940e9e8db03e2fb15696`; production alias `https://wird-app.vercel.app/` assigned.
+- PR #374 remains OPEN / DRAFT / HOLD at head `6673bb149a2ffa58177c35b9f68c76423dfb2a0b`, based on stale main `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; do not merge. It is 8 commits behind current main and overlaps package metadata/lockfile. Port only verified temp-media deletion and carefully reapply workspace-name change on current main, regenerating/validating the lockfile. Its `docs/engineering/README.md` is obsolete against #363 and must not be merged unchanged.
+- Live Production Ruqyah route/audio and Google AI Studio sync remain NOT VERIFIED.
+
 
 - Latest application-code merge: `d265bdf37e9410ad6cd99273bb595526dce63b50`; main has subsequent documentation-only commits. Re-fetch exact branch HEAD before acting.
 - Documentation policy: PASS. PR #363 merged; `DOCUMENTATION_OPERATING_STANDARD.md`, `AGENTS.md`, `GEMINI.md`, and root `README.md` are on main.
