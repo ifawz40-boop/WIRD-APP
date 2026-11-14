@@ -1,8 +1,8 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-14 20:16 +02:00  
+**Current snapshot reconciled:** 2026-11-14 22:24 +02:00  
 **Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
-**Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
+**Verified main HEAD:** `f32988e8586431b0e5cadebe0cf84c6208e0341c`.  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
 - #372 executed gates passed: Bun frozen install, audit, automated tests, API imports, audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium install, and desktop/mobile Playwright; optional 604 Mushaf map check was skipped.
@@ -108,3 +108,12 @@ Every new session/agent must read `docs/engineering/DOCUMENTATION_OPERATING_STAN
 Any new owner request is eligible for evaluation even if it is outside the existing roadmap. Record its intent, acceptance criteria, affected architecture/data, dependencies, priority, risk and tests in the unified roadmap or a scoped requirement. Reorder work transparently; do not reject a request merely because it was not originally planned. Ask only when a genuinely blocking detail is missing.
 
 ## Reconciliation contract for future sessions
+
+## Current verified state — 2026-11-14 22:24 +02:00
+
+- `main`: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- PR #377: OPEN / Draft / HOLD due to deletion of verified حُكم brand artwork. The exact-head Quality Gate passed (run `43636848964`), but its 604 Mushaf coordinate-map validation step was SKIPPED; Playwright reported 160 passed / 2 skipped.
+- Vercel Preview for PR #377: READY (provider state), deployment `dpl_5Jd8Hoh8mWtp9UuxaRB1jxrTG9x4`.
+- Production: READY on `f32988e8586431b0e5cadebe0cf84c6208e0341c`, deployment `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj`.
+- Artwork-preserving replacement branch: `chore/retain-hukm-artwork-hygiene-20261114`; only package.json, bun.lock, and the new audit are changed so far. Exact-head CI/Preview pending.
+- No Production settings, secrets, Firebase Rules/data, sync flags, or Google AI Studio settings were changed.
