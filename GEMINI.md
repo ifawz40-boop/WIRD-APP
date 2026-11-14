@@ -33,3 +33,10 @@ Before every Google AI Studio task, read `docs/engineering/MASTER_PROJECT_STATE.
 Do not assume Production sync is disabled. Both Vercel Production sync flags were verified as `true` on 2026-11-14. Do not change them, Firebase settings, secrets, rules, or user data without explicit owner approval. Do not perform sync-related Production actions while this discrepancy is unresolved.
 
 Always distinguish isolated tests, GitHub Actions, Vercel Preview, Production deployment, live smoke, and Google AI Studio synchronization. Never claim a test or deployment passed without exact SHA evidence.
+
+
+## Open-source-first and API integration
+Before creating a substantial capability, research official SDKs, standards and maintained open-source projects. Compare fit, license, maintenance, security, cost, privacy, quotas, attribution and long-term ownership. Prefer free and proven solutions; do not copy code without license review. For APIs, read official docs/terms, keep credentials server-side, validate/bound payloads, use safe timeouts/retries/idempotency, and implement explicit offline/error behavior. Verified local Quran text remains authoritative; no API or AI may replace Quran, authenticated Hadith, Tafsir, Fiqh or publishable Seerah.
+
+## New owner requests
+Requests outside the current roadmap must still be evaluated and, when accepted, recorded in `docs/DEVELOPMENT_ROADMAP.md` or a scoped requirement with acceptance criteria, dependencies, risk and tests. Reprioritize transparently; do not reject a request merely because it was not planned.

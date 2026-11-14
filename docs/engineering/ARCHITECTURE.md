@@ -98,3 +98,12 @@ A READY Preview is not Production. A successful build is not runtime verificatio
 - Preserve backward compatibility and recovery data before migrations.
 - Keep remote sync activation and Production settings unchanged without explicit authorization.
 - Update this document and the relevant domain design after material architecture changes.
+
+
+## 9. Open-source and external API integration strategy
+
+Before implementing a substantial capability, evaluate platform standards, official SDKs and maintained open-source libraries/projects. Record the chosen option and alternatives, license, maintenance/security posture, architecture fit, performance/bundle impact, privacy, cost, quotas, attribution and exit plan. Reuse only code with compatible licenses and required notices; do not introduce unnecessary dependencies.
+
+For external APIs, use documented server-side adapters where secrets are required. Validate and bound requests/responses, set timeouts, use safe retries and idempotency for writes, respect caching/redistribution terms, and provide clear loading/error/offline behavior. Keep credentials out of client bundles, prompts, commits, logs, docs and chat. Prefer free/open services; paid dependencies require owner approval.
+
+Verified local Quran data supplies displayed ayah text. External services may supply validated locators/coordinates or approved audio transport only. AI and untrusted providers are not authorities for Quran, Hadith, Tafsir, Fiqh or publishable Seerah.

@@ -1,44 +1,79 @@
-# LATEST EXECUTION UPDATE — 2026-11-14 09:00 local
+# WIRD — Continuation Entry Point
 
-**Current main / Production source SHA:** `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`  
-**Production deployment:** `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu` — READY  
-**PR count:** 16 OPEN / DRAFT; exact heads in [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md).
+**Last reconciled:** 2026-11-14  
+**Repository:** `xm8eslam-stack/WIRD-APP`  
+**Main:** `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`  
+**Documentation PR #363:** OPEN / DRAFT, mergeable, current head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`  
+**Canonical queue:** this file · **Roadmap:** [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) · **State:** [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
 
-## New evidence
+> Read this leading section first. Everything after the historical divider is preserved for traceability only and is not a live instruction. Re-fetch GitHub, Vercel, and Firebase evidence before every new task or release.
 
-- PR #375 advanced to `495b9ccada1bb327abeee469af16faa52ddc9707`. Its failed Quality Gate run `43570354110` was retried; latest job `132373650377` again has `steps=null`, `logs_url=null`. Runner initialization/telemetry remains BLOCKED, not an application-test diagnosis.
-- #373 run `43568676649`, #363 run `43570268180`, and #372 run `43391729769` show the same failure before any steps/logs.
-- Production sync flags remain `true`. No Production settings changed; owner approval is required before disabling them. No sync-related Production actions.
-- Ruqyah fix remains Preview-only until exact-head CI passes, PR is safely merged, and post-deploy live smoke verifies short/medium/long.
-- The canonical Work Log is append-only; the previous `progress/WORK_LOG.md` path remains a pointer.
+## Verified current state
 
-**Next execution:** diagnose GitHub Actions runner provisioning/telemetry outside application code; do not weaken tests or workflow gates. In parallel, continue reviewing #373 and plans/offline PR diffs, but do not merge any PR without inspectable exact-head gates.
+- PR #363 is based on current main and is not behind. It changes 44 documentation/instruction files (6,515 additions / 542 deletions); no runtime source files are in its changed-path list.
+- Exact-head GitHub Quality Gate run `43629972574`, job `132554211307`, completed SUCCESS with inspectable steps. Automated tests, dependency audit, API import checks, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server-start smoke, and desktop/mobile browser smoke passed. The 604 Mushaf coordinate-map check was SKIPPED, not passed.
+- GitHub Vercel status for this PR head is SUCCESS, target `89Qe73Qp7xdDVdyKNDQcHimP3C7W`. Direct Vercel project/deployment API reads returned 403 Forbidden in this session, so deployment metadata and current Production parity are NOT VERIFIED here.
+- The last previously documented Production deployment was READY on main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; it was not independently refreshed in this session.
+- `docs/CONTINUE_HERE.md` and root `README.md` returned 404 on main: canonical docs exist on PR #363 only until it is merged. Do not assume a new chat or Google AI Studio reading main can see them yet.
+- No local checkout is exposed; no local tests are claimed. No runtime code, Firebase Rules/data, Vercel settings, secrets, sync flags, or Production deployment was changed.
+
+## Open PR inventory — re-fetched 2026-11-14
+
+All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact heads, base, changed paths and checks before action.
+
+| PR | Head SHA | Handling |
+|---:|---|---|
+| #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; reconcile package/lockfile with #372 |
+| #373 | `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca` | Ruqyah lazy loading/restoration; gated pending exact-head evidence and live smoke |
+| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI repair candidate |
+| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Archive codec not integrated into persistence |
+| #370 | `32bad0846b9f9a64b8ac1b78c292ea1f1c603e0c` | Session display settings |
+| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-Surah/Juz/range; generated-index E2E outstanding |
+| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Unified offline audio; cross-tab/lifecycle gaps |
+| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Payload cap only, not chunked archive |
+| #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline shell; reconcile with #368 |
+| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; no publishable verified narrative |
+| #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor/API security; full verification outstanding |
+| #363 | `84452fcf45c1e73bbefabd850b7c218aa1d760b5` | Docs consolidation; exact-head gate SUCCESS, one map step skipped |
+| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio approach; do not merge beside #368 |
+| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio approach; do not merge beside #368 |
+| #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy broad PR; do not merge wholesale |
+
+PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerged. PRs #361 and #362 are MERGED. This inventory is a snapshot, not merge authorization.
+
+## Canonical knowledge rules
+
+1. `MASTER_PROJECT_STATE.md` is the only current-state summary; replace its current snapshot on reconciliation instead of appending competing status tables.
+2. This file is the only live execution queue.
+3. `DEVELOPMENT_ROADMAP.md` is the unified product plan and accepts new owner requests outside the original plan.
+4. `ARCHITECTURE.md` describes system boundaries; specialist documents own detailed contracts.
+5. `WORK_LOG.md` is append-only history. Preserve useful history; the old progress work-log path is a compatibility pointer, not a second log.
+6. Historical sections below never override this leading snapshot or fresh platform evidence.
+7. A new chat/agent must read this file, the master state, architecture, roadmap, release checklist and root `AGENTS.md`, then refresh live GitHub/Vercel/Firebase state.
+
+## Preparation queue before feature execution
+
+1. Complete review of all 44 #363 changed paths, link integrity, status contradictions and historical work-log preservation.
+2. Re-fetch exact-head checks after this update. Keep #363 Draft until final documentation review is complete.
+3. Resolve Vercel connector 403 through the authorized connection or authenticated CLI; do not change settings to bypass missing read access.
+4. Refresh Firebase project/rules evidence read-only; do not change project identity, rules, production data, secrets or sync flags.
+5. After review and exact-head gate acceptance, merge the single canonical docs source to main; verify the entrypoints exist on main before relying on them in new chats or Google AI Studio.
+6. Then resume implementation in order: CI/runner diagnosis → Ruqyah → Engine Plans archive → Offline Audio/PWA → Advisor security → Seerah provenance/publication → release certification.
+
+## Safety and evidence
+
+- Use only PASS, FAIL, BLOCKED, NOT VERIFIED in final release evidence. Separate isolated/local tests, CI, build, Preview, Production deployment, live smoke, physical-device tests and Google AI Studio sync.
+- Missing CI steps/logs are BLOCKED. Skipped tests are not PASS.
+- A READY deployment proves only that deployment's exact SHA/build state, not live behavior or another commit.
+- Quran text comes from the verified local corpus. APIs may provide validated locators/metadata only; AI/untrusted providers must not author religious source content.
+- Keep API secrets server-side. Never expose secrets in prompts, browser bundles, commits, logs, docs or chat.
+- Prefer free/open-source solutions; review license, maintenance, privacy, cost, quotas, attribution and security before adoption.
+- Do not alter Production settings, Firebase project/rules/data, secrets, sync flags or user data without explicit owner authorization.
+- Do not merge code PRs without complete diff review and inspectable exact-head gates; serialize overlapping PRs.
+
 ---
-# CURRENT VERIFIED UPDATE — 2026-11-14
 
-**Main SHA:** `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`  
-**Production deployment:** READY on the same SHA (`DKfbfqsBHqzS95CoTdYZCtPPPZwu`).  
-**Current PR count:** 16 open PRs; re-fetch exact head SHAs before every action.
-
-## Current blockers and next execution
-
-1. **Production sync safety — FAIL/BLOCKED:** both `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` are currently `true` in Vercel Production. No values were changed. Wait for explicit owner authorization before disabling them; do not perform sync-related Production actions meanwhile.
-2. **GitHub Actions — BLOCKED:** recent PR jobs fail before recording steps/logs (`steps=null`, `logs_url=null`). A safe retry of PR #373 repeated the same failure. Do not call this an application test failure or a pass.
-3. **Ruqyah — PR #373:** latest verified feature commit `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca`; Preview READY. 20 API proxy tests + 14 view/audio-lock tests PASS in isolated Node 26; full 171-entry long-program handler fixture PASS. Production long index previously returned HTTP 502 and remains NOT VERIFIED fixed until gated merge/deploy and post-deploy smoke.
-4. **Advisor — PR #364:** latest verified feature commit `ad33875b0304020f930c7b606ef8782d36148707`; client-supplied assistant history roles are no longer trusted. Six targeted source assertions PASS including UTF-8 byte-limit enforcement; latest head has no Preview due to Vercel build-rate-limit; GitHub CI BLOCKED.
-5. **Plans:** #369 Juz 30 off-by-one fixed; 7 isolated range tests PASS. #371 codec tests 6/6 PASS but codec is not integrated into actual persistence; #367's 800 KB single-payload limit is not a complete chunking solution.
-6. **Offline/PWA:** #368 has 29/29 isolated library/downloader/cache tests PASS and exact-head Vercel Preview READY; fixed canonical coordinates and pause-to-queued transition. GitHub CI still fails before steps/logs. Cross-tab ownership, complete orphan cleanup, quota UX, reader playback integration and device recovery remain BLOCKED/NOT VERIFIED. Do not merge #358/#359 as competing stores.
-7. **Seerah:** #365 is a reader shell/prototype with no publishable verified narrative. Source and rights review remain NOT VERIFIED.
-8. **Documentation:** original 537-line main work log has been restored before the newer reconciliation entries (589 lines total) and copied to canonical `docs/engineering/WORK_LOG.md`; the old path is a compatibility pointer.
-
-See [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md), [RELEASE_CHECKLIST.md](./engineering/RELEASE_CHECKLIST.md), and [engineering/README.md](./engineering/README.md) for evidence.
-
-**The sections below are historical snapshots. Do not treat their SHA values, PR statuses, or test results as current.**
-
-
----
-
-
+## Historical snapshots — traceability only
 
 # Latest continuation — 2026-11-13 (follow-up audit)
 

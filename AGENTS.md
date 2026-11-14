@@ -22,6 +22,18 @@ Execute continuously in safe, reviewable stages: inspect → plan → implement 
 
 
 
+## Open-source-first implementation and API policy
+
+Before building a substantial capability from scratch, search official standards/SDKs and maintained open-source libraries/projects. Compare native platform capabilities and proven implementations. Check license compatibility, maintenance, security, architecture fit, performance/bundle impact, privacy, cost, quotas, attribution and exit strategy. Reuse the smallest suitable solution; do not copy code without license review or add dependencies without a clear need.
+
+For every external API, review official documentation/terms, authentication, provenance, privacy/retention, rate limits/quotas, pricing, versioning, caching/redistribution rights, attribution, failure modes and fallback. Prefer free/open options; paid services require owner approval before becoming mandatory. Keep credentials server-side; validate and bound payloads; use timeouts, safe retries and idempotency; provide explicit offline/error behavior. Never expose secrets in client bundles, prompts, commits, logs, docs or chat.
+
+Religious-content boundary: the verified local Quran corpus supplies displayed ayah text. APIs may provide validated identifiers/coordinates or approved media transport only. AI/untrusted providers must not author or replace Quran, authenticated Hadith, Tafsir, Fiqh or publishable Seerah.
+
+## Owner-request intake outside the roadmap
+
+Every new owner request is eligible for evaluation regardless of its presence in the current roadmap. Record intent, acceptance criteria, priority, dependencies, affected architecture/data, risk and verification plan in the unified roadmap or a scoped requirement. Reprioritize transparently; do not silently discard requests or expand beyond the user's intent. Ask only for genuinely blocking details.
+
 ## Mandatory reconciliation and change-control protocol (every modification)
 
 This section applies to every source, test, configuration, workflow, documentation, and generated-data change. It supplements the detailed process in `docs/CHANGE_CONTROL.md`.

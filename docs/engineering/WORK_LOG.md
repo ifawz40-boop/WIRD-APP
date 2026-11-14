@@ -649,3 +649,14 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Preserved existing change-control rules: serialize shared paths; no blind PR merges; no production secrets/settings, Firebase Rules/data or sync-flag changes; no destructive user-data operations or sync activation without required approval.
 - PR inventory in the supplied prompt is treated as a historical review index only. Re-fetch exact PR states/heads/files/checks before action. PR #375 remains closed/superseded by #363 and no competing master handoff was recreated.
 - No tests were run because this was a documentation-only planning update. Exact-head CI/Preview evidence must be re-fetched after these commits; no pass is claimed.
+
+
+## 2026-11-14 — Knowledge-base readiness reconciliation
+
+- Re-fetched GitHub state: main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; PR #363 OPEN/DRAFT, mergeable, based on current main, exact head `84452fcf45c1e73bbefabd850b7c218aa1d760b5` before this addendum.
+- Re-fetched open PR inventory: 16 OPEN/DRAFT PRs (#374–#363, #359, #358, #2); #375 and #360 CLOSED/unmerged; #361/#362 MERGED. Re-fetch exact heads before action.
+- PR #363 changes 44 paths (6,515 additions / 542 deletions). Exact-head Quality Gate run `43629972574` / job `132554211307` completed SUCCESS with inspectable steps. Automated suites, dependency audit, API import, approved audio checks, Rules Emulator, TypeScript, production build, server startup and desktop/mobile smoke passed. The 604 Mushaf coordinate-map step was SKIPPED.
+- GitHub Vercel status context on the docs head is SUCCESS. Direct Vercel project/deployment API reads returned 403 Forbidden; current Production deployment metadata is NOT VERIFIED in this session. No Vercel settings or deployment changed.
+- Confirmed canonical entrypoints are not yet on main: fetches for `docs/CONTINUE_HERE.md` and root `README.md` returned 404. Cross-chat/Google AI Studio continuity from main is not yet established until the docs PR is accepted and merged.
+- Prepared a single current-state/continuation snapshot, explicitly demoted dated snapshots to historical evidence, and added new-request intake plus open-source-first/API research policies to engineering/agent guidance.
+- No runtime source, Quran corpus, Firebase Rules/data, Vercel settings, secrets, sync flags or Production deployment changed. No local tests were run. Documentation-only; re-fetch exact-head CI after this commit.

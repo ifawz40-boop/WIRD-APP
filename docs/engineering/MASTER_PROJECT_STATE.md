@@ -1,5 +1,85 @@
 # WIRD — Master Project State
 
+**Current snapshot reconciled:** 2026-11-14  
+**Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
+
+> This leading section is the sole current-state summary. Everything below the historical divider is retained evidence and may contain old SHAs, PR states, or conclusions. Re-fetch live GitHub, Vercel, and Firebase state before acting.
+
+## Repository and documentation status
+
+| Item | Observed value | Status |
+|---|---|---|
+| GitHub main | `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b` | PASS |
+| PR #363 | OPEN / DRAFT; mergeable; base main; not behind | PASS |
+| PR #363 exact head | `84452fcf45c1e73bbefabd850b7c218aa1d760b5` | PASS |
+| PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success with inspectable steps | PASS |
+| 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
+| PR #363 Vercel status | GitHub status context SUCCESS; target `89Qe73Qp7xdDVdyKNDQcHimP3C7W` | PASS (status only) |
+| Direct Vercel API reads | 403 Forbidden in this session | BLOCKED |
+| Current Production deployment parity | Last prior record READY on main SHA; not refreshed now | NOT VERIFIED |
+| Canonical docs on main | `docs/CONTINUE_HERE.md` and root `README.md` returned 404 | FAIL (not integrated yet) |
+| Local checkout/tests | No local checkout; no local test run | NOT VERIFIED |
+| Current Firebase Rules deployment | Not independently refreshed | NOT VERIFIED |
+
+## Open PRs — re-fetched 2026-11-14
+
+All 16 below were OPEN / DRAFT at inventory time. Re-fetch exact heads, paths and checks before acting.
+
+| PR | Head SHA | Disposition |
+|---:|---|---|
+| #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; reconcile package/lockfile with #372 |
+| #373 | `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca` | Ruqyah; exact-head gate/live verification required |
+| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI candidate |
+| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Codec not integrated into persistence |
+| #370 | `32bad0846b9f9a64b8ac1b78c292ea1f1c603e0c` | Session display settings |
+| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-range; generated-index E2E outstanding |
+| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Offline audio; lifecycle/cross-tab gaps |
+| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Payload cap only, not chunking |
+| #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline; reconcile with #368 |
+| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; no verified publishable content |
+| #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor security; full verification outstanding |
+| #363 | `84452fcf45c1e73bbefabd850b7c218aa1d760b5` | Docs consolidation; gate success, one coordinate step skipped |
+| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio; do not merge beside #368 |
+| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio; do not merge beside #368 |
+| #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy; do not merge wholesale |
+
+PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerged. PRs #361 and #362 are MERGED.
+
+## PR #363 documentation consolidation
+
+- 44 changed paths; 6,515 additions and 542 deletions.
+- The 534-line deletion from `docs/engineering/progress/WORK_LOG.md` is a compatibility-pointer conversion; canonical `docs/engineering/WORK_LOG.md` preserves the historical log. Verify this relationship and retain the pointer.
+- Exact-head Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke. The 604 coordinate-map step was skipped.
+- GitHub Vercel status is SUCCESS; Vercel API 403 prevents independent deployment inspection.
+- Keep Draft until all changed docs, links, status contradictions and history preservation are reviewed. No merge is claimed.
+
+## Product and engineering blockers
+
+- **CI:** PR #363's gate is inspectable and successful at its exact head. This does not certify other PRs; re-fetch each one's own checks.
+- **Ruqyah (#373):** targeted API/view tests and 171-entry fixture are documented as passing on the feature branch; not on main. Require exact-head CI and post-deploy short/medium/long smoke.
+- **Engine Plans (#367/#369/#371):** multi-range UI, codec and interim cap are partial independent changes. Codec is not integrated into persistence. Do not migrate until consumers, backup/import/reset, journal/outbox/inbox, startup hydration, rollback, resource bounds and multi-client tests are covered.
+- **Offline/PWA (#366/#368, legacy #358/#359):** reconcile as one design. Cross-tab ownership, orphan cleanup, quota recovery, reader playback, restart and device verification remain outstanding.
+- **Advisor (#364):** continue server-side validation, untrusted-history boundaries, privacy, rate-limit and authorization review; full security suite remains outstanding.
+- **Seerah (#365):** prototype only. Publication requires claim-level sources, rights clearance and editorial review.
+- **Production sync:** prior read-only inventory recorded both sync flags true. Current values were not refreshed now. Do not alter flags or perform sync-related Production actions without explicit authorization and release evidence.
+- **External APIs/libraries:** research suitable free/open-source solutions before custom implementation; check license, maintenance, security, privacy, cost, quotas and attribution. Secrets stay server-side. No untrusted provider or AI is a religious-content authority.
+
+## New owner-request intake
+
+Any new owner request is eligible for evaluation even if it is outside the existing roadmap. Record its intent, acceptance criteria, affected architecture/data, dependencies, priority, risk and tests in the unified roadmap or a scoped requirement. Reorder work transparently; do not reject a request merely because it was not originally planned. Ask only when a genuinely blocking detail is missing.
+
+## Reconciliation contract for future sessions
+
+1. Start with `docs/CONTINUE_HERE.md`, this file, `docs/engineering/ARCHITECTURE.md`, `docs/DEVELOPMENT_ROADMAP.md`, `docs/engineering/RELEASE_CHECKLIST.md`, and root `AGENTS.md`.
+2. Refresh main SHA, PR states/heads/changed paths, exact-head workflow jobs, Vercel deployment SHA/status/aliases, Firebase project/rules evidence, and environment-variable names/targets without reading or exposing secret values.
+3. Use source code for code facts, CI runs for tests, deployment metadata for deployment facts, and owner statements for owner-reported behavior.
+4. Keep this leading snapshot current. Append history only to `docs/engineering/WORK_LOG.md`. Label older checkpoints historical; never delete useful evidence.
+5. Re-run exact-head gates after each change. Skipped checks, inaccessible deployments and untested production behavior are not PASS.
+
+---
+
+## Historical state and evidence archive
+
 **Last verified:** 2026-11-14  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
 **Production:** https://wird-app.vercel.app/  

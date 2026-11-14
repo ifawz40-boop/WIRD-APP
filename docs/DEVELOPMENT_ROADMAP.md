@@ -430,3 +430,19 @@ This section incorporates the owner's MASTER HANDOFF & AUTONOMOUS EXECUTION requ
 
 ## Evidence policy
 Final reports use only `PASS`, `FAIL`, `BLOCKED`, `NOT VERIFIED`. Report local tests, CI, build, Preview, Production and live-app verification separately. A runner failure with no inspectable steps/logs is `BLOCKED`, not an application test failure or pass. A READY deployment proves only that deployment's build/status on its exact SHA; it does not prove live behavior or another commit.
+
+
+---
+
+## Governance addendum — new requests, reuse-first engineering, and APIs (2026-11-14)
+
+### New owner-request intake
+The roadmap is not a restriction on what the owner may request. Any new request, including one outside the current roadmap or sequence, must be evaluated. Record the intended outcome, acceptance criteria, priority, dependencies, affected architecture/data, security/privacy implications and verification plan. Reorder work when appropriate and explain trade-offs; do not silently discard a request or turn a small request into an unrelated redesign. Ask only when a genuinely blocking detail is missing.
+
+### Research and reuse before implementation
+Before building a substantial capability from scratch, search official standards/SDKs and mature open-source projects. Compare native platform capabilities, maintained libraries and proven implementations. Check license compatibility, maintenance, security, architecture fit, bundle/runtime impact, data migration cost, attribution and exit strategy. Reuse/adapt the smallest suitable solution; do not copy code without license review or add dependencies without a clear need.
+
+### External API contract
+For every proposed API, document official endpoint/schema, authentication, data provenance, terms/reuse rights, privacy/retention, rate limits, quotas, pricing, uptime/versioning, caching, attribution, failure modes and fallback/exit strategy. Prefer free/open options; no paid API becomes mandatory without explicit owner approval. Keep credentials server-side; validate/bound inputs and outputs; use timeouts, safe retries, idempotency and non-secret errors. Preserve offline behavior and avoid hard runtime dependence where practical.
+
+Religious-content restrictions remain absolute: verified local Quran text is authoritative; APIs may provide validated coordinates/identifiers or approved media transport only. Do not use APIs or AI as an authority for Quran, authenticated Hadith, Tafsir, Fiqh or publishable Seerah.
