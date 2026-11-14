@@ -763,3 +763,13 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Documentation catalog count corrected from 45 to 55 Markdown files under `docs/`; canonical WORK_LOG path corrected to `docs/engineering/WORK_LOG.md`.
 - Current-state documents now distinguish the application-code merge SHA from later docs-only commits and avoid claiming live Ruqyah audio verification.
 - Google AI Studio synchronization remains NOT VERIFIED. The 604 Mushaf coordinate-map check remains SKIPPED/NOT VERIFIED.
+
+
+## 2026-11-14 — Bun CI migration merged and Production verified
+
+- PR #372 was marked Ready and squash-merged after exact-head GitHub Actions run `43391729769` completed successfully on `950640ea78d29e87d426a89d8887c15e4de2abac`.
+- Merge commit / new `main` HEAD: `f264e4bdea7496090f60940e9e8db03e2fb15696` (parent `1a9f5370d10000bc45409a35c7801047d0e6700f`).
+- Executed gates passed: Bun 1.4.4 frozen install, `bun audit --audit-level=high`, automated tests, API import smoke, Quran audio CDN/byte-range check, Firestore Rules Emulator, TypeScript, production build/Quran chunk validation, server startup smoke, Chromium install, and desktop/mobile Playwright. Optional 604 printed Mushaf coordinate-map validation was SKIPPED and remains open.
+- Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` reached READY on exact merge SHA; production alias `wird-app.vercel.app` was assigned. This does not prove live Ruqyah route/audio behavior.
+- PR #374 remains Draft/HOLD at `6673bb149a2ffa58177c35b9f68c76423dfb2a0b`; compare against new main shows 8 commits behind and 7 ahead. Do not merge its stale lockfile or obsolete `docs/engineering/README.md`. Port only verified temporary-media deletion and workspace-name cleanup onto current main after regeneration and exact-head validation.
+- No Firebase production Rules/data, secrets, Vercel settings, sync flags, or Google AI Studio settings were changed. Google AI Studio synchronization and live Ruqyah route/audio remain NOT VERIFIED.

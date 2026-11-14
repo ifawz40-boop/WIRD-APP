@@ -1,9 +1,13 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-14 22:00 +02:00  
+**Current snapshot reconciled:** 2026-11-14 20:16 +02:00  
 **Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
-**Last observed main HEAD before this docs-only checkpoint:** `1c025e0e476ebdaa1250fffce2e154848ca52eee` (re-fetch exact branch HEAD before acting).  
+**Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
+
+- #372 executed gates passed: Bun frozen install, audit, automated tests, API imports, audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium install, and desktop/mobile Playwright; optional 604 Mushaf map check was skipped.
+- #374 must not merge as-is. Port verified temporary artifact deletion and workspace rename onto current main only after lockfile regeneration and exact-head CI; discard its obsolete engineering README.
+- Live Production Ruqyah route/audio and Google AI Studio synchronization remain NOT VERIFIED.
 
 > This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
 
@@ -12,6 +16,10 @@
 | Item | Observed value | Status |
 |---|---|---|
 | Latest application-code merge on main | `d265bdf37e9410ad6cd99273bb595526dce63b50` | PASS |
+| Latest main HEAD (CI-only PR #372) | `f264e4bdea7496090f60940e9e8db03e2fb15696` | PASS |
+| PR #372 Bun CI migration | Merged; exact-head run `43391729769` on `950640ea78d29e87d426a89d8887c15e4de2abac` | PASS |
+| PR #372 Vercel Production | `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` READY on merge SHA | PASS |
+| PR #374 repository hygiene | Open Draft, 8 commits behind main; package/lockfile overlap | BLOCKED |
 | PR #363 documentation standard | Merged; canonical docs/agent bootstrap present on main | PASS |
 | PR #373 Ruqyah lazy loading | Merged at `d265bdf37e9410ad6cd99273bb595526dce63b50` | PASS |
 | PR #373 exact-head Quality Gate | Run `43634212804` on `c42286fa6a5a85bba414a45383a56bd7a00f0cc2` | PASS |
