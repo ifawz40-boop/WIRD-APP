@@ -53,6 +53,14 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 
 PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerged. PRs #361 and #362 are MERGED. This inventory is a snapshot, not merge authorization.
 
+## Mandatory documentation for every future request
+
+- Before any new task, read root `README.md`, `AGENTS.md`, `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md`, this queue, the leading master-state snapshot, roadmap, architecture, release checklist, relevant specialists, latest work-log evidence, and owner actions.
+- The owner never needs to ask for documentation. Every request, including requests outside the roadmap, must be captured, prioritized, and documented automatically.
+- At every meaningful checkpoint and before finishing/pausing: replace live queue/master-state snapshots; update roadmap and affected specialist docs; append evidence to `docs/engineering/WORK_LOG.md`; update owner actions as needed.
+- New chats must refresh live GitHub/CI/Vercel/Firebase/API evidence. Conversation summaries are not authoritative.
+- Replace current snapshots; append to the work log only. Preserve historical evidence and mark old status notes as historical.
+
 ## Canonical knowledge rules
 
 1. `MASTER_PROJECT_STATE.md` is the only current-state summary; replace its current snapshot on reconciliation instead of appending competing status tables.

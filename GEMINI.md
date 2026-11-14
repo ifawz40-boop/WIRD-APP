@@ -1,6 +1,6 @@
 # Gemini / Google AI Studio Project Instructions
 
-Before making any change in this repository, read and follow the complete root-level `AGENTS.md`. It is the canonical engineering instruction set for WIRD and applies to all work performed through Google AI Studio, Gemini, GitHub, CI, or other coding agents.
+At the start of every new Google AI Studio/Gemini session, read root `README.md`, complete `AGENTS.md`, and `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md` before any task or repository-state answer. Documentation is automatic and mandatory even when the owner does not mention it. It is the canonical engineering instruction set for WIRD and applies to all work performed through Google AI Studio, Gemini, GitHub, CI, or other coding agents.
 
 In particular:
 - The user is not responsible for manual testing, terminal commands, browser-console inspection, or post-deployment verification.
@@ -40,3 +40,12 @@ Before creating a substantial capability, research official SDKs, standards and 
 
 ## New owner requests
 Requests outside the current roadmap must still be evaluated and, when accepted, recorded in `docs/DEVELOPMENT_ROADMAP.md` or a scoped requirement with acceptance criteria, dependencies, risk and tests. Reprioritize transparently; do not reject a request merely because it was not planned.
+
+
+## Mandatory automatic documentation — no reminders
+- Follow `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md` on every request, including requests outside the existing roadmap.
+- Record new requirements and acceptance criteria in the unified roadmap or a scoped requirement before substantial work.
+- At meaningful checkpoints and before finishing/pausing, replace the live queue and leading master-state snapshot, update roadmap/specialist docs, append evidence to the canonical work log, and update owner actions as applicable.
+- Never leave multiple competing current-state summaries. Replace stale current snapshots; preserve the work log as append-only history and label older snapshots historical.
+- New chats/agents bootstrap from repository docs and refresh live platform evidence. Conversation memory is not authoritative.
+- Documentation closeout is part of acceptance. If interrupted, record IN PROGRESS/BLOCKED and exact remaining documentation actions.

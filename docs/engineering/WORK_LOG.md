@@ -701,3 +701,10 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 ## 2026-11-14 — Deployment evidence freshness rule
 
 - Removed pinned prior-preview identifiers from the live queue/state summary. Preview evidence must always be re-fetched and matched to the exact live PR head; a READY deployment for an earlier commit is not current-head evidence.
+
+
+## 2026-11-14 — Mandatory automatic documentation and new-session bootstrap
+
+- Added `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md` as the single required contract for cross-chat bootstrap, source-of-truth ownership, automatic documentation closeout, out-of-roadmap request intake, current-snapshot replacement vs append-only history, API inventory, and open-source-first research.
+- Updated root `AGENTS.md`, `GEMINI.md`, root `README.md`, `docs/CONTINUE_HERE.md`, and the leading `MASTER_PROJECT_STATE.md` section to require the standard. The owner must never need to remind an agent to document work.
+- Documentation/instructions only. No runtime code, production settings, Firebase Rules/data, secrets, sync flags, or deployment configuration changed. Exact-head CI and Preview evidence must be refreshed for this commit.

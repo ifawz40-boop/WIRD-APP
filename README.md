@@ -2,6 +2,10 @@
 
 A focused Quran reading, listening, memorization, revision, and daily-worship application.
 
+## Mandatory new-session and documentation rule
+
+Every new chat or coding agent must read [`AGENTS.md`](./AGENTS.md) and [`docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md`](./docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md) first, then follow the startup sequence below. Documentation is automatic for every request—including requests outside the roadmap—and never depends on the owner reminding the agent.
+
 ## Start here
 
 For contributors, coding agents, and future ChatGPT sessions, read these in order:
@@ -12,8 +16,9 @@ For contributors, coding agents, and future ChatGPT sessions, read these in orde
 4. [Application architecture](./docs/engineering/ARCHITECTURE.md) — system boundaries and data/API responsibilities.
 5. [Unified development roadmap](./docs/DEVELOPMENT_ROADMAP.md) — product priorities and owner-request intake.
 6. [Release checklist](./docs/engineering/RELEASE_CHECKLIST.md) — exact release acceptance gates.
-7. [Engineering work log](./docs/engineering/WORK_LOG.md) — append-only historical record.
-8. [Documentation catalog](./docs/DOCUMENTATION_CATALOG.md) — specialist documents and ownership.
+7. [Documentation operating standard](./docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md) — mandatory bootstrap, automatic documentation, and cross-chat continuity.
+8. [Engineering work log](./docs/engineering/WORK_LOG.md) — append-only historical record.
+9. [Documentation catalog](./docs/DOCUMENTATION_CATALOG.md) — specialist documents and ownership.
 
 Google AI Studio instructions are in [GEMINI.md](./GEMINI.md). The specialist design documents are indexed by [docs/README.md](./docs/README.md) and [docs/engineering/README.md](./docs/engineering/README.md).
 

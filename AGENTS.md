@@ -2,6 +2,10 @@
 
 These instructions apply to every agent, developer, and automated workflow working in this repository. They are mandatory and take precedence over convenience or speed.
 
+## Mandatory documentation policy
+
+At the start of every session and before every task, read [`docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md`](docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md). It is mandatory for every request, including work outside the roadmap. Documentation closeout is automatic; the owner must never need to ask or remind you. Do not declare a task complete until the canonical queue, current-state snapshot, roadmap/requirement, relevant specialist documents, and append-only work log are reconciled as applicable. If interrupted, record an IN PROGRESS/BLOCKED checkpoint.
+
 ## Mission and working style
 ## Parallel execution and temporary-task coordination
 

@@ -74,6 +74,10 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 - #2 ↔ #363: `docs/DEVELOPMENT_CHECKPOINT.md`, `docs/engineering/FIRESTORE_SYNC_DESIGN.md`.
 - Other active PRs listed above had no changed-path overlap with #363 at this snapshot; re-fetch before action.
 
+## Mandatory documentation and cross-chat contract
+
+Every new session/agent must read `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md` before work. Documentation is mandatory for every request, including work outside the roadmap, without the owner needing to remind the agent. Replace the leading current-state snapshot during reconciliation; append history only to `docs/engineering/WORK_LOG.md`; preserve and label historical evidence. New sessions must refresh live platform state instead of trusting chat memory or old snapshots.
+
 ## New owner-request intake
 
 Any new owner request is eligible for evaluation even if it is outside the existing roadmap. Record its intent, acceptance criteria, affected architecture/data, dependencies, priority, risk and tests in the unified roadmap or a scoped requirement. Reorder work transparently; do not reject a request merely because it was not originally planned. Ask only when a genuinely blocking detail is missing.
