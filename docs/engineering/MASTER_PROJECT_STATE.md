@@ -14,7 +14,7 @@
 | PR #363 exact head | Re-fetch live PR #363 metadata; self-updating branch | PASS (must refresh) |
 | Last completed PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`; later commits require their own gate | PASS (earlier head only) |
 | 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
-| Previous docs Preview | READY on preceding head `9ffdb62daed5f005c140b5f1a30711dea18dc055`; current self-updating head needs re-fetch | PASS (previous head only) |
+| Current docs Preview | Re-fetch Vercel deployment metadata and confirm source SHA equals live PR #363 head before release | NOT VERIFIED until refreshed |
 | Vercel Preview for docs PR | READY on exact PR head; deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp` | PASS |
 | Vercel Production | READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA matches main; alias `wird-app.vercel.app` | PASS |
 | Project access protection | Password protection OFF; SSO ON for non-custom domains | PASS (configuration observed) |

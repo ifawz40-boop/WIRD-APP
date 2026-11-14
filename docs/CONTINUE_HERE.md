@@ -12,7 +12,7 @@
 
 - PR #363 is based on current main and is not behind. It changes 45 documentation/instruction paths (no runtime source files), including a new root README; no runtime source files are in its changed-path list.
 - Exact-head GitHub Quality Gate run `43629972574`, job `132554211307`, completed SUCCESS with inspectable steps. Automated tests, dependency audit, API import checks, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server-start smoke, and desktop/mobile browser smoke passed. The 604 Mushaf coordinate-map check was SKIPPED, not passed.
-- The immediately preceding docs head `9ffdb62daed5f005c140b5f1a30711dea18dc055` had a READY Preview (`dpl_GHtgk1f4orMpCzF3Qvce4psyMPgn`). The current self-updating PR head needs its own Preview status re-fetch.
+- Earlier docs PR heads have had READY Previews, but deployment evidence never transfers to a later commit. Always re-fetch the Preview deployment and verify its source SHA against the current PR head.
 - Vercel Production is READY: deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA exactly matches main `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`, alias `https://wird-app.vercel.app/`.
 - Project protection: password protection OFF; SSO protection ON for all non-custom domains. The custom production domain is `wird-app.vercel.app`.
 - Vercel Hobby project uses Vite and Node 26.x. No Vercel settings or deployments were changed by this preparation.
