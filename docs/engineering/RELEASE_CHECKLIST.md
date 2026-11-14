@@ -8,8 +8,8 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 ## A. Repository and change control
 
 - [x] PASS — main SHA recorded after docs merge: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
-- [ ] NOT VERIFIED — Production deployment identity does not yet match the post-merge documentation main SHA; the latest observed Production deployment remains on pre-merge runtime SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`. This documentation-only change has not been promoted/verified in Production.
-- [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
+- [x] PASS — Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact code merge SHA `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - [x] PASS — PR #373 Ruqyah lazy-loading fix reviewed and merged at exact tested head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`.
 - [ ] BLOCKED — every remaining candidate PR must be re-fetched and reviewed at its exact current head.
 - [x] PASS — PR #363 exact-head Quality Gate run `43632493503` passed; documentation policy merged.
@@ -24,7 +24,7 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 - [ ] NOT VERIFIED — full test suite on a local complete checkout.
 - [ ] NOT VERIFIED — TypeScript/lint exact-head run.
 - [ ] NOT VERIFIED — Firestore Rules Emulator exact-head run.
-- [x] PASS — PR #363 desktop/mobile Playwright smoke completed on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad3f`.
+- [x] PASS — PR #363 desktop/mobile Playwright smoke completed on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
 - [x] PASS — PR #373 Ruqyah desktop/mobile E2E passed in both projects; 160 total Playwright tests.
 - [ ] NOT VERIFIED — implementation PR Playwright checks remain independent.
 - [x] PASS — PR #373 exact-head Vercel Preview build completed on `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca`.

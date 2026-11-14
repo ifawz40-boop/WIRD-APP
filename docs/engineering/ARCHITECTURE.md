@@ -33,7 +33,7 @@ Browser / PWA
       └─ Firestore data/rules for supported cloud features
 ```
 
-Production is delivered by GitHub `main` → Vercel. The inspected Production deployment is READY on main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
+Production is delivered by GitHub `main` → Vercel. The inspected Production deployment is READY on the Ruqyah code merge SHA `d265bdf37e9410ad6cd99273bb595526dce63b50` (deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q`). Subsequent main commits in this checkpoint are documentation-only.
 
 ## 3. Quran data boundary
 

@@ -1,5 +1,18 @@
 # WIRD — Performance Audit
-## 2026-11-13 source and build evidence
+
+## Current verified follow-up — 2026-11-14 (PR #373 merged)
+
+- Ruqyah code merge SHA: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- PR #373 removed the static chain `RuqyahView → ruqyahContentService → verifiedAyahs → completeQuranData.json`.
+- `ruqyahContentService` now uses the existing `loadSurahVerses(surahNumber)` loader, validates complete local Surah chunks against canonical metadata, and resolves only Surahs required by selected Ruqyah items.
+- Ruqyah view loads Quran items asynchronously with explicit loading/error/retry states. Audio queue construction is asynchronous, preserves category/item/ayah order, deduplicates global ayah numbers, and cancels stale requests on category change/unmount.
+- IslamicAPI remains a coordinate-only index. API library displays Quran through `QuranText` and WIRD's local Tanzil Simple chunks; provider verse text/translation is stripped.
+- Exact-head CI run `43634212804` on PR head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`: 711/0 automated tests, Firestore Rules Emulator, TypeScript/build/server smoke pass, and 160 desktop/mobile Playwright checks pass.
+- Preview `dpl_JE7AddCKxTgu5XygzznNjnSL4STq` READY on exact PR head; Production `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` READY on exact merged code SHA.
+- The dedicated 604 Mushaf coordinate-map step was SKIPPED. Live Production Ruqyah route/audio smoke remains NOT VERIFIED.
+- Historical bundle comparison from earlier Preview evidence: RuqyahView chunk 1,997.87 kB → 67.19 kB minified (−96.64%), gzip 355.98 kB → 18.52 kB (−94.80%). This is an earlier verified build measurement, not a newly measured size for the merged Production deployment.
+
+## Previous source and build evidence — 2026-11-13 (historical baseline)
 
 ### Confirmed Quran-corpus bundle duplication
 

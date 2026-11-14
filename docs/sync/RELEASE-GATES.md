@@ -1,22 +1,21 @@
-# Current sync release-gate reconciliation — 2026-11-13
+# Current sync release-gate reconciliation — 2026-11-14
 
-> This section supersedes any older operational status below. Historical test/design notes remain useful, but do not treat their SHA, flag values, or deployment claims as current.
+> This overlay supersedes older operational SHA/deployment/CI statements below. Historical design and test evidence is retained.
 
-- Current GitHub main: `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
-- Vercel Production: `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu` is `READY`, target `production`, and its source SHA exactly matches main. Alias: `wird-app.vercel.app`.
-- Production flags are both currently `true`. This is an observed configuration fact, not approval that all sync release gates have passed. No toggle is authorized by this audit.
-- Owner-reported authenticated A↔B testing is a bounded `OWNER-REPORTED PASS`; it does not prove long-offline replay, crash recovery, all conflict types, account switching, tombstones, or every collection.
-- Recent GitHub Quality Gate runs on PRs fail before recording any steps; log retrieval returns `BlobNotFound`. Current main has no recent Quality Gate run returned. CI evidence is `BLOCKED`, not code `FAIL` or `PASS`.
-- GitHub main protection is disabled; required status enforcement is off. This is an enforcement gap, not a reason to bypass tests.
-- Vercel SSO protection is enabled for all non-custom domains; only `wird-app.vercel.app` is listed. Public anonymous access is not established.
-- `ISLAMICAPI_API_KEY` exists for Preview and Production as a sensitive variable. Old `ISLAMICAPI_API_KEY1` mismatch notes are stale.
-- Production Firebase Rules deployment was not independently confirmed in this audit; Emulator success is not production deployment evidence.
+- Ruqyah code merge SHA on main: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on that exact code SHA; alias `wird-app.vercel.app`.
+- PR #373 exact-head CI passed: 711/0 automated tests, Firestore Rules Emulator, TypeScript, build, server smoke and 160 Playwright checks. This is not sync lifecycle certification.
+- Production flags were previously read as both `true`: `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED`. No values changed; do not toggle without explicit owner approval.
+- Owner-reported authenticated A↔B testing remains bounded OWNER-REPORTED PASS only. Long-offline replay, crash recovery, all conflict types, account switching, tombstones and every collection remain separate gates.
+- Production Firebase Rules deployment is NOT VERIFIED in this checkpoint; Emulator pass is not production deployment evidence.
+- The 604 Mushaf coordinate-map step was SKIPPED in the #373 run; unrelated to sync and remains NOT VERIFIED.
+- Google AI Studio synchronization remains NOT VERIFIED.
 
 ## Release decision
 
-**HOLD for full release certification.** The production deployment/source parity is verified, but current main Quality Gate evidence, public-access behavior, Firebase Production Rules evidence, and complete sync lifecycle/offline/conflict certification remain separate and unresolved. Preserve current production settings until the owner gives a specific decision.
+**HOLD for full sync release certification.** Production deployment/source parity is verified, but full sync lifecycle/conflict/offline certification, deployed Firebase Rules evidence, and Studio synchronization remain separate and unresolved. Preserve current Production settings until the owner gives a specific decision.
 
-See [CHANGE_CONTROL.md](../CHANGE_CONTROL.md), [CONTINUE_HERE.md](../CONTINUE_HERE.md), and [OWNER_ACTIONS.md](../OWNER_ACTIONS.md) for the live evidence and pending decisions.
+See [CHANGE_CONTROL.md](../CHANGE_CONTROL.md), [CONTINUE_HERE.md](../CONTINUE_HERE.md), and [OWNER_ACTIONS.md](../OWNER_ACTIONS.md) for current evidence and approvals.
 
 ---
 

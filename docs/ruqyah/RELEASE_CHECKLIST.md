@@ -1,6 +1,17 @@
 # WIRD Ruqyah — Release and External Source Review
 
-Last reviewed: 2026-11-07
+## Latest verified implementation — PR #373 merged 2026-11-14
+
+- PR #373 merged at `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- Ruqyah no longer statically imports the complete Quran corpus through `verifiedAyahs`; selected local Surah chunks load through the existing lazy loader and are validated against canonical metadata.
+- API index entries remain numeric Quran coordinates only. Provider-authored Quran text and translations are stripped; the library displays WIRD-local verified Quran text via `QuranText`.
+- Short, medium, full, eye/envy and illness categories resolve their curated Quran ayah ranges. Audio queue preserves order, deduplicates global ayahs and cancels stale playback on category change.
+- Exact-head Quality Gate run `43634212804`: 711 automated tests passed / 0 failed; Firestore Rules Emulator, TypeScript, build and server smoke passed; 160 desktop/mobile Playwright tests passed, including Ruqyah cases.
+- Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on the exact code merge SHA.
+- Production Ruqyah route/audio has not yet been directly live-smoke-tested. The 604 Mushaf coordinate-map check was SKIPPED.
+- Full-program Brief/Medium/Long recordings remain disabled until exact contents, reciter/source attribution, rights and every non-Quran text/reference are independently reviewed.
+
+---
 
 ## Current merged implementation
 
