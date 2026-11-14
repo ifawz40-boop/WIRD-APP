@@ -800,3 +800,14 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Merge sequence: verify final diff and exact-head CI/Preview; squash-merge #378 with expected head SHA; verify resulting main and Production deployment; then close #377 and #374 as superseded/obsolete with explanatory comments.
 - Live Production Ruqyah route/audio, Google AI Studio synchronization, and direct production behavior remain NOT VERIFIED. No local checkout or local test execution is claimed.
 
+
+
+## 2026-11-14 — PR #378 exact-head Quality Gate completed (2026-11-14 22:47 +02:00)
+
+- Re-fetched PR #378 and confirmed candidate head `dafb54647cb71b13ff742beedba9ed49601aaf49`, base main SHA `f32988e8586431b0e5cadebe0cf84c6208e0341c`, 13 ahead / 0 behind.
+- Quality Gate run `43638841818`, job `132581609413`, completed SUCCESS on that exact head. Bun frozen install/audit, automated tests, 604 printed Mushaf coordinate maps, native TypeScript API imports, Quran audio CDN/byte-range, Firestore Rules Emulator, TypeScript, production build, server startup smoke, Chromium installation, Node runtime checks, Playwright and cleanup all succeeded.
+- Desktop/mobile Playwright: 160 passed, 2 skipped. Diagnostics upload action succeeded but reported no files at `test-results/playwright`; no artifact was uploaded. This is recorded as an observability note, not a failed test.
+- Vercel check for the candidate head reports `build-rate-limit`; there is no Preview deployment for this exact SHA. The earlier READY Preview was for SHA `33a0b6f265df87d0f1761576d85994a25cadb7d3` only. Production remains READY on main SHA `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- Reconfirmed candidate diff is limited to `package.json`, `bun.lock`, the four canonical docs, and the hygiene audit. The gold حُكم artwork blob remains identical to main; no media deletion.
+- This documentation reconciliation changes the PR head, so a new full exact-head Quality Gate is required before merge. Owner authorizes safe merge despite Vercel quota-only block; do not alter Vercel settings.
+- PR #377 remains HOLD; PR #374 remains obsolete. Neither is merged or closed yet.
