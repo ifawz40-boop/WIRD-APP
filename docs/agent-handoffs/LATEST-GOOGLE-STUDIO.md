@@ -267,3 +267,21 @@ The owner clarified that Seerah must feel like one compelling, complete story, n
 
 ## Seerah chapter production contract — 2026-11-11
 The Seerah feature is an immersive historical book, not standalone lessons. See `docs/SEERAH_LEARNING_PLAN_AR.md` §§16–17 for the product contract, reader experience, detailed entities, claim-to-body-block mapping, editorial workflow and opening chapter research outline. Each narrative body block must map to atomic claims and traceable source references. Required review gates: scientific/source review, Arabic language review, narrative continuity review, and UX/accessibility review. The proposed opening chapter outline is a research scaffold only, not approved historical content. No API ingestion, AI-generated published history, runtime implementation, Firebase or production changes are authorized by this documentation direction. Acceptance requires a connected multi-scene chapter in a continuous reader with saved progress; a lesson list or quiz grid is insufficient.
+
+---
+
+# Owner master handoff — planning requirements added (2026-11-14)
+
+The owner supplied a comprehensive execution handoff. Its requirements are incorporated into the canonical roadmap and release checklist; this section is a handoff summary, not permission to bypass repository release gates.
+
+Priority order: verified recovery checkpoint → CI runner/log observability → Ruqyah lazy-loading/category/API restoration → Engine Plans/memorization and lossless archive work → unified offline audio/PWA → Advisor/API security → sourced/licensed Seerah → documentation preservation → release evidence.
+
+Mandatory constraints:
+- Quran text must remain from the verified local corpus; external APIs may provide indexes/coordinates only. Preserve religious-content provenance, licensing and attribution; never generate or silently replace scripture or authenticated religious content.
+- Preserve all user plans/data through validation, integrity checks, atomic migrations/imports and rollback. Do not delete recoverable raw data.
+- Reconcile overlapping PRs and serialize shared files; PR inventory and SHAs in dated handoffs are historical and must be re-fetched.
+- CI without inspectable steps/logs is BLOCKED, not PASS or proof of an application test failure. Distinguish local tests, CI, build, Preview, Production and live-app verification.
+- No production secrets/settings, Firebase project/rules/data, user data or sync flags may be changed; do not enable remote sync. Owner-only approvals remain required.
+- Preserve the complete historical engineering work log while consolidating documentation.
+
+Canonical live queue: `docs/CONTINUE_HERE.md`. Unified roadmap: `docs/DEVELOPMENT_ROADMAP.md`. Release gates: `docs/engineering/RELEASE_CHECKLIST.md`. No runtime code was changed and no tests were run for this documentation-only planning update.
