@@ -14,7 +14,7 @@
 | PR #363 exact head | Re-fetch live PR #363 metadata; self-updating branch | PASS (must refresh) |
 | Last completed PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`; later commits require their own gate | PASS (earlier head only) |
 | 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
-| Latest docs Preview | READY on observed head `9ffdb62daed5f005c140b5f1a30711dea18dc055`; deployment `dpl_GHtgk1f4orMpCzF3Qvce4psyMPgn` | PASS (that head only) |
+| Previous docs Preview | READY on preceding head `9ffdb62daed5f005c140b5f1a30711dea18dc055`; current self-updating head needs re-fetch | PASS (previous head only) |
 | Vercel Preview for docs PR | READY on exact PR head; deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp` | PASS |
 | Vercel Production | READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA matches main; alias `wird-app.vercel.app` | PASS |
 | Project access protection | Password protection OFF; SSO ON for non-custom domains | PASS (configuration observed) |
@@ -48,7 +48,7 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 
 ## PR #363 documentation consolidation
 
-- 45 changed paths; 6,753 additions and 542 deletions, including root `README.md`.
+- 45 changed paths, including root `README.md`; re-fetch exact diff statistics before merge.
 - The 534-line deletion from `docs/engineering/progress/WORK_LOG.md` is a compatibility-pointer conversion; canonical `docs/engineering/WORK_LOG.md` preserves the historical log. Verify this relationship and retain the pointer.
 - The last completed Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`. The 604 coordinate-map step was skipped. It does not certify later commits; re-fetch the current exact-head run.
 - Vercel Preview is READY on the exact docs PR head; Production is READY on exact main SHA. Both were independently read from the correct Vercel team scope.

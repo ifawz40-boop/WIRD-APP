@@ -682,3 +682,10 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - PR #363 now changes 45 files (6,753 additions / 542 deletions), still documentation/instruction-only. Use squash merge if accepted because GitHub compare reports 365 commits ahead of main; avoid importing the branch-only commit history as individual commits.
 - Confirmed path overlaps with #374, #359 and legacy #2 are recorded in the current state/queue. No overlapping PR is to be merged concurrently.
 - The current #363 head must pass its own final inspectable Quality Gate and Vercel Preview before merge. No merge or Production/Firebase changes occurred in this update.
+
+
+## 2026-11-14 — Final snapshot wording correction
+
+- Removed self-updating PR-head and preview claims from static current-state text where they could become stale immediately after a documentation commit. Future sessions must fetch live PR metadata, checks and deployment SHA.
+- Changed the merge recommendation to describe the docs branch's large branch-only history without pinning a commit count; use squash only if the reviewed PR is accepted.
+- Current #363 head at this note: `243d15092c61c6cc0a5cc8f18831267bf2db5114`. Its exact-head Quality Gate is pending; no pass is claimed for this head.
