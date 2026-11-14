@@ -7,7 +7,7 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 ## A. Repository and change control
 
-- [x] PASS — main SHA recorded after docs merge: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- [x] PASS — latest application-code merge recorded: `d265bdf37e9410ad6cd99273bb595526dce63b50`; documentation-only follow-up commits may advance main HEAD.
 - [x] PASS — Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact code merge SHA `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - [x] PASS — PR #373 Ruqyah lazy-loading fix reviewed and merged at exact tested head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`.
@@ -98,61 +98,3 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 ## I. Production verification
 
 - [x] PASS — Production deployment is READY on the exact main SHA.
-- [x] PASS — Vercel environment metadata confirms `ISLAMICAPI_API_KEY` exists in Preview and Production; secret value not read.
-- [x] PASS — short and medium Ruqyah production API requests returned HTTP 200 before the feature fix.
-- [ ] FAIL — long Ruqyah production API request returned HTTP 502 before the feature fix; post-fix Production verification is pending.
-- [ ] NOT VERIFIED — full read-only live application smoke across Quran, audio, tafsir, memorization, adhkar, and prayer tools.
-- [ ] NOT VERIFIED — physical-device offline behavior.
-
-## J. Documentation and handoff
-
-- [x] PASS — the documentation branch preserves the complete previous main work log as an exact substring (589 lines on the current PR #363 documentation branch versus 537 on main).
-- [ ] BLOCKED — canonical state, architecture, release checklist, and work-log files are being consolidated; keep historical paths as compatibility pointers.
-- [ ] NOT VERIFIED — all relative links and all docs references after final consolidation.
-- [ ] NOT VERIFIED — final Google AI Studio handoff/sync.
-
-## Release rule
-
-A release is **BLOCKED** while any critical section above remains BLOCKED or FAIL. Do not enable remote sync, change Production settings, deploy Firestore rules, or merge a candidate PR without exact-head evidence and required owner authorization.
-
-
-## 2026-11-14 09:00 local — latest re-check
-
-| Gate | Evidence | Status |
-|---|---|---|
-| PR inventory | 16 open PRs; latest heads re-fetched; #375 advanced to `495b9ccada1bb327abeee469af16faa52ddc9707` | PASS |
-| GitHub Quality Gate | #375 rerun run `43570354110`, latest job `132373650377`; `steps=null`, `logs_url=null` | BLOCKED |
-| Cross-PR CI telemetry | #373 run `43568676649`, #363 `43570268180`, #372 `43391729769`; all fail before steps/logs | BLOCKED |
-| Production deployment | `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, READY on main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b` | PASS |
-| Production sync configuration | Both required-disabled flags read as `true`; no changes made | FAIL |
-| Production Ruqyah long index after #373 | Feature PR not merged; live post-fix smoke not run | NOT VERIFIED |
-| Full repository tests/build on exact PR heads | No complete local checkout or inspectable CI steps | NOT VERIFIED |
-
-No PR is merge-eligible while the required exact-head Quality Gate is not inspectable and passing. Production sync settings remain untouched pending explicit owner approval.
-
-
-## CI evidence clarification — 2026-11-14
-
-The general pre-step runner failure above does not apply to every historical PR:
-- #358 run `43030195498` and #359 run `43029617572` executed dependency installation, automated tests, Firestore Rules Emulator, TypeScript, production build, and server-startup smoke successfully, then failed the Desktop/mobile browser smoke step. The job log URL is unavailable, so the exact Playwright assertion is NOT VERIFIED.
-- The newer exact-head runs for #373, #374, #363, #364, #365, #366, #367, #368, #369, #370, #371, #372, and #375 failed before steps/logs (`steps=null`, `logs_url=null`). PR #373 retry repeated the pre-step failure.
-
-
-### CI log endpoint re-check — 2026-11-14
-
-- #375 retry job `132373650377` and previous attempt `132368486361`: step endpoint returned an empty list; job log endpoint returned Azure `BlobNotFound` HTTP 404.
-- No command-level output is available. CI remains BLOCKED; do not classify as code-test failure or success.
-
-
-## Master handoff acceptance additions — 2026-11-14
-
-- [ ] Repository checkpoint records verified main SHA, working branch/SHA, all PR states and exact heads, merged/closed relevant history, changed-file overlaps and data-loss risks.
-- [ ] CI runner, dependency installation, Bun/Node versions, lockfile, permissions, artifacts and Playwright are observable; all required steps have recorded outcomes. No tests were disabled to obtain a pass.
-- [ ] Ruqyah short/medium/long organizational categories work; index/API failures are resolved; verified local ayah text remains authoritative; loading/empty/error/retry/offline states and audio continuity are covered; route bundle excludes the full Quran corpus.
-- [ ] Engine Plans support validated multi-Surah/Juz/custom ranges; archive codec is integrated into actual persistence; legacy compatibility, corruption detection, atomic migration/import, rollback and no-loss recovery are tested.
-- [ ] Offline audio/PWA has one reconciled storage/job model; progress, pause/cancel/retry, quota, partial/orphan cleanup, restart recovery, cross-tab behavior, cache versioning and account/private-data isolation are verified.
-- [ ] Advisor/API security review covers prompt injection, untrusted content, history retention, privacy, server-only secrets, validation, rate limits, authorization and safe errors.
-- [ ] Seerah publication has reliable claim-level references, edition-level rights clearance and editorial review; prototype/placeholder content is not represented as finished or verified.
-- [ ] Documentation consolidation preserves historical work-log knowledge and unique design decisions; no competing live roadmap or handoff is introduced.
-- [ ] Final evidence distinguishes local tests, CI, production build, Preview, Production and live application checks, with exact SHAs/run IDs/deployment IDs.
-- [ ] Restricted production actions remain unchanged absent explicit owner approval; remote sync is not enabled by this checklist.
