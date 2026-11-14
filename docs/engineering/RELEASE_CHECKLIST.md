@@ -135,3 +135,17 @@ The general pre-step runner failure above does not apply to every historical PR:
 
 - #375 retry job `132373650377` and previous attempt `132368486361`: step endpoint returned an empty list; job log endpoint returned Azure `BlobNotFound` HTTP 404.
 - No command-level output is available. CI remains BLOCKED; do not classify as code-test failure or success.
+
+
+## Master handoff acceptance additions — 2026-11-14
+
+- [ ] Repository checkpoint records verified main SHA, working branch/SHA, all PR states and exact heads, merged/closed relevant history, changed-file overlaps and data-loss risks.
+- [ ] CI runner, dependency installation, Bun/Node versions, lockfile, permissions, artifacts and Playwright are observable; all required steps have recorded outcomes. No tests were disabled to obtain a pass.
+- [ ] Ruqyah short/medium/long organizational categories work; index/API failures are resolved; verified local ayah text remains authoritative; loading/empty/error/retry/offline states and audio continuity are covered; route bundle excludes the full Quran corpus.
+- [ ] Engine Plans support validated multi-Surah/Juz/custom ranges; archive codec is integrated into actual persistence; legacy compatibility, corruption detection, atomic migration/import, rollback and no-loss recovery are tested.
+- [ ] Offline audio/PWA has one reconciled storage/job model; progress, pause/cancel/retry, quota, partial/orphan cleanup, restart recovery, cross-tab behavior, cache versioning and account/private-data isolation are verified.
+- [ ] Advisor/API security review covers prompt injection, untrusted content, history retention, privacy, server-only secrets, validation, rate limits, authorization and safe errors.
+- [ ] Seerah publication has reliable claim-level references, edition-level rights clearance and editorial review; prototype/placeholder content is not represented as finished or verified.
+- [ ] Documentation consolidation preserves historical work-log knowledge and unique design decisions; no competing live roadmap or handoff is introduced.
+- [ ] Final evidence distinguishes local tests, CI, production build, Preview, Production and live application checks, with exact SHAs/run IDs/deployment IDs.
+- [ ] Restricted production actions remain unchanged absent explicit owner approval; remote sync is not enabled by this checklist.
