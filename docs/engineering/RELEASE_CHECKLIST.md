@@ -1,9 +1,21 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-14 20:16 +02:00  
-**Current release decision:** BLOCKED (PR #363 and Ruqyah #373 are merged; other application release gates remain open)
+**Last verified:** 2026-11-14 22:41 +02:00  
+**Current release decision:** BLOCKED — PR #378 documentation/package hygiene candidate awaits a fresh complete exact-head Quality Gate after documentation reconciliation; Production remains unchanged.
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
+
+## Current PR #378 release gate — 2026-11-14 22:41 +02:00
+
+- [x] PASS — current main baseline: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- [x] PASS — artwork-preserving candidate contains no image/media deletion; the gold Arabic حُكم artwork blob is present.
+- [x] PASS — package/lockfile changes are root workspace-name changes only; no dependency resolutions changed.
+- [x] PASS — PR #378 Preview `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn` READY on candidate head `33a0b6f265df87d0f1761576d85994a25cadb7d3`.
+- [x] PASS — candidate run `43638493787` executed and passed the 604 printed Mushaf coordinate-map validation, Firestore Emulator, automated tests, TypeScript, build and server smoke steps.
+- [ ] BLOCKED — candidate Playwright desktop/mobile step was still running at snapshot time; full workflow not yet successful.
+- [ ] BLOCKED — docs refresh changes candidate SHA; all CI/Preview gates must be rechecked on the new exact head.
+- [ ] BLOCKED — do not merge #378 until new exact-head Quality Gate succeeds and Preview is READY.
+- [ ] BLOCKED — #377 artwork-deleting PR and obsolete #374 must remain unmerged; close only after safe replacement merges.
 
 ## A. Repository and change control
 
