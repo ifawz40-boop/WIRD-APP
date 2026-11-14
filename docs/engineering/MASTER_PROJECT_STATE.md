@@ -15,8 +15,9 @@
 | PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success with inspectable steps | PASS |
 | 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
 | PR #363 Vercel status | GitHub status context SUCCESS; target `89Qe73Qp7xdDVdyKNDQcHimP3C7W` | PASS (status only) |
-| Direct Vercel API reads | 403 Forbidden in this session | BLOCKED |
-| Current Production deployment parity | Last prior record READY on main SHA; not refreshed now | NOT VERIFIED |
+| Vercel Preview for docs PR | READY on exact PR head; deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp` | PASS |
+| Vercel Production | READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA matches main; alias `wird-app.vercel.app` | PASS |
+| Project access protection | Password protection OFF; SSO ON for non-custom domains | PASS (configuration observed) |
 | Canonical docs on main | `docs/CONTINUE_HERE.md` and root `README.md` returned 404 | FAIL (not integrated yet) |
 | Local checkout/tests | No local checkout; no local test run | NOT VERIFIED |
 | Current Firebase Rules deployment | Not independently refreshed | NOT VERIFIED |
@@ -50,7 +51,7 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 - 44 changed paths; 6,515 additions and 542 deletions.
 - The 534-line deletion from `docs/engineering/progress/WORK_LOG.md` is a compatibility-pointer conversion; canonical `docs/engineering/WORK_LOG.md` preserves the historical log. Verify this relationship and retain the pointer.
 - Exact-head Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke. The 604 coordinate-map step was skipped.
-- GitHub Vercel status is SUCCESS; Vercel API 403 prevents independent deployment inspection.
+- Vercel Preview is READY on the exact docs PR head; Production is READY on exact main SHA. Both were independently read from the correct Vercel team scope.
 - Keep Draft until all changed docs, links, status contradictions and history preservation are reviewed. No merge is claimed.
 
 ## Product and engineering blockers
@@ -61,7 +62,9 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 - **Offline/PWA (#366/#368, legacy #358/#359):** reconcile as one design. Cross-tab ownership, orphan cleanup, quota recovery, reader playback, restart and device verification remain outstanding.
 - **Advisor (#364):** continue server-side validation, untrusted-history boundaries, privacy, rate-limit and authorization review; full security suite remains outstanding.
 - **Seerah (#365):** prototype only. Publication requires claim-level sources, rights clearance and editorial review.
-- **Production sync:** prior read-only inventory recorded both sync flags true. Current values were not refreshed now. Do not alter flags or perform sync-related Production actions without explicit authorization and release evidence.
+- **Production sync:** current Vercel inventory confirms `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` in Production. No values changed. Do not alter either flag or perform sync-related Production actions without explicit owner authorization and complete release evidence.
+- **API configuration:** sensitive `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` entries exist for Preview and Production; values were not read and key validity was not tested. API routes read these server-side. Presence is not proof of successful upstream calls.
+- **Firebase:** repository code and applet config expect project `wird-quran-app` with the default Firestore database. The Vercel Firebase project-ID environment entry is encrypted and was not decrypted. Production Rules deployment is NOT VERIFIED; Emulator tests do not prove deployment.
 - **External APIs/libraries:** research suitable free/open-source solutions before custom implementation; check license, maintenance, security, privacy, cost, quotas and attribution. Secrets stay server-side. No untrusted provider or AI is a religious-content authority.
 
 ## New owner-request intake

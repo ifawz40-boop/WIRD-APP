@@ -660,3 +660,15 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Confirmed canonical entrypoints are not yet on main: fetches for `docs/CONTINUE_HERE.md` and root `README.md` returned 404. Cross-chat/Google AI Studio continuity from main is not yet established until the docs PR is accepted and merged.
 - Prepared a single current-state/continuation snapshot, explicitly demoted dated snapshots to historical evidence, and added new-request intake plus open-source-first/API research policies to engineering/agent guidance.
 - No runtime source, Quran corpus, Firebase Rules/data, Vercel settings, secrets, sync flags or Production deployment changed. No local tests were run. Documentation-only; re-fetch exact-head CI after this commit.
+
+
+## 2026-11-14 — Vercel/Firebase/API and changed-path verification
+
+- Correct Vercel team scope was resolved through the linked WIRD team. Project `wird-app` is Vite / Node 26.x. The docs PR Preview deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp` is READY on exact head `06c4add35ed1a9870d20867b2cc276c54e536c91`. Production deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu` is READY on main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`, alias `wird-app.vercel.app`.
+- Vercel project protection: password protection OFF; SSO enabled for non-custom domains. No settings were changed.
+- Read-only environment inventory: `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` sensitive entries exist for Preview and Production; values were not read and validity was not tested. Both Production sync flags remain `true`; no changes made.
+- Main source `src/lib/firebase.ts` and `firebase-applet-config.json` identify canonical project `wird-quran-app` and default Firestore database. Vercel `VITE_FIREBASE_PROJECT_ID` remains encrypted/not decrypted; deployed Firestore Rules state remains NOT VERIFIED. The manual deploy workflow is guarded to the canonical project; no Firebase operation was performed.
+- Exact path comparison found #374/#363 overlap at `docs/engineering/README.md`; #359/#363 overlap at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; #2/#363 overlap at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`. Other listed active PRs had no path overlap with #363 at this snapshot.
+- Historical work-log preservation independently checked: the 537-line main `docs/engineering/progress/WORK_LOG.md` is an exact text prefix of the 663-line canonical `docs/engineering/WORK_LOG.md` on the docs branch. The old path is a compatibility pointer. No historical work-log content was lost.
+- Link scan across the seven edited canonical/agent files found zero broken relative links. The broader PR's prior link audit reported zero broken links; no claim is made that every unchanged link was re-scanned in this pass.
+- No secrets were read, no production settings or flags changed, no Firebase Rules/data changed, and no deployment was initiated manually.

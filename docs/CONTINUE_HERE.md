@@ -12,10 +12,14 @@
 
 - PR #363 is based on current main and is not behind. It changes 44 documentation/instruction files (6,515 additions / 542 deletions); no runtime source files are in its changed-path list.
 - Exact-head GitHub Quality Gate run `43629972574`, job `132554211307`, completed SUCCESS with inspectable steps. Automated tests, dependency audit, API import checks, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server-start smoke, and desktop/mobile browser smoke passed. The 604 Mushaf coordinate-map check was SKIPPED, not passed.
-- GitHub Vercel status for this PR head is SUCCESS, target `89Qe73Qp7xdDVdyKNDQcHimP3C7W`. Direct Vercel project/deployment API reads returned 403 Forbidden in this session, so deployment metadata and current Production parity are NOT VERIFIED here.
-- The last previously documented Production deployment was READY on main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; it was not independently refreshed in this session.
+- Vercel Preview for this docs head is READY: deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp`, source SHA matches this branch head, Preview URL `https://wird-9uv3n0ast-xm8eslam-9174s-projects.vercel.app` (SSO-protected preview). GitHub Vercel status is SUCCESS.
+- Vercel Production is READY: deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA exactly matches main `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`, alias `https://wird-app.vercel.app/`.
+- Project protection: password protection OFF; SSO protection ON for all non-custom domains. The custom production domain is `wird-app.vercel.app`.
+- Vercel Hobby project uses Vite and Node 26.x. No Vercel settings or deployments were changed by this preparation.
 - `docs/CONTINUE_HERE.md` and root `README.md` returned 404 on main: canonical docs exist on PR #363 only until it is merged. Do not assume a new chat or Google AI Studio reading main can see them yet.
 - No local checkout is exposed; no local tests are claimed. No runtime code, Firebase Rules/data, Vercel settings, secrets, sync flags, or Production deployment was changed.
+- Vercel environment inventory (names/targets only): `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` have sensitive entries for Preview and Production; their values were not read and their validity was not tested. `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` in Production. Do not change either flag or run sync-related Production actions without explicit owner authorization.
+- Repository Firebase source/config expects project `wird-quran-app` and default Firestore database. Vercel's `VITE_FIREBASE_PROJECT_ID` is encrypted and was not decrypted; the deployed Firestore Rules release was not independently verified. Do not infer Rules deployment from Emulator success.
 
 ## Open PR inventory — re-fetched 2026-11-14
 
@@ -38,6 +42,14 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 | #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio approach; do not merge beside #368 |
 | #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio approach; do not merge beside #368 |
 | #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy broad PR; do not merge wholesale |
+
+
+## Confirmed changed-path overlaps — serialize these PRs
+
+- #374 overlaps #363 at `docs/engineering/README.md`; reconcile both patches before either is merged.
+- #359 overlaps #363 at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; preserve the #363 unified plan and reconcile any useful #359 detail explicitly.
+- Legacy #2 overlaps #363 at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`; do not merge #2 wholesale.
+- #373, #372, #371, #370, #369, #368, #367, #366, #365, #364 and #358 have no changed-path overlap with the current #363 changed-file list. This is a path snapshot only; re-fetch before action.
 
 PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerged. PRs #361 and #362 are MERGED. This inventory is a snapshot, not merge authorization.
 
