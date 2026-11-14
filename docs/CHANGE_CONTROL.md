@@ -7,6 +7,10 @@
 
 > This is the mandatory change-control policy, not a live status report. The sole live queue and evidence snapshot are `docs/CONTINUE_HERE.md` and `docs/engineering/MASTER_PROJECT_STATE.md`. Dated PR inventories, SHAs, deployment states, and configuration observations later in this file are historical unless re-fetched in the current session.
 
+## Mandatory documentation closeout
+
+Every agent must follow [`engineering/DOCUMENTATION_OPERATING_STANDARD.md`](engineering/DOCUMENTATION_OPERATING_STANDARD.md) on every request. The owner never needs to ask for notes or remind the agent. Capture out-of-roadmap requests in the unified roadmap or a scoped requirement. Replace the live queue and leading current-state snapshot after reconciliation, update relevant specialist docs, append evidence to the work log, and record owner-only actions. A task is not complete until its required documentation is reconciled. New sessions bootstrap from repository files, not chat memory.
+
 ## 1. Source-of-truth hierarchy
 
 No single system proves the state of another system.

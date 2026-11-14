@@ -94,3 +94,8 @@
 
 ## متطلبات المنتج الجديدة
 - [USER_REQUIREMENTS_2026-11-12.md](./product/USER_REQUIREMENTS_2026-11-12.md) — adaptive Engine Plans capacity/chunked sync، تحديد السور والأجزاء ونطاقات الآيات، إعدادات صفحة جلسة قابلة للطي، وأولوية السيرة.
+
+
+## Mandatory agent operating standard
+
+- `engineering/DOCUMENTATION_OPERATING_STANDARD.md` — required for every new session and every request; defines bootstrap, canonical sources, automatic documentation closeout, out-of-roadmap intake, freshness, history preservation, and API/open-source research.
