@@ -10,8 +10,8 @@
 
 ## Verified current state
 
-- PR #363 is based on current main and is not behind. It changes 45 documentation/instruction paths (no runtime source files), including a new root README; no runtime source files are in its changed-path list.
-- Exact-head GitHub Quality Gate run `43629972574`, job `132554211307`, completed SUCCESS with inspectable steps. Automated tests, dependency audit, API import checks, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server-start smoke, and desktop/mobile browser smoke passed. The 604 Mushaf coordinate-map check was SKIPPED, not passed.
+- PR #363 is based on current main and is not behind. It changes 46 documentation/instruction paths (no runtime source files), including a new root README; no runtime source files are in its changed-path list.
+- The last inspectable GitHub Quality Gate success is run `43629972574`, job `132554211307`, on an earlier head; it does NOT certify the current docs head. No workflow run was returned for current head `086d92a522f2d795f4c96f6358342338a6de8e4c`; current GitHub Quality Gate is NOT VERIFIED. The 604 Mushaf coordinate-map check was SKIPPED in the earlier run.
 - Earlier docs PR heads have had READY Previews, but deployment evidence never transfers to a later commit. Always re-fetch the Preview deployment and verify its source SHA against the current PR head.
 - Vercel Production is READY: deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA exactly matches main `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`, alias `https://wird-app.vercel.app/`.
 - Project protection: password protection OFF; SSO protection ON for all non-custom domains. The custom production domain is `wird-app.vercel.app`.
@@ -38,7 +38,7 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 | #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline shell; reconcile with #368 |
 | #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; no publishable verified narrative |
 | #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor/API security; full verification outstanding |
-| #363 | `84452fcf45c1e73bbefabd850b7c218aa1d760b5` | Docs consolidation; exact-head gate SUCCESS, one map step skipped |
+| #363 | Re-fetch live head | Docs consolidation; current head `086d92a522f2d795f4c96f6358342338a6de8e4c`; exact-head CI NOT VERIFIED |
 | #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio approach; do not merge beside #368 |
 | #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio approach; do not merge beside #368 |
 | #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy broad PR; do not merge wholesale |
@@ -73,8 +73,8 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 
 ## Preparation queue before feature execution
 
-1. Complete review of all 44 #363 changed paths, link integrity, status contradictions and historical work-log preservation.
-2. Re-fetch exact-head checks after this update. Keep #363 Draft until final documentation review is complete.
+1. Complete review of all 46 #363 changed paths, link integrity, status contradictions and historical work-log preservation.
+2. Re-fetch exact-head checks after this update. The latest observed Preview is READY on SHA `086d92a522f2d795f4c96f6358342338a6de8e4c`; exact-head GitHub Quality Gate is NOT VERIFIED. Keep #363 Draft until the final gate is inspectable and passes.
 3. Resolve Vercel connector 403 through the authorized connection or authenticated CLI; do not change settings to bypass missing read access.
 4. Refresh Firebase project/rules evidence read-only; do not change project identity, rules, production data, secrets or sync flags.
 5. After review and exact-head gate acceptance, merge the single canonical docs source to main; verify the entrypoints exist on main before relying on them in new chats or Google AI Studio.

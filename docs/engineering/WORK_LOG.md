@@ -708,3 +708,11 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Added `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md` as the single required contract for cross-chat bootstrap, source-of-truth ownership, automatic documentation closeout, out-of-roadmap request intake, current-snapshot replacement vs append-only history, API inventory, and open-source-first research.
 - Updated root `AGENTS.md`, `GEMINI.md`, root `README.md`, `docs/CONTINUE_HERE.md`, and the leading `MASTER_PROJECT_STATE.md` section to require the standard. The owner must never need to remind an agent to document work.
 - Documentation/instructions only. No runtime code, production settings, Firebase Rules/data, secrets, sync flags, or deployment configuration changed. Exact-head CI and Preview evidence must be refreshed for this commit.
+
+
+## 2026-11-14 — Documentation operating standard indexed and verified
+
+- Added `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md` and wired it into root `AGENTS.md`, `GEMINI.md`, `README.md`, `docs/CONTINUE_HERE.md`, `docs/engineering/MASTER_PROJECT_STATE.md`, `docs/CHANGE_CONTROL.md`, and `docs/DOCUMENTATION_CATALOG.md`.
+- The standard makes new-session bootstrap, automatic documentation for every request (including out-of-roadmap requests), current-snapshot replacement, append-only history, API inventory, and open-source-first research mandatory without owner reminders.
+- Exact docs PR head at this checkpoint: `086d92a522f2d795f4c96f6358342338a6de8e4c`; PR #363 remains OPEN/DRAFT, 46 changed paths, 373 commits ahead / 0 behind main. Preview deployment `dpl_9w8QarojoWq6pCuHoEsfFqGMuGPF` is READY on that exact SHA. No GitHub workflow run was returned for this SHA; exact-head CI is NOT VERIFIED. Earlier successful CI does not transfer.
+- Link scan across the nine canonical/entrypoint files found zero broken relative links. No runtime code, Production settings, Firebase Rules/data, secrets, sync flags, or user data changed.

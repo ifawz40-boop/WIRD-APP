@@ -11,11 +11,11 @@
 |---|---|---|
 | GitHub main | `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b` | PASS |
 | PR #363 | OPEN / DRAFT; mergeable; base main; not behind | PASS |
-| PR #363 exact head | Re-fetch live PR #363 metadata; self-updating branch | PASS (must refresh) |
-| Last completed PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`; later commits require their own gate | PASS (earlier head only) |
+| PR #363 exact head | `086d92a522f2d795f4c96f6358342338a6de8e4c` (re-fetch after next commit) | PASS (observed 2026-11-14) |
+| Current PR #363 Quality Gate | No workflow run returned for exact head `086d92a522f2d795f4c96f6358342338a6de8e4c`; earlier success does not transfer | NOT VERIFIED |
 | 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
-| Current docs Preview | Re-fetch Vercel deployment metadata and confirm source SHA equals live PR #363 head before release | NOT VERIFIED until refreshed |
-| Vercel Preview for docs PR | READY on exact PR head; deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp` | PASS |
+| Current docs Preview | READY, deployment `dpl_9w8QarojoWq6pCuHoEsfFqGMuGPF`, source SHA matches `086d92a522f2d795f4c96f6358342338a6de8e4c` | PASS (exact head) |
+
 | Vercel Production | READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA matches main; alias `wird-app.vercel.app` | PASS |
 | Project access protection | Password protection OFF; SSO ON for non-custom domains | PASS (configuration observed) |
 | Canonical docs on main | `docs/CONTINUE_HERE.md` and root `README.md` returned 404 | FAIL (not integrated yet) |
@@ -48,10 +48,10 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 
 ## PR #363 documentation consolidation
 
-- 45 changed paths, including root `README.md`; re-fetch exact diff statistics before merge.
+- 46 changed paths, including root `README.md` and the mandatory documentation operating standard.
 - The 534-line deletion from `docs/engineering/progress/WORK_LOG.md` is a compatibility-pointer conversion; canonical `docs/engineering/WORK_LOG.md` preserves the historical log. Verify this relationship and retain the pointer.
-- The last completed Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`. The 604 coordinate-map step was skipped. It does not certify later commits; re-fetch the current exact-head run.
-- Vercel Preview is READY on the exact docs PR head; Production is READY on exact main SHA. Both were independently read from the correct Vercel team scope.
+- The last completed Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`. The 604 coordinate-map step was skipped. No GitHub workflow run was returned for current head `086d92a522f2d795f4c96f6358342338a6de8e4c`; current exact-head CI is NOT VERIFIED.
+- Vercel Preview deployment `dpl_9w8QarojoWq6pCuHoEsfFqGMuGPF` is READY on exact docs head `086d92a522f2d795f4c96f6358342338a6de8e4c`. Production remains READY on exact main SHA.
 - Keep Draft until all changed docs, links, status contradictions and history preservation are reviewed. The branch is 365 commits ahead of main; use SQUASH merge only to avoid importing that branch-only history. No merge is claimed.
 
 ## Product and engineering blockers
