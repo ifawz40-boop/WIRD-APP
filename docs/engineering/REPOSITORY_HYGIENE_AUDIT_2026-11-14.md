@@ -19,7 +19,7 @@
 - The package/lockfile patches are each a one-line root-name change only.
 - PR #377's earlier exact-head Quality Gate run `43636848964` completed successfully, job `132575423877`; the 604 Mushaf coordinate-map validation step was **SKIPPED**, not passed. The workflow log reports 160 Playwright tests passed and 2 skipped.
 - PR #377's Vercel Preview was provider-reported READY for its exact head. Production remains on main SHA `f32988e8586431b0e5cadebe0cf84c6208e0341c`; this reconstruction does not alter Production.
-- New candidate CI and Preview are pending and must be checked on the exact resulting head before merge.
+- At the time of the initial audit, candidate CI and Preview were pending; see the dated exact-head validation updates below.
 
 ## Retention rules
 - Preserve Quran text and metadata, verified religious sources, Mushaf assets, user data, Firebase recovery paths, backup/restore logic, CI workflows, tests, scripts, artwork, and historical engineering evidence unless a separate evidence-led review proves a specific item safe to remove.
@@ -32,9 +32,20 @@
 The PR title includes `Mushaf` to request execution of the workflow's optional 604 printed-Mushaf coordinate-map validation step. Confirm the step is `success` in the final exact-head run; a skipped result is not accepted as coverage evidence.
 
 
-## Candidate validation update — 2026-11-14 22:41 +02:00
+## Historical candidate validation update — 2026-11-14 22:41 +02:00
 
 - Artwork-preserving PR #378 head at validation snapshot: `33a0b6f265df87d0f1761576d85994a25cadb7d3`; image blob confirmed present in branch and matches the retained main asset.
 - Preview `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn`: READY.
 - Quality Gate run `43638493787`: the 604 printed Mushaf coordinate-map validation passed; Bun install/audit, automated tests, native TypeScript API imports, Quran audio CDN/byte-range, Firestore Rules Emulator, TypeScript, production build, and server smoke passed. Desktop/mobile Playwright was still running; therefore full CI was not yet green.
 - Canonical documentation was reconciled after this snapshot; that documentation commit changes the PR head and requires a fresh exact-head Quality Gate and Preview before merge.
+
+
+## Exact-head Quality Gate completed — 2026-11-14 22:47 +02:00
+
+- PR #378 head tested: `dafb54647cb71b13ff742beedba9ed49601aaf49`; base main SHA: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
+- GitHub Quality Gate run `43638841818`, job `132581609413`: completed SUCCESS. All 604 printed Mushaf coordinate maps passed. Automated tests, Bun frozen install/audit, native TypeScript API imports, Quran audio CDN/byte-range, Firestore Rules Emulator, TypeScript, production build, server startup smoke, Chromium/runtime, Desktop/Mobile Playwright and cleanup steps passed.
+- Playwright: 160 passed, 2 skipped. The diagnostics upload action completed but found no files at its configured path; no artifact was uploaded.
+- Vercel status on this exact SHA: `build-rate-limit`; no Preview deployment exists for this SHA. Earlier Preview `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn` is for the older head `33a0b6f265df87d0f1761576d85994a25cadb7d3` only.
+- Main Production remains READY on SHA `f32988e8586431b0e5cadebe0cf84c6208e0341c`; no Production setting or deployment was changed.
+- Artwork blob `c4e29d1c8db5234ef5dc4dfcfee94edf74499b55` remains identical between main and candidate. No image/media deletion is present.
+- This documentation refresh changes the PR head and requires a fresh full exact-head Quality Gate before merge.
