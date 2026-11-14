@@ -30,3 +30,11 @@
 ## CI validation request
 
 The PR title includes `Mushaf` to request execution of the workflow's optional 604 printed-Mushaf coordinate-map validation step. Confirm the step is `success` in the final exact-head run; a skipped result is not accepted as coverage evidence.
+
+
+## Candidate validation update — 2026-11-14 22:41 +02:00
+
+- Artwork-preserving PR #378 head at validation snapshot: `33a0b6f265df87d0f1761576d85994a25cadb7d3`; image blob confirmed present in branch and matches the retained main asset.
+- Preview `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn`: READY.
+- Quality Gate run `43638493787`: the 604 printed Mushaf coordinate-map validation passed; Bun install/audit, automated tests, native TypeScript API imports, Quran audio CDN/byte-range, Firestore Rules Emulator, TypeScript, production build, and server smoke passed. Desktop/mobile Playwright was still running; therefore full CI was not yet green.
+- Canonical documentation was reconciled after this snapshot; that documentation commit changes the PR head and requires a fresh exact-head Quality Gate and Preview before merge.
