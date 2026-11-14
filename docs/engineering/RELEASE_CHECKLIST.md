@@ -1,6 +1,6 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-14 21:58 +02:00  
+**Last verified:** 2026-11-14 20:16 +02:00  
 **Current release decision:** BLOCKED (PR #363 and Ruqyah #373 are merged; other application release gates remain open)
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
@@ -11,6 +11,9 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 - [x] PASS — Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact code merge SHA `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - [x] PASS — PR #373 Ruqyah lazy-loading fix reviewed and merged at exact tested head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`.
+- [x] PASS — PR #372 Bun CI migration merged at `f264e4bdea7496090f60940e9e8db03e2fb15696`; exact tested head `950640ea78d29e87d426a89d8887c15e4de2abac`; Quality Gate `43391729769` passed all executed steps (optional 604 Mushaf map check skipped).
+- [x] PASS — Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` READY on exact merge SHA `f264e4bdea7496090f60940e9e8db03e2fb15696`.
+- [ ] BLOCKED — PR #374 is stale (8 commits behind main), overlaps package/lockfile, and contains an obsolete engineering README; port safe changes only after reconstruction and exact-head gates.
 - [ ] BLOCKED — every remaining candidate PR must be re-fetched and reviewed at its exact current head.
 - [x] PASS — PR #363 exact-head Quality Gate run `43632493503` passed; documentation policy merged.
 - [x] PASS — PR #373 exact-head Quality Gate run `43634212804` passed: 711/0 automated tests, Firestore Emulator, TypeScript, build, server smoke and 160 desktop/mobile Playwright checks; Ruqyah fix merged.
