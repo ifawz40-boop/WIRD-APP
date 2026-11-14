@@ -400,3 +400,33 @@ Unit/integration، Rules Emulator عند الحاجة، TypeScript/lint/build، 
 - **السيرة:** أولوية مرتفعة بالتوازي؛ القارئ المتصل والـ bookmarks/anchors والمصادر وسجل المراجعات ومحتوى معتمد فقط.
 
 التنفيذ على فروع مستقلة، مع إبقاء توثيق المنتج في PR #363. لا merge أو deploy أو تغيير إعدادات إنتاج دون الموافقات وبوابات الجودة.
+
+
+---
+
+# Master handoff execution requirements — 2026-11-14
+
+This section incorporates the owner's MASTER HANDOFF & AUTONOMOUS EXECUTION requirements into the existing roadmap. It does not create a second roadmap and does not override `docs/CONTINUE_HERE.md` as the live execution queue.
+
+## Ordered release workstreams
+
+1. **Recovery and verified checkpoint:** inspect actual main and branch SHAs, all open/closed/merged PRs and exact heads, CI job steps/logs, Vercel deployment-to-commit mapping, Firebase project/config/rules, repository changes and data-loss/overlap risks. Historical handoff values are not current evidence.
+2. **CI reliability:** diagnose runner provisioning/telemetry, permissions, Bun version, Node compatibility, lockfile consistency, dependency graph, artifacts and Playwright setup. Do not disable tests or weaken gates to obtain green status.
+3. **Ruqyah restoration:** use the existing per-Surah lazy loader; keep actual ayah text in the verified local Quran corpus; restore short/medium/long organizational audio groupings; fix index/API failures; cover loading, empty, error, retry and offline states; deduplicate requests and bound caches; prove the Ruqyah route does not statically bundle the complete Quran corpus.
+4. **Engine Plans and memorization:** reconcile #367/#369/#371 as one dependency-aware workstream. Support multiple Surahs, Juz and custom ayah ranges with strict Quran boundary validation. Complete archive codec integration, versioned chunk persistence, integrity checks, corruption recovery, legacy compatibility, atomic migration/import and rollback. The interim 800 KB single-document ceiling is not a chunking implementation.
+5. **Offline audio and PWA:** reconcile #358/#359/#366/#368 under one storage/job ownership contract. Complete download progress and lifecycle, pause/cancel/retry, quota/error handling, partial/orphan cleanup, restart recovery, cross-tab coordination, cache versioning/invalidation and reader playback integration. Never evict user progress, private account data or sync journals. Browser/device airplane-mode and restart checks remain distinct evidence.
+6. **Advisor/API security:** review prompt injection, user-provided content boundaries, history retention, privacy leakage, server-side secrets, request validation, rate limiting, authorization and error disclosure.
+7. **Seerah:** keep the continuous book/reader prototype distinct from publishable content. Publication requires claim-level reliable sources, exact references/editions, rights clearance, editorial review and explicit treatment of disputed reports. No fabricated citations or AI-authored religious/historical claims.
+8. **Documentation preservation:** reconcile #363/#374 and the closed/superseded #375. Preserve the original work log and unique historical knowledge before any deletion; canonical docs remain the single source of current state and continuation.
+9. **Release readiness:** run the full relevant quality matrix, production build, bundle inspection, security/accessibility review, Preview and Production SHA checks, and live verification where access permits.
+
+## Global invariants
+- Product scope remains Quran + daily worship, with practical tools and Seerah as a sourced secondary learning experience; no general Islamic portal expansion.
+- Verified local Quran text is authoritative. APIs may provide coordinates/indexes, never substitute text. No AI-generated Quran, authenticated Hadith/Tafsir/Fiqh or fabricated Seerah.
+- Preserve provenance, source rights, attribution and privacy. No mandatory paid APIs or untrusted religious-content providers.
+- No production secrets/settings, Firebase project/rules/data, user data or sync flags changes; no sync activation. Explicit owner approval is still required for restricted actions.
+- Serialize changes to shared files and storage ownership boundaries; parallel work is allowed only when changed paths and integration dependencies are independent.
+- Every implementation must be regression-tested, reviewed, documented and recorded with exact commit and evidence.
+
+## Evidence policy
+Final reports use only `PASS`, `FAIL`, `BLOCKED`, `NOT VERIFIED`. Report local tests, CI, build, Preview, Production and live-app verification separately. A runner failure with no inspectable steps/logs is `BLOCKED`, not an application test failure or pass. A READY deployment proves only that deployment's build/status on its exact SHA; it does not prove live behavior or another commit.
