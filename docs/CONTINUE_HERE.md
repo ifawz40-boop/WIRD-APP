@@ -3,20 +3,20 @@
 **Last reconciled:** 2026-11-14  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
 **Main:** `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`  
-**Documentation PR #363:** OPEN / DRAFT, mergeable, current head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`  
+**Documentation PR #363:** OPEN / DRAFT, mergeable; always re-fetch its live head because this branch updates itself  
 **Canonical queue:** this file · **Roadmap:** [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) · **State:** [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
 
 > Read this leading section first. Everything after the historical divider is preserved for traceability only and is not a live instruction. Re-fetch GitHub, Vercel, and Firebase evidence before every new task or release.
 
 ## Verified current state
 
-- PR #363 is based on current main and is not behind. It changes 44 documentation/instruction files (6,515 additions / 542 deletions); no runtime source files are in its changed-path list.
+- PR #363 is based on current main and is not behind. It changes 45 documentation/instruction files (6,753 additions / 542 deletions), including a new root README; no runtime source files are in its changed-path list.
 - Exact-head GitHub Quality Gate run `43629972574`, job `132554211307`, completed SUCCESS with inspectable steps. Automated tests, dependency audit, API import checks, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server-start smoke, and desktop/mobile browser smoke passed. The 604 Mushaf coordinate-map check was SKIPPED, not passed.
-- Vercel Preview for this docs head is READY: deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp`, source SHA matches this branch head, Preview URL `https://wird-9uv3n0ast-xm8eslam-9174s-projects.vercel.app` (SSO-protected preview). GitHub Vercel status is SUCCESS.
+- Latest observed Vercel Preview for docs head `9ffdb62daed5f005c140b5f1a30711dea18dc055` is READY: deployment `dpl_GHtgk1f4orMpCzF3Qvce4psyMPgn`, URL `https://wird-57ucaxn1s-xm8eslam-9174s-projects.vercel.app` (SSO-protected preview). Re-fetch after any subsequent commit.
 - Vercel Production is READY: deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA exactly matches main `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`, alias `https://wird-app.vercel.app/`.
 - Project protection: password protection OFF; SSO protection ON for all non-custom domains. The custom production domain is `wird-app.vercel.app`.
 - Vercel Hobby project uses Vite and Node 26.x. No Vercel settings or deployments were changed by this preparation.
-- `docs/CONTINUE_HERE.md` and root `README.md` returned 404 on main: canonical docs exist on PR #363 only until it is merged. Do not assume a new chat or Google AI Studio reading main can see them yet.
+- Root `README.md` and canonical docs exist on PR #363 only until it is merged; they are not yet available from main. Do not assume a new chat or Google AI Studio reading main can see them yet.
 - No local checkout is exposed; no local tests are claimed. No runtime code, Firebase Rules/data, Vercel settings, secrets, sync flags, or Production deployment was changed.
 - Vercel environment inventory (names/targets only): `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` have sensitive entries for Preview and Production; their values were not read and their validity was not tested. `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` in Production. Do not change either flag or run sync-related Production actions without explicit owner authorization.
 - Repository Firebase source/config expects project `wird-quran-app` and default Firestore database. Vercel's `VITE_FIREBASE_PROJECT_ID` is encrypted and was not decrypted; the deployed Firestore Rules release was not independently verified. Do not infer Rules deployment from Emulator success.

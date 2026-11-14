@@ -672,3 +672,13 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Historical work-log preservation independently checked: the 537-line main `docs/engineering/progress/WORK_LOG.md` is an exact text prefix of the 663-line canonical `docs/engineering/WORK_LOG.md` on the docs branch. The old path is a compatibility pointer. No historical work-log content was lost.
 - Link scan across the seven edited canonical/agent files found zero broken relative links. The broader PR's prior link audit reported zero broken links; no claim is made that every unchanged link was re-scanned in this pass.
 - No secrets were read, no production settings or flags changed, no Firebase Rules/data changed, and no deployment was initiated manually.
+
+
+## 2026-11-14 — Canonical entrypoint and instruction consistency
+
+- Added a root `README.md` on PR #363 so repository visitors and new agents have a stable starting point to the canonical queue, state, architecture, roadmap, release checklist and work log. It remains on the docs branch until merge.
+- Reconciled the leading current-state snapshots to avoid pinning a self-updating PR head; future sessions must re-fetch the exact head and checks.
+- Corrected live instructions in `AGENTS.md` and `docs/CHANGE_CONTROL.md` to append only to `docs/engineering/WORK_LOG.md`; the former progress path is a compatibility pointer, not an append target.
+- PR #363 now changes 45 files (6,753 additions / 542 deletions), still documentation/instruction-only. Use squash merge if accepted because GitHub compare reports 365 commits ahead of main; avoid importing the branch-only commit history as individual commits.
+- Confirmed path overlaps with #374, #359 and legacy #2 are recorded in the current state/queue. No overlapping PR is to be merged concurrently.
+- The current #363 head must pass its own final inspectable Quality Gate and Vercel Preview before merge. No merge or Production/Firebase changes occurred in this update.

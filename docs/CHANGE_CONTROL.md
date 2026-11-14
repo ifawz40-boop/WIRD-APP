@@ -97,7 +97,7 @@ After each meaningful change, update:
 - `docs/CONTINUE_HERE.md` — current live state and next action;
 - `docs/DEVELOPMENT_ROADMAP.md` — product sequencing if affected;
 - the relevant specialist design/release document;
-- `docs/engineering/progress/WORK_LOG.md` — append-only evidence log;
+- `docs/engineering/WORK_LOG.md` — canonical append-only evidence log; `docs/engineering/progress/WORK_LOG.md` is a compatibility pointer only;
 - `docs/DEVELOPMENT_CHECKPOINT.md` — latest verified checkpoint;
 - `docs/OWNER_ACTIONS.md` — add/close owner decisions;
 - `docs/README.md` — document map if links/ownership change.

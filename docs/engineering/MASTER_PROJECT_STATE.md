@@ -11,10 +11,10 @@
 |---|---|---|
 | GitHub main | `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b` | PASS |
 | PR #363 | OPEN / DRAFT; mergeable; base main; not behind | PASS |
-| PR #363 exact head | `84452fcf45c1e73bbefabd850b7c218aa1d760b5` | PASS |
-| PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success with inspectable steps | PASS |
+| PR #363 exact head | Re-fetch live PR #363 metadata; self-updating branch | PASS (must refresh) |
+| Last completed PR #363 Quality Gate | Run `43629972574`, job `132554211307`, success on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`; later commits require their own gate | PASS (earlier head only) |
 | 604 Mushaf coordinate-map check | Skipped in that run | NOT VERIFIED |
-| PR #363 Vercel status | GitHub status context SUCCESS; target `89Qe73Qp7xdDVdyKNDQcHimP3C7W` | PASS (status only) |
+| Latest docs Preview | READY on observed head `9ffdb62daed5f005c140b5f1a30711dea18dc055`; deployment `dpl_GHtgk1f4orMpCzF3Qvce4psyMPgn` | PASS (that head only) |
 | Vercel Preview for docs PR | READY on exact PR head; deployment `dpl_9m6Buo1inV56b8vo4VXEQvCeppJp` | PASS |
 | Vercel Production | READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA matches main; alias `wird-app.vercel.app` | PASS |
 | Project access protection | Password protection OFF; SSO ON for non-custom domains | PASS (configuration observed) |
@@ -48,11 +48,11 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 
 ## PR #363 documentation consolidation
 
-- 44 changed paths; 6,515 additions and 542 deletions.
+- 45 changed paths; 6,753 additions and 542 deletions, including root `README.md`.
 - The 534-line deletion from `docs/engineering/progress/WORK_LOG.md` is a compatibility-pointer conversion; canonical `docs/engineering/WORK_LOG.md` preserves the historical log. Verify this relationship and retain the pointer.
-- Exact-head Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke. The 604 coordinate-map step was skipped.
+- The last completed Quality Gate passed install, audit, automated suites, API imports, approved audio checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile browser smoke on earlier head `84452fcf45c1e73bbefabd850b7c218aa1d760b5`. The 604 coordinate-map step was skipped. It does not certify later commits; re-fetch the current exact-head run.
 - Vercel Preview is READY on the exact docs PR head; Production is READY on exact main SHA. Both were independently read from the correct Vercel team scope.
-- Keep Draft until all changed docs, links, status contradictions and history preservation are reviewed. No merge is claimed.
+- Keep Draft until all changed docs, links, status contradictions and history preservation are reviewed. The branch is 365 commits ahead of main; use SQUASH merge only to avoid importing that branch-only history. No merge is claimed.
 
 ## Product and engineering blockers
 
@@ -66,6 +66,13 @@ PR #375 is CLOSED / unmerged and superseded by #363. PR #360 is CLOSED / unmerge
 - **API configuration:** sensitive `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` entries exist for Preview and Production; values were not read and key validity was not tested. API routes read these server-side. Presence is not proof of successful upstream calls.
 - **Firebase:** repository code and applet config expect project `wird-quran-app` with the default Firestore database. The Vercel Firebase project-ID environment entry is encrypted and was not decrypted. Production Rules deployment is NOT VERIFIED; Emulator tests do not prove deployment.
 - **External APIs/libraries:** research suitable free/open-source solutions before custom implementation; check license, maintenance, security, privacy, cost, quotas and attribution. Secrets stay server-side. No untrusted provider or AI is a religious-content authority.
+
+## Confirmed changed-path overlaps
+
+- #374 ↔ #363: `docs/engineering/README.md`.
+- #359 ↔ #363: `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`.
+- #2 ↔ #363: `docs/DEVELOPMENT_CHECKPOINT.md`, `docs/engineering/FIRESTORE_SYNC_DESIGN.md`.
+- Other active PRs listed above had no changed-path overlap with #363 at this snapshot; re-fetch before action.
 
 ## New owner-request intake
 
