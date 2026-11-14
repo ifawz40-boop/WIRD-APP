@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { RUQYAH_ITEMS, getRuqyahItemsByCategory } from '../data/ruqyahData';
 import { ALL_SURAHS } from '../data/quranMeta';
+import { setQuranSurahLoaderForTests } from '../data/quranDataLoader';
 import {
   getRuqyahAudioQueue,
   getRuqyahAudioQueueForItems,
@@ -19,6 +20,12 @@ function assert(condition: boolean, message: string): void {
 export async function runRuqyahContentServiceTests(): Promise<{ passed: number; failed: number }> {
   let passed = 0;
   let failed = 0;
+  // Pretest generates these canonical local chunks. Inject a filesystem-backed reader for Node/tsx;
+  // the application continues to use Vite's import.meta.glob lazy loaders.
+  setQuranSurahLoaderForTests(async surahNumber => {
+    const chunkPath = path.resolve(process.cwd(), 'src/data/quran-surahs', surahNumber + '.json');
+    return JSON.parse(fs.readFileSync(chunkPath, 'utf8')) as import('../types/quran').Ayah[];
+  });
   const test = async (name: string, fn: () => void | Promise<void>) => {
     try { await fn(); passed++; console.log('  ✅ ' + name); }
     catch (error) { failed++; console.error('  ❌ ' + name + ': ' + (error instanceof Error ? error.message : String(error))); }
@@ -196,5 +203,6 @@ export async function runRuqyahContentServiceTests(): Promise<{ passed: number; 
     assert(ALL_SURAHS.length === 114, 'Surah metadata must cover the complete Quran');
   });
 
+  setQuranSurahLoaderForTests(undefined);
   return { passed, failed };
 }

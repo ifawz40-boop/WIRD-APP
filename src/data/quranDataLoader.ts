@@ -2,8 +2,24 @@ import { Ayah } from '../types/quran';
 
 // The split files are generated from completeQuranData.json before dev/build.
 // Vite turns each matching JSON file into an independent lazy-loaded chunk.
-const surahModules = import.meta.glob<{ default: Ayah[] }>('./quran-surahs/*.json');
+const surahModules: Record<string, () => Promise<{ default: Ayah[] }>> = (() => {
+  // Vite replaces this glob at build time. Node/tsx tests do not implement import.meta.glob.
+  try {
+    return import.meta.glob<{ default: Ayah[] }>('./quran-surahs/*.json');
+  } catch {
+    return {};
+  }
+})();
 const surahCache = new Map<number, Promise<Ayah[]>>();
+let quranSurahLoaderForTests: ((surahNumber: number) => Promise<Ayah[]>) | undefined;
+
+/** Node-test adapter only; production callers must use Vite's generated per-Surah loaders. */
+export function setQuranSurahLoaderForTests(
+  loader?: (surahNumber: number) => Promise<Ayah[]>
+): void {
+  quranSurahLoaderForTests = loader;
+  surahCache.clear();
+}
 
 export async function loadSurahVerses(surahNumber: number): Promise<Ayah[]> {
   if (!Number.isInteger(surahNumber) || surahNumber < 1 || surahNumber > 114) return [];
@@ -12,11 +28,14 @@ export async function loadSurahVerses(surahNumber: number): Promise<Ayah[]> {
   if (cached) return cached;
 
   const modulePath = './quran-surahs/' + surahNumber + '.json';
-  const loader = surahModules[modulePath];
-  if (!loader) throw new Error('Missing local Quran chunk for Surah ' + surahNumber + '. Run the Quran chunk generator.');
+  const moduleLoader = surahModules[modulePath];
+  if (!quranSurahLoaderForTests && !moduleLoader) {
+    throw new Error('Missing local Quran chunk for Surah ' + surahNumber + '. Run the Quran chunk generator.');
+  }
 
-  const pending = loader()
-    .then(module => Array.isArray(module.default) ? module.default : [])
+  const pending = quranSurahLoaderForTests
+    ? quranSurahLoaderForTests(surahNumber).then(verses => Array.isArray(verses) ? verses : [])
+    : moduleLoader!().then(module => Array.isArray(module.default) ? module.default : [])
     .catch(error => {
       surahCache.delete(surahNumber);
       throw error;
@@ -38,7 +57,14 @@ export function getAyahWords(text: string): string[] {
 // Tanzil Simple is stored separately from the canonical Uthmani corpus and loaded per surah.
 interface SimpleAyahRecord { surahNumber: number; ayahNumber: number; text: string; }
 interface SimpleSurahChunk { source: string; version: string; copyright: string; license: string; sourceUrl: string; surahNumber: number; bismillahText: string | null; ayahs: SimpleAyahRecord[]; }
-const simpleSurahModules = import.meta.glob<{ default: SimpleSurahChunk }>('./quran-simple-surahs/*.json');
+const simpleSurahModules: Record<string, () => Promise<{ default: SimpleSurahChunk }>> = (() => {
+  // Vite replaces this glob at build time; guard Node/tsx module evaluation.
+  try {
+    return import.meta.glob<{ default: SimpleSurahChunk }>('./quran-simple-surahs/*.json');
+  } catch {
+    return {};
+  }
+})();
 const simpleSurahCache = new Map<number, Promise<SimpleAyahRecord[]>>();
 
 async function loadSimpleSurahTexts(surahNumber: number): Promise<SimpleAyahRecord[]> {
