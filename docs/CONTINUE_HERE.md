@@ -909,3 +909,38 @@ Next required work:
 3. Review #372's full CI patch and obtain inspectable exact-head CI. If job logs remain unavailable, preserve Draft/HOLD and diagnose runner/log artifact retention separately; do not rerun workflows without approval.
 4. Only after the complete inventory and design tests are specified should an isolated archive-repository implementation branch be opened. Do not start migration or bump IndexedDB schema before that gate.
 5. Continue to preserve main/Production and all user data. No PR merge, deploy, environment, Rules, secrets, or sync-flag change without explicit owner approval.
+
+
+---
+
+# Owner handoff requirements integrated — 2026-11-14
+
+Source: owner-provided **WIRD — MASTER HANDOFF & AUTONOMOUS EXECUTION**. This is a requirements/priority addendum, not authorization to bypass existing release gates. Its PR inventory and dated technical observations are historical inputs; re-fetch exact GitHub/Vercel/Firebase state before acting.
+
+## Execution sequence
+A. Recovery: verify main/working refs, exact PR heads, merged/closed history, CI jobs/logs, Vercel deployments/SHAs, Firebase config/rules, repository state and overlap risks; record a verified checkpoint before edits.  
+B. CI: diagnose runner provisioning, permissions, Bun/Node/lockfile, dependency installation, artifacts and Playwright setup. Preserve tests; no weakening gates.  
+C. Ruqyah: finish per-Surah lazy Quran loading, restore short/medium/long organizational playlists, resolve index/API failures, and cover loading/empty/error/retry/offline, request deduplication, bounded caching, audio continuity and route-bundle exclusion of the full Quran corpus.  
+D. Plans/memorization: reconcile #367/#369/#371; validate multi-Surah/Juz/custom ayah ranges; complete versioned archive encoding/persistence, integrity/corruption detection, legacy compatibility, safe migration and rollback without silent loss.  
+E. Offline/PWA: reconcile #358/#359/#366/#368 into one ownership model; finish job lifecycle, progress, pause/cancel/retry, quota handling, partial/orphan cleanup, restart recovery, cross-tab behavior, versioned cache invalidation and private-data isolation.  
+F. Security: audit #364 and related API/advisor boundaries for prompt injection, untrusted user content, history retention, sensitive-data leakage, validation, rate limits, server-side secrets, authorization and safe errors.  
+G. Seerah: treat #365 as a prototype until source reliability, edition-level licensing, traceable references, disputed-report labeling and editorial review permit publication.  
+H. Documentation: reconcile #363/#374 and closed duplicate #375; preserve unique historical engineering knowledge before removing or superseding records.  
+I. Release: complete exact-head CI, full tests, production build, preview checks, security review, deployment SHA checks and live verification where available.
+
+## Cross-cutting acceptance rules
+- Quran text always comes from the verified local corpus; external services may supply coordinates/indexes only. Never generate or silently substitute Quran, Hadith, Tafsir, Fiqh or Seerah source content with AI or untrusted providers.
+- Preserve content provenance, source/edition references, licensing and attribution; no mandatory paid API.
+- Treat plans and user data as lossless assets: corruption detection, preservation of raw recoverable data, atomic import/migration, rollback, idempotency and no destructive cleanup without proven recovery.
+- Keep Firebase project identity and Production configuration unchanged. Do not alter secrets, Production settings, databases/user data, Rules or sync flags; do not enable sync. Existing owner-only approvals remain required.
+- Parallelize only independent paths. Serialize shared files including `src/tests/runAllTests.ts`, `PlanningEngineWizard.tsx`, offline storage/manifests and canonical engineering docs. Rebase/reconcile rather than merging stale snapshots.
+- Every task must include root-cause analysis, regression tests, relevant/full test execution, build/bundle review where relevant, security/accessibility review, diff review, meaningful commit, PR and documentation update.
+- Never claim tests passed without observed execution evidence. CI infrastructure/telemetry failures are BLOCKED, not application FAIL or PASS.
+
+## Required evidence/status vocabulary
+Use only PASS, FAIL, BLOCKED, NOT VERIFIED for final evidence. Separate local tests, CI tests, production build, Preview deployment, Production deployment and live application verification. Record exact SHAs, run/job IDs, deployment IDs and links. Do not infer application test failure from jobs that never expose steps/logs.
+
+## PR inventory handling
+Historical candidates named in the owner handoff: #375, #374, #373, #372, #371, #370, #369, #368, #367, #366, #365, #364, #363, #359, #358 and #2. This list is a review index only, not a current status assertion or merge instruction. Re-fetch every PR's state/head/base/files/checks before action. #375 was subsequently closed as superseded by the #363 documentation consolidation; do not reopen or recreate its competing master handoff. Treat #358/#359 as competing legacy offline-audio approaches pending reconciliation with #368. #2 is legacy and must not be merged wholesale.
+
+**Immediate next action remains:** resolve CI runner/log observability while continuing safe source-level review of Ruqyah and the coupled plans/offline PRs. No implementation is authorized by this addendum alone.
