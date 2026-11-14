@@ -1,33 +1,46 @@
-import React, { useState } from 'react';
-import { 
-  Sparkles, 
-  Calendar, 
-  Clock, 
-  ShieldAlert, 
-  CheckCircle, 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Edit3, 
-  Info, 
-  TrendingUp, 
-  BookOpen, 
-  Layers, 
-  Check, 
-  X,
+import React, { useMemo, useState } from 'react';
+import {
   AlertTriangle,
+  Calendar,
+  Check,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Eye,
+  Info,
+  Pause,
+  Play,
+  RotateCcw,
+  Sparkles,
   Trash2,
-  Eye
+  TrendingUp,
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
-import { PlanningEngine, PlanGenerationInput, EngineGeneratedPlan, ScheduledDayPlan } from '../../services/planningEngine';
+import {
+  EngineGeneratedPlan,
+  PlanGenerationInput,
+  PlanningEngine,
+  ScheduledDayPlan,
+} from '../../services/planningEngine';
 import { PlanLifecycle } from '../../services/planLifecycle';
 import { QuranMath } from '../../services/quranMath';
+import {
+  ALL_JUZ_DEFINITIONS,
+  countTotalMemorizedVerses,
+  MemorizedAyahRange,
+  mergeMemorizedRanges,
+} from '../../services/memorizedRangeService';
+import { SurahPickerControl } from '../shared/SurahPickerControl';
+import { DirectOptionGroup } from '../shared/DirectOptionGroup';
+import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+import { ExistingMemorizedPicker } from './ExistingMemorizedPicker';
 
 interface PlanningEngineWizardProps {
   enginePlans: EngineGeneratedPlan[];
   onUpdateEnginePlans: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
   onStartSession: (surahNumber: number, startAyah: number, endAyah: number) => void;
+  onOpenAdvisor?: () => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
 
@@ -41,65 +54,105 @@ const WEEK_DAYS = [
   { id: 5, label: 'الجمعة' },
 ];
 
+const LEVEL_OPTIONS: Array<{ value: PlanGenerationInput['level']; label: string; hint: string }> = [
+  { value: 'beginner', label: 'مبتدئ', hint: 'تكرار مكثف وتأنٍ' },
+  { value: 'intermediate', label: 'متوسط', hint: 'حفظ مستمر منتظم' },
+  { value: 'advanced', label: 'متقدم', hint: 'استيعاب أسرع' },
+  { value: 'hafiz', label: 'حافظ', hint: 'تثبيت وضبط متقن' },
+];
+
+const DAILY_MINUTES_OPTIONS = [
+  { value: 15, label: '15 د' },
+  { value: 30, label: '30 د', hint: 'موصى به' },
+  { value: 45, label: '45 د' },
+  { value: 60, label: 'ساعة' },
+  { value: 90, label: '90 د' },
+];
+
+const REVISION_MINUTES_OPTIONS = [
+  { value: 10, label: '10 د', hint: 'صغرى' },
+  { value: 15, label: '15 د', hint: 'موصى به' },
+  { value: 25, label: '25 د', hint: 'صغرى وكبرى' },
+  { value: 40, label: '40 د', hint: 'مكثف' },
+];
+
+type WizardStep = 1 | 2 | 3 | 4;
+
+const WIZARD_STEPS: Array<{ step: WizardStep; title: string; subtitle: string }> = [
+  { step: 1, title: 'نطاق الحفظ', subtitle: 'الهدف والسور' },
+  { step: 2, title: 'الوتيرة والأيام', subtitle: 'الكمية والوقت' },
+  { step: 3, title: 'المحفوظ السابق', subtitle: 'سور أو أجزاء' },
+  { step: 4, title: 'المعاينة والاعتماد', subtitle: 'الجدول النهائي' },
+];
+
 export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
   enginePlans,
   onUpdateEnginePlans,
   onStartSession,
-  onToast
+  onOpenAdvisor,
+  onToast,
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>(enginePlans[0]?.id || '');
   const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [scheduleViewMode, setScheduleViewMode] = useState<'daily' | 'weekly' | 'all'>('weekly');
-  const [editingTask, setEditingTask] = useState<ScheduledDayPlan | null>(null);
+  const [wizardStep, setWizardStep] = useState<WizardStep>(1);
+  const [scheduleViewMode, setScheduleViewMode] = useState<'weekly' | 'all'>('weekly');
   const [showRecalculateConfirm, setShowRecalculateConfirm] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [previewPlan, setPreviewPlan] = useState<EngineGeneratedPlan | null>(null);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
 
-  // Active selected plan
   const activePlan = enginePlans.find(p => p.id === selectedPlanId) || enginePlans[0];
 
   // Form State for new Plan Generation
   const [planTitle, setPlanTitle] = useState('');
-  const [startSurah, setStartSurah] = useState<number>(67); // Al-Mulk
+  const [startSurah, setStartSurah] = useState<number>(67);
   const [startAyah, setStartAyah] = useState<number>(1);
   const [endSurah, setEndSurah] = useState<number>(67);
   const [endAyah, setEndAyah] = useState<number>(30);
-  const [startDate, setStartDate] = useState(PlanningEngine.formatDate(new Date()));
+  const [selectedTargetJuz, setSelectedTargetJuz] = useState<string>('');
+  const [startDate] = useState(PlanningEngine.formatDate(new Date()));
   const [targetEndDate, setTargetEndDate] = useState('');
   const [level, setLevel] = useState<PlanGenerationInput['level']>('intermediate');
   const [dailyAvailableMinutes, setDailyAvailableMinutes] = useState<number>(30);
   const [dailyRevisionMinutes, setDailyRevisionMinutes] = useState<number>(15);
   const [paceType, setPaceType] = useState<PlanGenerationInput['paceType']>('verses_per_day');
   const [paceQuantity, setPaceQuantity] = useState<number>(5);
-  const [activeDays, setActiveDays] = useState<number[]>([0, 1, 2, 3, 4, 6]); // Sun-Thu + Sat
-  const [restDays, setRestDays] = useState<number[]>([5]); // Friday
-  const [schedulePref, setSchedulePref] = useState<'single_session' | 'morning_evening'>('single_session');
-  
-  // Selected existing memorized portions for major revision
-  const [selectedExistingSurahs, setSelectedExistingSurahs] = useState<number[]>([]);
-  const [surahToAdd, setSurahToAdd] = useState<number>(1);
+  const [activeDays, setActiveDays] = useState<number[]>([0, 1, 2, 3, 4, 6]);
+  const [restDays, setRestDays] = useState<number[]>([5]);
+  const [existingMemorizedRanges, setExistingMemorizedRanges] = useState<MemorizedAyahRange[]>([]);
 
-  // Max verses for current start & end surah
   const startSurahMeta = ALL_SURAHS.find(s => s.number === startSurah);
   const endSurahMeta = ALL_SURAHS.find(s => s.number === endSurah);
 
-  // Live total verses count
   const liveTotalVerses = QuranMath.countVersesBetween(
     { surahNumber: startSurah, ayahNumber: startAyah },
     { surahNumber: endSurah, ayahNumber: endAyah }
   );
 
-  // Keep the feasibility indicator aligned with the selected pacing strategy.
-  const liveDailyPaceVerses = paceType === 'pages_per_day'
-    ? Math.max(1, Math.round(paceQuantity * 15))
-    : paceType === 'by_target_date'
-      ? Math.max(1, Math.ceil(
-          liveTotalVerses / Math.max(1, PlanningEngine.countActiveDaysBetween(
-            startDate, targetEndDate && targetEndDate > startDate ? targetEndDate : startDate,
-            activeDays, restDays
-          ))
-        ))
+  const existingMemorizedCount = useMemo(
+    () => countTotalMemorizedVerses(existingMemorizedRanges),
+    [existingMemorizedRanges]
+  );
+
+  const liveDailyPaceVerses =
+    paceType === 'pages_per_day'
+      ? Math.max(1, Math.round(paceQuantity * 15))
+      : paceType === 'by_target_date'
+      ? Math.max(
+          1,
+          Math.ceil(
+            liveTotalVerses /
+              Math.max(
+                1,
+                PlanningEngine.countActiveDaysBetween(
+                  startDate,
+                  targetEndDate && targetEndDate > startDate ? targetEndDate : startDate,
+                  activeDays,
+                  restDays
+                )
+              )
+          )
+        )
       : paceQuantity;
 
   const liveFeasibility = PlanningEngine.assessFeasibility(
@@ -109,7 +162,6 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
     dailyRevisionMinutes
   );
 
-  // Toggle active days
   const handleToggleActiveDay = (dayId: number) => {
     if (activeDays.includes(dayId)) {
       if (activeDays.length > 1) {
@@ -124,20 +176,36 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
     }
   };
 
-  // Build generation input
-  const buildPlanInput = (): PlanGenerationInput => {
-    const existingPortions = selectedExistingSurahs.map(sNum => {
-      const s = ALL_SURAHS.find(item => item.number === sNum);
-      return {
-        surahNumber: sNum,
-        startAyah: 1,
-        endAyah: s ? s.versesCount : 10
-      };
-    });
+  const handleApplyFullSurahTarget = () => {
+    const meta = startSurahMeta || ALL_SURAHS[0];
+    setSelectedTargetJuz('');
+    setStartAyah(1);
+    setEndSurah(meta.number);
+    setEndAyah(meta.versesCount);
+    if (!planTitle.trim()) {
+      setPlanTitle(`خطة حفظ سورة ${meta.name}`);
+    }
+  };
 
-    const safeTargetEndDate = (paceType === 'by_target_date' && targetEndDate && targetEndDate.trim())
-      ? targetEndDate.trim()
-      : undefined;
+  const handleApplyJuzTarget = (juzValue: string) => {
+    setSelectedTargetJuz(juzValue);
+    if (!juzValue) return;
+    const juzNum = Number(juzValue);
+    const def = ALL_JUZ_DEFINITIONS.find(item => item.juzNumber === juzNum);
+    if (!def) return;
+    setStartSurah(def.startSurahNumber);
+    setStartAyah(def.startAyah);
+    setEndSurah(def.endSurahNumber);
+    setEndAyah(def.endAyah);
+    setPlanTitle(`خطة حفظ ${def.name}`);
+  };
+
+  const buildPlanInput = (): PlanGenerationInput => {
+    const normalizedExisting = mergeMemorizedRanges(existingMemorizedRanges);
+    const safeTargetEndDate =
+      paceType === 'by_target_date' && targetEndDate && targetEndDate.trim()
+        ? targetEndDate.trim()
+        : undefined;
 
     return {
       title: planTitle.trim() || `خطة حفظ سورة ${startSurahMeta?.name || 'القرآن'}`,
@@ -151,41 +219,66 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
       dailyAvailableMinutes,
       dailyRevisionMinutes,
       paceType,
-      paceQuantity: paceType === 'by_target_date' ? (paceQuantity || 1) : paceQuantity,
+      paceQuantity: paceType === 'by_target_date' ? paceQuantity || 1 : paceQuantity,
       activeDays,
       restDays,
-      schedulePreference: schedulePref,
-      existingMemorized: existingPortions
+      schedulePreference: 'single_session',
+      existingMemorized: normalizedExisting,
     };
   };
 
-  // Preview plan before final save
-  const handlePreviewPlan = (e: React.FormEvent) => {
-    e.preventDefault();
+  const generatePreviewSafely = (): boolean => {
     try {
+      if (liveTotalVerses <= 0) {
+        onToast?.('نطاق الحفظ المحدد غير صالح؛ تأكد أن نقطة النهاية بعد البداية.', 'error');
+        setWizardStep(1);
+        return false;
+      }
       if (paceType === 'by_target_date') {
         if (!targetEndDate || !targetEndDate.trim()) {
-          onToast?.('يرجى تحديد تاريخ الختم المستهدف أولاً.', 'error');
-          return;
+          onToast?.('يرجى تحديد تاريخ الختم المستهدف أولاً في خطوة الوتيرة والأيام.', 'error');
+          setWizardStep(2);
+          return false;
         }
         if (targetEndDate.trim() <= startDate) {
           onToast?.('تاريخ الختم المستهدف يجب أن يكون بعد تاريخ البداية.', 'error');
-          return;
+          setWizardStep(2);
+          return false;
         }
       }
-      const input = buildPlanInput();
-      const generated = PlanningEngine.generatePlan(input);
+      const generated = PlanningEngine.generatePlan(buildPlanInput());
       setPreviewPlan(generated);
-      onToast?.('تم إعداد المعاينة للجدول الزمني. يمكنك مراجعتها قبل التأكيد.', 'info');
+      return true;
     } catch (error) {
       onToast?.(
         error instanceof Error ? error.message : 'تعذر إعداد المعاينة. راجع المدخلات وحاول مجدداً.',
         'error'
       );
+      return false;
     }
   };
 
-  // Submit and save plan permanently
+  const handleGoToStep = (nextStep: WizardStep) => {
+    if (nextStep > 1 && liveTotalVerses <= 0) {
+      onToast?.('حدد نطاق حفظ صحيح أولاً قبل المتابعة.', 'error');
+      setWizardStep(1);
+      return;
+    }
+    if (nextStep === 4) {
+      const ok = generatePreviewSafely();
+      if (!ok) return;
+    }
+    setWizardStep(nextStep);
+  };
+
+  const handlePreviewPlan = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (generatePreviewSafely()) {
+      setWizardStep(4);
+      onToast?.('تم إعداد المعاينة للجدول الزمني. يمكنك مراجعتها قبل الاعتماد.', 'info');
+    }
+  };
+
   const handleSaveConfirmedPlan = async (planToSave: EngineGeneratedPlan) => {
     if (isGeneratingPlan) return;
     setIsGeneratingPlan(true);
@@ -195,13 +288,17 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
       const serializedSnapshot = JSON.stringify({ records: updated });
       const snapshotBytes = new TextEncoder().encode(serializedSnapshot).length;
       if (snapshotBytes > 450_000) {
-        onToast?.('هذه الخطة أكبر من الحد الآمن للمزامنة (450 كيلوبايت). قلّل نطاق الخطة أو زد مقدار الحفظ اليومي قبل اعتمادها؛ لم نفقد أي بيانات.', 'error');
+        onToast?.(
+          'هذه الخطة أكبر من الحد الآمن للمزامنة (450 كيلوبايت). قلّل نطاق الخطة أو زد مقدار الحفظ اليومي قبل اعتمادها؛ لم نفقد أي بيانات.',
+          'error'
+        );
         return;
       }
-      if (!await onUpdateEnginePlans(updated)) return;
+      if (!(await onUpdateEnginePlans(updated))) return;
       setSelectedPlanId(planToSave.id);
       setIsCreatingNew(false);
       setPreviewPlan(null);
+      setWizardStep(1);
       onToast?.('تم حفظ الخطة الذكية وتفعيلها بنجاح.', 'success');
     } catch (error) {
       onToast?.(
@@ -213,597 +310,839 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
     }
   };
 
-  // Delete engine plan
   const handleConfirmDeletePlan = async () => {
     if (!planToDelete) return;
     const remaining = enginePlans.filter(p => p.id !== planToDelete);
-    if (!await onUpdateEnginePlans(remaining)) return;
+    if (!(await onUpdateEnginePlans(remaining))) return;
     setSelectedPlanId(remaining[0]?.id || '');
     setPlanToDelete(null);
     onToast?.('تم حذف الخطة من قائمتك بنجاح.', 'info');
   };
 
-  // Plan Pause / Resume toggle
   const handleTogglePause = async () => {
     if (!activePlan) return;
-    let updated: EngineGeneratedPlan;
-    if (activePlan.isPaused) {
-      updated = PlanLifecycle.resumePlan(activePlan);
-    } else {
-      updated = PlanLifecycle.pausePlan(activePlan);
-    }
-    if (!await onUpdateEnginePlans(enginePlans.map(p => p.id === activePlan.id ? updated : p))) return;
-    onToast?.(activePlan.isPaused ? "تم استئناف الخطة بنجاح" : "تم إيقاف الخطة مؤقتاً", activePlan.isPaused ? "success" : "info");
+    const updated: EngineGeneratedPlan = activePlan.isPaused
+      ? PlanLifecycle.resumePlan(activePlan)
+      : PlanLifecycle.pausePlan(activePlan);
+    if (!(await onUpdateEnginePlans(enginePlans.map(p => (p.id === activePlan.id ? updated : p))))) return;
+    onToast?.(
+      activePlan.isPaused ? 'تم استئناف الخطة بنجاح' : 'تم إيقاف الخطة مؤقتاً',
+      activePlan.isPaused ? 'success' : 'info'
+    );
   };
 
-  // Plan Recalculate without window.alert/confirm
   const handleConfirmRecalculate = async () => {
     if (!activePlan) return;
     const updated = PlanLifecycle.recalculatePlan(activePlan);
-    if (!await onUpdateEnginePlans(enginePlans.map(p => p.id === activePlan.id ? updated : p))) return;
+    if (!(await onUpdateEnginePlans(enginePlans.map(p => (p.id === activePlan.id ? updated : p))))) return;
     setShowRecalculateConfirm(false);
-    if (onToast) {
-      onToast("تمت إعادة جدولة المهام القادمة بنجاح مع الاحتفاظ بكامل سجلاتك المنجزة.", "success");
-    }
+    onToast?.('تمت إعادة جدولة المهام القادمة بنجاح مع الاحتفاظ بكامل سجلاتك المنجزة.', 'success');
   };
+
+  const resetAndOpenCreator = () => {
+    setPreviewPlan(null);
+    setWizardStep(1);
+    setIsCreatingNew(true);
+  };
+
+  const resolvedTitlePreview = planTitle.trim() || `خطة حفظ سورة ${startSurahMeta?.name || 'القرآن'}`;
+  const feasibilityLabel =
+    liveFeasibility.cognitiveLoadScore === 'optimal'
+      ? 'مثالي ومتوازن'
+      : liveFeasibility.cognitiveLoadScore === 'light'
+      ? 'خفيف وميسر'
+      : liveFeasibility.cognitiveLoadScore === 'strenuous'
+      ? 'مكثف ويتطلب التزاماً'
+      : 'غير واقعي ومجهد';
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Toolbar & Goal Switcher */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200/80 dark:border-stone-700/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-              المحرك الرياضي المتقدم
-            </span>
-            <span className="text-stone-400">·</span>
-            <span className="text-xs text-stone-500">خوارزمية الجدولة والتكرار المتباعد</span>
+      {/* 1. Single Clean Header Toolbar & Plan Switcher */}
+      <div className="wird-card p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
+              <Sparkles className="w-5 h-5 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+              <span>{isCreatingNew ? 'إنشاء خطة حفظ مخصصة' : 'خططك الذكية وجدول الحفظ'}</span>
+            </h2>
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+              {isCreatingNew
+                ? 'اضبط هدفك القرآني وحدد محفوظك السابق في أربع خطوات متدرجة واضحة'
+                : 'توزيع يومي متزن للحفظ الجديد والمراجعة الصغرى والكبرى وفق طاقتك'}
+            </p>
           </div>
-          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2 font-quran mt-1">
-            <Sparkles className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-            محرك تخطيط الحفظ القرآني الذكي (WIRD Planning Engine)
-          </h2>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {onOpenAdvisor && !isCreatingNew && (
+              <button
+                type="button"
+                onClick={onOpenAdvisor}
+                className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors"
+              >
+                <Compass className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+                <span>اقتراح عبر المستشار</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isCreatingNew) {
+                  setIsCreatingNew(false);
+                  setPreviewPlan(null);
+                } else {
+                  resetAndOpenCreator();
+                }
+              }}
+              className="wird-btn-primary min-h-11 px-4 py-2 text-xs whitespace-nowrap"
+            >
+              {isCreatingNew ? 'العودة إلى الخطط' : '+ إنشاء خطة جديدة'}
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Multiple simultaneous goals selector pills */}
-          {enginePlans.length > 0 && !isCreatingNew && (
-            <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl">
-              {enginePlans.map(p => {
-                const isSelected = p.id === (activePlan?.id || selectedPlanId);
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPlanId(p.id)}
-                    aria-pressed={isSelected}
-                    className={`min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      isSelected
-                        ? 'bg-emerald-800 text-white shadow-xs'
-                        : 'text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800'
-                    }`}
-                  >
-                    <span>{p.title}</span>
-                    {p.isPaused && <span className="text-[10px] opacity-75">(موقفة)</span>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <button
-            onClick={() => {
-              setIsCreatingNew(!isCreatingNew);
-              setPreviewPlan(null);
-            }}
-            className="min-h-11 px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors whitespace-nowrap"
+        {enginePlans.length > 0 && !isCreatingNew && (
+          <HorizontalScrollRail
+            ariaLabel="الخطط الذكية المحفوظة"
+            activeKey={activePlan?.id || selectedPlanId}
+            className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15"
           >
-            {isCreatingNew ? 'إلغاء والعودة للخطة' : '+ إنشاء خطة ذكية جديدة'}
-          </button>
-        </div>
+            {enginePlans.map(p => {
+              const isSelected = p.id === (activePlan?.id || selectedPlanId);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setSelectedPlanId(p.id)}
+                  aria-pressed={isSelected}
+                  className={`min-h-11 shrink-0 snap-start px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                    isSelected
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                  }`}
+                >
+                  <span>{p.title}</span>
+                  {p.isPaused && <span className="text-[10px] opacity-75">· موقفة</span>}
+                </button>
+              );
+            })}
+          </HorizontalScrollRail>
+        )}
       </div>
 
-      {/* 2. Plan Generation Wizard Form */}
+      {/* Empty State when user has no Engine Plans yet */}
+      {!isCreatingNew && enginePlans.length === 0 && (
+        <div className="wird-card border-dashed px-6 py-12 text-center space-y-3">
+          <Calendar className="mx-auto h-10 w-10 text-[#1C4E46] dark:text-[#E0A96D]" />
+          <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+            لا توجد خطة مخصصة نشطة بعد
+          </h3>
+          <p className="mx-auto max-w-md text-xs leading-6 text-[#5B6F6B] dark:text-[#8B9E9B]">
+            أنشئ خطتك الأولى باختيار السور أو الأجزاء المستهدفة وتحديد ما تحفظه مسبقاً ليحسب لك النظام جدولاً متزناً للحفظ والمراجعة.
+          </p>
+          <button
+            type="button"
+            onClick={resetAndOpenCreator}
+            className="wird-btn-primary mt-2 min-h-11 px-5 py-2.5 text-xs"
+          >
+            + بدء إنشاء خطة جديدة
+          </button>
+        </div>
+      )}
+
+      {/* 2. Stepped Plan Generation Wizard + Sticky Summary */}
       {isCreatingNew && (
-        <form onSubmit={handlePreviewPlan} className="bg-white dark:bg-stone-800/90 rounded-3xl p-6 md:p-8 border border-emerald-500/40 shadow-sm space-y-6 text-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-700">
-            <div>
-              <h3 className="font-bold text-base text-stone-900 dark:text-stone-100">
-                إعداد مدخلات الخطة القرآنية
-              </h3>
-              <p className="text-stone-500">
-                يقوم المحرك بحساب الآيات الحقيقية وجدولتها وفق طاقتك الاستيعابية لمنع الإجهاد والتفلت
-              </p>
-            </div>
-            <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold text-sm">
-              إجمالي الآيات: {liveTotalVerses} آية
-            </span>
-          </div>
+        <form onSubmit={handlePreviewPlan} className="space-y-5 text-xs">
+          {/* Numbered Step Bar */}
+          <nav
+            aria-label="خطوات إعداد الخطة"
+            className="wird-card p-2.5 grid grid-cols-2 lg:grid-cols-4 gap-2"
+          >
+            {WIZARD_STEPS.map(item => {
+              const isCurrent = wizardStep === item.step;
+              const isDone = wizardStep > item.step;
+              return (
+                <button
+                  key={item.step}
+                  type="button"
+                  onClick={() => handleGoToStep(item.step)}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  className={`min-h-12 px-3 py-2 rounded-xl border text-right flex items-center gap-2.5 transition-colors ${
+                    isCurrent
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                      : isDone
+                      ? 'bg-[#1C4E46]/8 dark:bg-[#1E4A47]/30 text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25'
+                      : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 text-[#5B6F6B] dark:text-[#8B9E9B] border-[#1C4E46]/10 dark:border-[#E0A96D]/15 hover:border-[#C59B27]'
+                  }`}
+                >
+                  <span
+                    className={`w-7 h-7 rounded-lg font-mono font-bold tabular-nums text-xs flex items-center justify-center shrink-0 ${
+                      isCurrent
+                        ? 'bg-[#C59B27] text-[#0B132B]'
+                        : isDone
+                        ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
+                        : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8]'
+                    }`}
+                  >
+                    {isDone ? <Check className="w-3.5 h-3.5" /> : item.step}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-bold truncate">{item.title}</span>
+                    <span
+                      className={`block text-[10px] truncate ${
+                        isCurrent ? 'text-white/80' : 'opacity-75'
+                      }`}
+                    >
+                      {item.subtitle}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
 
-          {/* Section A: Title & Verse Bounds */}
-          <div className="space-y-3">
-            <div>
-              <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                عنوان الخطة:
-              </label>
-              <input
-                type="text"
-                value={planTitle}
-                onChange={(e) => setPlanTitle(e.target.value)}
-                placeholder="مثال: خطة حفظ سورة الكهف بتثبيت أسبوعي..."
-                className="w-full min-h-11 px-3.5 py-2.5 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl"
-              />
-            </div>
+          {/* Main 2-Column Split: Active Step Form + Sticky Live Summary */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            {/* Active Step Container (8 cols) */}
+            <div className="lg:col-span-8 wird-card p-5 sm:p-6 space-y-6">
+              {/* STEP 1: Target Scope */}
+              {wizardStep === 1 && (
+                <div className="space-y-5">
+                  <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                    <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                      1. تحديد نطاق الحفظ والهدف
+                    </h3>
+                    <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                      اختر نقطة البداية والنهاية، أو استخدم التحديد السريع لسورة أو جزء كامل
+                    </p>
+                  </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#faf8f5] dark:bg-stone-900/60 p-4 rounded-2xl border border-stone-200/60 dark:border-stone-700/60">
-              {/* Start Coordinates */}
-              <div className="space-y-2">
-                <span className="font-bold text-stone-800 dark:text-stone-200">نقطة البداية:</span>
-                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[11px] text-stone-500 mb-0.5">السورة:</label>
-                    <select
+                    <label
+                      htmlFor="wird-plan-title"
+                      className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-1.5"
+                    >
+                      عنوان الخطة (اختياري):
+                    </label>
+                    <input
+                      id="wird-plan-title"
+                      type="text"
+                      value={planTitle}
+                      onChange={e => setPlanTitle(e.target.value)}
+                      placeholder="مثال: خطة حفظ سورة الكهف بتثبيت أسبوعي..."
+                      className="w-full min-h-11 px-3.5 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                    />
+                  </div>
+
+                  {/* Quick Scope Helpers */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+                    <button
+                      type="button"
+                      onClick={handleApplyFullSurahTarget}
+                      className="min-h-11 px-3.5 py-2 rounded-xl bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] font-bold text-xs whitespace-nowrap transition-colors"
+                    >
+                      تحديد سورة {startSurahMeta?.name || 'البداية'} كاملة
+                    </button>
+
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <label
+                        htmlFor="wird-quick-juz-target"
+                        className="font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] whitespace-nowrap"
+                      >
+                        أو استهدف جزءاً كاملاً:
+                      </label>
+                      <select
+                        id="wird-quick-juz-target"
+                        value={selectedTargetJuz}
+                        onChange={e => handleApplyJuzTarget(e.target.value)}
+                        className="flex-1 min-w-0 min-h-11 px-3 py-2 bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                      >
+                        <option value="">— اختر جزءاً من القرآن —</option>
+                        {ALL_JUZ_DEFINITIONS.map(def => (
+                          <option key={def.juzNumber} value={String(def.juzNumber)}>
+                            {def.name} ({def.startSurahName} {def.startAyah} ← {def.endSurahName} {def.endAyah})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <SurahPickerControl
+                      label="نقطة البداية"
+                      ariaLabel="اختيار سورة البداية"
                       value={startSurah}
-                      onChange={(e) => {
-                        const s = Number(e.target.value);
+                      onChange={s => {
+                        setSelectedTargetJuz('');
                         setStartSurah(s);
                         setStartAyah(1);
                         if (s > endSurah) {
                           setEndSurah(s);
                           const adjustedEndSurah = ALL_SURAHS.find(item => item.number === s);
-                          setEndAyah(Math.min(endAyah, adjustedEndSurah?.versesCount || 1));
+                          setEndAyah(adjustedEndSurah?.versesCount || 1);
                         }
                       }}
-                      className="w-full min-h-11 px-2.5 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg font-semibold"
-                    >
-                      {ALL_SURAHS.map(s => (
-                        <option key={s.number} value={s.number}>{s.number}. {s.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-stone-500 mb-0.5">من الآية:</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max={startSurahMeta?.versesCount || 30}
-                      value={startAyah}
-                      onChange={(e) => setStartAyah(Number(e.target.value))}
-                      className="w-full px-2.5 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg font-mono font-bold"
+                      ayahLabel="من الآية"
+                      ayahValue={startAyah}
+                      onAyahChange={val => {
+                        setSelectedTargetJuz('');
+                        setStartAyah(val);
+                      }}
+                      maxAyah={startSurahMeta?.versesCount || 286}
+                      showQuickPopular
                     />
-                  </div>
-                </div>
-              </div>
 
-              {/* End Coordinates */}
-              <div className="space-y-2">
-                <span className="font-bold text-stone-800 dark:text-stone-200">نقطة النهاية:</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] text-stone-500 mb-0.5">السورة:</label>
-                    <select
+                    <SurahPickerControl
+                      label="نقطة النهاية"
+                      ariaLabel="اختيار سورة النهاية"
                       value={endSurah}
-                      onChange={(e) => {
-                        const s = Number(e.target.value);
+                      onChange={s => {
+                        setSelectedTargetJuz('');
                         setEndSurah(s);
                         const targetS = ALL_SURAHS.find(item => item.number === s);
                         setEndAyah(targetS ? targetS.versesCount : 10);
                       }}
-                      className="w-full px-2.5 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg font-semibold"
-                    >
-                      {ALL_SURAHS.map(s => (
-                        <option key={s.number} value={s.number}>{s.number}. {s.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-stone-500 mb-0.5">إلى الآية:</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max={endSurahMeta?.versesCount || 30}
-                      value={endAyah}
-                      onChange={(e) => setEndAyah(Number(e.target.value))}
-                      className="w-full px-2.5 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg font-mono font-bold"
+                      ayahLabel="إلى الآية"
+                      ayahValue={endAyah}
+                      onAyahChange={val => {
+                        setSelectedTargetJuz('');
+                        setEndAyah(val);
+                      }}
+                      maxAyah={endSurahMeta?.versesCount || 286}
+                      showQuickPopular
                     />
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section B: Level & Time Budgets */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                المستوى القرآني:
-              </label>
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value as any)}
-                className="w-full min-h-11 px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl font-semibold"
-              >
-                <option value="beginner">مبتدئ (تكرار مكثف وتأنٍ)</option>
-                <option value="intermediate">متوسط (حفظ مستمر منتظم)</option>
-                <option value="advanced">متقدم (سرعة استيعاب عالية)</option>
-                <option value="hafiz">حافظ (تثبيت وضبط متقن)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                وقت الحفظ الجديد يومياً:
-              </label>
-              <select
-                value={dailyAvailableMinutes}
-                onChange={(e) => setDailyAvailableMinutes(Number(e.target.value))}
-                className="w-full min-h-11 px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl font-semibold"
-              >
-                <option value="15">15 دقيقة</option>
-                <option value="30">30 دقيقة (الموصى به)</option>
-                <option value="45">45 دقيقة</option>
-                <option value="60">ساعة كاملة</option>
-                <option value="90">ساعة ونصف</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                وقت المراجعة اليومي:
-              </label>
-              <select
-                value={dailyRevisionMinutes}
-                onChange={(e) => setDailyRevisionMinutes(Number(e.target.value))}
-                className="w-full min-h-11 px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl font-semibold"
-              >
-                <option value="10">10 دقائق (صغرى فقط)</option>
-                <option value="15">15 دقيقة (الموصى به)</option>
-                <option value="25">25 دقيقة (صغرى وكبرى)</option>
-                <option value="40">40 دقيقة (تثبيت مكثف)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Section C: Pacing & Workload Strategy */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                طريقة تحديد وتيرة الحفظ:
-              </label>
-              <div className="grid grid-cols-1 gap-2">
-                {([
-                  { id: 'verses_per_day' as const, title: 'عدد آيات ثابت', detail: 'تحدد مقداراً واضحاً في كل يوم حفظ' },
-                  { id: 'pages_per_day' as const, title: 'عدد صفحات ثابت', detail: 'تقدير تقريبي؛ يعتمد حالياً متوسط 15 آية للصفحة' },
-                  { id: 'by_target_date' as const, title: 'موعد ختم مستهدف', detail: 'يوزع المقدار تلقائياً على أيامك النشطة' }
-                ]).map(option => {
-                  const selected = paceType === option.id;
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => setPaceType(option.id)}
-                      className={`flex min-h-11 items-center justify-between gap-3 text-right rounded-xl border p-3 transition-colors ${
-                        selected
-                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-600 text-emerald-900 dark:text-emerald-200'
-                          : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300'
-                      }`}
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-sm font-bold">{option.title}</span>
-                        <span className="block text-[11px] opacity-75 mt-0.5">{option.detail}</span>
-                      </span>
-                      <span className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${selected ? 'border-emerald-700' : 'border-stone-400'}`}>
-                        {selected && <span className="w-2 h-2 rounded-full bg-emerald-700" />}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              {paceType === 'verses_per_day' && (
-                <div>
-                  <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                    عدد الآيات في كل يوم دراسة:
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={paceQuantity}
-                    onChange={(e) => setPaceQuantity(Number(e.target.value))}
-                    className="w-full min-h-11 px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl font-mono font-bold"
-                  />
-                </div>
               )}
 
-              {paceType === 'pages_per_day' && (
-                <div>
-                  <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                    عدد الصفحات يومياً (تقديري):
-                  </label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0.5"
-                    max="5"
-                    value={paceQuantity}
-                    onChange={(e) => setPaceQuantity(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl font-mono font-bold"
-                  />
-                </div>
-              )}
-
-              {paceType === 'by_target_date' && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-semibold text-stone-700 dark:text-stone-300">
-                      تاريخ الختم المستهدف:
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const rec = PlanningEngine.estimateRecommendedEndDate(
-                          startDate,
-                          liveTotalVerses,
-                          level,
-                          activeDays,
-                          restDays
-                        );
-                        setTargetEndDate(rec);
-                        onToast?.('تم ضبط تاريخ الختم الموصى به تلقائياً بما يضمن استقرار الحفظ.', 'info');
-                      }}
-                      className="min-h-11 text-[11px] text-emerald-700 dark:text-emerald-400 font-bold hover:underline"
-                    >
-                      اقتراح موعد ملائم لطاقتك
-                    </button>
+              {/* STEP 2: Level, Time Budget, Pace & Study Days */}
+              {wizardStep === 2 && (
+                <div className="space-y-5">
+                  <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                    <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                      2. الوتيرة والوقت وأيام الدراسة
+                    </h3>
+                    <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                      حدد وقتك المتاح يومياً والكمية المناسبة لتوزيع المهام دون إرهاق
+                    </p>
                   </div>
-                  <input
-                    type="date"
-                    required
-                    value={targetEndDate}
-                    onChange={(e) => setTargetEndDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl font-mono"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Section D: Active Days & Rest Days */}
-          <div>
-            <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-              أيام الدراسة النشطة أسبوعياً (انقر لتعيين يوم الاستراحة):
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {WEEK_DAYS.map(day => {
-                const isActive = activeDays.includes(day.id);
-                return (
-                  <button
-                    key={day.id}
-                    type="button"
-                    onClick={() => handleToggleActiveDay(day.id)}
-                    aria-pressed={isActive}
-                    className={`min-h-11 py-2 px-3 rounded-xl border font-semibold transition-all ${
-                      isActive
-                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-400 border-stone-200 dark:border-stone-700'
-                    }`}
-                  >
-                    {day.label} {isActive ? '✓' : '(راحة)'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                  <div>
+                    <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                      المستوى القرآني:
+                    </span>
+                    <DirectOptionGroup
+                      ariaLabel="المستوى القرآني"
+                      layout="grid-4"
+                      size="sm"
+                      options={LEVEL_OPTIONS}
+                      value={level}
+                      onChange={setLevel}
+                    />
+                  </div>
 
-          {/* Section E: Existing memorized portions for major revision */}
-          <div>
-            <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-              أجزاء وسور محفوظة مسبقاً (لتضمينها تلقائياً في دورة المراجعة الكبرى):
-            </label>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
-              أضف كل سورة حفظتها بالفعل؛ يمكنك اختيار أي سورة من القرآن، وإزالتها لاحقاً. لن نفترض سوراً محفوظة نيابةً عنك.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 mb-3">
-              <select
-                value={surahToAdd}
-                onChange={(e) => setSurahToAdd(Number(e.target.value))}
-                aria-label="اختر سورة محفوظة لإضافتها"
-                className="flex-1 min-w-0 min-h-11 px-3 py-2.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-sm"
-              >
-                {ALL_SURAHS.map(surah => (
-                  <option key={surah.number} value={surah.number}>
-                    {surah.number}. سورة {surah.name} ({surah.versesCount} آية)
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                disabled={selectedExistingSurahs.includes(surahToAdd)}
-                onClick={() => setSelectedExistingSurahs(current =>
-                  current.includes(surahToAdd) ? current : [...current, surahToAdd].sort((a, b) => a - b)
-                )}
-                className="min-h-11 px-4 py-2.5 rounded-xl bg-emerald-800 text-white text-sm font-bold disabled:opacity-40"
-              >
-                + إضافة السورة
-              </button>
-            </div>
-            {selectedExistingSurahs.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedExistingSurahs.map(sNum => {
-                  const surah = ALL_SURAHS.find(item => item.number === sNum);
-                  return (
-                    <button
-                      key={sNum}
-                      type="button"
-                      aria-label={`إزالة سورة ${surah?.name || sNum} من المحفوظ`}
-                      onClick={() => setSelectedExistingSurahs(current => current.filter(x => x !== sNum))}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 text-xs font-semibold"
-                    >
-                      سورة {surah?.name || sNum}
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="p-3 rounded-xl border border-dashed border-stone-300 dark:border-stone-700 text-xs text-stone-500">
-                لم تضف سوراً محفوظة بعد. أضف السور التي تريد إدراجها في المراجعة الكبرى.
-              </div>
-            )}
-          </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                        وقت الحفظ الجديد يومياً:
+                      </span>
+                      <DirectOptionGroup
+                        ariaLabel="وقت الحفظ الجديد يومياً"
+                        layout="scroll"
+                        size="sm"
+                        options={DAILY_MINUTES_OPTIONS}
+                        value={dailyAvailableMinutes}
+                        onChange={setDailyAvailableMinutes}
+                      />
+                    </div>
 
-          {/* Feasibility & Advisory Gauge */}
-          <div className={`p-4 rounded-2xl border ${
-            liveFeasibility.cognitiveLoadScore === 'impossible'
-              ? 'bg-red-50 dark:bg-red-950/60 border-red-300 text-red-900 dark:text-red-200'
-              : liveFeasibility.cognitiveLoadScore === 'strenuous'
-              ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 text-amber-900 dark:text-amber-200'
-              : 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 text-emerald-900 dark:text-emerald-200'
-          }`}>
-            <div className="flex items-center gap-2 font-bold mb-1">
-              {liveFeasibility.cognitiveLoadScore === 'impossible' && <AlertTriangle className="w-4 h-4 text-red-600" />}
-              {liveFeasibility.cognitiveLoadScore === 'strenuous' && <Info className="w-4 h-4 text-amber-600" />}
-              {liveFeasibility.cognitiveLoadScore === 'optimal' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
-              <span>
-                تقييم المحرك الرياضي للجدوى الذهنية: {
-                  liveFeasibility.cognitiveLoadScore === 'optimal' ? 'مثالي ومتوازن' :
-                  liveFeasibility.cognitiveLoadScore === 'light' ? 'خفيف وميسر' :
-                  liveFeasibility.cognitiveLoadScore === 'strenuous' ? 'مكثف ويتطلب التزاماً' : 'غير واقعي ومجهد'
-                }
-              </span>
-            </div>
-            {liveFeasibility.warningMessage && (
-              <p className="text-[11px] leading-relaxed mt-1">
-                {liveFeasibility.warningMessage}
-              </p>
-            )}
-          </div>
+                    <div>
+                      <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                        وقت المراجعة اليومي:
+                      </span>
+                      <DirectOptionGroup
+                        ariaLabel="وقت المراجعة اليومي"
+                        layout="scroll"
+                        size="sm"
+                        options={REVISION_MINUTES_OPTIONS}
+                        value={dailyRevisionMinutes}
+                        onChange={setDailyRevisionMinutes}
+                      />
+                    </div>
+                  </div>
 
-          {/* Action Row */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-700">
-            <button
-              type="button"
-              onClick={() => {
-                setIsCreatingNew(false);
-                setPreviewPlan(null);
-              }}
-              className="min-h-11 px-4 py-2.5 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-700 dark:text-stone-300 rounded-xl font-semibold"
-            >
-              إلغاء
-            </button>
-            <button
-              type="submit"
-              disabled={liveTotalVerses <= 0}
-              className="flex min-h-11 items-center gap-2 px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-xs transition-colors"
-            >
-              <Eye className="w-4 h-4" />
-              <span>معاينة الجدول الزمني المقترح</span>
-            </button>
-          </div>
-
-          {/* Interactive Live Preview Card */}
-          {previewPlan && (
-            <div className="mt-6 pt-6 border-t-2 border-dashed border-emerald-500/40 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-300 dark:border-emerald-800">
-                <div>
-                  <h4 className="font-bold text-sm text-emerald-950 dark:text-emerald-200">
-                    معاينة الخطة المقترحة: {previewPlan.title}
-                  </h4>
-                  <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5">
-                    إجمالي {previewPlan.meta.totalVerses} آية · {previewPlan.meta.activeStudyDaysCount} يوماً نشطاً · {previewPlan.meta.restDaysCount} يوم استراحة · الختم المتوقع: {previewPlan.meta.projectedEndDate}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleSaveConfirmedPlan(previewPlan)}
-                  disabled={isGeneratingPlan}
-                  className="min-h-11 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs shadow-md transition-all whitespace-nowrap self-stretch sm:self-auto"
-                >
-                  {isGeneratingPlan ? 'جارٍ الحفظ والتفعيل...' : '✓ اعتماد وحفظ الخطة نهائياً'}
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                <span className="font-bold text-stone-800 dark:text-stone-200 block text-xs">
-                  توزيع الأيام الأولى في الجدول:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                  {previewPlan.schedule.slice(0, 6).map((day) => (
-                    <div
-                      key={day.id}
-                      className={`p-3 rounded-xl border text-xs ${
-                        day.isRestDay
-                          ? 'bg-stone-50 dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-400'
-                          : 'bg-white dark:bg-stone-800 border-emerald-200 dark:border-emerald-800/60 shadow-2xs'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between font-bold mb-1">
-                        <span>{day.dayNameAr} ({day.date})</span>
-                        {day.isRestDay ? (
-                          <span className="text-[10px] text-stone-400">استراحة</span>
-                        ) : (
-                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400">
-                            {day.memorizationTask?.versesCount} آيات
-                          </span>
-                        )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                    <div>
+                      <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                        طريقة تحديد وتيرة الحفظ:
+                      </span>
+                      <div className="grid grid-cols-1 gap-2">
+                        {(
+                          [
+                            {
+                              id: 'verses_per_day' as const,
+                              title: 'عدد آيات ثابت',
+                              detail: 'تحدد مقداراً واضحاً في كل يوم حفظ',
+                            },
+                            {
+                              id: 'pages_per_day' as const,
+                              title: 'عدد صفحات ثابت',
+                              detail: 'تقدير تقريبي بمتوسط 15 آية للصفحة',
+                            },
+                            {
+                              id: 'by_target_date' as const,
+                              title: 'موعد ختم مستهدف',
+                              detail: 'يوزع المقدار تلقائياً على أيامك النشطة',
+                            },
+                          ] as const
+                        ).map(option => {
+                          const selected = paceType === option.id;
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() => setPaceType(option.id)}
+                              className={`flex min-h-11 items-center justify-between gap-3 text-right rounded-xl border p-3 transition-colors ${
+                                selected
+                                  ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border-[#1C4E46] dark:border-[#E0A96D] text-[#142421] dark:text-[#F5F1E8]'
+                                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                              }`}
+                            >
+                              <span className="min-w-0">
+                                <span className="block text-xs font-bold">{option.title}</span>
+                                <span className="block text-[11px] opacity-80 mt-0.5">{option.detail}</span>
+                              </span>
+                              <span
+                                className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                                  selected ? 'border-[#1C4E46] dark:border-[#E0A96D]' : 'border-[#5B6F6B]/50'
+                                }`}
+                              >
+                                {selected && (
+                                  <span className="w-2 h-2 rounded-full bg-[#1C4E46] dark:bg-[#E0A96D]" />
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
-                      {day.memorizationTask && (
-                        <p className="text-[11px] text-stone-700 dark:text-stone-300">
-                          {day.memorizationTask.surahName} ({day.memorizationTask.startAyah}-{day.memorizationTask.endAyah})
-                        </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {paceType === 'verses_per_day' && (
+                        <div className="space-y-2">
+                          <label className="block font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                            عدد الآيات في كل يوم دراسة:
+                          </label>
+                          <DirectOptionGroup
+                            ariaLabel="اختيارات سريعة لعدد الآيات اليومي"
+                            layout="scroll"
+                            size="sm"
+                            options={[
+                              { value: 3, label: '3 آيات' },
+                              { value: 5, label: '5 آيات' },
+                              { value: 8, label: '8 آيات' },
+                              { value: 10, label: '10 آيات' },
+                              { value: 15, label: '15 آية' },
+                            ]}
+                            value={paceQuantity}
+                            onChange={setPaceQuantity}
+                          />
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            aria-label="عدد الآيات اليومي المخصص"
+                            value={paceQuantity}
+                            onChange={e => setPaceQuantity(Number(e.target.value))}
+                            className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                          />
+                        </div>
                       )}
-                      {day.minorRevisionTask && (
-                        <p className="text-[10px] text-stone-500 mt-1">
-                          {day.minorRevisionTask.description}
-                        </p>
+
+                      {paceType === 'pages_per_day' && (
+                        <div className="space-y-2">
+                          <label className="block font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                            عدد الصفحات يومياً (تقديري):
+                          </label>
+                          <DirectOptionGroup
+                            ariaLabel="اختيارات سريعة لعدد الصفحات اليومي"
+                            layout="scroll"
+                            size="sm"
+                            options={[
+                              { value: 0.5, label: 'نصف وجه' },
+                              { value: 1, label: 'وجه واحد' },
+                              { value: 1.5, label: 'وجه ونصف' },
+                              { value: 2, label: 'وجهان' },
+                            ]}
+                            value={paceQuantity}
+                            onChange={setPaceQuantity}
+                          />
+                          <input
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            max="5"
+                            aria-label="عدد الصفحات اليومي المخصص"
+                            value={paceQuantity}
+                            onChange={e => setPaceQuantity(Number(e.target.value))}
+                            className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                          />
+                        </div>
+                      )}
+
+                      {paceType === 'by_target_date' && (
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                              تاريخ الختم المستهدف:
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const rec = PlanningEngine.estimateRecommendedEndDate(
+                                  startDate,
+                                  liveTotalVerses,
+                                  level,
+                                  activeDays,
+                                  restDays
+                                );
+                                setTargetEndDate(rec);
+                                onToast?.(
+                                  'تم ضبط تاريخ الختم الموصى به تلقائياً بما يضمن استقرار الحفظ.',
+                                  'info'
+                                );
+                              }}
+                              className="min-h-11 text-[11px] text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:underline"
+                            >
+                              اقتراح موعد ملائم لطاقتك
+                            </button>
+                          </div>
+                          <input
+                            type="date"
+                            required
+                            value={targetEndDate}
+                            onChange={e => setTargetEndDate(e.target.value)}
+                            className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono text-[#142421] dark:text-[#F5F1E8]"
+                          />
+                        </div>
                       )}
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                    <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                      أيام الدراسة النشطة أسبوعياً (انقر لتعيين يوم الاستراحة):
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {WEEK_DAYS.map(day => {
+                        const isActive = activeDays.includes(day.id);
+                        return (
+                          <button
+                            key={day.id}
+                            type="button"
+                            onClick={() => handleToggleActiveDay(day.id)}
+                            aria-pressed={isActive}
+                            className={`min-h-11 py-2 px-3.5 rounded-xl border font-semibold transition-all whitespace-nowrap ${
+                              isActive
+                                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                                : 'bg-[#F2EDE2]/70 dark:bg-[#0B132B] text-[#5B6F6B] dark:text-[#8B9E9B] border-[#1C4E46]/15 dark:border-[#E0A96D]/18'
+                            }`}
+                          >
+                            {day.label} {isActive ? '✓' : '· راحة'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
+              )}
+
+              {/* STEP 3: Unified Pre-Memorized Portions Selector */}
+              {wizardStep === 3 && (
+                <div className="space-y-4">
+                  <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                    <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                      3. تحديد المحفوظ السابق (للمراجعة الكبرى)
+                    </h3>
+                    <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                      حدّد أكثر من سورة دفعة واحدة، أو أجزاء كاملة، أو عدداً محدداً من آيات أي سورة، أو استورد سجل حفظك الحالي
+                    </p>
+                  </div>
+
+                  <ExistingMemorizedPicker
+                    value={existingMemorizedRanges}
+                    onChange={setExistingMemorizedRanges}
+                    onToast={onToast}
+                  />
+                </div>
+              )}
+
+              {/* STEP 4: Review, Live Preview & Save */}
+              {wizardStep === 4 && (
+                <div className="space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                    <div>
+                      <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                        4. معاينة الجدول الزمني واعتماد الخطة
+                      </h3>
+                      <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                        راجع توزيع الأيام الأولى والمراجعة الكبرى قبل حفظ الخطة وتفعيلها
+                      </p>
+                    </div>
+                    <button
+                      type="submit"
+                      className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Eye className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                      <span>تحديث المعاينة</span>
+                    </button>
+                  </div>
+
+                  {previewPlan && (
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 p-4 rounded-2xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30">
+                        <div>
+                          <h4 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                            {previewPlan.title}
+                          </h4>
+                          <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5 tabular-nums">
+                            {previewPlan.meta.totalVerses} آية · {previewPlan.meta.activeStudyDaysCount} يوماً نشطاً · {previewPlan.meta.restDaysCount} يوم استراحة · الختم المتوقع: {previewPlan.meta.projectedEndDate}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveConfirmedPlan(previewPlan)}
+                          disabled={isGeneratingPlan}
+                          className="wird-btn-accent min-h-11 px-5 py-2.5 text-xs whitespace-nowrap self-stretch sm:self-auto"
+                        >
+                          {isGeneratingPlan ? 'جارٍ الحفظ والتفعيل...' : 'اعتماد وحفظ الخطة'}
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <span className="font-bold text-[#142421] dark:text-[#F5F1E8] block text-xs">
+                          توزيع الأيام الأولى في الجدول:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                          {previewPlan.schedule.slice(0, 6).map(day => (
+                            <div
+                              key={day.id}
+                              className={`p-3 rounded-xl border text-xs ${
+                                day.isRestDay
+                                  ? 'bg-[#F2EDE2]/55 dark:bg-[#0B132B]/55 border-[#1C4E46]/10 dark:border-[#E0A96D]/10 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/20 dark:border-[#E0A96D]/25'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between font-bold mb-1">
+                                <span className="text-[#142421] dark:text-[#F5F1E8]">
+                                  {day.dayNameAr} ({day.date})
+                                </span>
+                                {day.isRestDay ? (
+                                  <span className="text-[10px]">استراحة</span>
+                                ) : (
+                                  <span className="text-[10px] text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+                                    {day.memorizationTask?.versesCount} آيات
+                                  </span>
+                                )}
+                              </div>
+                              {day.memorizationTask && (
+                                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                                  {day.memorizationTask.surahName} ({day.memorizationTask.startAyah}-{day.memorizationTask.endAyah})
+                                </p>
+                              )}
+                              {day.minorRevisionTask && (
+                                <p className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+                                  {day.minorRevisionTask.description}
+                                </p>
+                              )}
+                              {day.majorRevisionTask && (
+                                <p className="text-[10px] text-[#9A7512] dark:text-[#E0A96D] mt-0.5">
+                                  كبرى: {day.majorRevisionTask.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Wizard Footer Navigation */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCreatingNew(false);
+                      setPreviewPlan(null);
+                    }}
+                    className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:opacity-90 text-[#142421] dark:text-[#F5F1E8] rounded-xl font-semibold"
+                  >
+                    إلغاء
+                  </button>
+
+                  {wizardStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setWizardStep((wizardStep - 1) as WizardStep)}
+                      className="min-h-11 px-4 py-2 rounded-xl border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                      <span>السابق</span>
+                    </button>
+                  )}
+                </div>
+
+                {wizardStep < 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => handleGoToStep((wizardStep + 1) as WizardStep)}
+                    disabled={liveTotalVerses <= 0}
+                    className="wird-btn-primary min-h-11 px-5 py-2.5 disabled:opacity-50"
+                  >
+                    <span>{wizardStep === 3 ? 'معاينة الجدول المقترح' : 'التالي'}</span>
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                ) : (
+                  previewPlan && (
+                    <button
+                      type="button"
+                      onClick={() => handleSaveConfirmedPlan(previewPlan)}
+                      disabled={isGeneratingPlan}
+                      className="wird-btn-accent min-h-11 px-5 py-2.5"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>{isGeneratingPlan ? 'جارٍ الحفظ...' : 'اعتماد وحفظ الخطة'}</span>
+                    </button>
+                  )
+                )}
               </div>
             </div>
-          )}
+
+            {/* Sticky Live Plan Summary Column (4 cols) */}
+            <aside
+              aria-label="ملخص الخطة المباشر"
+              className="lg:col-span-4 lg:sticky lg:top-20 wird-card p-5 space-y-4"
+            >
+              <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                <span className="text-[11px] font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  ملخص الخطة المباشر
+                </span>
+                <h4 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran mt-0.5 truncate">
+                  {resolvedTitlePreview}
+                </h4>
+              </div>
+
+              <dl className="space-y-2.5 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">النطاق المستهدف</dt>
+                  <dd className="font-bold text-[#142421] dark:text-[#F5F1E8] text-left tabular-nums">
+                    {startSurahMeta?.name} ({startAyah}) ← {endSurahMeta?.name} ({endAyah})
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">إجمالي آيات الهدف</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[#1C4E46] dark:text-[#E0A96D]">
+                    {liveTotalVerses} آية
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">المقدار اليومي التقريبي</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]">
+                    {liveDailyPaceVerses} آية / يوم
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">الأيام النشطة أسبوعياً</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]">
+                    {activeDays.length} من 7 أيام
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">المحفوظ للمراجعة الكبرى</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[#C59B27] dark:text-[#E0A96D]">
+                    {existingMemorizedCount} آية
+                  </dd>
+                </div>
+              </dl>
+
+              {/* Feasibility Indicator */}
+              <div
+                className={`p-3.5 rounded-xl border ${
+                  liveFeasibility.cognitiveLoadScore === 'impossible'
+                    ? 'bg-rose-50 dark:bg-rose-950/45 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'
+                    : liveFeasibility.cognitiveLoadScore === 'strenuous'
+                    ? 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 border-[#C59B27]/45 dark:border-[#E0A96D]/40 text-[#142421] dark:text-[#F5F1E8]'
+                    : 'bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8]'
+                }`}
+              >
+                <div className="flex items-center gap-2 font-bold">
+                  {liveFeasibility.cognitiveLoadScore === 'impossible' && (
+                    <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                  )}
+                  {liveFeasibility.cognitiveLoadScore === 'strenuous' && (
+                    <Info className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                  )}
+                  {(liveFeasibility.cognitiveLoadScore === 'optimal' ||
+                    liveFeasibility.cognitiveLoadScore === 'light') && (
+                    <CheckCircle className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
+                  )}
+                  <span>التوازن الذهني: {feasibilityLabel}</span>
+                </div>
+                {liveFeasibility.warningMessage && (
+                  <p className="text-[11px] leading-relaxed mt-1.5 opacity-90">
+                    {liveFeasibility.warningMessage}
+                  </p>
+                )}
+              </div>
+            </aside>
+          </div>
         </form>
       )}
 
       {/* 3. Active Plan Dashboard & Schedule Execution */}
       {activePlan && !isCreatingNew && (
         <div className="space-y-6">
-          {/* Plan Header Card */}
-          <div className="bg-white dark:bg-stone-800/90 rounded-3xl p-6 border border-stone-200/80 dark:border-stone-700/80 shadow-xs space-y-4">
+          <div className="wird-card p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold font-quran text-stone-900 dark:text-stone-100">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-xl font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
                     {activePlan.title}
                   </h3>
-                  {activePlan.isPaused ? (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white">
-                      متوقفة مؤقتاً
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-700 text-white">
-                      نشطة وتعمل
-                    </span>
-                  )}
+                  <span
+                    className={`text-[11px] font-bold ${
+                      activePlan.isPaused
+                        ? 'text-[#C59B27] dark:text-[#E0A96D]'
+                        : 'text-[#1C4E46] dark:text-[#E0A96D]'
+                    }`}
+                  >
+                    · {activePlan.isPaused ? 'متوقفة مؤقتاً' : 'نشطة وتعمل'}
+                  </span>
                 </div>
-                <p className="text-xs text-stone-500 mt-1">
-                  تاريخ البدء: <span className="font-mono">{activePlan.input.startDate}</span> · الختم المتوقع: <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{activePlan.meta.projectedEndDate}</span>
+                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1 tabular-nums">
+                  تاريخ البدء: <span className="font-mono">{activePlan.input.startDate}</span> · الختم المتوقع:{' '}
+                  <span className="font-mono font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                    {activePlan.meta.projectedEndDate}
+                  </span>
                 </p>
               </div>
 
-              {/* Plan Lifecycle Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
+                  type="button"
                   onClick={handleTogglePause}
-                  className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
+                  className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                     activePlan.isPaused
-                      ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
-                      : 'bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-800 dark:text-stone-200'
+                      ? 'wird-btn-primary'
+                      : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] hover:opacity-90'
                   }`}
                 >
                   {activePlan.isPaused ? <Play className="w-3.5 h-3.5 fill-white" /> : <Pause className="w-3.5 h-3.5" />}
@@ -811,18 +1150,20 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => setShowRecalculateConfirm(true)}
-                  className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#faf8f5] dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 transition-colors"
+                  className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] hover:border-[#C59B27] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-semibold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 whitespace-nowrap transition-colors"
                   title="إعادة جدولة المهام القادمة بناءً على التقدم الفعلي"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3.5 h-3.5 text-[#1C4E46] dark:text-[#E0A96D]" />
                   <span>إعادة ضبط المتبقي</span>
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => setPlanToDelete(activePlan.id)}
                   aria-label={`حذف الخطة الذكية ${activePlan.title}`}
-                  className="flex min-h-11 min-w-11 items-center gap-1.5 px-3 py-2 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex min-h-11 min-w-11 items-center justify-center px-3 py-2 text-[#5B6F6B] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-semibold transition-colors"
                   title="حذف هذه الخطة الذكية"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -830,52 +1171,62 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               </div>
             </div>
 
-            {/* Pedagogical Rationale Card */}
-            <div className="p-4 bg-[#fcfbf7] dark:bg-stone-900/60 rounded-2xl border border-stone-200/70 dark:border-stone-700/60 text-xs space-y-1.5">
-              <div className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-emerald-700" />
-                <span>لماذا تم توليد هذه الخطة بهذا الشكل؟ (الأساس العلمي)</span>
+            <div className="pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs space-y-1.5">
+              <div className="font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
+                <Info className="w-4 h-4 shrink-0" />
+                <span>الأساس المنهجي لتوزيع الخطة</span>
               </div>
-              <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-[11px]">
+              <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed text-[11px]">
                 {activePlan.rationale}
               </p>
             </div>
 
-            {/* Planned vs Actual Variance Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs pt-1">
-              <div className="p-3 bg-[#faf8f5] dark:bg-stone-900/50 rounded-xl border border-stone-200/60 dark:border-stone-700/60">
-                <span className="text-stone-400">إجمالي الآيات:</span>
-                <div className="text-lg font-bold font-mono text-stone-900 dark:text-stone-100">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
+              <div>
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">إجمالي الآيات</span>
+                <div className="text-lg font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8] mt-0.5">
                   {activePlan.meta.totalVerses} آية
                 </div>
               </div>
 
-              <div className="p-3 bg-[#faf8f5] dark:bg-stone-900/50 rounded-xl border border-stone-200/60 dark:border-stone-700/60">
-                <span className="text-stone-400">المستهدف حتى اليوم:</span>
-                <div className="text-lg font-bold font-mono text-stone-900 dark:text-stone-100">
+              <div>
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المستهدف حتى اليوم</span>
+                <div className="text-lg font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8] mt-0.5">
                   {activePlan.actualVsPlanned.plannedVersesToDate} آية
                 </div>
               </div>
 
-              <div className="p-3 bg-[#faf8f5] dark:bg-stone-900/50 rounded-xl border border-stone-200/60 dark:border-stone-700/60">
-                <span className="text-stone-400">المحفوظ الفعلي:</span>
-                <div className="text-lg font-bold font-mono text-emerald-700 dark:text-emerald-400">
+              <div>
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المحفوظ الفعلي</span>
+                <div className="text-lg font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] mt-0.5">
                   {activePlan.actualVsPlanned.actualVersesMemorized} آية
                 </div>
               </div>
 
-              <div className="p-3 bg-[#faf8f5] dark:bg-stone-900/50 rounded-xl border border-stone-200/60 dark:border-stone-700/60 flex flex-col justify-between">
-                <span className="text-stone-400">حالة المسار:</span>
-                <div className="flex items-center gap-1.5 font-bold">
-                  {activePlan.actualVsPlanned.status === 'on_track' && <Check className="w-4 h-4 text-emerald-600" />}
-                  {activePlan.actualVsPlanned.status === 'ahead' && <TrendingUp className="w-4 h-4 text-emerald-600" />}
-                  {activePlan.actualVsPlanned.status === 'behind' && <AlertTriangle className="w-4 h-4 text-amber-600" />}
-                  <span className={
-                    activePlan.actualVsPlanned.status === 'ahead' ? 'text-emerald-600' :
-                    activePlan.actualVsPlanned.status === 'behind' ? 'text-amber-600' : 'text-emerald-700'
-                  }>
-                    {activePlan.actualVsPlanned.status === 'ahead' ? 'متقدم على الخطة' :
-                     activePlan.actualVsPlanned.status === 'behind' ? 'متأخر قليلاً' : 'منضبط مع الخطة'}
+              <div>
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">حالة المسار</span>
+                <div className="flex items-center gap-1.5 font-bold mt-1">
+                  {activePlan.actualVsPlanned.status === 'on_track' && (
+                    <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                  )}
+                  {activePlan.actualVsPlanned.status === 'ahead' && (
+                    <TrendingUp className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                  )}
+                  {activePlan.actualVsPlanned.status === 'behind' && (
+                    <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+                  )}
+                  <span
+                    className={
+                      activePlan.actualVsPlanned.status === 'behind'
+                        ? 'text-[#C59B27] dark:text-[#E0A96D]'
+                        : 'text-[#1C4E46] dark:text-[#E0A96D]'
+                    }
+                  >
+                    {activePlan.actualVsPlanned.status === 'ahead'
+                      ? 'متقدم على الخطة'
+                      : activePlan.actualVsPlanned.status === 'behind'
+                      ? 'متأخر قليلاً'
+                      : 'منضبط مع الخطة'}
                   </span>
                 </div>
               </div>
@@ -884,51 +1235,62 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
           {/* 4. Schedule View Modes & Task List */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-stone-800 dark:text-stone-200 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-emerald-700" />
-                <span>جدول المهام اليومية الموزعة ({activePlan.schedule.length} يوماً)</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                <span className="tabular-nums">
+                  جدول المهام اليومية الموزعة ({activePlan.schedule.length} يوماً)
+                </span>
               </h3>
 
-              <div className="flex items-center bg-white dark:bg-stone-800 p-1 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-semibold">
+              <div className="wird-segmented-track inline-flex items-center gap-1 p-1 rounded-xl text-xs font-semibold">
                 <button
+                  type="button"
                   onClick={() => setScheduleViewMode('weekly')}
                   aria-pressed={scheduleViewMode === 'weekly'}
-                  className={`min-h-11 px-3 py-1 rounded-lg ${scheduleViewMode === 'weekly' ? 'bg-emerald-800 text-white' : 'text-stone-600 dark:text-stone-400'}`}
+                  className={`min-h-11 px-3 py-1 rounded-lg transition-colors whitespace-nowrap ${
+                    scheduleViewMode === 'weekly'
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
+                      : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+                  }`}
                 >
                   أول أسبوعين
                 </button>
                 <button
+                  type="button"
                   onClick={() => setScheduleViewMode('all')}
                   aria-pressed={scheduleViewMode === 'all'}
-                  className={`min-h-11 px-3 py-1 rounded-lg ${scheduleViewMode === 'all' ? 'bg-emerald-800 text-white' : 'text-stone-600 dark:text-stone-400'}`}
+                  className={`min-h-11 px-3 py-1 rounded-lg transition-colors whitespace-nowrap ${
+                    scheduleViewMode === 'all'
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
+                      : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+                  }`}
                 >
                   الجدول كاملاً
                 </button>
               </div>
             </div>
 
-            {/* Tasks Calendar Stream */}
             <div className="space-y-3">
               {activePlan.schedule
                 .slice(0, scheduleViewMode === 'weekly' ? 14 : activePlan.schedule.length)
-                .map((day) => {
+                .map((day: ScheduledDayPlan) => {
                   const isDone = day.memorizationTask?.completed;
 
                   if (day.isRestDay) {
                     return (
                       <div
                         key={day.id}
-                        className="p-4 rounded-2xl border border-stone-200/60 dark:border-stone-800 bg-[#faf8f5]/40 dark:bg-stone-900/30 flex items-center justify-between text-xs text-stone-400"
+                        className="p-4 rounded-2xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/12 bg-[#F2EDE2]/50 dark:bg-[#0B132B]/40 flex items-center justify-between text-xs text-[#5B6F6B] dark:text-[#8B9E9B]"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="font-mono">{day.date}</span>
-                          <span className="font-bold text-stone-600 dark:text-stone-400">({day.dayNameAr})</span>
+                          <span className="font-mono tabular-nums">{day.date}</span>
+                          <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                            ({day.dayNameAr})
+                          </span>
                           <span>{day.notes || 'استراحة أسبوعية'}</span>
                         </div>
-                        <span className="text-[11px] px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500">
-                          راحة الذاكرة
-                        </span>
+                        <span className="text-[11px] font-semibold">راحة الذاكرة</span>
                       </div>
                     );
                   }
@@ -936,75 +1298,74 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   return (
                     <div
                       key={day.id}
-                      className={`p-5 rounded-2xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                        isDone
-                          ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800 shadow-xs'
-                          : 'bg-white dark:bg-stone-800/90 border-stone-200/80 dark:border-stone-700/80 shadow-xs'
+                      className={`wird-card p-5 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                        isDone ? 'border-[#1C4E46]/40 dark:border-[#E0A96D]/40' : ''
                       }`}
                     >
                       <div className="space-y-1.5">
-                        <div className="flex items-center gap-3">
-                          <span className="font-mono font-bold text-xs text-stone-400">{day.date}</span>
-                          <span className="text-xs font-bold text-stone-700 dark:text-stone-300">({day.dayNameAr})</span>
-                          
+                        <div className="flex items-center gap-2.5 text-xs">
+                          <span className="font-mono font-bold tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                            {day.date}
+                          </span>
+                          <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                            ({day.dayNameAr})
+                          </span>
+                          <span className="text-[#5B6F6B]">·</span>
                           {isDone ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
-                              <Check className="w-3 h-3" /> تم الحفظ
+                            <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] inline-flex items-center gap-1">
+                              <Check className="w-3.5 h-3.5" /> تم الحفظ
                             </span>
                           ) : (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300">
+                            <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                               قيد الإنجاز
                             </span>
                           )}
                         </div>
 
-                        {/* Memorization Task */}
                         {day.memorizationTask && (
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-base font-quran text-emerald-900 dark:text-emerald-200">
-                              سورة {day.memorizationTask.surahName} • الآيات ({day.memorizationTask.startAyah} - {day.memorizationTask.endAyah})
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold text-base font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+                              سورة {day.memorizationTask.surahName} · الآيات ({day.memorizationTask.startAyah} - {day.memorizationTask.endAyah})
                             </span>
-                            <span className="text-xs text-stone-500 font-mono">
+                            <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
                               ({day.memorizationTask.versesCount} آيات · ~{day.memorizationTask.estimatedMinutes}د)
                             </span>
                           </div>
                         )}
 
-                        {/* Minor Revision */}
                         {day.minorRevisionTask && (
-                          <div className="text-[11px] text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                            <span>المراجعة الصغرى: {day.minorRevisionTask.description}</span>
+                          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                            المراجعة الصغرى: {day.minorRevisionTask.description}
                           </div>
                         )}
 
-                        {/* Major Revision */}
                         {day.majorRevisionTask && (
-                          <div className="text-[11px] text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
-                            <span>المراجعة الكبرى: {day.majorRevisionTask.description}</span>
+                          <div className="text-[11px] text-[#9A7512] dark:text-[#E0A96D]">
+                            المراجعة الكبرى: {day.majorRevisionTask.description}
                           </div>
                         )}
                       </div>
 
-                      {/* Task Action Buttons */}
                       <div className="flex items-center gap-2 shrink-0">
                         {day.memorizationTask && !isDone && (
                           <button
-                            onClick={() => onStartSession(
-                              day.memorizationTask!.surahNumber,
-                              day.memorizationTask!.startAyah,
-                              day.memorizationTask!.endAyah
-                            )}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+                            type="button"
+                            onClick={() =>
+                              onStartSession(
+                                day.memorizationTask!.surahNumber,
+                                day.memorizationTask!.startAyah,
+                                day.memorizationTask!.endAyah
+                              )
+                            }
+                            className="wird-btn-primary min-h-11 flex items-center gap-1.5 px-4 py-2 text-xs whitespace-nowrap"
                           >
-                            <Play className="w-3 h-3 fill-white" />
+                            <Play className="w-3.5 h-3.5 fill-white" />
                             <span>تدريب</span>
                           </button>
                         )}
 
                         {day.memorizationTask && isDone && (
-                          <span className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                          <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
                             ✓ مكتملة في الجدول
                           </span>
                         )}
@@ -1019,38 +1380,38 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
       {/* In-app Recalculate Confirmation Modal */}
       {showRecalculateConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-stone-800 rounded-3xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-2xl space-y-4 text-right">
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center shrink-0">
                 <RotateCcw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-900 dark:text-stone-100 text-base">
+                <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   إعادة جدولة المهام القادمة
                 </h3>
-                <p className="text-xs text-stone-500">
-                  خوارزمية إعادة الموازنة التلقائية
+                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  إعادة موازنة الجدول بدءاً من اليوم
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed bg-[#faf8f5] dark:bg-stone-900/60 p-3.5 rounded-xl border border-stone-200/70 dark:border-stone-700/60">
-              سيقوم المحرك بإعادة توزيع المهام المتبقية بناءً على تاريخ اليوم ومعدل تقدمك، مع <strong>الحفاظ الكامل على جميع الأوراد المكتملة وسجل إنجازك دون أي مساس</strong>.
+            <p className="text-xs text-[#142421] dark:text-[#F5F1E8] leading-relaxed bg-white dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+              ستُعاد جدولة المهام المتبقية بناءً على تاريخ اليوم ومعدل تقدمك، مع <strong>الحفاظ الكامل على جميع الأوراد المكتملة وسجل إنجازك دون أي مساس</strong>.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setShowRecalculateConfirm(false)}
-                className="px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl transition-colors"
+                className="min-h-11 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >
                 إلغاء
               </button>
               <button
                 type="button"
                 onClick={handleConfirmRecalculate}
-                className="px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-xs transition-colors"
+                className="wird-btn-primary min-h-11 px-5 py-2 text-xs"
               >
                 تأكيد إعادة الجدولة
               </button>
@@ -1058,25 +1419,26 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
           </div>
         </div>
       )}
+
       {/* In-app Plan Delete Confirmation Modal */}
       {planToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-stone-800 rounded-3xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-2xl space-y-4 text-right">
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-900 dark:text-stone-100 text-base">
+                <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   حذف الخطة الذكية
                 </h3>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
                   تأكيد إزالة الخطة من قائمة الأهداف
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed bg-[#faf8f5] dark:bg-stone-900/60 p-3.5 rounded-xl border border-stone-200/70 dark:border-stone-700/60">
+            <p className="text-xs text-[#142421] dark:text-[#F5F1E8] leading-relaxed bg-white dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
               هل أنت متأكد من حذف هذه الخطة؟ <strong>لن يؤثر الحذف إطلاقاً على الآيات والمقاطع التي أتممت حفظها في المصحف وسجل التكرار والمراجعة</strong>؛ سيتم فقط حذف جدول الخطة المستقبلي.
             </p>
 
@@ -1084,14 +1446,14 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               <button
                 type="button"
                 onClick={() => setPlanToDelete(null)}
-                className="px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl transition-colors"
+                className="min-h-11 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >
                 إلغاء
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDeletePlan}
-                className="px-5 py-2 text-xs font-bold text-white bg-red-700 hover:bg-red-800 rounded-xl shadow-xs transition-colors"
+                className="min-h-11 px-5 py-2 text-xs font-bold text-white bg-rose-700 hover:bg-rose-800 rounded-xl shadow-xs transition-colors"
               >
                 تأكيد حذف الخطة
               </button>

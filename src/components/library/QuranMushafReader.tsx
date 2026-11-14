@@ -12,7 +12,8 @@ import {
   RefreshCw,
   Search,
   Sparkles,
-  Layers
+  Layers,
+  X
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { QURAN_DATA_SOURCE_INFO } from '../../data/quranDataInfo';
@@ -21,7 +22,15 @@ import { QURAN_JUZ_STARTS, QURAN_HIZB_QUARTER_STARTS } from '../../data/quranNav
 import { loadSurahVerses } from '../../data/quranDataLoader';
 import { findSurahStartPage } from '../../data/quranNavigation';
 import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
-import { getSavedAudioRepeatCount, getSavedPlaybackRate, saveAudioRepeatCount, savePlaybackRate } from '../../services/audioPreferences';
+import {
+  getSavedAudioRepeatCount,
+  getSavedPlaybackRate,
+  getSavedSegmentRepeatCount,
+  normalizeAyahSegmentRepeatCount,
+  saveAudioRepeatCount,
+  savePlaybackRate,
+  saveSegmentRepeatCount
+} from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
 import type { Ayah, ReciterId } from '../../types/quran';
@@ -32,6 +41,10 @@ import { QuranText } from '../shared/QuranText';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
 import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
+import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+import { SurahPickerControl } from '../shared/SurahPickerControl';
+import { DisplaySettingsCollapsibleCard } from '../shared/DisplaySettingsMenu';
+import { clampUiScale, formatAyahRangeOptionLabel } from '../../services/readingDisplayPreferences';
 
 interface QuranMushafReaderProps {
   preferredReciter: ReciterId;
@@ -60,6 +73,7 @@ const MUSHAF_TEXT_SCALE_KEY = 'wird.quran.mushafTextScale.v1';
 const MUSHAF_PAGE_WIDTH_KEY = 'wird.quran.mushafPageWidth.v1';
 const MUSHAF_FULL_WIDTH_KEY = 'wird.quran.mushafFullWidth.v1';
 const MUSHAF_LINE_SPACING_KEY = 'wird.quran.mushafLineSpacing.v1';
+const MUSHAF_UI_SCALE_KEY = 'wird.quran.mushafUiScale.v1';
 
 type MushafTextScale = 'comfortable' | 'large' | 'extraLarge';
 type MushafLineSpacing = 'compact' | 'normal' | 'relaxed';
@@ -99,6 +113,13 @@ function readMushafLineSpacing(): MushafLineSpacing {
     return value === 'compact' || value === 'relaxed' ? value : 'normal';
   } catch { return 'normal'; }
 }
+
+function readMushafUiScale(): number {
+  try {
+    const raw = localStorage.getItem(MUSHAF_UI_SCALE_KEY);
+    return raw ? clampUiScale(Number(raw), 80, 115) : 100;
+  } catch { return 100; }
+}
 const PAGE_INDEX = QURAN_PAGE_INDEX as unknown as Record<string, PageSegment[]>;
 const JUZ_INDEX = QURAN_JUZ_STARTS as unknown as Record<string, NavigationPoint>;
 const HIZB_INDEX = QURAN_HIZB_QUARTER_STARTS as unknown as Record<string, NavigationPoint>;
@@ -130,6 +151,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [isWidePage, setIsWidePage] = useState(readMushafPageWidth);
   const [isFullWidth, setIsFullWidth] = useState(readMushafFullWidth);
   const [lineSpacing, setLineSpacing] = useState<MushafLineSpacing>(readMushafLineSpacing);
+  const [uiScale, setUiScale] = useState<number>(readMushafUiScale);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [bookmarks, setBookmarks] = useState<number[]>(readBookmarks);
   const [activeReciter, setActiveReciter] = useState<ReciterId>(preferredReciter || 'alafasy');
@@ -139,7 +161,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [isAudioPaused, setIsAudioPaused] = useState(false);
   const [segmentStartIndex, setSegmentStartIndex] = useState(0);
   const [segmentEndIndex, setSegmentEndIndex] = useState(0);
-  const [segmentRepeatCount, setSegmentRepeatCount] = useState<AudioRepeatCount>(getSavedAudioRepeatCount);
+  const [perAyahRepeatCount, setPerAyahRepeatCount] = useState<AudioRepeatCount>(getSavedAudioRepeatCount);
+  const [segmentRepeatCount, setSegmentRepeatCount] = useState<AudioRepeatCount>(getSavedSegmentRepeatCount);
+  const [segmentPlaybackStatus, setSegmentPlaybackStatus] = useState<{ ayahNumber: number; cycle: number; ayahIteration: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
@@ -148,6 +172,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     try { return localStorage.getItem('wird.quran.readerLayout.v1') === 'printed' ? 'printed' : 'flow'; }
     catch { return 'flow'; }
   });
+  const [showHizbPicker, setShowHizbPicker] = useState(false);
   const [printedPageAyahs, setPrintedPageAyahs] = useState<{ page: number; ayahs: Ayah[] } | null>(null);
   const audioAyahs = readerLayout === 'printed'
     ? (printedPageAyahs?.page === page ? printedPageAyahs.ayahs : [])
@@ -221,6 +246,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   }, [lineSpacing]);
 
   useEffect(() => {
+    try { localStorage.setItem(MUSHAF_UI_SCALE_KEY, String(uiScale)); } catch { /* Reading controls remain usable without storage. */ }
+  }, [uiScale]);
+
+  useEffect(() => {
     setSegmentStartIndex(0);
     setSegmentEndIndex(Math.max(0, audioAyahs.length - 1));
   }, [page, audioAyahs.length]);
@@ -236,6 +265,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     setIsPlaying(false);
     setIsAudioPaused(false);
     setPlayingIndex(null);
+    setSegmentPlaybackStatus(null);
   };
 
   const startAudioQueue = (
@@ -243,7 +273,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     startIndex: number,
     endIndex: number,
     repeatCount: AudioRepeatCount,
-    continueAcrossPages: boolean
+    continueAcrossPages: boolean,
+    ayahRepeatCount: number = normalizeAyahSegmentRepeatCount(perAyahRepeatCount)
   ) => {
     if (!queue.length || startIndex < 0 || endIndex < startIndex || endIndex >= queue.length) return;
     stopAudio();
@@ -257,8 +288,13 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     cacheUpcoming(startIndex);
 
     const controller = new QuranAudioQueueController({
-      onTrackChange: index => {
+      onTrackChange: (index, cycle, ayahIteration) => {
         setPlayingIndex(index);
+        setSegmentPlaybackStatus({
+          ayahNumber: queue[index]?.numberInSurah ?? 1,
+          cycle,
+          ayahIteration
+        });
         if ((index - startIndex) % 10 === 0) cacheUpcoming(index);
       },
       onPlaying: () => { setIsPlaying(true); setIsAudioPaused(false); },
@@ -269,6 +305,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsPlaying(false);
         setIsAudioPaused(false);
         setPlayingIndex(null);
+        setSegmentPlaybackStatus(null);
         if (continueAcrossPages && page < 604) {
           autoPlayNextPageRef.current = true;
           // Keep the next-page effect from seeing the previous page's ayahs
@@ -284,6 +321,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsPlaying(false);
         setIsAudioPaused(false);
         setPlayingIndex(null);
+        setSegmentPlaybackStatus(null);
       }
     });
     audioQueueRef.current = controller;
@@ -292,6 +330,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         tracks,
         startIndex,
         endIndex,
+        ayahRepeatCount,
         repeatCount: repeatCount === -1 ? null : repeatCount,
         playbackRate: getSavedPlaybackRate()
       });
@@ -304,6 +343,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setIsPlaying(false);
       setIsAudioPaused(false);
       setPlayingIndex(null);
+      setSegmentPlaybackStatus(null);
       console.warn('[WIRD Mushaf] Could not start Quran audio queue:', error);
     }
   };
@@ -314,7 +354,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setPlayingIndex(null);
       return;
     }
-    startAudioQueue(queue, index, queue.length - 1, 1, true);
+    startAudioQueue(queue, index, queue.length - 1, 1, true, normalizeAyahSegmentRepeatCount(perAyahRepeatCount));
   };
 
   useEffect(() => {
@@ -333,7 +373,14 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     }
     if (audioAyahs.length) {
       const fullPage = segmentStartIndex === 0 && segmentEndIndex === audioAyahs.length - 1;
-      startAudioQueue(audioAyahs, segmentStartIndex, segmentEndIndex, segmentRepeatCount, fullPage);
+      startAudioQueue(
+        audioAyahs,
+        segmentStartIndex,
+        segmentEndIndex,
+        segmentRepeatCount,
+        fullPage,
+        normalizeAyahSegmentRepeatCount(perAyahRepeatCount)
+      );
     }
   };
 
@@ -440,30 +487,36 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const currentBookmark = bookmarks.includes(page);
   const primarySurah = audioAyahs.length ? ALL_SURAHS.find(s => s.number === audioAyahs[0].surahNumber) : undefined;
   const currentJuz = audioAyahs.length ? audioAyahs[0].juz : Math.ceil(page / 20);
+  const hasMultipleSurahsOnPage = useMemo(
+    () => new Set(audioAyahs.map(item => item.surahNumber)).size > 1,
+    [audioAyahs]
+  );
+  const selectedStartAyah = audioAyahs[segmentStartIndex];
+  const selectedEndAyah = audioAyahs[segmentEndIndex];
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
-      {/* Top Control Bar: Elegant, Floating, Responsive */}
-      <header className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-[#fffdfa]/95 dark:bg-stone-900/95 backdrop-blur-md p-4 shadow-sm space-y-3.5">
+      {/* Top Control Bar */}
+      <header className="wird-card rounded-2xl p-4 shadow-sm space-y-3.5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] transition-colors"
             >
-              <ArrowRight className="h-4 w-4" /> العودة للفهرس
+              <ArrowRight className="h-4 w-4 text-[#1C4E46] dark:text-[#E0A96D]" /> العودة للفهرس
             </button>
-            <div className="h-5 w-[1px] bg-stone-200 dark:bg-stone-700 mx-1 hidden sm:block" />
-            <span className="font-bold text-emerald-800 dark:text-emerald-400 text-sm hidden sm:inline">
+            <div className="h-5 w-[1px] bg-[#1C4E46]/15 dark:bg-[#E0A96D]/20 mx-1 hidden sm:block" />
+            <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] text-sm hidden sm:inline">
               قارئ القرآن الكريم
             </span>
           </div>
 
           {/* Quick Page Jump & Bookmarks */}
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 p-1 text-xs">
-              <span className="text-stone-500 px-1.5 text-[11px]">صفحة:</span>
+            <div className="inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] p-1 text-xs">
+              <span className="text-[#5B6F6B] dark:text-[#8B9E9B] px-1.5 text-[11px] font-semibold">صفحة:</span>
               <input
                 type="number"
                 min={1}
@@ -474,13 +527,13 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
                 aria-describedby={pageJumpError ? 'mushaf-page-jump-error' : undefined}
                 onKeyDown={event => event.key === 'Enter' && submitPageJump()}
                 aria-label="رقم صفحة المصحف"
-                className="min-h-11 w-14 rounded-lg bg-stone-100 dark:bg-stone-700/80 px-2 py-1 text-center font-mono font-bold text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                className="min-h-11 w-14 rounded-lg bg-[#F2EDE2] dark:bg-[#0B132B] px-2 py-1 text-center font-mono tabular-nums font-bold text-xs text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
               />
               <button
                 type="button"
                 onClick={submitPageJump}
                 aria-label="انتقال إلى رقم الصفحة"
-                className="min-h-11 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white px-2.5 py-1 text-xs font-bold transition-colors"
+                className="min-h-11 rounded-lg bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white px-3 py-1 text-xs font-bold transition-colors"
               >
                 انتقال
               </button>
@@ -492,88 +545,91 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
               onClick={toggleBookmark}
               aria-label={currentBookmark ? 'إزالة العلامة المحفوظة' : 'حفظ علامة مرجعية'}
               title={currentBookmark ? 'إزالة العلامة من هذه الصفحة' : 'حفظ الصفحة في العلامات المرجعية'}
-              className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors ${
                 currentBookmark
-                  ? 'border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950/70 dark:text-amber-200'
-                  : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300'
+                  ? 'border-[#C59B27] bg-[#C59B27]/15 text-[#8A6914] dark:border-[#E0A96D] dark:bg-[#E0A96D]/15 dark:text-[#E0A96D]'
+                  : 'border-[#1C4E46]/15 bg-white text-[#5B6F6B] hover:border-[#C59B27] dark:border-[#E0A96D]/25 dark:bg-[#111F36] dark:text-[#F5F1E8]'
               }`}
             >
-              {currentBookmark ? <BookmarkCheck className="h-4 w-4 text-amber-600" /> : <Bookmark className="h-4 w-4" />}
+              {currentBookmark ? <BookmarkCheck className="h-4 w-4 text-[#C59B27] dark:text-[#E0A96D]" /> : <Bookmark className="h-4 w-4" />}
               <span className="hidden sm:inline">{currentBookmark ? 'محفوظة' : 'حفظ علامة'}</span>
             </button>
           </div>
         </div>
 
-        {/* Dropdowns Row: Surahs, Juz, Hizb */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-xs">
-          <select
-            aria-label="الانتقال إلى سورة"
-            value={primarySurah?.number || ''}
-            onChange={event => event.target.value && jumpToSurah(Number(event.target.value))}
-            className="min-h-11 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-2 text-xs font-medium text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-600"
-          >
-            <option value="">انتقال إلى سورة...</option>
-            {ALL_SURAHS.map(surah => (
-              <option key={surah.number} value={surah.number}>
-                {surah.number}. {surah.name} ({surah.englishName})
-              </option>
-            ))}
-          </select>
+        {/* Navigation: Searchable Surah Picker + Hizb Modal + Direct Juz Scroll Rail + Bookmarks */}
+        <div className="space-y-2.5 pt-2.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex-1 min-w-[210px]">
+              <SurahPickerControl
+                value={primarySurah?.number || 1}
+                onChange={jumpToSurah}
+                ariaLabel="الانتقال إلى سورة"
+                compact
+                showQuickPopular={false}
+              />
+            </div>
 
-          <select
-            aria-label="الانتقال إلى جزء"
-            defaultValue=""
-            onChange={event => {
-              if (event.target.value) jumpToJuz(Number(event.target.value));
-              event.currentTarget.value = '';
-            }}
-            className="min-h-11 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-2 text-xs font-medium text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-600"
-          >
-            <option value="">انتقال إلى جزء...</option>
-            {Array.from({ length: 30 }, (_, index) => index + 1).map(juz => (
-              <option key={juz} value={juz}>الجزء {juz}</option>
-            ))}
-          </select>
+            <button
+              type="button"
+              onClick={() => setShowHizbPicker(true)}
+              className="min-h-11 inline-flex items-center gap-2 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] hover:border-[#C59B27] px-3.5 py-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] transition-colors"
+            >
+              <Layers className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <span>أرباع الأحزاب (240)</span>
+            </button>
 
-          <select
-            aria-label="الانتقال إلى ربع حزب"
-            defaultValue=""
-            onChange={event => {
-              if (event.target.value) jumpToHizbQuarter(Number(event.target.value));
-              event.currentTarget.value = '';
-            }}
-            className="min-h-11 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-2 text-xs font-medium text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-600"
-          >
-            <option value="">انتقال إلى ربع حزب...</option>
-            {Array.from({ length: 240 }, (_, index) => index + 1).map(quarter => (
-              <option key={quarter} value={quarter}>ربع الحزب {quarter}</option>
-            ))}
-          </select>
+            {bookmarks.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">العلامات:</span>
+                {bookmarks.map(savedPage => (
+                  <button
+                    key={savedPage}
+                    type="button"
+                    onClick={() => changePage(savedPage)}
+                    className={`min-h-10 px-2.5 py-1 rounded-lg border text-xs font-mono tabular-nums font-bold transition-colors ${
+                      savedPage === page
+                        ? 'bg-[#C59B27] text-[#0B132B] border-[#C59B27]'
+                        : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                    }`}
+                  >
+                    ص {savedPage}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <select
-            aria-label="الانتقال إلى علامة محفوظة"
-            defaultValue=""
-            onChange={event => {
-              if (event.target.value) changePage(Number(event.target.value));
-              event.currentTarget.value = '';
-            }}
-            className="min-h-11 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-2 text-xs font-medium text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-600"
-          >
-            <option value="">العلامات المحفوظة ({bookmarks.length})</option>
-            {bookmarks.map(savedPage => (
-              <option key={savedPage} value={savedPage}>صفحة {savedPage}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] shrink-0">الأجزاء:</span>
+            <HorizontalScrollRail ariaLabel="الانتقال السريع بين الأجزاء" activeKey={currentJuz}>
+              {Array.from({ length: 30 }, (_, index) => index + 1).map(juz => (
+                <button
+                  key={juz}
+                  type="button"
+                  aria-pressed={currentJuz === juz}
+                  onClick={() => jumpToJuz(juz)}
+                  className={`min-h-10 shrink-0 snap-start px-3 py-1 rounded-lg border text-[11px] font-bold font-mono tabular-nums transition-colors ${
+                    currentJuz === juz
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                      : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                  }`}
+                >
+                  ج {juz}
+                </button>
+              ))}
+            </HorizontalScrollRail>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-3 dark:border-stone-800">
-          <span className="text-xs font-semibold text-stone-600 dark:text-stone-300">طريقة عرض الصفحة</span>
-          <div role="group" aria-label="طريقة عرض المصحف" className="inline-flex rounded-xl border border-stone-200 bg-white p-1 dark:border-stone-700 dark:bg-stone-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1C4E46]/10 pt-3 dark:border-[#E0A96D]/15">
+          <span className="text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">طريقة عرض الصفحة</span>
+          <div role="group" aria-label="طريقة عرض المصحف" className="inline-flex rounded-xl border border-[#1C4E46]/15 bg-[#F2EDE2] p-1 dark:border-[#E0A96D]/25 dark:bg-[#0E1A2F]">
             <button
               type="button"
               aria-pressed={readerLayout === 'printed'}
               onClick={() => selectReaderLayout('printed')}
-              className={`min-h-11 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${readerLayout === 'printed' ? 'bg-emerald-800 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700'}`}
+              className={`min-h-11 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${readerLayout === 'printed' ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white' : 'text-[#5B6F6B] hover:text-[#142421] dark:text-[#8B9E9B] dark:hover:text-[#F5F1E8]'}`}
             >
               الصفحة المطبوعة
             </button>
@@ -581,7 +637,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
               type="button"
               aria-pressed={readerLayout === 'flow'}
               onClick={() => selectReaderLayout('flow')}
-              className={`min-h-11 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${readerLayout === 'flow' ? 'bg-emerald-800 text-white' : 'text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700'}`}
+              className={`min-h-11 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${readerLayout === 'flow' ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white' : 'text-[#5B6F6B] hover:text-[#142421] dark:text-[#8B9E9B] dark:hover:text-[#F5F1E8]'}`}
             >
               النص المرن
             </button>
@@ -589,24 +645,24 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         </div>
 
         {/* Navigation & Audio Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 dark:border-stone-800 pt-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => changePage(page - 1)}
-              className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 transition-colors"
+              className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               <ChevronRight className="h-4 w-4" /> الصفحة السابقة
             </button>
-            <span aria-live="polite" aria-atomic="true" className="text-xs font-bold tabular-nums text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-lg">
+            <span aria-live="polite" aria-atomic="true" className="text-xs font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] px-3 py-1.5 rounded-lg border border-[#C59B27]/30">
               {page} / 604
             </span>
             <button
               type="button"
               disabled={page >= 604}
               onClick={() => changePage(page + 1)}
-              className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 transition-colors"
+              className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               الصفحة التالية <ChevronLeft className="h-4 w-4" />
             </button>
@@ -614,71 +670,119 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
           {/* Audio Player Controls */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <label className="inline-flex items-center gap-1.5 text-stone-600 dark:text-stone-400">
-              <Volume2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-              <select
-                aria-label="القارئ"
-                value={activeReciter}
-                onChange={event => {
-                  stopAudio();
-                  setActiveReciter(event.target.value as ReciterId);
-                }}
-                className="rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 py-1 text-xs text-stone-800 dark:text-stone-200"
-              >
-                {RECITERS.map(reciter => (
-                  <option key={reciter.id} value={reciter.id}>{reciter.name}</option>
-                ))}
-              </select>
-            </label>
+            <div className="flex items-center gap-1.5 min-w-0 max-w-full">
+              <Volume2 className="h-4 w-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+                {RECITERS.map(reciter => {
+                  const shortName = reciter.name.replace('الشيخ ', '').replace(' (مرتل)', '');
+                  return (
+                    <button
+                      key={reciter.id}
+                      type="button"
+                      aria-pressed={activeReciter === reciter.id}
+                      onClick={() => {
+                        stopAudio();
+                        setActiveReciter(reciter.id);
+                      }}
+                      className={`min-h-10 shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-colors ${
+                        activeReciter === reciter.id
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                          : 'bg-white dark:bg-[#111F36] text-[#5B6F6B] dark:text-[#8B9E9B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                      }`}
+                    >
+                      {shortName}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <AudioPlaybackRateControl value={playbackRate} onChange={handlePlaybackRateChange} />
 
-            <label className="inline-flex items-center gap-1.5 text-stone-600 dark:text-stone-400">
-              <span>من</span>
+            <div className="inline-flex flex-wrap items-center gap-2 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE]/70 dark:bg-[#0E1A2F] px-2.5 py-1" dir="rtl">
+              <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <span className="font-bold">من</span>
+                <select
+                  aria-label="بداية المقطع الصوتي"
+                  value={segmentStartIndex}
+                  disabled={!audioAyahs.length}
+                  onChange={event => {
+                    const next = Number(event.target.value);
+                    setSegmentStartIndex(next);
+                    if (segmentEndIndex < next) setSegmentEndIndex(next);
+                  }}
+                  className="min-h-11 min-w-24 max-w-44 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2.5 text-xs font-semibold"
+                >
+                  {audioAyahs.map((ayah, index) => {
+                    const surah = hasMultipleSurahsOnPage ? ALL_SURAHS.find(item => item.number === ayah.surahNumber) : undefined;
+                    return (
+                      <option key={ayah.number} value={index}>
+                        {formatAyahRangeOptionLabel(ayah.numberInSurah, surah?.name, hasMultipleSurahsOnPage)}
+                      </option>
+                    );
+                  })}
+                </select>
+              </label>
+
+              <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <span className="font-bold">إلى</span>
+                <select
+                  aria-label="نهاية المقطع الصوتي"
+                  value={segmentEndIndex}
+                  disabled={!audioAyahs.length}
+                  onChange={event => setSegmentEndIndex(Number(event.target.value))}
+                  className="min-h-11 min-w-24 max-w-44 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2.5 text-xs font-semibold"
+                >
+                  {audioAyahs.slice(segmentStartIndex).map((ayah, offset) => {
+                    const index = segmentStartIndex + offset;
+                    const surah = hasMultipleSurahsOnPage ? ALL_SURAHS.find(item => item.number === ayah.surahNumber) : undefined;
+                    return (
+                      <option key={ayah.number} value={index}>
+                        {formatAyahRangeOptionLabel(ayah.numberInSurah, surah?.name, hasMultipleSurahsOnPage)}
+                      </option>
+                    );
+                  })}
+                </select>
+              </label>
+
+              {selectedStartAyah && selectedEndAyah && (
+                <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] hidden sm:inline">
+                  من آية {selectedStartAyah.numberInSurah} إلى آية {selectedEndAyah.numberInSurah}
+                </span>
+              )}
+            </div>
+
+            <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <span>تكرار الآية</span>
               <select
-                aria-label="بداية المقطع الصوتي"
-                value={segmentStartIndex}
-                disabled={!audioAyahs.length}
+                aria-label="عدد مرات تكرار كل آية في المصحف"
+                value={normalizeAyahSegmentRepeatCount(perAyahRepeatCount)}
                 onChange={event => {
-                  const next = Number(event.target.value);
-                  setSegmentStartIndex(next);
-                  if (segmentEndIndex < next) setSegmentEndIndex(next);
+                  const next = saveAudioRepeatCount(Number(event.target.value));
+                  setPerAyahRepeatCount(next);
+                  audioQueueRef.current?.setAyahRepeatCount(normalizeAyahSegmentRepeatCount(next));
                 }}
-                className="min-h-11 max-w-32 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 text-xs"
+                className="min-h-11 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2 text-xs font-semibold"
               >
-                {audioAyahs.map((ayah, index) => (
-                  <option key={ayah.number} value={index}>{ayah.surahNumber}:{ayah.numberInSurah}</option>
-                ))}
+                <option value={1}>مرة</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={5}>5</option>
+                <option value={10}>10</option>
               </select>
             </label>
 
-            <label className="inline-flex items-center gap-1.5 text-stone-600 dark:text-stone-400">
-              <span>إلى</span>
-              <select
-                aria-label="نهاية المقطع الصوتي"
-                value={segmentEndIndex}
-                disabled={!audioAyahs.length}
-                onChange={event => setSegmentEndIndex(Number(event.target.value))}
-                className="min-h-11 max-w-32 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 text-xs"
-              >
-                {audioAyahs.slice(segmentStartIndex).map((ayah, offset) => {
-                  const index = segmentStartIndex + offset;
-                  return <option key={ayah.number} value={index}>{ayah.surahNumber}:{ayah.numberInSurah}</option>;
-                })}
-              </select>
-            </label>
-
-            <label className="inline-flex items-center gap-1.5 text-stone-600 dark:text-stone-400">
-              <span>التكرار</span>
+            <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <span>تكرار المقطع</span>
               <select
                 aria-label="عدد مرات تكرار المقطع الصوتي"
                 value={segmentRepeatCount}
                 onChange={event => {
-                  const next = saveAudioRepeatCount(Number(event.target.value));
+                  const next = saveSegmentRepeatCount(Number(event.target.value));
                   setSegmentRepeatCount(next);
                   audioQueueRef.current?.setRepeatCount(next === -1 ? null : next);
                 }}
-                className="min-h-11 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 text-xs"
+                className="min-h-11 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2 text-xs font-semibold"
               >
                 <option value={1}>مرة</option>
                 <option value={2}>2</option>
@@ -693,103 +797,147 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
               type="button"
               onClick={togglePageAudio}
               disabled={!audioAyahs.length || (readerLayout === 'flow' && isLoading)}
-              className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-bold text-white transition-all shadow-xs disabled:opacity-50 ${
-                isPlaying ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-800 hover:bg-emerald-900'
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-bold transition-all shadow-xs disabled:opacity-50 ${
+                isPlaying ? 'bg-[#C59B27] text-[#0B132B] hover:bg-[#d6ad3b]' : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
               }`}
             >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               <span>{isPlaying ? 'إيقاف مؤقت' : isAudioPaused ? 'استئناف التلاوة' : 'استماع للمقطع'}</span>
             </button>
+
+            {segmentPlaybackStatus && (
+              <span aria-live="polite" className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] px-2.5 py-1.5 rounded-lg border border-[#C59B27]/30 tabular-nums">
+                آية {segmentPlaybackStatus.ayahNumber} · الآية {segmentPlaybackStatus.ayahIteration}/{normalizeAyahSegmentRepeatCount(perAyahRepeatCount)} · المقطع {segmentPlaybackStatus.cycle}{segmentRepeatCount === -1 ? ' (مستمر)' : `/${segmentRepeatCount}`}
+              </span>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Responsive page-style reading surface; current data does not encode printed line positions. */}
-      <main key={page} onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={event => {
+      {/* Collapsible Display Settings Menu for both Printed & Flexible Mushaf */}
+      <DisplaySettingsCollapsibleCard
+        title="إعدادات العرض"
+        defaultOpen={false}
+        storageKey="wird.quran.mushafDisplayMenuOpen.v1"
+        summaryText={`${uiScale}% · ${textScale === 'comfortable' ? 'نص مريح' : textScale === 'large' ? 'نص كبير' : 'نص أكبر'}`}
+      >
+        <div className="space-y-3" role="group" aria-label="إعدادات عرض المصحف">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <label htmlFor="mushaf-ui-scale" className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] whitespace-nowrap">
+              حجم واجهة المصحف
+            </label>
+            <input
+              id="mushaf-ui-scale"
+              aria-label="حجم واجهة المصحف"
+              type="range"
+              min={80}
+              max={115}
+              step={5}
+              value={uiScale}
+              aria-valuetext={`${uiScale}%`}
+              onChange={event => setUiScale(Number(event.target.value))}
+              className="min-h-11 w-full accent-[#1C4E46] dark:accent-[#E0A96D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+            />
+            <output htmlFor="mushaf-ui-scale" className="text-xs font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B] min-w-12 text-center">
+              {uiScale}%
+            </output>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">حجم النص</span>
+              {([{ value: 'comfortable', label: 'مريح' }, { value: 'large', label: 'كبير' }, { value: 'extraLarge', label: 'أكبر' }] as const).map(option => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={textScale === option.value}
+                  onClick={() => setTextScale(option.value)}
+                  className={`min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${textScale === option.value ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'border-[#1C4E46]/15 bg-white text-[#142421] hover:border-[#C59B27] dark:border-[#E0A96D]/20 dark:bg-[#0B132B] dark:text-[#F5F1E8]'}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <span>تباعد الأسطر</span>
+                <select
+                  aria-label="تباعد أسطر المصحف"
+                  value={lineSpacing}
+                  onChange={event => setLineSpacing(event.target.value as MushafLineSpacing)}
+                  className="min-h-11 rounded-lg border border-[#1C4E46]/15 bg-white px-2.5 text-xs font-semibold text-[#142421] dark:border-[#E0A96D]/25 dark:bg-[#0B132B] dark:text-[#F5F1E8]"
+                >
+                  <option value="compact">متقارب</option>
+                  <option value="normal">مريح</option>
+                  <option value="relaxed">متباعد</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                aria-pressed={isWidePage}
+                onClick={() => { setIsFullWidth(false); setIsWidePage(value => !value); }}
+                className={`min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${isWidePage ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'border-[#1C4E46]/15 bg-white text-[#142421] hover:border-[#C59B27] dark:border-[#E0A96D]/20 dark:bg-[#0B132B] dark:text-[#F5F1E8]'}`}
+              >
+                {isWidePage ? 'تقليل عرض الصفحة' : 'توسيع مساحة القراءة'}
+              </button>
+              <button
+                type="button"
+                aria-pressed={isFullWidth}
+                onClick={() => setIsFullWidth(value => !value)}
+                className={`min-h-11 rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${isFullWidth ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'border-[#1C4E46]/15 bg-white text-[#142421] hover:border-[#C59B27] dark:border-[#E0A96D]/20 dark:bg-[#0B132B] dark:text-[#F5F1E8]'}`}
+              >
+                ملء الشاشة
+              </button>
+              <button
+                type="button"
+                onClick={() => { setUiScale(100); setTextScale('large'); setLineSpacing('normal'); setIsWidePage(false); setIsFullWidth(false); }}
+                className="min-h-11 rounded-lg border border-[#1C4E46]/15 bg-white px-3 py-2 text-xs font-bold text-[#142421] hover:border-[#C59B27] dark:border-[#E0A96D]/20 dark:bg-[#0B132B] dark:text-[#F5F1E8]"
+              >
+                إعادة ضبط العرض
+              </button>
+            </div>
+          </div>
+        </div>
+      </DisplaySettingsCollapsibleCard>
+
+      {/* Responsive page-style reading surface */}
+      <main key={page} style={{ zoom: uiScale / 100 }} onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={event => {
         const startX = touchStartX.current; touchStartX.current = null;
         if (startX === null || event.changedTouches.length === 0) return;
         const delta = event.changedTouches[0].clientX - startX;
         if (Math.abs(delta) > 65) changePage(page + (delta > 0 ? -1 : 1));
-      }} aria-label={`صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#f6f3ea] dark:bg-[#0d1c19] px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
+      }} aria-label={`صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
         {readerLayout === 'printed' ? (
-          <QuranMushafFacsimilePage page={page} onAyahsResolved={setPrintedPageAyahs} selectedAyah={tafsirAyah} onSelectAyah={setTafsirAyah} onFallback={() => selectReaderLayout('flow')} />
+          <QuranMushafFacsimilePage
+            page={page}
+            onAyahsResolved={setPrintedPageAyahs}
+            selectedAyah={tafsirAyah}
+            onSelectAyah={setTafsirAyah}
+            onFallback={() => selectReaderLayout('flow')}
+            maxWidthClass={isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-5xl' : 'max-w-3xl'}
+          />
         ) : (
           <div className="space-y-0">
-        {/* Top Margins of the Sacred Page: Surah on Right, Page in Center, Juz on Left */}
-        <div className="mb-8 flex items-center justify-between border-b-2 border-[#b99b62]/40 dark:border-[#c8ad73]/40 pb-3 text-xs font-bold text-stone-700 dark:text-stone-300">
-          <span className="font-quran text-base text-[#102d29] dark:text-[#dfcaa2]">
+        {/* Top Margins of the Sacred Page */}
+        <div className="mb-8 flex items-center justify-between border-b-2 border-[#C59B27]/40 dark:border-[#E0A96D]/35 pb-3 text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+          <span className="font-quran text-base text-[#1C4E46] dark:text-[#E0A96D]">
             {primarySurah?.name ? `سورة ${primarySurah.name}` : 'القرآن الكريم'}
           </span>
-          <span className="font-mono text-xs px-3 py-0.5 rounded-full bg-[#e8dfc9] dark:bg-[#18332e] text-[#102d29] dark:text-[#dfcaa2] border border-[#b99b62]/40">
+          <span className="font-mono tabular-nums text-xs px-3 py-0.5 rounded-lg bg-[#F2EDE2] dark:bg-[#111F36] text-[#1C4E46] dark:text-[#E0A96D] border border-[#C59B27]/40">
             صفحة {page}
           </span>
-          <span className="font-sans-ui text-xs text-stone-600 dark:text-stone-400">
+          <span className="font-sans-ui text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
             الجزء {currentJuz}
           </span>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#b99b62]/25 bg-white/70 px-3 py-3 dark:border-[#c8ad73]/20 dark:bg-stone-900/50" role="group" aria-label="إعدادات عرض المصحف">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold text-stone-600 dark:text-stone-300">حجم النص</span>
-            {([{ value: 'comfortable', label: 'مريح' }, { value: 'large', label: 'كبير' }, { value: 'extraLarge', label: 'أكبر' }] as const).map(option => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={textScale === option.value}
-                onClick={() => setTextScale(option.value)}
-                className={`min-h-11 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${textScale === option.value ? "border-emerald-800 bg-emerald-800 text-white dark:border-emerald-600 dark:bg-emerald-700" : "border-stone-200 bg-white text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"}`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-stone-600 dark:text-stone-300">
-              <span>تباعد الأسطر</span>
-              <select
-                aria-label="تباعد أسطر المصحف"
-                value={lineSpacing}
-                onChange={event => setLineSpacing(event.target.value as MushafLineSpacing)}
-                className="min-h-11 rounded-lg border border-stone-200 bg-white px-2.5 text-xs dark:border-stone-700 dark:bg-stone-800"
-              >
-                <option value="compact">متقارب</option>
-                <option value="normal">مريح</option>
-                <option value="relaxed">متباعد</option>
-              </select>
-            </label>
-            <button
-              type="button"
-              aria-pressed={isWidePage}
-              onClick={() => { setIsFullWidth(false); setIsWidePage(value => !value); }}
-              className="min-h-11 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
-            >
-              {isWidePage ? 'تقليل عرض الصفحة' : 'توسيع مساحة القراءة'}
-            </button>
-            <button
-              type="button"
-              aria-pressed={isFullWidth}
-              onClick={() => setIsFullWidth(value => !value)}
-              className={`min-h-11 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${isFullWidth ? 'border-emerald-800 bg-emerald-800 text-white' : 'border-stone-200 bg-white text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200'}`}
-            >
-              ملء الشاشة
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTextScale('large'); setLineSpacing('normal'); setIsWidePage(false); setIsFullWidth(false); }}
-              className="min-h-11 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
-            >
-              إعادة ضبط العرض
-            </button>
-          </div>
-        </div>
-
-        <p className="mb-5 text-center text-xs text-stone-500 dark:text-stone-400" role="note">
+        <p className="mb-5 text-center text-xs text-[#5B6F6B] dark:text-[#8B9E9B]" role="note">
           عرض الآيات موزّع داخل صفحة مرنة، وليس محاكاة مطابقة لأسطر المصحف المطبوع. ستظل مطابقة الأسطر غير متاحة حتى تتوفر بيانات تخطيط موثّقة.
         </p>
 
-        {readingKhatma && !readingKhatma.completedAt && <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs dark:bg-emerald-950/40">
-          <span className="text-stone-700 dark:text-stone-200">ختمة القراءة · {readingKhatma.completedPages.length} / 604 صفحة</span>
-          <button type="button" onClick={() => onMarkPageRead?.(page)} disabled={readingKhatma.completedPages.includes(page)} className="min-h-11 rounded-lg bg-emerald-800 px-3 py-2 font-bold text-white disabled:bg-emerald-100 disabled:text-emerald-900 dark:disabled:bg-emerald-900 dark:disabled:text-emerald-100">
+        {readingKhatma && !readingKhatma.completedAt && <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#1C4E46]/10 px-3 py-2 text-xs dark:bg-[#1E4A47]/40">
+          <span className="text-[#142421] dark:text-[#F5F1E8]">ختمة القراءة · {readingKhatma.completedPages.length} / 604 صفحة</span>
+          <button type="button" onClick={() => onMarkPageRead?.(page)} disabled={readingKhatma.completedPages.includes(page)} className="min-h-11 rounded-lg bg-[#1C4E46] px-3 py-2 font-bold text-white disabled:bg-[#F2EDE2] disabled:text-[#1C4E46] dark:bg-[#1E4A47] dark:disabled:bg-[#111F36] dark:disabled:text-[#E0A96D]">
             {readingKhatma.completedPages.includes(page) ? 'تم تسجيل الصفحة كمقروءة' : 'تسجيل الصفحة كمقروءة'}
           </button>
         </div>}
@@ -797,7 +945,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center gap-3 py-28 text-emerald-800 dark:text-emerald-300">
+          <div className="flex flex-col items-center justify-center gap-3 py-28 text-[#1C4E46] dark:text-[#E0A96D]">
             <RefreshCw className="h-7 w-7 animate-spin" />
             <p className="text-sm font-semibold">جارٍ فتح صفحات المصحف الشريف...</p>
           </div>
@@ -819,7 +967,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
         {/* Verses Flow with Authentic Typography */}
         {!isLoading && !loadError && ayahs.length > 0 && (
-          <div data-mushaf-line-spacing={lineSpacing} className={`text-right font-quran ${MUSHAF_TEXT_SCALE_CLASSES[textScale]} ${MUSHAF_LINE_SPACING_CLASSES[lineSpacing]} text-stone-950 dark:text-stone-100 selection:bg-amber-200 selection:text-stone-950`}>
+          <div data-mushaf-line-spacing={lineSpacing} className={`text-right font-quran ${MUSHAF_TEXT_SCALE_CLASSES[textScale]} ${MUSHAF_LINE_SPACING_CLASSES[lineSpacing]} text-[#142421] dark:text-[#F5F1E8] selection:bg-[#C59B27]/30 selection:text-[#142421]`}>
             {ayahs.map((ayah, index) => {
               const surah = ALL_SURAHS.find(item => item.number === ayah.surahNumber);
               const isCurrent = playingIndex === index && isPlaying;
@@ -829,9 +977,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
                   {ayah.numberInSurah === 1 && (
                     <div className="my-8 text-center">
                       <div className="surah-header-banner rounded-2xl py-4 px-6 text-white my-4 relative overflow-hidden shadow-md">
-                        <div className="flex items-center justify-between text-xs text-amber-200/90 font-sans-ui border-b border-amber-400/30 pb-2 mb-2">
+                        <div className="flex items-center justify-between text-xs text-[#F5F1E8]/90 font-sans-ui border-b border-[#C59B27]/40 pb-2 mb-2">
                           <span>{surah?.revelationType || 'مكية'}</span>
-                          <h3 className="font-quran text-2xl md:text-3xl font-bold text-amber-300 tracking-wide">
+                          <h3 className="font-quran text-2xl md:text-3xl font-bold text-[#E0A96D] tracking-wide">
                             سورة {surah?.name || ayah.surahNumber}
                           </h3>
                           <span>{surah?.versesCount} آيات</span>
@@ -840,7 +988,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
                       {/* Sacred Basmalah Presentation */}
                       {ayah.surahNumber !== 1 && ayah.surahNumber !== 9 && (
-                        <p className="font-quran text-2xl md:text-3xl text-emerald-950 dark:text-emerald-100 py-3 text-center tracking-wide">
+                        <p className="font-quran text-2xl md:text-3xl text-[#1C4E46] dark:text-[#E0A96D] py-3 text-center tracking-wide">
                           <QuranBasmala surahNumber={ayah.surahNumber} />
                         </p>
                       )}
@@ -889,13 +1037,13 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         )}
 
         {/* Bottom Margins of the Sacred Page */}
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#d4af37]/40 dark:border-[#785310]/60 pt-4 text-[11px] text-stone-500 dark:text-stone-400">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#C59B27]/40 dark:border-[#E0A96D]/30 pt-4 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
           <span className="max-w-[72%]">{QURAN_DATA_SOURCE_INFO.displayEdition} {QURAN_DATA_SOURCE_INFO.displayVersion} · {QURAN_DATA_SOURCE_INFO.displayScript} · CC BY 3.0</span>
-          <a href={QURAN_DATA_SOURCE_INFO.displaySourceUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-800 dark:text-emerald-300 underline underline-offset-2">Tanzil Project</a>
-          <span className="font-quran text-sm text-stone-600 dark:text-stone-300 font-bold">
+          <a href={QURAN_DATA_SOURCE_INFO.displaySourceUrl} target="_blank" rel="noopener noreferrer" className="text-[#1C4E46] dark:text-[#E0A96D] underline underline-offset-2 font-semibold">Tanzil Project</a>
+          <span className="font-quran text-sm text-[#142421] dark:text-[#E0A96D] font-bold">
             — {page} —
           </span>
-          <span>
+          <span className="tabular-nums">
             {audioAyahs.length ? `من الآية ${audioAyahs[0].numberInSurah} إلى ${audioAyahs[audioAyahs.length - 1].numberInSurah}` : '—'}
           </span>
         </div>
@@ -903,9 +1051,60 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         )}
       </main>
 
+      {/* Hizb Quarters Modal Picker */}
+      {showHizbPicker && (
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4" onClick={() => setShowHizbPicker(false)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="الانتقال إلى ربع حزب"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl max-h-[82vh] flex flex-col bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/35 rounded-3xl shadow-2xl overflow-hidden"
+          >
+            <div className="p-4 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex items-center justify-between gap-3 bg-white dark:bg-[#111F36]">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                <h3 className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">الانتقال إلى ربع حزب (1 – 240)</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHizbPicker(false)}
+                aria-label="إغلاق منتقي الأرباع"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-4 sm:grid-cols-6 gap-2">
+              {Array.from({ length: 240 }, (_, index) => index + 1).map(quarter => {
+                const pt = HIZB_INDEX[String(quarter)];
+                const isCurrentPageQuarter = pt?.page === page;
+                return (
+                  <button
+                    key={quarter}
+                    type="button"
+                    onClick={() => {
+                      jumpToHizbQuarter(quarter);
+                      setShowHizbPicker(false);
+                    }}
+                    className={`min-h-11 rounded-xl border px-2 py-1.5 text-xs font-mono tabular-nums font-bold transition-colors ${
+                      isCurrentPageQuarter
+                        ? 'bg-[#1C4E46] text-white border-[#C59B27]'
+                        : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                    }`}
+                  >
+                    ربع {quarter}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Helpful Hint */}
-      <div className="text-center text-xs text-stone-500 dark:text-stone-400 flex items-center justify-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+      <div className="text-center text-xs text-[#5B6F6B] dark:text-[#8B9E9B] flex items-center justify-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
         <span>انقر على أي آية لفتح التفسير المنقح من Quran.com مع إمكانية التبديل بين أمهات التفاسير والنسخ الفوري.</span>
       </div>
 

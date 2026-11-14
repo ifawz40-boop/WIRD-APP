@@ -1,12 +1,14 @@
 export type MemorizationSessionViewMode = 'focused' | 'page';
 export type MemorizationSessionDensity = 'comfortable' | 'compact';
 export type MemorizationSessionPageWidth = 'comfortable' | 'wide' | 'full';
+export type MemorizationMushafStyle = 'connected' | 'printed';
 
 export interface MemorizationDisplayPreferences {
   fontSize: number;
   uiScale: number;
   density: MemorizationSessionDensity;
   viewMode: MemorizationSessionViewMode;
+  mushafStyle: MemorizationMushafStyle;
   pageWidth: MemorizationSessionPageWidth;
 }
 
@@ -15,6 +17,7 @@ export const DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES: Readonly<MemorizationDisp
   uiScale: 100,
   density: 'comfortable',
   viewMode: 'focused',
+  mushafStyle: 'connected',
   pageWidth: 'comfortable'
 };
 
@@ -44,6 +47,9 @@ function normalizePreferences(value: unknown): MemorizationDisplayPreferences {
     viewMode: candidate.viewMode === 'page' || candidate.viewMode === 'focused'
       ? candidate.viewMode
       : DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES.viewMode,
+    mushafStyle: candidate.mushafStyle === 'printed' || candidate.mushafStyle === 'connected'
+      ? candidate.mushafStyle
+      : DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES.mushafStyle,
     pageWidth: candidate.pageWidth === 'wide' || candidate.pageWidth === 'full'
       ? candidate.pageWidth
       : DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES.pageWidth

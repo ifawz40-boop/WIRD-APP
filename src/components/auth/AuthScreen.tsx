@@ -145,13 +145,13 @@ export const AuthScreen: React.FC = () => {
   // If logged in but email verification is pending
   if (needsEmailVerification) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] dark:bg-stone-950 flex flex-col items-center justify-center p-4 dir-rtl font-cairo">
-        <div className="w-full max-w-md bg-white dark:bg-stone-900 rounded-3xl p-8 shadow-xl border border-stone-200/80 dark:border-stone-800 space-y-6">
+      <div dir="rtl" className="min-h-screen bg-[#F9F6EE] dark:bg-[#0B132B] flex flex-col items-center justify-center p-4 font-cairo">
+        <div className="w-full max-w-md bg-white dark:bg-[#111F36] rounded-3xl p-8 shadow-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/25 space-y-6">
           <div className="text-center space-y-3">
-            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800">
-              <Mail className="w-8 h-8 animate-bounce" />
+            <div className="w-16 h-16 bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] rounded-2xl flex items-center justify-center mx-auto border border-[#C59B27]/35">
+              <Mail className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 font-quran">
+            <h2 className="text-2xl font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
               تأكيد البريد الإلكتروني مطلوب
             </h2>
             {lastVerificationSent === false ? (
@@ -159,22 +159,22 @@ export const AuthScreen: React.FC = () => {
                 تعذر إرسال بريد التفعيل تلقائياً عند التسجيل. يرجى الضغط على "إعادة إرسال رسالة التفعيل" أدناه.
               </p>
             ) : lastVerificationSent === true ? (
-              <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed">
                 تم إرسال رسالة تأكيد إلى البريد الإلكتروني:
               </p>
             ) : (
-              <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed">
                 حسابك بانتظار التفعيل. يمكنك إرسال رسالة التأكيد بالضغط على الزر أدناه:
               </p>
             )}
-            <div className="font-mono text-sm font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 py-2 px-3 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 dir-ltr text-center">
+            <div dir="ltr" className="font-mono text-sm font-bold text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#0B132B]/80 py-2 px-3 rounded-xl border border-[#C59B27]/30 text-center">
               {user?.email}
             </div>
           </div>
 
           {successMessage && (
-            <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs rounded-xl flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="p-3.5 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border border-[#1C4E46]/25 dark:border-[#6EE7B7]/30 text-[#1C4E46] dark:text-[#6EE7B7] text-xs rounded-xl flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#1C4E46] dark:text-[#6EE7B7] shrink-0 mt-0.5" />
               <span>{successMessage}</span>
             </div>
           )}
@@ -190,7 +190,7 @@ export const AuthScreen: React.FC = () => {
             <button
               onClick={handleRecheckStatus}
               disabled={isCheckingStatus}
-              className="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full min-h-11 py-3 bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isCheckingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               <span>تحديث وحالة التفعيل</span>
@@ -199,16 +199,16 @@ export const AuthScreen: React.FC = () => {
             <button
               onClick={handleResendEmail}
               disabled={isSubmitting || resendCooldown > 0}
-              className="w-full py-3 bg-[#faf8f5] dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50"
+              className="w-full min-h-11 py-3 bg-[#F9F6EE] dark:bg-[#162744] hover:bg-[#F2EDE2] dark:hover:bg-[#1d345c] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50"
             >
               {resendCooldown > 0 ? `إعادة الإرسال خلال (${resendCooldown}ث)` : 'إعادة إرسال رسالة التفعيل'}
             </button>
           </div>
 
-          <div className="pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs">
+          <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/15 flex items-center justify-between text-xs">
             <button
               onClick={continueAsGuest}
-              className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1"
+              className="text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:underline flex items-center gap-1"
             >
               <span>المتابعة كزائر مؤقتاً</span>
               <ArrowRight className="w-3.5 h-3.5 rotate-180" />
@@ -216,7 +216,7 @@ export const AuthScreen: React.FC = () => {
 
             <button
               onClick={() => logout()}
-              className="text-stone-500 hover:text-rose-600 dark:text-stone-400 flex items-center gap-1"
+              className="text-[#5B6F6B] hover:text-rose-600 dark:text-[#8B9E9B] flex items-center gap-1"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>تسجيل الخروج</span>
@@ -228,11 +228,11 @@ export const AuthScreen: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#F6F3EA] dark:bg-[#0D1C19] flex flex-col items-center justify-center p-4 dir-rtl font-cairo overflow-hidden">
+    <div dir="rtl" className="relative min-h-screen bg-[#F9F6EE] dark:bg-[#0B132B] flex flex-col items-center justify-center p-4 font-cairo overflow-hidden transition-colors">
       {/* Subtle Islamic Geometry Background Watermark */}
-      <WirdIslamicPattern opacity={0.035} variant="emerald" />
+      <WirdIslamicPattern opacity={0.04} variant="gold" />
 
-      <div className="relative z-10 w-full max-w-md bg-white dark:bg-[#122723] rounded-3xl p-7 sm:p-8 shadow-xl border border-[#102D29]/10 dark:border-[#E8DFC9]/15 space-y-6">
+      <div className="relative z-10 w-full max-w-md bg-white/95 dark:bg-[#111F36]/90 backdrop-blur-xl rounded-3xl p-7 sm:p-8 shadow-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/25 space-y-6">
         
         {/* Brand Header */}
         <div className="text-center pt-2">
@@ -241,18 +241,18 @@ export const AuthScreen: React.FC = () => {
 
         {/* Firebase Config Notice Banner */}
         {!isFirebaseReady && (
-          <div className="p-4 bg-[#E8DFC9]/40 dark:bg-[#18332E]/80 border border-[#B99B62]/40 rounded-2xl text-[#29332F] dark:text-[#E8DFC9] text-xs space-y-2.5 dir-rtl">
-            <div className="flex items-center gap-2 font-bold text-[#102D29] dark:text-[#E8DFC9]">
-              <AlertCircle className="w-4 h-4 text-[#B99B62] shrink-0" />
+          <div dir="rtl" className="p-4 bg-[#F2EDE2]/80 dark:bg-[#162744]/90 border border-[#C59B27]/40 dark:border-[#E0A96D]/30 rounded-2xl text-[#142421] dark:text-[#F5F1E8] text-xs space-y-2.5">
+            <div className="flex items-center gap-2 font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+              <AlertCircle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
               <span>تنبيه: مفاتيح Firebase غير مهيأة بعد</span>
             </div>
-            <p className="text-[11px] leading-relaxed text-stone-600 dark:text-[#9BB0A7]">
+            <p className="text-[11px] leading-relaxed text-[#5B6F6B] dark:text-[#8B9E9B]">
               يتطلب تسجيل الدخول السحابي ضبط متغيرات البيئة (VITE_FIREBASE_*). يمكنك المتابعة الآن مباشرة كزائر بدون عائق وبكامل الميزات محلياً.
             </p>
             <button
               type="button"
               onClick={continueAsGuest}
-              className="w-full py-2.5 bg-[#B99B62] hover:bg-[#a88a50] text-[#102D29] rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+              className="w-full min-h-11 py-2.5 bg-[#C59B27] hover:bg-[#af851a] dark:bg-[#E0A96D] dark:hover:bg-[#f3b77b] text-[#0B132B] rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>المتابعة السريعة كزائر (Guest Mode)</span>
@@ -260,63 +260,75 @@ export const AuthScreen: React.FC = () => {
           </div>
         )}
 
-        {/* Tab Switchers */}
-        {mode !== 'forgot' && (
-          <div className="flex bg-[#F6F3EA] dark:bg-[#18332E] p-1 rounded-2xl border border-[#102D29]/10 dark:border-[#E8DFC9]/10 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => { setMode('login'); clearError(); setSuccessMessage(null); }}
-              className={`flex-1 py-2.5 rounded-xl transition-all ${
-                mode === 'login' 
-                  ? 'bg-[#102D29] text-white dark:bg-[#1D4940] dark:text-[#E8DFC9] shadow-xs' 
-                  : 'text-[#62726B] hover:text-[#102D29] dark:text-[#9BB0A7]'
-              }`}
-            >
-              تسجيل الدخول
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMode('register'); clearError(); setSuccessMessage(null); }}
-              className={`flex-1 py-2.5 rounded-xl transition-all ${
-                mode === 'register' 
-                  ? 'bg-[#102D29] text-white dark:bg-[#1D4940] dark:text-[#E8DFC9] shadow-xs' 
-                  : 'text-[#62726B] hover:text-[#102D29] dark:text-[#9BB0A7]'
-              }`}
-            >
-              حساب جديد
-            </button>
-          </div>
-        )}
+        {/* Crisp 3-Mode Tab Switcher */}
+        <div role="group" aria-label="أوضاع بوابة الدخول" className="grid grid-cols-3 bg-[#F2EDE2] dark:bg-[#0E1A2F] p-1 rounded-2xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px] sm:text-xs font-bold gap-1">
+          <button
+            type="button"
+            aria-pressed={mode === 'login'}
+            onClick={() => { setMode('login'); clearError(); setSuccessMessage(null); }}
+            className={`min-h-11 py-2 px-2 rounded-xl transition-all ${
+              mode === 'login'
+                ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47] dark:text-[#F5F1E8] shadow-xs ring-1 ring-[#C59B27]/40'
+                : 'text-[#5B6F6B] hover:text-[#142421] dark:text-[#8B9E9B] dark:hover:text-[#F5F1E8]'
+            }`}
+          >
+            تسجيل الدخول
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === 'register'}
+            onClick={() => { setMode('register'); clearError(); setSuccessMessage(null); }}
+            className={`min-h-11 py-2 px-2 rounded-xl transition-all ${
+              mode === 'register'
+                ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47] dark:text-[#F5F1E8] shadow-xs ring-1 ring-[#C59B27]/40'
+                : 'text-[#5B6F6B] hover:text-[#142421] dark:text-[#8B9E9B] dark:hover:text-[#F5F1E8]'
+            }`}
+          >
+            حساب جديد
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === 'forgot'}
+            onClick={() => { setMode('forgot'); clearError(); setSuccessMessage(null); }}
+            className={`min-h-11 py-2 px-2 rounded-xl transition-all ${
+              mode === 'forgot'
+                ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47] dark:text-[#F5F1E8] shadow-xs ring-1 ring-[#C59B27]/40'
+                : 'text-[#5B6F6B] hover:text-[#142421] dark:text-[#8B9E9B] dark:hover:text-[#F5F1E8]'
+            }`}
+          >
+            استعادة كلمة المرور
+          </button>
+        </div>
 
         {/* Error Feedback */}
         {authError && (authError.includes('unauthorized-domain') || authError.includes('غير مصرح') || authError.includes('unauthorized')) ? (
-          <div className="p-4 bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 rounded-2xl text-amber-950 dark:text-amber-100 text-xs space-y-3 dir-rtl shadow-xs">
-            <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+          <div dir="rtl" className="p-4 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 border border-[#C59B27]/40 dark:border-[#E0A96D]/35 rounded-2xl text-[#142421] dark:text-[#F5F1E8] text-xs space-y-3 shadow-xs">
+            <div className="flex items-center gap-2 font-bold text-[#9A7512] dark:text-[#E0A96D]">
+              <AlertCircle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
               <span>هذا النطاق غير مصرح به في Firebase</span>
             </div>
             
-            <p className="text-[11px] leading-relaxed text-amber-900/90 dark:text-amber-200/90">
+            <p className="text-[11px] leading-relaxed text-[#5B6F6B] dark:text-[#CBD5E1]">
               يتطلب Firebase Authentication إضافة نطاق الموقع الحالي إلى القائمة المسموح بها (Authorized Domains) في لوحة التحكم.
             </p>
 
             {/* Domain Box with 1-click Copy */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-stone-600 dark:text-stone-400 block">
+              <label className="text-[10px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B] block">
                 نطاق الموقع الحالي المطلوب إضافته:
               </label>
-              <div className="flex items-center gap-2 bg-white dark:bg-stone-900 p-2 rounded-xl border border-amber-200 dark:border-stone-700">
-                <code className="flex-1 font-mono text-[11px] text-emerald-800 dark:text-emerald-400 truncate dir-ltr text-left px-1">
+              <div className="flex items-center gap-2 bg-white dark:bg-[#0B132B] p-2 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/25">
+                <code dir="ltr" className="flex-1 font-mono text-[11px] text-[#1C4E46] dark:text-[#E0A96D] truncate text-left px-1">
                   {typeof window !== 'undefined' ? window.location.hostname : ''}
                 </code>
                 <button
                   type="button"
                   onClick={handleCopyDomain}
-                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 shrink-0 transition-colors"
+                  className="px-2.5 py-1 bg-[#C59B27] hover:bg-[#af851a] text-[#0B132B] rounded-lg text-[11px] font-bold flex items-center gap-1 shrink-0 transition-colors"
                 >
                   {isCopiedDomain ? (
                     <>
-                      <Check className="w-3 h-3 text-emerald-200" />
+                      <Check className="w-3 h-3" />
                       <span>تم النسخ!</span>
                     </>
                   ) : (
@@ -330,8 +342,8 @@ export const AuthScreen: React.FC = () => {
             </div>
 
             {/* Instruction Steps */}
-            <div className="text-[10px] text-stone-700 dark:text-stone-300 bg-amber-100/60 dark:bg-stone-900/60 p-2.5 rounded-xl border border-amber-200/70 dark:border-stone-800 leading-relaxed space-y-1">
-              <div className="font-bold text-stone-900 dark:text-stone-100">خطوات إضافة النطاق في Firebase:</div>
+            <div className="text-[10px] text-[#142421] dark:text-[#F5F1E8] bg-[#F2EDE2]/80 dark:bg-[#0B132B]/70 p-2.5 rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/20 leading-relaxed space-y-1">
+              <div className="font-bold text-[#142421] dark:text-[#E0A96D]">خطوات إضافة النطاق في Firebase:</div>
               <div>1. افتح Firebase Console ← مشروعك</div>
               <div>2. اذهب إلى Authentication ← Settings ← Authorized Domains</div>
               <div>3. انقر "Add Domain" وألصق النطاق المنسوخ أعلاه</div>
@@ -341,9 +353,9 @@ export const AuthScreen: React.FC = () => {
             <button
               type="button"
               onClick={continueAsGuest}
-              className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-4 h-4 text-amber-300" />
+              <Sparkles className="w-4 h-4 text-[#E0A96D]" />
               <span>المتابعة فوراً كزائر دون انتظار (Guest Mode)</span>
             </button>
           </div>
@@ -356,8 +368,8 @@ export const AuthScreen: React.FC = () => {
 
         {/* Success Feedback */}
         {successMessage && (
-          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs rounded-xl flex items-start gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border border-[#1C4E46]/25 dark:border-[#6EE7B7]/30 text-[#1C4E46] dark:text-[#6EE7B7] text-xs rounded-xl flex items-start gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-[#1C4E46] dark:text-[#6EE7B7] shrink-0 mt-0.5" />
             <div className="flex-1 leading-relaxed">{successMessage}</div>
           </div>
         )}
@@ -369,7 +381,7 @@ export const AuthScreen: React.FC = () => {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full min-h-11 py-3 px-4 bg-white dark:bg-[#162744] hover:bg-[#F9F6EE] dark:hover:bg-[#1e355c] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-3 disabled:opacity-50"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -381,9 +393,9 @@ export const AuthScreen: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-3 my-2">
-              <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />
-              <span className="text-[11px] text-stone-400">أو بالبريد الإلكتروني</span>
-              <div className="flex-1 h-px bg-stone-200 dark:bg-stone-800" />
+              <div className="flex-1 h-px bg-[#1C4E46]/12 dark:bg-[#E0A96D]/15" />
+              <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">أو بالبريد الإلكتروني</span>
+              <div className="flex-1 h-px bg-[#1C4E46]/12 dark:bg-[#E0A96D]/15" />
             </div>
           </div>
         )}
@@ -391,18 +403,19 @@ export const AuthScreen: React.FC = () => {
         {/* Email & Password Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
+            <label className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] block">
               البريد الإلكتروني
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B] absolute right-3.5 top-1/2 -translate-y-1/2" />
               <input
+                dir="ltr"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@domain.com"
-                className="w-full pr-10 pl-4 py-2.5 bg-[#faf8f5] dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-emerald-600 transition-colors dir-ltr text-right"
+                className="w-full min-h-11 pr-10 pl-4 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 rounded-xl text-xs text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:border-[#C59B27] transition-colors text-right"
               />
             </div>
           </div>
@@ -410,28 +423,29 @@ export const AuthScreen: React.FC = () => {
           {mode !== 'forgot' && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
+                <label className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] block">
                   كلمة المرور
                 </label>
                 {mode === 'login' && (
                   <button
                     type="button"
                     onClick={() => { setMode('forgot'); clearError(); setSuccessMessage(null); }}
-                    className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+                    className="text-[11px] text-[#1C4E46] dark:text-[#E0A96D] hover:underline font-medium"
                   >
                     نسيت كلمة المرور؟
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 <input
+                  dir="ltr"
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pr-10 pl-4 py-2.5 bg-[#faf8f5] dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-emerald-600 transition-colors dir-ltr text-right"
+                  className="w-full min-h-11 pr-10 pl-4 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 rounded-xl text-xs text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:border-[#C59B27] transition-colors text-right"
                 />
               </div>
             </div>
@@ -439,18 +453,19 @@ export const AuthScreen: React.FC = () => {
 
           {mode === 'register' && (
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700 dark:text-stone-300 block">
+              <label className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] block">
                 تأكيد كلمة المرور
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 <input
+                  dir="ltr"
                   type="password"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pr-10 pl-4 py-2.5 bg-[#faf8f5] dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-emerald-600 transition-colors dir-ltr text-right"
+                  className="w-full min-h-11 pr-10 pl-4 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 rounded-xl text-xs text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:border-[#C59B27] transition-colors text-right"
                 />
               </div>
               {password && confirmPassword && password !== confirmPassword && (
@@ -462,7 +477,7 @@ export const AuthScreen: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting || (mode === 'register' && password !== confirmPassword)}
-            className="w-full py-3 bg-[#102D29] hover:bg-[#1D4940] text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 ring-1 ring-[#B99B62]/30"
+            className="w-full min-h-11 py-3 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/40"
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -476,28 +491,18 @@ export const AuthScreen: React.FC = () => {
           </button>
         </form>
 
-        {mode === 'forgot' && (
-          <button
-            type="button"
-            onClick={() => { setMode('login'); clearError(); setSuccessMessage(null); }}
-            className="w-full text-center text-xs text-[#62726B] hover:text-[#102D29] dark:text-[#9BB0A7] font-medium"
-          >
-            العودة إلى تسجيل الدخول
-          </button>
-        )}
-
         {/* Continue as Guest CTA - Critical Protected Flow */}
-        <div className="pt-4 border-t border-[#102D29]/10 dark:border-[#E8DFC9]/10 space-y-2">
+        <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/15 space-y-2">
           <button
             type="button"
             onClick={continueAsGuest}
-            className="w-full py-3 bg-[#F6F3EA] dark:bg-[#18332E] hover:bg-[#E8DFC9] dark:hover:bg-[#1d423b] text-[#102D29] dark:text-[#E8DFC9] border border-[#B99B62]/40 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 group shadow-2xs"
+            className="w-full min-h-11 py-3 bg-[#F9F6EE] dark:bg-[#162744] hover:bg-[#F2EDE2] dark:hover:bg-[#1e355c] text-[#142421] dark:text-[#F5F1E8] border border-[#C59B27]/45 dark:border-[#E0A96D]/35 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 group shadow-2xs"
           >
-            <Sparkles className="w-4 h-4 text-[#B99B62] group-hover:rotate-12 transition-transform" />
+            <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] group-hover:rotate-12 transition-transform" />
             <span>المتابعة كزائر دون تسجيل حساب</span>
-            <ArrowRight className="w-3.5 h-3.5 rotate-180 text-[#B99B62]" />
+            <ArrowRight className="w-3.5 h-3.5 rotate-180 text-[#C59B27] dark:text-[#E0A96D]" />
           </button>
-          <p className="text-[10px] text-center text-[#62726B] dark:text-[#9BB0A7] leading-normal">
+          <p className="text-[10px] text-center text-[#5B6F6B] dark:text-[#8B9E9B] leading-normal">
             تتيح لك تجربة الزائر الوصول التام لكافة سور المصحف الشريف والخطط وجلسات الحفظ والتكرار المتباعد محلياً دون الحاجة لتسجيل حساب.
           </p>
         </div>

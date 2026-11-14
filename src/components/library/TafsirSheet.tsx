@@ -204,25 +204,25 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
         aria-modal="true"
         aria-labelledby="wird-tafsir-dialog-title"
         onClick={event => event.stopPropagation()}
-        className="w-full sm:max-w-3xl max-h-[92vh] sm:max-h-[88vh] bg-[#fdfbf7] dark:bg-stone-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200/90 dark:border-stone-800 overflow-hidden flex flex-col"
+        className="w-full sm:max-w-3xl max-h-[92vh] sm:max-h-[88vh] bg-[#F9F6EE] dark:bg-[#111F36] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 overflow-hidden flex flex-col"
       >
         {/* Header with Title and Quick Controls */}
-        <div className="flex flex-col border-b border-stone-200/80 dark:border-stone-800 bg-[#faf6ee] dark:bg-stone-900/95 shrink-0 px-5 py-3.5 space-y-3">
+        <div className="flex flex-col border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/18 bg-[#F2EDE2]/85 dark:bg-[#0B132B]/90 shrink-0 px-5 py-3.5 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-amber-300 flex items-center justify-center shadow-xs shrink-0 border border-emerald-700">
+              <div className="w-10 h-10 rounded-2xl bg-[#1C4E46] dark:bg-[#1E4A47] text-[#E0A96D] flex items-center justify-center shadow-xs shrink-0 border border-[#C59B27]/40 dark:border-[#E0A96D]/35">
                 <BookOpen className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h2 id="wird-tafsir-dialog-title" className="font-bold text-stone-900 dark:text-stone-100 text-base md:text-lg">
+                  <h2 id="wird-tafsir-dialog-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base md:text-lg font-quran">
                     {currentBookName}
                   </h2>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1C4E46]/10 dark:bg-[#1E4A47]/60 text-[#1C4E46] dark:text-[#E0A96D] font-semibold border border-[#1C4E46]/20 dark:border-[#E0A96D]/25">
                     Quran.com API v4
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
+                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] truncate">
                   سورة {surah?.name || ayah.surahNumber} · الآية {ayah.numberInSurah} {currentAuthor ? `· ${currentAuthor}` : ''}
                 </p>
               </div>
@@ -238,11 +238,11 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
                 title="نسخ الآية والتفسير للمشاركة"
                 className={`min-h-11 min-w-11 p-2 rounded-xl border transition-all text-xs font-semibold flex items-center gap-1.5 ${
                   copied
-                    ? 'bg-emerald-100 border-emerald-400 text-emerald-800 dark:bg-emerald-950 dark:border-emerald-700 dark:text-emerald-200'
-                    : 'bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
+                    ? 'bg-[#1C4E46]/12 border-[#1C4E46] text-[#1C4E46] dark:bg-[#1E4A47]/55 dark:border-[#E0A96D] dark:text-[#E0A96D]'
+                    : 'bg-white dark:bg-[#162744] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
                 } disabled:opacity-40`}
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-stone-500" />}
+                {copied ? <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" /> : <Copy className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B]" />}
                 <span className="hidden sm:inline">{copied ? 'تم النسخ' : 'نسخ'}</span>
               </button>
 
@@ -252,7 +252,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
                 onClick={onClose}
                 ref={closeButtonRef}
                 aria-label="إغلاق التفسير"
-                className="min-h-11 min-w-11 p-2 rounded-xl hover:bg-stone-200/70 dark:hover:bg-stone-800 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
+                className="min-h-11 min-w-11 p-2 rounded-xl hover:bg-white/80 dark:hover:bg-[#162744] text-[#5B6F6B] hover:text-[#142421] dark:hover:text-[#F5F1E8] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -260,43 +260,37 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
           </div>
 
           {/* Edition Selector & Font Scaler Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-stone-200/60 dark:border-stone-800 text-xs">
-            {/* Tafsir Book Editions */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full">
-              <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 shrink-0">الكتاب:</span>
-              {TAFSIR_EDITIONS.map(edition => {
-                const isSelected = edition.id === selectedBookId;
-                return (
-                  <button
-                    key={edition.id}
-                    type="button"
-                    onClick={() => handleSelectBook(edition.id)}
-                    aria-pressed={isSelected}
-                    className={`min-h-11 px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
-                      isSelected
-                        ? 'bg-emerald-800 text-white shadow-xs font-bold'
-                        : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-emerald-50 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700'
-                    }`}
-                  >
-                    {edition.name.replace('تفسير ', '')}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
+            {/* Tafsir Book Editions Dropdown */}
+            <label className="flex items-center gap-2 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <span className="text-[11px] font-semibold shrink-0">كتاب التفسير</span>
+              <select
+                aria-label="اختيار كتاب التفسير"
+                value={selectedBookId}
+                onChange={event => handleSelectBook(Number(event.target.value))}
+                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#162744] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+              >
+                {TAFSIR_EDITIONS.map(edition => (
+                  <option key={edition.id} value={edition.id}>
+                    {edition.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             {/* Font Size Adjuster */}
-            <div className="flex items-center gap-1 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-white dark:bg-[#162744] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl p-0.5">
               <button
                 type="button"
                 onClick={() => handleAdjustFontSize('decrease')}
                 disabled={fontSizeIndex === 0}
                 aria-label="تصغير خط التفسير"
                 title="تصغير خط التفسير"
-                className="min-h-11 min-w-11 p-1 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-400 rounded disabled:opacity-30"
+                className="min-h-11 min-w-11 p-1 hover:bg-[#F2EDE2] dark:hover:bg-[#0B132B] text-[#5B6F6B] dark:text-[#8B9E9B] rounded-lg disabled:opacity-30"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
-              <span className="px-1 text-[11px] font-mono font-medium text-stone-500 dark:text-stone-400">
+              <span className="px-1 text-[11px] font-mono font-medium text-[#5B6F6B] dark:text-[#8B9E9B]">
                 {currentSizeConfig.label}
               </span>
               <button
@@ -305,7 +299,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
                 disabled={fontSizeIndex === FONT_SIZES.length - 1}
                 aria-label="تكبير خط التفسير"
                 title="تكبير خط التفسير"
-                className="min-h-11 min-w-11 p-1 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-400 rounded disabled:opacity-30"
+                className="min-h-11 min-w-11 p-1 hover:bg-[#F2EDE2] dark:hover:bg-[#0B132B] text-[#5B6F6B] dark:text-[#8B9E9B] rounded-lg disabled:opacity-30"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>
@@ -316,21 +310,21 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
         {/* Scrollable Content Body */}
         <div className="overflow-y-auto overscroll-contain p-5 md:p-6 space-y-5">
           {/* Authentic Quranic Ayah Presentation Card */}
-          <div className="rounded-2xl bg-gradient-to-br from-[#faf4e6] to-[#f5eedb] dark:from-stone-800/90 dark:to-stone-900 border border-amber-300/80 dark:border-amber-900/40 p-5 md:p-6 shadow-xs relative overflow-hidden">
-            <div className="absolute top-2 left-3 opacity-10 text-amber-900 dark:text-amber-100 pointer-events-none">
+          <div className="rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#F2EDE2] dark:from-[#0B132B]/90 dark:to-[#162744]/85 border border-[#C59B27]/40 dark:border-[#E0A96D]/30 p-5 md:p-6 shadow-xs relative overflow-hidden">
+            <div className="absolute top-2 left-3 opacity-10 text-[#C59B27] dark:text-[#E0A96D] pointer-events-none">
               <Sparkles className="w-20 h-20" />
             </div>
 
-            <div className="flex items-center justify-between gap-2 mb-3 text-xs text-amber-900/80 dark:text-amber-300 font-semibold border-b border-amber-200/80 dark:border-amber-900/50 pb-2">
+            <div className="flex items-center justify-between gap-2 mb-3 text-xs text-[#9A7415] dark:text-[#E0A96D] font-semibold border-b border-[#C59B27]/25 dark:border-[#E0A96D]/20 pb-2">
               <span>نص الآية الكريمة</span>
-              <span className="font-sans-ui bg-amber-200/60 dark:bg-amber-950 px-2 py-0.5 rounded-full text-[11px]">
+              <span className="font-sans-ui bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 px-2.5 py-0.5 rounded-full text-[11px]">
                 سورة {surah?.name || ayah.surahNumber} · الآية {ayah.numberInSurah}
               </span>
             </div>
 
-            <p className="font-quran text-2xl md:text-3xl leading-[2.3] text-right text-stone-950 dark:text-stone-100">
+            <p className="font-quran text-2xl md:text-3xl leading-[2.3] text-right text-[#142421] dark:text-[#F5F1E8]">
               <QuranText surahNumber={ayah.surahNumber} ayahNumber={ayah.numberInSurah}>{ayah.text}</QuranText>{' '}
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-amber-600 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950 font-sans text-xs align-middle font-bold mx-1">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-[#C59B27] dark:border-[#E0A96D] text-[#9A7415] dark:text-[#E0A96D] bg-[#F9F6EE] dark:bg-[#0B132B] font-sans text-xs align-middle font-bold mx-1 tabular-nums">
                 {ayah.numberInSurah}
               </span>
             </p>
@@ -338,7 +332,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
 
           {/* Loading State */}
           {isLoading && (
-            <div className="flex flex-col items-center justify-center gap-3 py-16 text-emerald-800 dark:text-emerald-400">
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-[#1C4E46] dark:text-[#E0A96D]">
               <Loader2 className="w-7 h-7 animate-spin" />
               <p className="text-sm font-semibold">جارٍ تحميل التفسير المعتمد من المصدر الرسمي...</p>
             </div>
@@ -356,14 +350,14 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
                 <button
                   type="button"
                   onClick={() => setRetry(val => val + 1)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-700 text-white text-xs font-bold hover:bg-rose-800 transition-colors shadow-xs"
+                  className="inline-flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-700 text-white text-xs font-bold hover:bg-rose-800 transition-colors shadow-xs"
                 >
                   <RefreshCw className="w-3.5 h-3.5" /> إعادة المحاولة
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSelectBook(16)}
-                  className="text-xs text-rose-900 dark:text-rose-300 underline font-semibold"
+                  className="min-h-11 text-xs text-rose-900 dark:text-rose-300 underline font-semibold"
                 >
                   التبديل إلى التفسير الميسر
                 </button>
@@ -374,10 +368,10 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
           {/* Clean Rendered Tafsir Segments (Zero Raw HTML or Code Display) */}
           {!isLoading && !error && segments.length > 0 && (
             <article
-              className={`p-1 space-y-3 text-stone-900 dark:text-stone-100 ${currentSizeConfig.sizeClass} text-justify font-sans-ui`}
+              className={`p-1 space-y-3 text-[#142421] dark:text-[#F5F1E8] ${currentSizeConfig.sizeClass} text-justify font-sans-ui`}
             >
-              <div className="flex items-center gap-2 pb-2 text-xs font-bold text-emerald-800 dark:text-emerald-400 border-b border-stone-200 dark:border-stone-800">
-                <Sparkles className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-2 pb-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/18">
+                <Sparkles className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
                 <span>بيان المعنى والشرح:</span>
               </div>
 
@@ -389,7 +383,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
 
           {/* Empty Fallback */}
           {!isLoading && !error && segments.length === 0 && (
-            <div className="py-12 text-center text-stone-400 text-xs">
+            <div className="py-12 text-center text-[#5B6F6B] dark:text-[#8B9E9B] text-xs">
               لا يتوفر نص تفسير متاح لهذه الآية في الطبعة المحددة حالياً.
             </div>
           )}
@@ -397,16 +391,16 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({ ayah, onClose }) => {
           <RelatedHadithPanel ayah={ayah} />
 
           {/* Footer Metadata & Status */}
-          <div className="pt-4 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-3 text-[11px] text-stone-500 dark:text-stone-400">
+          <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="w-2 h-2 rounded-full bg-[#1C4E46] dark:bg-[#E0A96D]" />
               <span>{isCached ? 'محفوظ محلياً للرجوع إليه دون إنترنت' : 'تم الجلب مباشرة من Quran.com API v4'}</span>
             </div>
             <a
               href="https://quran.com/ar/developers"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-semibold text-emerald-800 dark:text-emerald-400 hover:underline"
+              className="inline-flex items-center gap-1 font-semibold text-[#1C4E46] dark:text-[#E0A96D] hover:underline"
             >
               <span>منصة مطوري Quran.com</span>
               <ExternalLink className="w-3 h-3" />
@@ -446,7 +440,7 @@ function renderSegmentBlocks(segments: ReturnType<typeof parseTafsirToSegments>)
           return (
             <span
               key={seg.id}
-              className="font-quran text-amber-900 dark:text-amber-300 font-bold bg-amber-100/70 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-md inline-block mx-1 shadow-2xs border border-amber-300/60 dark:border-amber-800/60"
+              className="font-quran text-[#9A7415] dark:text-[#E0A96D] font-bold bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 px-1.5 py-0.5 rounded-md inline-block mx-1 shadow-2xs border border-[#C59B27]/35 dark:border-[#E0A96D]/30"
             >
               {seg.text}
             </span>
@@ -456,7 +450,7 @@ function renderSegmentBlocks(segments: ReturnType<typeof parseTafsirToSegments>)
           return (
             <span
               key={seg.id}
-              className="font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1 py-0.5 rounded inline-block mx-0.5"
+              className="font-bold text-[#1C4E46] dark:text-[#6EE7B7] bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 px-1 py-0.5 rounded inline-block mx-0.5"
             >
               {seg.text}
             </span>

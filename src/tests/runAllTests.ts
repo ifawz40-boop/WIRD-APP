@@ -58,6 +58,8 @@ import { runRuqyahAudioServiceTests } from './ruqyahAudioService.test';
 import { runRuqyahProgressServiceTests } from '../services/ruqyahProgressService.test';
 import { runRuqyahApiServiceTests } from '../services/ruqyahApiService.test';
 import { runRuqyahViewAudioLockTests } from './ruqyahViewAudioLock.test';
+import { runReadingDisplayPreferencesTests } from './readingDisplayPreferences.test';
+import { runMemorizedRangeServiceTests } from '../services/memorizedRangeService.test';
 
 export interface SuiteResult {
   passed: number;
@@ -163,6 +165,8 @@ async function main() {
     { name: 'Ruqyah Canonical Quran Text & Complete Ayah Resolution', runner: runRuqyahContentServiceTests },
     { name: 'Ruqyah Shariah Data & Audio Integrity', runner: runRuqyahIntegrityTests },
     { name: 'Ruqyah Audio Playback Safety & Source Allowlist', runner: runRuqyahViewAudioLockTests },
+    { name: 'Device-local Reading Display Preferences & Range Labels', runner: runReadingDisplayPreferencesTests },
+    { name: 'Hafs 30-Juz Boundaries, Range Merging & Pre-Memorized Import', runner: runMemorizedRangeServiceTests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);

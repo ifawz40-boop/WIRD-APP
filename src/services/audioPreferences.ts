@@ -4,11 +4,21 @@ export type PlaybackRate = typeof PLAYBACK_RATES[number];
 const STORAGE_KEY = 'wird.audio.playbackRate.v1';
 export const AUDIO_REPEAT_COUNTS = [1, 2, 3, 5, 10, -1] as const;
 export type AudioRepeatCount = typeof AUDIO_REPEAT_COUNTS[number];
+export const AYAH_SEGMENT_REPEAT_COUNTS = [1, 2, 3, 5, 10] as const;
+export type AyahSegmentRepeatCount = typeof AYAH_SEGMENT_REPEAT_COUNTS[number];
 const REPEAT_STORAGE_KEY = 'wird.audio.repeatCount.v1';
+const SEGMENT_REPEAT_STORAGE_KEY = 'wird.audio.segmentRepeatCount.v1';
 
 export function normalizeAudioRepeatCount(value: unknown): AudioRepeatCount {
   const numeric = typeof value === 'number' ? value : Number(value);
   return AUDIO_REPEAT_COUNTS.includes(numeric as AudioRepeatCount) ? numeric as AudioRepeatCount : 1;
+}
+
+export function normalizeAyahSegmentRepeatCount(value: unknown): AyahSegmentRepeatCount {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return AYAH_SEGMENT_REPEAT_COUNTS.includes(numeric as AyahSegmentRepeatCount)
+    ? numeric as AyahSegmentRepeatCount
+    : 1;
 }
 
 export function getSavedAudioRepeatCount(): AudioRepeatCount {
@@ -26,6 +36,25 @@ export function saveAudioRepeatCount(value: unknown): AudioRepeatCount {
     if (typeof localStorage !== 'undefined') localStorage.setItem(REPEAT_STORAGE_KEY, String(count));
   } catch {
     // Keep the selected repeat count for the current session if storage is unavailable.
+  }
+  return count;
+}
+
+export function getSavedSegmentRepeatCount(): AudioRepeatCount {
+  try {
+    if (typeof localStorage === 'undefined') return 1;
+    return normalizeAudioRepeatCount(localStorage.getItem(SEGMENT_REPEAT_STORAGE_KEY));
+  } catch {
+    return 1;
+  }
+}
+
+export function saveSegmentRepeatCount(value: unknown): AudioRepeatCount {
+  const count = normalizeAudioRepeatCount(value);
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(SEGMENT_REPEAT_STORAGE_KEY, String(count));
+  } catch {
+    // Keep the selected segment repeat count for the current session if storage is unavailable.
   }
   return count;
 }

@@ -26,6 +26,7 @@ import { importBackupFile } from '../../services/backupPersistence';
 import { RetentionService } from '../../services/retentionService';
 import { getLocalDateString } from '../../services/unifiedPortionService';
 import { buildPageStatusUpdate, getPageAyahSegments, getPageProgressStatus, PageAyahSegment } from '../../services/pageProgressService';
+import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 
 interface ProgressAnalyticsViewProps {
   logs: DailyLog[];
@@ -33,6 +34,7 @@ interface ProgressAnalyticsViewProps {
   onRefreshData: () => void;
   onStartSession?: (surahNumber: number, startAyah: number, endAyah: number) => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
+  onOpenSettings?: () => void;
 }
 
 
@@ -44,12 +46,12 @@ const PAGE_GRID_ZOOM_CLASSES: Record<PageGridZoom, string> = {
 };
 
 const STATUS_CONFIG: Record<PortionMemorizationStatus, { label: string; bg: string; border: string; text: string; dotColor: string }> = {
-  stable: { label: 'راسخ ومتقن', bg: 'bg-emerald-100 dark:bg-emerald-950/70', border: 'border-emerald-400 dark:border-emerald-700', text: 'text-emerald-900 dark:text-emerald-200', dotColor: 'bg-emerald-600' },
-  recently_memorized: { label: 'محفوظ حديثاً', bg: 'bg-sky-100 dark:bg-sky-950/70', border: 'border-sky-400 dark:border-sky-700', text: 'text-sky-900 dark:text-sky-200', dotColor: 'bg-sky-500' },
-  needs_revision: { label: 'يحتاج مراجعة', bg: 'bg-amber-100 dark:bg-amber-950/70', border: 'border-amber-400 dark:border-amber-700', text: 'text-amber-900 dark:text-amber-200', dotColor: 'bg-amber-500' },
-  weak: { label: 'ضعيف ويتفلت', bg: 'bg-rose-100 dark:bg-rose-950/70', border: 'border-rose-400 dark:border-rose-700', text: 'text-rose-900 dark:text-rose-200', dotColor: 'bg-rose-500' },
-  currently_memorizing: { label: 'قيد الحفظ', bg: 'bg-purple-100 dark:bg-purple-950/70', border: 'border-purple-400 dark:border-purple-700', text: 'text-purple-900 dark:text-purple-200', dotColor: 'bg-purple-500' },
-  not_memorized: { label: 'غير محفوظ', bg: 'bg-stone-100 dark:bg-stone-800/40', border: 'border-stone-200 dark:border-stone-700', text: 'text-stone-500 dark:text-stone-400', dotColor: 'bg-stone-300 dark:bg-stone-600' }
+  stable: { label: 'راسخ ومتقن', bg: 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/65', border: 'border-[#1C4E46]/35 dark:border-[#6EE7B7]/40', text: 'text-[#1C4E46] dark:text-[#6EE7B7]', dotColor: 'bg-[#1C4E46] dark:bg-[#6EE7B7]' },
+  recently_memorized: { label: 'محفوظ حديثاً', bg: 'bg-sky-100/80 dark:bg-sky-950/70', border: 'border-sky-400/70 dark:border-sky-700', text: 'text-sky-900 dark:text-sky-200', dotColor: 'bg-sky-500' },
+  needs_revision: { label: 'يحتاج مراجعة', bg: 'bg-[#C59B27]/15 dark:bg-[#E0A96D]/20', border: 'border-[#C59B27]/50 dark:border-[#E0A96D]/50', text: 'text-[#9A7415] dark:text-[#E0A96D]', dotColor: 'bg-[#C59B27] dark:bg-[#E0A96D]' },
+  weak: { label: 'ضعيف ويتفلت', bg: 'bg-rose-100/85 dark:bg-rose-950/70', border: 'border-rose-400/70 dark:border-rose-700', text: 'text-rose-900 dark:text-rose-200', dotColor: 'bg-rose-500' },
+  currently_memorizing: { label: 'قيد الحفظ', bg: 'bg-purple-100/80 dark:bg-purple-950/70', border: 'border-purple-400/70 dark:border-purple-700', text: 'text-purple-900 dark:text-purple-200', dotColor: 'bg-purple-500' },
+  not_memorized: { label: 'غير محفوظ', bg: 'bg-[#F2EDE2]/70 dark:bg-[#162744]/55', border: 'border-[#1C4E46]/15 dark:border-[#E0A96D]/15', text: 'text-[#5B6F6B] dark:text-[#8B9E9B]', dotColor: 'bg-[#5B6F6B]/50 dark:bg-[#8B9E9B]/50' }
 };
 
 export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
@@ -57,7 +59,8 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
   profile,
   onRefreshData,
   onStartSession,
-  onToast
+  onToast,
+  onOpenSettings
 }) => {
   const [mapMode, setMapMode] = useState<'juz' | 'pages'>('pages');
   const [pageGridZoom, setPageGridZoom] = useState<PageGridZoom>('normal');
@@ -171,6 +174,7 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
     a.href = url;
     a.download = `wird_backup_${getLocalDateString()}.json`;
     a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     setIsExportSuccess(true);
     setTimeout(() => setIsExportSuccess(false), 3000);
   };
@@ -230,28 +234,29 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 1. Header with Export/Import */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="wird-card rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2 font-quran">
-            <BarChart3 className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+          <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
+            <BarChart3 className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
             المصحف البصري التفاعلي وخريطة الحفظ
           </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
             خريطة إلكترونية تفاعلية لـ 604 صفحة و 30 جزء بالترميز اللوني الدقيق للحالات الست
           </p>
         </div>
 
         {/* Backup export/import */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
+            type="button"
             onClick={handleExportBackup}
-            className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#faf8f5] dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 transition-colors"
+            className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#F2EDE2]/80 dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             <span>{isExportSuccess ? 'تم التصدير!' : 'تصدير نسخة احتياطية'}</span>
           </button>
 
-          <label className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#faf8f5] dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer">
+          <label className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#F2EDE2]/80 dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 transition-colors cursor-pointer">
             <Upload className="w-3.5 h-3.5" />
             <span>{isImporting ? 'جارٍ الاستيراد...' : 'استيراد بيانات'}</span>
             <input 
@@ -262,86 +267,98 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
               className="hidden" 
             />
           </label>
+
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:underline"
+            >
+              <span>مركز النسخ بالإعدادات</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* 2. Key Metrics Summary Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-          <div className="text-xs text-stone-500">الصفحات المتقنة والمحفوظة</div>
-          <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
+        <div className="wird-card rounded-2xl p-5 space-y-1">
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الصفحات المتقنة والمحفوظة</div>
+          <div className="text-2xl font-bold text-[#1C4E46] dark:text-[#6EE7B7] font-mono tabular-nums">
             {totalMemorizedPagesCount}
           </div>
-          <div className="text-[11px] text-stone-400">
+          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
             من أصل 604 صفحة ({((totalMemorizedPagesCount / 604) * 100).toFixed(1)}%)
           </div>
         </div>
 
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-          <div className="text-xs text-stone-500">صفحات في طور الحفظ</div>
+        <div className="wird-card rounded-2xl p-5 space-y-1">
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">صفحات في طور الحفظ</div>
           <div className="text-2xl font-bold text-purple-700 dark:text-purple-400 font-mono tabular-nums">
             {pageStats.currently_memorizing}
           </div>
-          <div className="text-[11px] text-stone-400">
+          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
             قيد المتابعة اليومية
           </div>
         </div>
 
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-          <div className="text-xs text-stone-500">صفحات تحتاج مراجعة أو تثبيت</div>
-          <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 font-mono tabular-nums">
+        <div className="wird-card rounded-2xl p-5 space-y-1">
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">صفحات تحتاج مراجعة أو تثبيت</div>
+          <div className="text-2xl font-bold text-[#C59B27] dark:text-[#E0A96D] font-mono tabular-nums">
             {pageStats.needs_revision + pageStats.weak}
           </div>
-          <div className="text-[11px] text-stone-400">
+          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
             منها {pageStats.weak} صفحات ضعيفة
           </div>
         </div>
 
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-          <div className="text-xs text-stone-500">معدل التثبيت العام</div>
-          <div className="text-2xl font-bold text-stone-900 dark:text-stone-100 font-mono tabular-nums">
+        <div className="wird-card rounded-2xl p-5 space-y-1">
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">معدل التثبيت العام</div>
+          <div className="text-2xl font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
             %{totalMemorizedPagesCount > 0 ? Math.round(((pageStats.stable + pageStats.recently_memorized * 0.8) / totalMemorizedPagesCount) * 100) : 0}
           </div>
-          <div className="text-[11px] text-stone-400">
+          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
             جودة الرسوخ التراكمية
           </div>
         </div>
       </div>
 
       {/* 3. Interactive Visual Quran Map Control Bar */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-5">
+      <div className="wird-card rounded-3xl p-5 sm:p-6 space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
               <span>خريطة المصحف البصرية التفاعلية</span>
             </h3>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
               انقر على أي صفحة لتفقد حالتها، وتغيير تصنيفها، أو بدء جلسة تسميع وتكرار لها
             </p>
           </div>
 
           {/* Toggle between 30 Juz and 604 Pages */}
           <div className="flex items-center gap-2">
-            <div className="flex bg-[#faf8f5] dark:bg-stone-900 p-1 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-semibold">
+            <div className="flex bg-[#F2EDE2] dark:bg-[#0B132B] p-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-xs font-bold">
               <button
+                type="button"
                 onClick={() => setMapMode('pages')}
                 aria-pressed={mapMode === 'pages'}
-                className={`min-h-11 px-3 py-1.5 rounded-lg transition-colors ${
+                className={`min-h-11 px-3.5 py-1.5 rounded-lg transition-colors ${
                   mapMode === 'pages'
-                    ? 'bg-emerald-800 text-white font-bold shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400'
+                    ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs border border-[#C59B27]/40 dark:border-[#E0A96D]/40'
+                    : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
                 }`}
               >
                 صفحات المصحف (604)
               </button>
               <button
+                type="button"
                 onClick={() => setMapMode('juz')}
                 aria-pressed={mapMode === 'juz'}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
+                className={`min-h-11 px-3.5 py-1.5 rounded-lg transition-colors ${
                   mapMode === 'juz'
-                    ? 'bg-emerald-800 text-white font-bold shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400'
+                    ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs border border-[#C59B27]/40 dark:border-[#E0A96D]/40'
+                    : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
                 }`}
               >
                 أجزاء القرآن (30)
@@ -350,61 +367,68 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
           </div>
         </div>
 
-        {/* Status Legend & Filter */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 pb-1 text-xs border-y border-stone-100 dark:border-stone-700/60">
-          <span className="text-stone-400 font-medium">تصفية العرض حسب الحالة:</span>
-          
-          <button
-            onClick={() => setStatusFilter('all')}
-            aria-pressed={statusFilter === 'all'}
-            className={`min-h-11 px-2.5 py-1 rounded-lg transition-all ${
-              statusFilter === 'all'
-                ? 'bg-stone-800 text-white dark:bg-stone-200 dark:text-stone-900 font-bold'
-                : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
-            }`}
+        {/* Status Legend & Filter inside HorizontalScrollRail */}
+        <div className="space-y-2 border-y border-[#1C4E46]/10 dark:border-[#E0A96D]/15 py-3">
+          <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] font-bold block">تصفية العرض حسب الحالة:</span>
+          <HorizontalScrollRail
+            ariaLabel="تصفية خريطة المصحف حسب الحالة"
+            activeKey={statusFilter}
+            contentClassName="gap-2 text-xs"
           >
-            الكل (604)
-          </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('all')}
+              aria-pressed={statusFilter === 'all'}
+              className={`min-h-11 shrink-0 snap-start px-3 py-1.5 rounded-xl transition-all border ${
+                statusFilter === 'all'
+                  ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27] font-bold shadow-xs'
+                  : 'bg-[#F2EDE2]/75 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent'
+              }`}
+            >
+              الكل (604)
+            </button>
 
-          {(Object.keys(STATUS_CONFIG) as PortionMemorizationStatus[]).map(statusKey => {
-            const cfg = STATUS_CONFIG[statusKey];
-            const count = pageStats[statusKey];
-            const isSelected = statusFilter === statusKey;
-            return (
-              <button
-                key={statusKey}
-                onClick={() => setStatusFilter(statusKey)}
-                aria-pressed={isSelected}
-                className={`flex min-h-11 items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all ${
-                  isSelected 
-                    ? 'ring-2 ring-emerald-600 font-bold' 
-                    : ''
-                } ${cfg.bg} ${cfg.border} ${cfg.text}`}
-              >
-                <span className={`w-2 h-2 rounded-full ${cfg.dotColor}`} />
-                <span>{cfg.label}</span>
-                <span className="font-mono text-[10px] opacity-75">({count})</span>
-              </button>
-            );
-          })}
+            {(Object.keys(STATUS_CONFIG) as PortionMemorizationStatus[]).map(statusKey => {
+              const cfg = STATUS_CONFIG[statusKey];
+              const count = pageStats[statusKey];
+              const isSelected = statusFilter === statusKey;
+              return (
+                <button
+                  key={statusKey}
+                  type="button"
+                  onClick={() => setStatusFilter(statusKey)}
+                  aria-pressed={isSelected}
+                  className={`flex min-h-11 shrink-0 snap-start items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all ${
+                    isSelected 
+                      ? 'ring-2 ring-[#C59B27] dark:ring-[#E0A96D] font-bold' 
+                      : 'hover:border-[#C59B27]/50'
+                  } ${cfg.bg} ${cfg.border} ${cfg.text}`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${cfg.dotColor}`} />
+                  <span className="whitespace-nowrap">{cfg.label}</span>
+                  <span className="font-mono tabular-nums text-[10px] opacity-80">({count})</span>
+                </button>
+              );
+            })}
+          </HorizontalScrollRail>
         </div>
 
         {/* MAP VIEW: 604 PAGES GRID */}
         {mapMode === 'pages' && (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-500">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
               <span>انقر على رقم أي صفحة للتعديل أو المراجعة:</span>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-[11px]">مصحف المدينة المنورة (604 صفحة)</span>
-                <div role="group" aria-label="تكبير خريطة الصفحات" className="inline-flex items-center gap-1 p-1 rounded-xl bg-stone-100 dark:bg-stone-800">
-                  <button type="button" aria-pressed={pageGridZoom === 'compact'} onClick={() => setPageGridZoom('compact')} className="min-h-11 px-2.5 py-1.5 rounded-lg hover:bg-white dark:hover:bg-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">أصغر</button>
-                  <button type="button" aria-pressed={pageGridZoom === 'normal'} onClick={() => setPageGridZoom('normal')} className="min-h-11 px-2.5 py-1.5 rounded-lg hover:bg-white dark:hover:bg-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">متوسط</button>
-                  <button type="button" aria-pressed={pageGridZoom === 'large'} onClick={() => setPageGridZoom('large')} className="min-h-11 px-2.5 py-1.5 rounded-lg hover:bg-white dark:hover:bg-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">أكبر</button>
+                <span className="font-mono text-[11px] tabular-nums">مصحف المدينة المنورة (604 صفحة)</span>
+                <div role="group" aria-label="تكبير خريطة الصفحات" className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#F2EDE2] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20">
+                  <button type="button" aria-pressed={pageGridZoom === 'compact'} onClick={() => setPageGridZoom('compact')} className={`min-h-11 px-2.5 py-1.5 rounded-lg font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${pageGridZoom === 'compact' ? 'bg-white dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] shadow-xs' : ''}`}>أصغر</button>
+                  <button type="button" aria-pressed={pageGridZoom === 'normal'} onClick={() => setPageGridZoom('normal')} className={`min-h-11 px-2.5 py-1.5 rounded-lg font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${pageGridZoom === 'normal' ? 'bg-white dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] shadow-xs' : ''}`}>متوسط</button>
+                  <button type="button" aria-pressed={pageGridZoom === 'large'} onClick={() => setPageGridZoom('large')} className={`min-h-11 px-2.5 py-1.5 rounded-lg font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${pageGridZoom === 'large' ? 'bg-white dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] shadow-xs' : ''}`}>أكبر</button>
                 </div>
               </div>
             </div>
 
-            <div className={`grid ${PAGE_GRID_ZOOM_CLASSES[pageGridZoom]} gap-2 max-h-[600px] overflow-y-auto overscroll-contain touch-pan-y p-2 bg-[#faf8f5] dark:bg-stone-900/50 rounded-2xl border border-stone-200/60 dark:border-stone-700/50`}>
+            <div className={`grid ${PAGE_GRID_ZOOM_CLASSES[pageGridZoom]} gap-2 max-h-[600px] overflow-y-auto overscroll-contain touch-pan-y p-2.5 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-2xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/18`}>
               {Array.from({ length: 604 }, (_, i) => i + 1).map((pageNum) => {
                 const { status, surah, surahs, portionId, portionIds } = getPageStatus(pageNum);
                 const pageSegments = getPageAyahSegments(pageNum);
@@ -416,13 +440,13 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
                     key={pageNum}
                     type="button"
                     onClick={(event) => { inspectedPageTriggerRef.current = event.currentTarget; setInspectedPage({ pageNumber: pageNum, surah, surahs, segments: pageSegments, status, portionId, portionIds }); }}
-                    className={`aspect-square ${pageGridZoom === 'large' ? 'min-h-14 min-w-14' : 'min-h-12 min-w-12'} rounded-lg p-1.5 border text-center transition-all flex flex-col items-center justify-center relative group touch-manipulation active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 ${
+                    className={`aspect-square ${pageGridZoom === 'large' ? 'min-h-14 min-w-14' : 'min-h-12 min-w-12'} rounded-xl p-1.5 border text-center transition-all flex flex-col items-center justify-center relative group touch-manipulation active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
                       matchesFilter ? 'opacity-100 hover:scale-110 z-10' : 'opacity-20 hover:opacity-100'
                     } ${cfg.bg} ${cfg.border} shadow-2xs cursor-pointer`}
                     title={`صفحة ${pageNum} - ${surahs.map(item => item.name).join('، ')} (${cfg.label})`}
                     aria-label={`صفحة ${pageNum} - ${surahs.map(item => item.name).join('، ')} - ${cfg.label}`}
                   >
-                    <span className="text-[10px] font-mono font-bold leading-none text-stone-800 dark:text-stone-200">
+                    <span className="text-[10px] font-mono tabular-nums font-bold leading-none text-[#142421] dark:text-[#F5F1E8]">
                       {pageNum}
                     </span>
                     <span className={`w-1.5 h-1.5 rounded-full mt-1 ${cfg.dotColor}`} />
@@ -436,10 +460,27 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
         {/* MAP VIEW: 30 JUZ GRID */}
         {mapMode === 'juz' && (
           <div className="space-y-4">
+            <HorizontalScrollRail ariaLabel="الانتقال السريع بين أجزاء القرآن" activeKey={selectedJuz}>
+              {Array.from({ length: 30 }, (_, i) => i + 1).map(juzNum => (
+                <button
+                  key={juzNum}
+                  type="button"
+                  onClick={() => setSelectedJuz(juzNum)}
+                  aria-pressed={selectedJuz === juzNum}
+                  className={`min-h-11 shrink-0 snap-start px-3 py-1.5 rounded-xl border text-xs font-bold font-mono tabular-nums transition-all ${
+                    selectedJuz === juzNum
+                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                      : 'bg-[#F2EDE2]/75 dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] border-transparent hover:border-[#C59B27]'
+                  }`}
+                >
+                  ج {juzNum}
+                </button>
+              ))}
+            </HorizontalScrollRail>
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {Array.from({ length: 30 }, (_, i) => i + 1).map((juzNum) => {
                 const isSelected = selectedJuz === juzNum;
-                // Calculate juz pages status
                 const juzStartPage = (juzNum - 1) * 20 + 1;
                 const juzEndPage = juzNum === 30 ? 604 : juzNum * 20;
                 let memorizedInJuz = 0;
@@ -455,26 +496,27 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
                 return (
                   <button
                     key={juzNum}
+                    type="button"
                     onClick={() => setSelectedJuz(juzNum)}
                     aria-pressed={isSelected}
                     className={`p-3.5 rounded-2xl border text-right transition-all flex flex-col justify-between min-h-[100px] ${
                       isSelected
-                        ? 'border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/40 ring-2 ring-emerald-600/30'
-                        : 'border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800'
+                        ? 'border-[#C59B27] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/45 ring-2 ring-[#C59B27]/25'
+                        : 'border-[#1C4E46]/12 dark:border-[#E0A96D]/18 bg-white dark:bg-[#111F36] hover:border-[#C59B27]/50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-stone-400 font-mono">الجزء {juzNum}</span>
-                      <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">%{percent}</span>
+                      <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">الجزء {juzNum}</span>
+                      <span className="text-[10px] font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">%{percent}</span>
                     </div>
 
-                    <div className="font-bold text-sm text-stone-900 dark:text-stone-100 font-quran truncate">
+                    <div className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran truncate">
                       {JUZ_NAMES[juzNum - 1]}
                     </div>
 
                     {/* Progress bar */}
-                    <div className="w-full bg-stone-100 dark:bg-stone-700 h-1.5 rounded-full overflow-hidden mt-2">
-                      <div style={{ width: `${percent}%` }} className="h-full bg-emerald-700" />
+                    <div className="w-full bg-[#F2EDE2] dark:bg-[#0B132B] h-1.5 rounded-full overflow-hidden mt-2">
+                      <div style={{ width: `${percent}%` }} className="h-full bg-[#1C4E46] dark:bg-[#E0A96D]" />
                     </div>
                   </button>
                 );
@@ -482,12 +524,12 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
             </div>
 
             {/* Selected Juz Detail Panel */}
-            <div className="bg-[#fdfbf7] dark:bg-stone-900/60 p-5 rounded-2xl border border-stone-200 dark:border-stone-700 space-y-3">
+            <div className="bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-5 rounded-2xl border border-[#C59B27]/25 dark:border-[#E0A96D]/25 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100 font-quran">
+                <h4 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
                   سور {JUZ_NAMES[selectedJuz - 1]} (الجزء {selectedJuz})
                 </h4>
-                <span className="text-xs text-stone-500 font-mono">
+                <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
                   {juzSurahs.length} سور
                 </span>
               </div>
@@ -496,12 +538,12 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
                 {juzSurahs.map((s) => (
                   <div 
                     key={s.number}
-                    className="bg-white dark:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-xs flex items-center justify-between gap-3 shadow-2xs"
+                    className="bg-white dark:bg-[#111F36] px-3.5 py-2 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/18 text-xs flex items-center justify-between gap-3 shadow-2xs"
                   >
-                    <span className="font-bold font-quran text-stone-800 dark:text-stone-200">
+                    <span className="font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
                       سورة {s.name}
                     </span>
-                    <span className="text-stone-400 text-[10px] font-mono">
+                    <span className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px] font-mono tabular-nums">
                       ص {s.pageStart} • {s.versesCount} آية
                     </span>
                   </div>
@@ -514,14 +556,14 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
 
       {/* MODAL: INSPECT & EDIT PAGE STATUS */}
       {inspectedPage && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={inspectedPageDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-progress-page-title" className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-stone-200 bg-white p-6 shadow-xl space-y-5 dark:border-stone-700 dark:bg-stone-800">
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div ref={inspectedPageDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-progress-page-title" className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#111F36] p-6 shadow-2xl space-y-5">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
+                <span className="text-xs font-mono text-[#1C4E46] dark:text-[#E0A96D] font-bold">
                   مصحف المدينة المنورة
                 </span>
-                <h3 id="wird-progress-page-title" className="text-lg font-bold text-stone-900 dark:text-stone-100 font-quran">
+                <h3 id="wird-progress-page-title" className="text-lg font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
                   صفحة رقم {inspectedPage.pageNumber} • {inspectedPage.surahs.map(item => item.name).join('، ')}
                 </h3>
               </div>
@@ -530,30 +572,30 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
                 type="button"
                 onClick={() => setInspectedPage(null)}
                 aria-label="إغلاق تفاصيل الصفحة"
-                className="min-h-11 min-w-11 p-1 text-stone-400 hover:text-stone-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-3 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200/70 dark:border-stone-700 text-xs space-y-2">
+            <div className="p-3.5 bg-white dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-xs space-y-2">
               <div className="flex justify-between gap-3">
-                <span className="text-stone-500 shrink-0">السور الموجودة:</span>
-                <span className="font-bold text-stone-800 dark:text-stone-200 text-left">{inspectedPage.surahs.map(item => item.name).join('، ')}</span>
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B] shrink-0">السور الموجودة:</span>
+                <span className="font-bold text-[#142421] dark:text-[#F5F1E8] text-left">{inspectedPage.surahs.map(item => item.name).join('، ')}</span>
               </div>
-              <div className="space-y-1 border-y border-stone-200 dark:border-stone-700 py-2">
+              <div className="space-y-1 border-y border-[#1C4E46]/10 dark:border-[#E0A96D]/15 py-2">
                 {inspectedPage.segments.map((segment, index) => {
                   const segmentSurah = ALL_SURAHS.find(item => item.number === segment.surahNumber);
                   return (
                     <div key={segment.surahNumber + '-' + index} className="flex justify-between gap-3">
-                      <span className="text-stone-500">سورة {segmentSurah?.name || segment.surahNumber}</span>
-                      <span className="font-semibold text-stone-800 dark:text-stone-200">الآيات {segment.startAyah}–{segment.endAyah}</span>
+                      <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">سورة {segmentSurah?.name || segment.surahNumber}</span>
+                      <span className="font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8]">الآيات {segment.startAyah}–{segment.endAyah}</span>
                     </div>
                   );
                 })}
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">الحالة الحالية:</span>
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">الحالة الحالية:</span>
                 <span className={`font-bold ${STATUS_CONFIG[inspectedPage.status].text}`}>
                   {STATUS_CONFIG[inspectedPage.status].label}
                 </span>
@@ -562,7 +604,7 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
 
             {/* Set New Status Radio Options (6 exact statuses) */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+              <label className="block text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
                 تحديث حالة حفظ ورسوخ هذه الصفحة:
               </label>
 
@@ -573,12 +615,13 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
                   return (
                     <button
                       key={key}
+                      type="button"
                       onClick={() => handleUpdatePageStatus(inspectedPage.pageNumber, key)}
                       aria-pressed={isCurrent}
                       className={`min-h-11 p-2.5 rounded-xl border text-right transition-all flex items-center gap-2 ${
                         isCurrent 
-                          ? 'ring-2 ring-emerald-600 font-bold shadow-xs' 
-                          : 'hover:border-stone-400'
+                          ? 'ring-2 ring-[#C59B27] dark:ring-[#E0A96D] font-bold shadow-xs' 
+                          : 'hover:border-[#C59B27]'
                       } ${cfg.bg} ${cfg.border} ${cfg.text}`}
                     >
                       <span className={`w-2 h-2 rounded-full ${cfg.dotColor}`} />
@@ -590,13 +633,13 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
             </div>
 
             {inspectedPage.segments.length > 1 && (
-              <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-5">
+              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] leading-5">
                 تحتوي هذه الصفحة على {inspectedPage.segments.length} مقاطع من مواضع قرآنية مختلفة؛ يفتح زر الجلسة المقطع الأول فقط حتى لا ندمج نطاقات غير متصلة.
               </p>
             )}
 
             {/* Action buttons */}
-            <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-700">
+            <div className="flex items-center justify-between pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
               {onStartSession && (
                 <button
                   type="button"
@@ -607,7 +650,7 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
                     onStartSession(firstSegment.surahNumber, firstSegment.startAyah, firstSegment.endAyah);
                     setInspectedPage(null);
                   }}
-                  className="flex min-h-11 items-center gap-1.5 px-3 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+                  className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#C59B27] dark:hover:bg-[#E0A96D] text-white dark:text-[#0B132B] rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
                 >
                   <Play className="w-3.5 h-3.5" />
                   <span>{inspectedPage.segments.length > 1 ? 'فتح أول مقطع من الصفحة' : 'فتح الصفحة في جلسة التسميع'}</span>
@@ -615,8 +658,9 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
               )}
 
               <button
+                type="button"
                 onClick={() => setInspectedPage(null)}
-                className="min-h-11 px-4 py-2 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-700 dark:text-stone-200 rounded-xl text-xs font-semibold mr-auto"
+                className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold mr-auto"
               >
                 إغلاق
               </button>

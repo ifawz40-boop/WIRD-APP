@@ -16,6 +16,7 @@ import { buildWeakVerseFailureTransaction } from './services/weakVerseRecording'
 import { getLocalDateString } from './services/unifiedPortionService';
 import { createSecureId } from './services/secureId';
 import { persistEnginePlansSnapshot, persistJournaledTransaction, persistPlansSnapshot, persistProfileSnapshot, persistTestResultSnapshot } from './services/journaledSnapshotService';
+import { ALL_SURAHS } from './data/quranMeta';
 
 // Lazy loaded views for optimal chunking and initial load performance
 const QuranLibraryView = React.lazy(() => import('./components/library/QuranLibraryView').then(m => ({ default: m.QuranLibraryView })));
@@ -118,11 +119,18 @@ export default function App() {
     startAyah: number;
     endAyah: number;
     mode: 'memorize' | 'review';
-  }>({
-    surahNumber: initialRoute.surahNumber || 67,
-    startAyah: initialRoute.startAyah || 1,
-    endAyah: initialRoute.endAyah || 10,
-    mode: initialRoute.mode || 'memorize'
+  }>(() => {
+    const surahNumber = initialRoute.surahNumber || 67;
+    const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
+    const startAyah = Math.min(Math.max(1, initialRoute.startAyah || 1), surahMeta.versesCount);
+    const defaultEnd = initialRoute.surahNumber ? surahMeta.versesCount : Math.min(10, surahMeta.versesCount);
+    const endAyah = Math.min(Math.max(startAyah, initialRoute.endAyah || defaultEnd), surahMeta.versesCount);
+    return {
+      surahNumber: surahMeta.number,
+      startAyah,
+      endAyah,
+      mode: initialRoute.mode || 'memorize'
+    };
   });
 
   // Keep one immutable journal identity across retries of the same session.
@@ -262,12 +270,17 @@ export default function App() {
 
       setCurrentTab(route.tab);
       if (route.surahNumber !== undefined) {
-        setSessionParams(prev => ({
-          surahNumber: route.surahNumber || prev.surahNumber,
-          startAyah: route.startAyah || prev.startAyah,
-          endAyah: route.endAyah || prev.endAyah,
-          mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode
-        }));
+        const surahMeta = ALL_SURAHS[route.surahNumber - 1];
+        if (surahMeta) {
+          const nextStart = Math.min(Math.max(1, route.startAyah ?? 1), surahMeta.versesCount);
+          const nextEnd = Math.min(Math.max(nextStart, route.endAyah ?? surahMeta.versesCount), surahMeta.versesCount);
+          setSessionParams(prev => ({
+            surahNumber: surahMeta.number,
+            startAyah: nextStart,
+            endAyah: nextEnd,
+            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode
+          }));
+        }
       }
     };
 
@@ -287,19 +300,44 @@ export default function App() {
   const handleStartSession = (
     surahNumber: number = 67,
     startAyah: number = 1,
-    endAyah: number = 10,
+    endAyah?: number,
     mode: 'memorize' | 'review' = 'memorize'
   ) => {
+    const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
+    const safeStart = Math.min(Math.max(1, startAyah), surahMeta.versesCount);
+    const safeEnd = Math.min(Math.max(safeStart, endAyah ?? surahMeta.versesCount), surahMeta.versesCount);
     sessionRunIdRef.current = createSecureId();
     sessionCompletionAttemptRef.current = null;
-    setSessionParams({ surahNumber, startAyah, endAyah, mode });
+    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode });
     navigateTo({
       tab: 'session',
-      surahNumber,
-      startAyah,
-      endAyah,
+      surahNumber: surahMeta.number,
+      startAyah: safeStart,
+      endAyah: safeEnd,
       mode
     });
+  };
+
+  const handleSessionRangeChange = (nextSurahNumber: number, nextStartAyah: number, nextEndAyah: number) => {
+    const surahMeta = ALL_SURAHS[nextSurahNumber - 1];
+    if (!surahMeta) return;
+    const safeStart = Math.min(Math.max(1, nextStartAyah), surahMeta.versesCount);
+    const safeEnd = Math.min(Math.max(safeStart, nextEndAyah), surahMeta.versesCount);
+    sessionRunIdRef.current = createSecureId();
+    sessionCompletionAttemptRef.current = null;
+    setSessionParams(prev => ({
+      surahNumber: surahMeta.number,
+      startAyah: safeStart,
+      endAyah: safeEnd,
+      mode: prev.mode
+    }));
+    navigateTo({
+      tab: 'session',
+      surahNumber: surahMeta.number,
+      startAyah: safeStart,
+      endAyah: safeEnd,
+      mode: sessionParams.mode
+    }, true);
   };
 
   const handleStartDailySession = () => {
@@ -534,7 +572,7 @@ export default function App() {
   const dueRevisionCount = RetentionService.getDailyRevisionQueueDetails(todayStr).totalDueCount;
 
   return (
-    <div className="wird-app-shell min-h-screen text-stone-900 dark:text-stone-100 flex flex-row selection:bg-emerald-800 selection:text-emerald-50">
+    <div className="wird-app-shell min-h-screen text-[#142421] dark:text-[#F5F1E8] flex flex-row selection:bg-[#1C4E46] selection:text-[#F9F6EE]">
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}
@@ -566,21 +604,23 @@ export default function App() {
 
         {/* PWA Update Ready Banner */}
         {pwaUpdateRegistration && (
-          <div className="bg-emerald-900 text-white px-4 py-2.5 shadow-md flex items-center justify-between gap-4 text-xs font-medium border-b border-emerald-700">
+          <div className="bg-[#1C4E46] dark:bg-[#111F36] text-[#F5F1E8] px-4 py-2.5 shadow-md flex items-center justify-between gap-4 text-xs font-medium border-b border-[#C59B27]/40 dark:border-[#E0A96D]/35">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span className="w-2 h-2 rounded-full bg-[#C59B27] dark:bg-[#E0A96D] animate-ping" />
               <span>يتوفر تحديث جديد لتطبيق وِرد!</span>
             </div>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={handleApplyPwaUpdate}
-                className="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold rounded-lg transition-colors"
+                className="min-h-10 px-3 py-1 bg-[#C59B27] hover:bg-[#b58d1f] dark:bg-[#E0A96D] dark:hover:bg-[#d59d60] text-[#0B132B] font-bold rounded-lg transition-colors"
               >
                 تحديث الآن
               </button>
               <button
+                type="button"
                 onClick={() => setPwaUpdateRegistration(null)}
-                className="p-1 hover:bg-emerald-800 rounded text-emerald-200"
+                className="min-h-10 min-w-10 flex items-center justify-center p-1 hover:bg-white/10 rounded-lg text-[#F5F1E8]/80 hover:text-white transition-colors"
                 aria-label="تأجيل التحديث"
               >
                 <X className="w-4 h-4" />
@@ -591,17 +631,17 @@ export default function App() {
 
         {/* Offline Network Warning Banner */}
         {!isOnline && (
-          <div className="bg-stone-800 text-stone-200 px-4 py-1.5 flex items-center justify-center gap-2 text-xs border-b border-stone-700">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+          <div className="bg-[#142421] dark:bg-[#111F36] text-[#F5F1E8] px-4 py-1.5 flex items-center justify-center gap-2 text-xs border-b border-[#C59B27]/25 dark:border-[#E0A96D]/25">
+            <AlertTriangle className="w-3.5 h-3.5 text-[#E0A96D]" />
             <span>أنت تعمل حالياً بدون اتصال بالإنترنت. جميع ميزات المصحف والحفظ والمراجعة والاختبارات تعمل بكفاءة من الذاكرة المحلية.</span>
           </div>
         )}
 
         {/* Content Viewport with Code Splitting Suspense */}
-        <main className={`flex-1 min-w-0 w-full p-4 sm:p-5 md:p-6 xl:p-8 ${currentTab === 'session' ? 'pb-6 md:pb-8' : 'pb-28 md:pb-8'} ${isDesktop && !isDesktopSidebarOpen ? 'max-w-none' : 'max-w-[1440px]'} mx-auto`}>
+        <main className={`flex-1 min-w-0 w-full p-4 sm:p-5 md:p-6 xl:p-8 ${currentTab === 'session' ? 'pb-6 md:pb-8' : 'pb-28 lg:pb-8'} ${isDesktop && !isDesktopSidebarOpen ? 'max-w-none' : 'max-w-[1440px]'} mx-auto`}>
           <React.Suspense fallback={
-            <div className="flex flex-col items-center justify-center py-28 space-y-3 text-stone-400">
-              <Loader2 className="w-8 h-8 animate-spin text-emerald-700 dark:text-emerald-400" />
+            <div className="flex flex-col items-center justify-center py-28 space-y-3 text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <Loader2 className="w-8 h-8 animate-spin text-[#1C4E46] dark:text-[#E0A96D]" />
               <p className="text-xs font-semibold">جارٍ فتح القسم القرآني...</p>
             </div>
           }>
@@ -630,6 +670,7 @@ export default function App() {
                 enginePlans={enginePlans}
                 onUpdateEnginePlans={handleUpdateEnginePlans}
                 onStartSession={handleStartSession}
+                onOpenAdvisor={() => handleNavigate('advisor')}
                 onToast={showToast}
               />
             )}
@@ -642,6 +683,7 @@ export default function App() {
                 mode={sessionParams.mode}
                 profile={profile}
                 onCompleteSession={handleCompleteSession}
+                onRangeChange={handleSessionRangeChange}
                 onExit={() => handleNavigate('dashboard')}
                 onProgressChange={setSessionInProgress}
               />
@@ -651,6 +693,7 @@ export default function App() {
               <RevisionCenterView
                 profile={profile}
                 onStartSession={handleStartSession}
+                onOpenAdvisor={() => handleNavigate('advisor')}
               />
             )}
 
@@ -666,6 +709,7 @@ export default function App() {
                 logs={logs}
                 profile={profile}
                 onStartSession={handleStartSession}
+                onOpenSettings={() => handleNavigate('settings')}
                 onToast={showToast}
                 onRefreshData={() => {
                   setProfile(StorageService.getProfile());
@@ -697,12 +741,13 @@ export default function App() {
                 onSaveProfile={handleSaveProfile}
                 onResetAllData={handleResetAllData}
                 onBackupImported={refreshJournaledSnapshots}
+                onOpenShowcase={() => handleNavigate('showcase')}
                 onToast={showToast}
               />
             )}
 
             {currentTab === 'showcase' && (
-              <BrandDesignShowcase onClose={() => handleNavigate('dashboard')} />
+              <BrandDesignShowcase onClose={() => handleNavigate('settings')} />
             )}
           </React.Suspense>
         </main>
@@ -713,21 +758,26 @@ export default function App() {
         <div 
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 left-6 z-50 max-w-md bg-stone-900/95 dark:bg-stone-800/95 text-white px-4 py-3 rounded-2xl shadow-xl border border-stone-700/80 backdrop-blur-md flex items-center gap-3 transition-all animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-20 lg:bottom-6 left-4 sm:left-6 z-50 max-w-md bg-[#142421]/95 dark:bg-[#111F36]/95 text-[#F5F1E8] px-4 py-3 rounded-2xl shadow-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/40 backdrop-blur-md flex items-center gap-3 transition-all"
         >
           {toastMessage.type === 'success' && (
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#1C4E46]/40 text-[#E0A96D] flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           )}
           {toastMessage.type === 'warn' && (
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#C59B27]/25 text-[#E0A96D] flex items-center justify-center shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
           )}
           {(toastMessage.type === 'info' || !toastMessage.type) && (
-            <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#28665B]/40 text-[#F5F1E8] flex items-center justify-center shrink-0">
               <Info className="w-5 h-5" />
+            </div>
+          )}
+          {toastMessage.type === 'error' && (
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5" />
             </div>
           )}
           <p className="text-xs font-medium leading-relaxed flex-1 text-right">
@@ -735,7 +785,7 @@ export default function App() {
           </p>
           <button
             onClick={() => setToastMessage(null)}
-            className="p-1 text-stone-400 hover:text-white rounded-lg transition-colors"
+            className="p-1.5 text-[#8B9E9B] hover:text-white rounded-lg transition-colors"
             aria-label="إغلاق التنبيه"
           >
             <X className="w-4 h-4" />
@@ -746,22 +796,22 @@ export default function App() {
       {/* Session Exit Confirmation Modal */}
       {pendingExitTab && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-stone-800 rounded-3xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-2xl space-y-4 text-right">
+          <div className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-stone-900 dark:text-stone-100 text-base">
+                <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   مغادرة جلسة الحفظ الجارية
                 </h3>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
                   لديك تكرارات قيد الإنجاز في هذه الجلسة
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed bg-[#faf8f5] dark:bg-stone-900/60 p-3.5 rounded-xl border border-stone-200/70 dark:border-stone-700/60">
+            <p className="text-xs text-[#142421] dark:text-[#F5F1E8] leading-relaxed bg-white dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
               إذا غادرت الجلسة الآن، سيتم فقدان عدد التكرارات الحالي لهذه الآية. هل تريد بالتأكيد الانتقال إلى {tabTitles[pendingExitTab]}؟
             </p>
 
@@ -769,7 +819,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setPendingExitTab(null)}
-                className="px-4 py-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl transition-colors"
+                className="min-h-11 px-4 py-2.5 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >
                 البقاء في الجلسة
               </button>
@@ -781,7 +831,7 @@ export default function App() {
                   setPendingExitTab(null);
                   navigateTo(target);
                 }}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-xs transition-colors"
+                className="min-h-11 px-5 py-2.5 text-xs font-bold text-[#0B132B] bg-[#C59B27] hover:bg-[#af851a] dark:bg-[#E0A96D] dark:hover:bg-[#f3b77b] rounded-xl shadow-xs transition-colors"
               >
                 مغادرة الجلسة
               </button>

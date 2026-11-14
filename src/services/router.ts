@@ -1,4 +1,5 @@
 import { NavTabId } from '../components/layout/Sidebar';
+import { ALL_SURAHS } from '../data/quranMeta';
 
 /**
  * ====================================================================
@@ -31,7 +32,8 @@ export const VALID_NAV_TABS: NavTabId[] = [
   'progress',
   'advisor',
   'ruqyah',
-  'settings'
+  'settings',
+  'showcase'
 ];
 
 /**
@@ -63,9 +65,25 @@ export function parseRoute(hashString?: string): RouteState {
   const endParam = searchParams.get('end');
   const modeParam = searchParams.get('mode');
 
-  const surahNumber = surahParam && !isNaN(Number(surahParam)) ? Number(surahParam) : undefined;
-  const startAyah = startParam && !isNaN(Number(startParam)) ? Number(startParam) : undefined;
-  const endAyah = endParam && !isNaN(Number(endParam)) ? Number(endParam) : undefined;
+  const rawSurah = surahParam !== null ? Number(surahParam) : NaN;
+  const validSurah = Number.isInteger(rawSurah) && rawSurah >= 1 && rawSurah <= 114
+    ? ALL_SURAHS[rawSurah - 1]
+    : undefined;
+  const surahNumber = validSurah?.number;
+
+  let startAyah: number | undefined;
+  let endAyah: number | undefined;
+  if (validSurah) {
+    const rawStart = startParam !== null ? Number(startParam) : NaN;
+    if (Number.isInteger(rawStart) && rawStart >= 1) {
+      startAyah = Math.min(rawStart, validSurah.versesCount);
+    }
+    const rawEnd = endParam !== null ? Number(endParam) : NaN;
+    if (Number.isInteger(rawEnd) && rawEnd >= 1) {
+      const clampedEnd = Math.min(rawEnd, validSurah.versesCount);
+      endAyah = startAyah !== undefined ? Math.max(startAyah, clampedEnd) : clampedEnd;
+    }
+  }
   const mode = modeParam === 'review' ? 'review' : 'memorize';
 
   return {

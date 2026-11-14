@@ -9,13 +9,15 @@ export interface QuranAudioQueueOptions {
   tracks: QuranAudioTrack[];
   startIndex?: number;
   endIndex?: number;
+  /** Number of times to play each ayah before advancing (positive integer, default 1). */
+  ayahRepeatCount?: number;
   /** Total segment plays; null means repeat until stopped. */
   repeatCount?: QuranAudioRepeatCount;
   playbackRate?: number;
 }
 
 export interface QuranAudioQueueCallbacks {
-  onTrackChange?: (index: number, cycle: number) => void;
+  onTrackChange?: (index: number, cycle: number, ayahIteration: number) => void;
   onPlaying?: () => void;
   onPaused?: () => void;
   onComplete?: () => void;
@@ -39,6 +41,7 @@ export type QuranAudioFactory = (url: string) => QuranAudioElement;
 interface QueuePosition {
   index: number;
   cycle: number;
+  ayahIteration: number;
 }
 
 function isAbortError(error: unknown): boolean {
@@ -48,9 +51,8 @@ function isAbortError(error: unknown): boolean {
 
 /**
  * Plays a bounded Quran ayah segment in sequence while preloading the next
- * track. Preloading reduces artificial gaps between separate MP3 files; it
- * does not claim sample-accurate gapless playback when source files contain
- * encoded silence or the browser/network cannot buffer the next file in time.
+ * track. Supports independent per-ayah repeat count (inner loop) and
+ * full-segment cycle repeat count (outer loop).
  */
 export class QuranAudioQueueController {
   private readonly createAudio: QuranAudioFactory;
@@ -58,10 +60,12 @@ export class QuranAudioQueueController {
   private tracks: QuranAudioTrack[] = [];
   private startIndex = 0;
   private endIndex = -1;
+  private ayahRepeatCount = 1;
   private repeatCount: QuranAudioRepeatCount = 1;
   private playbackRate = 1;
   private currentIndex = -1;
   private currentCycle = 1;
+  private currentAyahIteration = 1;
   private currentAudio: QuranAudioElement | null = null;
   private nextAudio: QuranAudioElement | null = null;
   private nextPosition: QueuePosition | null = null;
@@ -93,6 +97,11 @@ export class QuranAudioQueueController {
     this.tracks = options.tracks.slice();
     this.startIndex = startIndex;
     this.endIndex = endIndex;
+    const requestedAyahRepeat = options.ayahRepeatCount;
+    this.ayahRepeatCount = typeof requestedAyahRepeat === 'number' &&
+      Number.isInteger(requestedAyahRepeat) && requestedAyahRepeat >= 1
+      ? requestedAyahRepeat
+      : 1;
     const requestedRepeatCount = options.repeatCount;
     this.repeatCount = requestedRepeatCount === null
       ? null
@@ -105,7 +114,8 @@ export class QuranAudioQueueController {
     this.active = true;
     this.paused = false;
     this.currentCycle = 1;
-    this.playTrack(startIndex, 1, null, this.generation);
+    this.currentAyahIteration = 1;
+    this.playTrack(startIndex, 1, 1, null, this.generation);
   }
 
   pause(): void {
@@ -137,6 +147,12 @@ export class QuranAudioQueueController {
     if (this.nextAudio) this.nextAudio.playbackRate = rate;
   }
 
+  setAyahRepeatCount(count: number): void {
+    if (typeof count !== 'number' || !Number.isInteger(count) || count < 1) return;
+    this.ayahRepeatCount = count;
+    if (this.active) this.prepareNext();
+  }
+
   setRepeatCount(repeatCount: QuranAudioRepeatCount): void {
     if (repeatCount !== null &&
         (typeof repeatCount !== 'number' || !Number.isInteger(repeatCount) || repeatCount < 1)) return;
@@ -156,23 +172,40 @@ export class QuranAudioQueueController {
     this.tracks = [];
     this.currentIndex = -1;
     this.currentCycle = 1;
+    this.currentAyahIteration = 1;
   }
 
-  getState(): { active: boolean; paused: boolean; currentIndex: number; cycle: number } {
+  getState(): { active: boolean; paused: boolean; currentIndex: number; cycle: number; ayahIteration: number } {
     return {
       active: this.active,
       paused: this.paused,
       currentIndex: this.currentIndex,
-      cycle: this.currentCycle
+      cycle: this.currentCycle,
+      ayahIteration: this.currentAyahIteration
     };
   }
 
   private getNextPosition(): QueuePosition | null {
+    if (this.currentAyahIteration < this.ayahRepeatCount) {
+      return {
+        index: this.currentIndex,
+        cycle: this.currentCycle,
+        ayahIteration: this.currentAyahIteration + 1
+      };
+    }
     if (this.currentIndex < this.endIndex) {
-      return { index: this.currentIndex + 1, cycle: this.currentCycle };
+      return {
+        index: this.currentIndex + 1,
+        cycle: this.currentCycle,
+        ayahIteration: 1
+      };
     }
     if (this.repeatCount === null || this.currentCycle < this.repeatCount) {
-      return { index: this.startIndex, cycle: this.currentCycle + 1 };
+      return {
+        index: this.startIndex,
+        cycle: this.currentCycle + 1,
+        ayahIteration: 1
+      };
     }
     return null;
   }
@@ -187,14 +220,15 @@ export class QuranAudioQueueController {
 
   private prepareNext(): void {
     const position = this.getNextPosition();
-    if (!position) {
+    if (!position || position.index === this.currentIndex) {
       this.release(this.nextAudio);
       this.nextAudio = null;
       this.nextPosition = null;
       return;
     }
     if (this.nextAudio && this.nextPosition?.index === position.index &&
-        this.nextPosition.cycle === position.cycle) return;
+        this.nextPosition.cycle === position.cycle &&
+        this.nextPosition.ayahIteration === position.ayahIteration) return;
 
     this.release(this.nextAudio);
     this.nextAudio = this.makeAudio(position.index);
@@ -204,6 +238,7 @@ export class QuranAudioQueueController {
   private playTrack(
     index: number,
     cycle: number,
+    ayahIteration: number,
     prepared: QuranAudioElement | null,
     generation: number
   ): void {
@@ -215,6 +250,7 @@ export class QuranAudioQueueController {
     this.currentAudio = audio;
     this.currentIndex = index;
     this.currentCycle = cycle;
+    this.currentAyahIteration = ayahIteration;
     this.paused = false;
     audio.onended = () => {
       if (!this.active || generation !== this.generation || this.currentAudio !== audio) return;
@@ -227,7 +263,7 @@ export class QuranAudioQueueController {
       }
     };
 
-    this.callbacks.onTrackChange?.(index, cycle);
+    this.callbacks.onTrackChange?.(index, cycle, ayahIteration);
     this.prepareNext();
     audio.play().then(() => {
       if (this.active && !this.paused && generation === this.generation && this.currentAudio === audio) {
@@ -253,12 +289,32 @@ export class QuranAudioQueueController {
       return;
     }
 
+    if (next.index === this.currentIndex && this.currentAudio) {
+      const audio = this.currentAudio;
+      this.currentCycle = next.cycle;
+      this.currentAyahIteration = next.ayahIteration;
+      this.paused = false;
+      audio.currentTime = 0;
+      this.callbacks.onTrackChange?.(this.currentIndex, this.currentCycle, this.currentAyahIteration);
+      this.prepareNext();
+      audio.play().then(() => {
+        if (this.active && !this.paused && generation === this.generation && this.currentAudio === audio) {
+          this.callbacks.onPlaying?.();
+        }
+      }).catch(error => {
+        if (this.paused && isAbortError(error)) return;
+        this.fail(error, generation, audio);
+      });
+      return;
+    }
+
     const prepared = this.nextPosition?.index === next.index &&
-      this.nextPosition.cycle === next.cycle ? this.nextAudio : null;
+      this.nextPosition.cycle === next.cycle &&
+      this.nextPosition.ayahIteration === next.ayahIteration ? this.nextAudio : null;
     if (this.nextAudio && this.nextAudio !== prepared) this.release(this.nextAudio);
     this.nextAudio = null;
     this.nextPosition = null;
-    this.playTrack(next.index, next.cycle, prepared, generation);
+    this.playTrack(next.index, next.cycle, next.ayahIteration, prepared, generation);
   }
 
   private fail(error: unknown, generation: number, audio: QuranAudioElement): void {

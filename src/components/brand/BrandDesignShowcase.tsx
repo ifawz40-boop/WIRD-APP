@@ -63,9 +63,9 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-24 text-right dir-rtl select-none">
+    <div dir="rtl" className="space-y-8 max-w-7xl mx-auto pb-24 text-right select-none">
       {/* Top Showcase Navigation Bar */}
-      <header className="rounded-3xl p-5 md:p-6 bg-white dark:bg-[#111F36] border border-stone-200/90 dark:border-[#E0A96D]/20 shadow-md flex flex-wrap items-center justify-between gap-4">
+      <header className="rounded-3xl p-5 md:p-6 bg-white dark:bg-[#111F36] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-md flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <WirdAvatar size="lg" shape="circle" withRing withGlow />
           <div>
@@ -73,11 +73,11 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
               <h1 className="text-xl md:text-2xl font-black font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
                 معرض الهوية البصرية والتصميم الرقمي
               </h1>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#C59B27]/15 text-[#C59B27] dark:bg-[#E0A96D]/15 dark:text-[#E0A96D] border border-[#C59B27]/30">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#C59B27]/15 text-[#9A7512] dark:bg-[#E0A96D]/15 dark:text-[#E0A96D] border border-[#C59B27]/30">
                 WIRD UI/UX
               </span>
             </div>
-            <p className="text-xs text-stone-500 dark:text-[#8B9E9B] mt-0.5">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
               عرض متقدم للسمة الثنائية: الوضع النهاري (Naskh Cream & Teal) والوضع الليلي (Midnight Navy & Glowing Amber)
             </p>
           </div>
@@ -85,14 +85,14 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
 
         {/* Mode Switchers */}
         <div className="flex items-center gap-2">
-          <div className="p-1 rounded-2xl bg-stone-100 dark:bg-[#0B132B] border border-stone-200 dark:border-stone-800 flex items-center gap-1 text-xs font-bold">
+          <div className="p-1 rounded-2xl bg-[#F2EDE2] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 flex items-center gap-1 text-xs font-bold">
             <button
               type="button"
               onClick={() => setViewMode('split')}
               className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                 viewMode === 'split'
                   ? 'bg-gradient-to-r from-[#1C4E46] to-[#0B132B] text-white shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
               }`}
             >
               <Sliders className="w-3.5 h-3.5 text-[#C59B27]" />
@@ -105,10 +105,10 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
               className={`px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                 viewMode === 'day'
                   ? 'bg-[#1C4E46] text-white shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
               }`}
             >
-              <Sun className="w-3.5 h-3.5 text-amber-500" />
+              <Sun className="w-3.5 h-3.5 text-[#C59B27]" />
               <span>الوضع النهاري</span>
             </button>
 
@@ -118,7 +118,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
               className={`px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                 viewMode === 'night'
                   ? 'bg-[#111F36] text-[#E0A96D] border border-[#E0A96D]/30 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
               }`}
             >
               <Moon className="w-3.5 h-3.5 text-[#E0A96D]" />
@@ -130,7 +130,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
             <button
               type="button"
               onClick={onClose}
-              className="p-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-[#0B132B] dark:hover:bg-[#162744] text-stone-600 dark:text-stone-300 transition-colors"
+              className="p-2.5 rounded-2xl bg-[#F2EDE2] hover:bg-[#E7DFD0] dark:bg-[#0B132B] dark:hover:bg-[#162744] text-[#5B6F6B] dark:text-[#CBD5E1] transition-colors"
               title="إغلاق المعرض"
             >
               <X className="w-5 h-5" />
@@ -140,7 +140,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
       </header>
 
       {/* Main Showcase Stage */}
-      <section className="relative rounded-3xl overflow-hidden border border-stone-300 dark:border-[#E0A96D]/20 shadow-2xl">
+      <section className="relative rounded-3xl overflow-hidden border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-2xl">
         {/* VIEW 1: SPLIT SCREEN (DAY on Left, NIGHT on Right as specified in brief) */}
         {viewMode === 'split' ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-[#C59B27]/30 min-h-[780px]">
@@ -151,11 +151,11 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
                   <Sun className="w-5 h-5 text-[#C59B27]" />
                   <span className="font-bold text-sm text-[#1C4E46]">الوضع النهاري · Day Mode</span>
                 </div>
-                <span className="text-[11px] font-mono text-stone-500">Canvas #F9F6EE · Naskh Cream</span>
+                <span className="text-[11px] font-mono text-[#5B6F6B]">Canvas #F9F6EE · Naskh Cream</span>
               </div>
 
               {/* Day Header & Logo */}
-              <div className="flex items-center justify-between bg-white/90 p-4 rounded-2xl border border-stone-200 shadow-xs">
+              <div className="flex items-center justify-between bg-white/90 p-4 rounded-2xl border border-[#1C4E46]/12 shadow-xs">
                 <div className="flex items-center gap-3">
                   <WirdAvatar size={48} shape="circle" withRing />
                   <div>
@@ -166,13 +166,13 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
 
                 {/* Day Navigation Icons */}
                 <div className="flex items-center gap-1 text-[#1C4E46]">
-                  <button type="button" className="p-2 rounded-xl hover:bg-stone-100 transition-colors" title="الرئيسية">
+                  <button type="button" className="p-2 rounded-xl hover:bg-[#F2EDE2] transition-colors" title="الرئيسية">
                     <Home className="w-5 h-5" />
                   </button>
-                  <button type="button" className="p-2 rounded-xl hover:bg-stone-100 transition-colors" title="العلامات">
+                  <button type="button" className="p-2 rounded-xl hover:bg-[#F2EDE2] transition-colors" title="العلامات">
                     <Bookmark className="w-5 h-5" />
                   </button>
-                  <button type="button" className="p-2 rounded-xl hover:bg-stone-100 transition-colors" title="القائمة">
+                  <button type="button" className="p-2 rounded-xl hover:bg-[#F2EDE2] transition-colors" title="القائمة">
                     <Menu className="w-5 h-5" />
                   </button>
                 </div>
@@ -180,49 +180,49 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
 
               {/* Day Rounded Search Bar */}
               <div className="relative">
-                <Search className="w-4 h-4 text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-4 h-4 text-[#5B6F6B] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={daySearchText}
                   onChange={e => setDaySearchText(e.target.value)}
                   placeholder="ابحث عن آية، سورة، أو قارئ..."
-                  className="w-full pl-4 pr-11 py-3.5 bg-white text-stone-900 rounded-full text-xs md:text-sm shadow-xs border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#1C4E46] transition-all"
+                  className="w-full pl-4 pr-11 py-3.5 bg-white text-[#142421] rounded-full text-xs md:text-sm shadow-xs border border-[#1C4E46]/15 focus:outline-none focus:ring-2 focus:ring-[#1C4E46] transition-all"
                 />
               </div>
 
-              {/* Day User Profile Card ("Sarah Name") */}
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-sm space-y-4">
+              {/* Day Sample Hifz Profile Card */}
+              <div className="bg-white p-5 rounded-2xl border border-[#1C4E46]/12 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1C4E46] to-[#28665B] text-white flex items-center justify-center font-bold text-sm shadow-xs ring-2 ring-[#C59B27]/40">
-                      SN
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1C4E46] to-[#28665B] text-white flex items-center justify-center font-bold text-xs shadow-xs ring-2 ring-[#C59B27]/40 font-quran">
+                      وِرد
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-stone-900">سارة أحمد (Sarah Name)</h3>
+                        <h3 className="font-bold text-sm text-[#142421]">حافظ وِرد</h3>
                         <CheckCircle2 className="w-4 h-4 text-[#1C4E46]" />
                       </div>
-                      <p className="text-[11px] text-stone-500">طالبة تحفيظ · مسار سورة البقرة</p>
+                      <p className="text-[11px] text-[#5B6F6B]">نموذج بطاقة متابعة · مسار سورة البقرة</p>
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold font-mono">
-                    <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#C59B27]/12 text-[#9A7512] border border-[#C59B27]/35 text-xs font-bold font-mono">
+                    <Flame className="w-3.5 h-3.5 fill-[#C59B27] text-[#C59B27]" />
                     <span>14 يوم مواظبة</span>
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-stone-100 text-center text-xs">
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#1C4E46]/10 text-center text-xs">
                   <div className="p-2 rounded-xl bg-[#F9F6EE]">
-                    <div className="text-[10px] text-stone-500">الآيات المتقنة</div>
+                    <div className="text-[10px] text-[#5B6F6B]">الآيات المتقنة</div>
                     <div className="font-bold font-mono text-[#1C4E46] text-sm mt-0.5">286 آية</div>
                   </div>
                   <div className="p-2 rounded-xl bg-[#F9F6EE]">
-                    <div className="text-[10px] text-stone-500">دقائق الورد</div>
+                    <div className="text-[10px] text-[#5B6F6B]">دقائق الورد</div>
                     <div className="font-bold font-mono text-[#1C4E46] text-sm mt-0.5">420 دقيقة</div>
                   </div>
                   <div className="p-2 rounded-xl bg-[#F9F6EE]">
-                    <div className="text-[10px] text-stone-500">نسبة التثبيت</div>
+                    <div className="text-[10px] text-[#5B6F6B]">نسبة التثبيت</div>
                     <div className="font-bold font-mono text-[#C59B27] text-sm mt-0.5">98.5%</div>
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
 
               {/* Day Interactive Buttons States */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-stone-500">حالات الأزرار التفاعلية (Active & Hover):</span>
+                <span className="text-[11px] font-bold text-[#5B6F6B]">حالات الأزرار التفاعلية (Active & Hover):</span>
                 <div className="flex flex-wrap gap-2.5">
                   <button
                     type="button"
@@ -262,7 +262,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
                     className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${
                       dayActiveBtn === 'secondary'
                         ? 'border-[#1C4E46] bg-white text-[#1C4E46]'
-                        : 'border-stone-300 bg-white text-stone-700 hover:border-[#C59B27]'
+                        : 'border-[#1C4E46]/20 bg-white text-[#142421] hover:border-[#C59B27]'
                     }`}
                   >
                     <span>تفسير معتمد</span>
@@ -271,12 +271,12 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
               </div>
 
               {/* Day Typography Specimen */}
-              <div className="p-4 rounded-2xl bg-white border border-stone-200/80 space-y-2">
+              <div className="p-4 rounded-2xl bg-white border border-[#1C4E46]/12 space-y-2">
                 <span className="text-[10px] font-bold text-[#C59B27] uppercase tracking-wider">الخط العربي الأصيل</span>
                 <p className="font-quran text-lg md:text-xl text-[#142421] leading-relaxed">
                   ﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾
                 </p>
-                <p className="text-xs text-stone-500 font-sans leading-relaxed">
+                <p className="text-xs text-[#5B6F6B] font-sans leading-relaxed">
                   خط النسخ العربي المعتمد مع تباعد متزن يمنح القارئ سكينة وسهولة في مراجعة الأوراد اليومية.
                 </p>
               </div>
@@ -328,19 +328,19 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
                 />
               </div>
 
-              {/* Night Glassmorphism User Profile Card ("Sarah Name") */}
+              {/* Night Glassmorphism Hifz Profile Card */}
               <div className="bg-[#111F36]/85 backdrop-blur-xl p-5 rounded-2xl border border-[#E0A96D]/30 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_15px_rgba(224,169,109,0.06)] space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1E4A47] to-[#E0A96D] text-[#0B132B] flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-[#E0A96D]/60">
-                      SN
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1E4A47] to-[#E0A96D] text-[#0B132B] flex items-center justify-center font-bold text-xs shadow-md ring-2 ring-[#E0A96D]/60 font-quran">
+                      وِرد
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#F5F1E8]">سارة أحمد (Sarah Name)</h3>
+                        <h3 className="font-bold text-sm text-[#F5F1E8]">حافظ وِرد</h3>
                         <CheckCircle2 className="w-4 h-4 text-[#E0A96D]" />
                       </div>
-                      <p className="text-[11px] text-[#8B9E9B]">طالبة تحفيظ · مسار سورة البقرة</p>
+                      <p className="text-[11px] text-[#8B9E9B]">نموذج بطاقة متابعة · مسار سورة البقرة</p>
                     </div>
                   </div>
 
@@ -429,7 +429,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
               <Sun className="w-6 h-6 text-[#C59B27]" />
               <h2 className="text-2xl font-bold font-quran text-[#1C4E46]">الوضع النهاري الكامل (Day Mode Presentation)</h2>
             </div>
-            <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+            <p className="text-sm text-[#5B6F6B] max-w-2xl leading-relaxed">
               يعتمد هذا الوضع على أرضية ناعمة من درجات الكريمة Naskh Cream المريحة التي تُحاكي صفحات المصاحف الكلاسيكية القديمة دون إبهار العين أو انعكاسات قاسية، مع لمسات التيل والذهب.
             </p>
           </div>
@@ -450,12 +450,12 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
       </section>
 
       {/* Color Swatches Palette Lab */}
-      <section className="bg-white dark:bg-[#111F36] rounded-3xl p-6 md:p-8 border border-stone-200 dark:border-[#E0A96D]/20 shadow-md space-y-6">
+      <section className="bg-white dark:bg-[#111F36] rounded-3xl p-6 md:p-8 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-md space-y-6">
         <div>
           <h2 className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
             لوحة الألوان الرسمية المعتمدة (Design Palette Tokens)
           </h2>
-          <p className="text-xs text-stone-500 dark:text-[#8B9E9B] mt-1">
+          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
             اضغط على أي كود لنسخه مباشرة (HEX Code Copy)
           </p>
         </div>
@@ -463,7 +463,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Day Palette */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold text-[#1C4E46] flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
               <Sun className="w-4 h-4 text-[#C59B27]" />
               <span>ألوان النهار (Day Mode Palette)</span>
             </h3>
@@ -473,23 +473,23 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
                   type="button"
                   key={swatch.hex}
                   onClick={() => copyHex(swatch.hex)}
-                  className="flex items-center gap-3 p-2.5 rounded-xl border border-stone-200 hover:border-[#C59B27] transition-all bg-stone-50/60 text-right group cursor-pointer"
+                  className="flex items-center gap-3 p-2.5 rounded-xl border border-[#1C4E46]/15 hover:border-[#C59B27] transition-all bg-[#F9F6EE] text-right group cursor-pointer"
                 >
                   <div
                     className="w-10 h-10 rounded-lg shrink-0 border border-black/10 shadow-xs"
                     style={{ backgroundColor: swatch.hex }}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-xs text-stone-900 group-hover:text-[#1C4E46] flex items-center justify-between">
+                    <div className="font-bold text-xs text-[#142421] group-hover:text-[#1C4E46] flex items-center justify-between">
                       <span>{swatch.name}</span>
                       {copiedHex === swatch.hex ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <Check className="w-3.5 h-3.5 text-[#1C4E46]" />
                       ) : (
-                        <Copy className="w-3 h-3 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Copy className="w-3 h-3 text-[#5B6F6B] opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
-                    <div className="text-[11px] font-mono text-stone-500">{swatch.hex}</div>
-                    <div className="text-[10px] text-stone-400 truncate">{swatch.role}</div>
+                    <div className="text-[11px] font-mono text-[#5B6F6B]">{swatch.hex}</div>
+                    <div className="text-[10px] text-[#5B6F6B] truncate">{swatch.role}</div>
                   </div>
                 </button>
               ))}

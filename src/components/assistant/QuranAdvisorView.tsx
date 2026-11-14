@@ -26,6 +26,7 @@ import { AdvisorService, AdvisorStatus } from '../../services/advisorService';
 import { RetentionService } from '../../services/retentionService';
 import { StorageService } from '../../services/storageService';
 import { getLocalDateString } from '../../services/unifiedPortionService';
+import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 
 interface QuranAdvisorViewProps {
   profile?: UserProfile;
@@ -255,119 +256,128 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* 1. Header & AI Availability Badge */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-4">
+      <div className="wird-card rounded-2xl p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2 font-quran">
-              <Compass className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
+              <Compass className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
               المستشار القرآني ومنهجيات الحفظ والتثبيت
             </h2>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
               إرشاد ذكي مبني على بياناتك الفعلية وخلاصة تجارب أئمة الإقراء (الشناقطة، الشاطبي، ابن الجزري)
             </p>
           </div>
 
-          {/* AI Availability Badge */}
-          <div className="flex items-center gap-2">
+          {/* AI Availability Text (unboxed, zero pulsing dots) */}
+          <div className="flex items-center gap-2 shrink-0 text-xs font-bold">
             {advisorStatus?.available ? (
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>الذكاء الاصطناعي متاح (Gemini Free Tier)</span>
+              <span className="inline-flex items-center gap-1.5 text-[#1C4E46] dark:text-[#E0A96D]">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>المساعد الذكي متاح</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 shadow-2xs">
-                <Zap className="w-3.5 h-3.5 text-amber-600" />
-                <span>النمط الذاتي الحتمي (بدون استهلاك حصة)</span>
+              <span className="inline-flex items-center gap-1.5 text-[#9A7512] dark:text-[#E0A96D]">
+                <Zap className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+                <span>النمط الذاتي الحتمي</span>
               </span>
             )}
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div role="group" aria-label="أقسام المستشار القرآني" className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-stone-200 dark:border-stone-700/60 text-xs font-semibold">
-          <button
-            onClick={() => setSelectedTopic('ai_advisor')}
-            aria-pressed={selectedTopic === 'ai_advisor'}
-            className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-              selectedTopic === 'ai_advisor'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            <Bot className="w-4 h-4" />
-            <span>المستشار الذكي وتحليل وتيرة الحفظ</span>
-          </button>
+        <HorizontalScrollRail ariaLabel="التنقل داخل المستشار القرآني" activeKey={selectedTopic}>
+          <div role="group" aria-label="أقسام المستشار القرآني" className="flex items-center gap-2 pb-1 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setSelectedTopic('ai_advisor')}
+              aria-pressed={selectedTopic === 'ai_advisor'}
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+                selectedTopic === 'ai_advisor'
+                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
+                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+              }`}
+            >
+              <Bot className="w-4 h-4" />
+              <span>المستشار الذكي وتحليل وتيرة الحفظ</span>
+            </button>
 
-          <button
-            onClick={() => setSelectedTopic('methods')}
-            aria-pressed={selectedTopic === 'methods'}
-            className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-              selectedTopic === 'methods'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>منهجيات الحفظ المعتمدة</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTopic('methods')}
+              aria-pressed={selectedTopic === 'methods'}
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+                selectedTopic === 'methods'
+                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
+                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>منهجيات الحفظ المعتمدة</span>
+            </button>
 
-          <button
-            onClick={() => setSelectedTopic('mutashabihat_rules')}
-            aria-pressed={selectedTopic === 'mutashabihat_rules'}
-            className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-              selectedTopic === 'mutashabihat_rules'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>قواعد ضبط المتشابهات</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTopic('mutashabihat_rules')}
+              aria-pressed={selectedTopic === 'mutashabihat_rules'}
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+                selectedTopic === 'mutashabihat_rules'
+                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
+                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>قواعد ضبط المتشابهات</span>
+            </button>
 
-          <button
-            onClick={() => setSelectedTopic('calculator')}
-            aria-pressed={selectedTopic === 'calculator'}
-            className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-              selectedTopic === 'calculator'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            <Calculator className="w-4 h-4" />
-            <span>حاسبة التخطيط القرآني</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setSelectedTopic('calculator')}
+              aria-pressed={selectedTopic === 'calculator'}
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+                selectedTopic === 'calculator'
+                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
+                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+              }`}
+            >
+              <Calculator className="w-4 h-4" />
+              <span>حاسبة التخطيط القرآني</span>
+            </button>
+          </div>
+        </HorizontalScrollRail>
       </div>
 
       {/* VIEW 1: AI ADVISOR & CHAT WITH 8 CAPABILITIES */}
       {selectedTopic === 'ai_advisor' && (
         <div className="space-y-4">
-          <p className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 px-3 py-2 text-[11px] leading-6 text-amber-900 dark:text-amber-200">المستشار مخصص لتنظيم الحفظ والمراجعة فقط؛ لا تعتمد عليه في نقل نص القرآن أو تفسيره أو إصدار أحكام شرعية.</p>
+          <p className="rounded-xl border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 px-4 py-2.5 text-[11px] leading-6 text-[#142421] dark:text-[#F5F1E8]">
+            المستشار مخصص لتنظيم الحفظ والمراجعة فقط؛ لا تعتمد عليه في نقل نص القرآن أو تفسيره أو إصدار أحكام شرعية.
+          </p>
+
           {/* Quick Action Capabilities Strip */}
-          <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-3">
-            <div className="text-xs font-bold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+          <div className="wird-card rounded-2xl p-5 space-y-3">
+            <div className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] flex flex-wrap items-center justify-between gap-2">
               <span className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-700" />
+                <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
                 <span>تحليلات واستشارات سريعة بنقرة واحدة:</span>
               </span>
-              <span className="text-[10px] text-stone-400">تستند حصرًا لبياناتك المحفوظة</span>
+              <span className="text-[10px] font-medium text-[#5B6F6B] dark:text-[#8B9E9B]">تستند حصرًا لبياناتك المحفوظة</span>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               {quickActions.map(action => (
                 <button
                   key={action.id}
                   type="button"
                   onClick={() => handleRunQuickAction(action)}
                   disabled={isLoading}
-                  className="min-h-11 p-3 bg-[#faf8f5] dark:bg-stone-900/80 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 rounded-xl border border-stone-200/70 dark:border-stone-700/60 text-right transition-all group disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="min-h-11 p-3.5 bg-[#F9F6EE] dark:bg-[#0B132B]/75 hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]/50 dark:hover:border-[#E0A96D]/50 text-right transition-all group disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
                 >
-                  <div className="font-bold text-xs text-stone-900 dark:text-stone-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-300">
+                  <div className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8] group-hover:text-[#1C4E46] dark:group-hover:text-[#E0A96D]">
                     {action.title}
                   </div>
-                  <div className="text-[10px] text-stone-400 mt-1">
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
                     {action.desc}
                   </div>
                 </button>
@@ -376,7 +386,7 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
           </div>
 
           {/* Interactive Chat Window */}
-          <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs flex flex-col min-h-[420px] max-h-[580px]">
+          <div className="wird-card rounded-2xl p-4 sm:p-5 flex flex-col min-h-[420px] max-h-[580px]">
             {/* Messages Thread */}
             <div role="log" aria-label="محادثة المستشار القرآني" aria-live="polite" aria-relevant="additions" className="flex-1 overflow-y-auto space-y-4 pr-1 pl-1">
               {chatMessages.map((msg, idx) => {
@@ -386,26 +396,26 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                     key={idx}
                     className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      isUser 
-                        ? 'bg-emerald-700 text-white' 
-                        : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                      isUser
+                        ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
+                        : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#1C4E46] dark:text-[#E0A96D] border border-[#C59B27]/35'
                     }`}>
                       {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                     </div>
 
                     <div className={`p-4 rounded-2xl max-w-[85%] text-xs leading-relaxed space-y-1.5 shadow-2xs ${
                       isUser
-                        ? 'bg-emerald-800 text-white rounded-tl-xs font-medium'
-                        : 'bg-[#faf8f5] dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-700/80 text-stone-800 dark:text-stone-200 rounded-tr-xs'
+                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white rounded-tl-xs font-medium border border-[#C59B27]/30'
+                        : 'bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] rounded-tr-xs'
                     }`}>
                       <div className="whitespace-pre-line leading-relaxed font-sans">
                         {msg.text}
                       </div>
 
                       {!isUser && msg.isFallback && (
-                        <div className="text-[10px] text-stone-400 pt-1 border-t border-stone-200/50 dark:border-stone-700/50 flex items-center gap-1">
-                          <Check className="w-3 h-3 text-emerald-600" />
+                        <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] pt-1.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex items-center gap-1">
+                          <Check className="w-3 h-3 text-[#1C4E46] dark:text-[#E0A96D]" />
                           <span>إرشاد مبني على الخوارزمية الحتمية المدمجة</span>
                         </div>
                       )}
@@ -415,15 +425,15 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               })}
 
               {isLoading && (
-                <div role="status" className="flex items-center gap-2 text-xs text-stone-400 py-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
+                <div role="status" className="flex items-center gap-2 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] py-2">
+                  <RefreshCw className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D] animate-spin" />
                   <span>المستشار يحلل بيانات الحفظ والمراجعة...</span>
                 </div>
               )}
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSendCustomMessage} className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-700 flex items-center gap-2">
+            <form onSubmit={handleSendCustomMessage} className="mt-4 pt-3 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 flex items-center gap-2">
               <input
                 type="text"
                 aria-label="رسالتك إلى المستشار القرآني"
@@ -431,13 +441,13 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                 onChange={e => setUserQuery(e.target.value)}
                 placeholder="اسأل المستشار القرآني عن طرائق الحفظ، ضبط المتشابهات، أو تنظيم وقتك..."
                 disabled={isLoading}
-                className="flex-1 min-h-11 px-4 py-2.5 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                className="flex-1 min-h-11 px-4 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-xs text-[#142421] dark:text-[#F5F1E8] placeholder:text-[#5B6F6B]/60 dark:placeholder:text-[#8B9E9B]/60 focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
               />
               <button
                 type="submit"
                 disabled={isLoading || !userQuery.trim()}
                 aria-label="إرسال الرسالة"
-                className="min-h-11 min-w-11 p-2.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-xl transition-colors shadow-xs"
+                className="min-h-11 min-w-11 p-2.5 bg-[#1C4E46] hover:bg-[#143b35] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] disabled:opacity-50 text-white dark:text-[#0B132B] rounded-xl transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
                 title="إرسال"
               >
                 <Send className="w-4 h-4" />
@@ -451,24 +461,24 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
       {selectedTopic === 'methods' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {methodologies.map((m, idx) => (
-            <div key={idx} className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs flex flex-col justify-between space-y-4">
+            <div key={idx} className="wird-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div className="space-y-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">
                   {m.tag}
                 </span>
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 font-quran">
+                <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
                   {m.title}
                 </h3>
-                <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                <p className="text-xs text-[#5B6F6B] dark:text-[#CBD5E1] leading-relaxed">
                   {m.description}
                 </p>
               </div>
 
-              <div className="bg-[#faf8f5] dark:bg-stone-900/60 p-3 rounded-xl border border-stone-200/60 dark:border-stone-700/60 space-y-1.5 text-xs text-stone-700 dark:text-stone-300">
-                <div className="font-bold text-[11px] text-emerald-800 dark:text-emerald-400">خطوات التطبيق:</div>
+              <div className="bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/18 space-y-1.5 text-xs text-[#142421] dark:text-[#F5F1E8]">
+                <div className="font-bold text-[11px] text-[#1C4E46] dark:text-[#E0A96D]">خطوات التطبيق:</div>
                 {m.tips.map((tip, i) => (
-                  <div key={i} className="flex items-start gap-1.5 text-[11px]">
-                    <span className="text-emerald-700 font-bold">•</span>
+                  <div key={i} className="flex items-start gap-1.5 text-[11px] leading-relaxed">
+                    <span className="text-[#C59B27] dark:text-[#E0A96D] font-bold">•</span>
                     <span>{tip}</span>
                   </div>
                 ))}
@@ -481,15 +491,17 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
       {/* VIEW 3: MUTASHABIHAT RULES */}
       {selectedTopic === 'mutashabihat_rules' && (
         <div className="space-y-4">
-          <p className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 px-3 py-2 text-[11px] leading-6 text-amber-900 dark:text-amber-200">هذه الملاحظات وسائل تذكّر مساعدة وليست قواعد قطعية لضبط ألفاظ القرآن؛ المرجع دائماً المصحف المعتمد والمراجعة على شيخ متقن.</p>
+          <p className="rounded-xl border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 px-4 py-2.5 text-[11px] leading-6 text-[#142421] dark:text-[#F5F1E8]">
+            هذه الملاحظات وسائل تذكّر مساعدة وليست قواعد قطعية لضبط ألفاظ القرآن؛ المرجع دائماً المصحف المعتمد والمراجعة على شيخ متقن.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {mnemonicRules.map((rule, idx) => (
-              <div key={idx} className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-amber-200/80 dark:border-amber-900/60 shadow-xs space-y-2">
-                <div className="font-bold text-sm text-amber-900 dark:text-amber-200 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-amber-600" />
+              <div key={idx} className="wird-card rounded-2xl p-5 border border-[#C59B27]/35 dark:border-[#E0A96D]/30 space-y-2">
+                <div className="font-bold text-sm text-[#9A7512] dark:text-[#E0A96D] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
                   <span>{rule.rule}</span>
                 </div>
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                <p className="text-xs text-[#5B6F6B] dark:text-[#CBD5E1] leading-relaxed">
                   {rule.explanation}
                 </p>
               </div>
@@ -500,65 +512,85 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
 
       {/* VIEW 4: CALCULATOR */}
       {selectedTopic === 'calculator' && (
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-5">
+        <div className="wird-card rounded-2xl p-5 sm:p-6 space-y-5">
           <div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
               <span>حاسبة التخطيط القرآني التقديرية</span>
             </h3>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
               احسب الزمن المتوقع لإتمام هدفك القرآني بحسب الوقت المتاح يومياً
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                الهدف القرآني المراد حفظه:
-              </label>
-              <select
-                value={targetAjza}
-                onChange={e => setTargetAjza(Number(e.target.value))}
-                className="w-full min-h-11 px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700"
-              >
-                <option value={1}>جزء واحد (20 صفحة)</option>
-                <option value={3}>3 أجزاء (60 صفحة)</option>
-                <option value={5}>5 أجزاء (100 صفحة)</option>
-                <option value={10}>10 أجزاء (200 صفحة)</option>
-                <option value={30}>القرآن كاملاً (604 صفحة)</option>
-              </select>
-            </div>
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[#142421] dark:text-[#F5F1E8] font-semibold mb-1.5">
+                  الهدف القرآني المراد حفظه:
+                </label>
+                <select
+                  aria-label="الهدف القرآني المراد حفظه"
+                  value={targetAjza}
+                  onChange={e => setTargetAjza(Number(e.target.value))}
+                  className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                >
+                  <option value={1}>جزء واحد (20 صفحة)</option>
+                  <option value={3}>3 أجزاء (60 صفحة)</option>
+                  <option value={5}>5 أجزاء (100 صفحة)</option>
+                  <option value={10}>10 أجزاء (200 صفحة)</option>
+                  <option value={30}>القرآن كاملاً (604 صفحة)</option>
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                الوقت المتاح يومياً (دقائق):
-              </label>
-              <input
-                type="number"
-                min={15}
-                max={180}
-                value={availableDailyMinutes}
-                onChange={e => setAvailableDailyMinutes(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 font-mono"
-              />
+              <div className="space-y-2">
+                <label className="block text-[#142421] dark:text-[#F5F1E8] font-semibold">
+                  الوقت المتاح يومياً (دقائق):
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="number"
+                    min={15}
+                    max={180}
+                    value={availableDailyMinutes}
+                    onChange={e => setAvailableDailyMinutes(Number(e.target.value))}
+                    className="w-28 min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 font-mono tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                  />
+                  {[15, 30, 45, 60, 90].map(mins => (
+                    <button
+                      key={mins}
+                      type="button"
+                      onClick={() => setAvailableDailyMinutes(mins)}
+                      aria-pressed={availableDailyMinutes === mins}
+                      className={`min-h-11 px-3 py-2 rounded-xl border font-bold font-mono tabular-nums transition-colors ${
+                        availableDailyMinutes === mins
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                          : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#5B6F6B] dark:text-[#CBD5E1] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      }`}
+                    >
+                      {mins} د
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Result Card */}
-          <div className="p-4 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-xs">
-            <div className="font-bold text-emerald-900 dark:text-emerald-200">
+          <div className="p-4 sm:p-5 bg-[#1C4E46]/8 dark:bg-[#1E4A47]/30 rounded-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 space-y-2.5 text-xs">
+            <div className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
               الخلاصة التقديرية للحفظ المتزن:
             </div>
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div>
-                <span className="text-stone-500">المدة التقديرية: </span>
-                <span className="font-bold text-emerald-800 dark:text-emerald-300 font-mono">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="rounded-xl bg-white/80 dark:bg-[#0B132B]/70 px-3.5 py-2.5 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المدة التقديرية: </span>
+                <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
                   {Math.round((targetAjza * 20) / Math.max(0.5, availableDailyMinutes / 30))} يوماً
                 </span>
               </div>
-              <div>
-                <span className="text-stone-500">المقدار اليومي المقترح: </span>
-                <span className="font-bold text-emerald-800 dark:text-emerald-300">
+              <div className="rounded-xl bg-white/80 dark:bg-[#0B132B]/70 px-3.5 py-2.5 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المقدار اليومي المقترح: </span>
+                <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
                   {availableDailyMinutes >= 45 ? 'صفحة كاملة' : availableDailyMinutes >= 25 ? 'نصف صفحة' : '3-5 آيات'}
                 </span>
               </div>

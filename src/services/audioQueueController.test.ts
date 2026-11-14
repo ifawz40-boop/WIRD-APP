@@ -102,10 +102,10 @@ export async function runQuranAudioQueueControllerTests(): Promise<{ passed: num
     queue.start({ tracks, startIndex: 0, endIndex: 0, repeatCount: null });
     audios[0].finish();
     await Promise.resolve();
-    assert(queue.getState().cycle === 2 && audios[1].playCalls === 1, 'Infinite repeat should begin a second cycle');
-    const staleEnded = audios[1].onended;
+    assert(audios.length === 1 && queue.getState().cycle === 2 && audios[0].playCalls === 2, 'Infinite repeat should begin a second cycle reusing the track element');
+    const staleEnded = audios[0].onended;
     queue.stop();
-    assert(audios[1].onended === null && audios[1].pauseCalls > 0, 'Stop should detach and release the current audio');
+    assert(audios[0].onended === null && audios[0].pauseCalls > 0, 'Stop should detach and release the current audio');
     staleEnded?.(new Event('ended'));
     assert(!queue.getState().active, 'A stale event must not restart a stopped queue');
   });
@@ -163,6 +163,88 @@ export async function runQuranAudioQueueControllerTests(): Promise<{ passed: num
     await Promise.resolve();
     assert(queue.getState().active && queue.getState().paused, 'AbortError caused by pause must preserve the queue position');
     queue.stop();
+  });
+
+  await test('repeats each ayah N times before advancing and repeats the full segment M cycles', async () => {
+    const audios: MockQuranAudio[] = [];
+    const sequence: Array<[number, number, number]> = [];
+    let completed = 0;
+    const queue = new QuranAudioQueueController({
+      onTrackChange: (index, cycle, ayahIteration) => sequence.push([index, cycle, ayahIteration]),
+      onComplete: () => { completed += 1; }
+    }, url => {
+      const audio = new MockQuranAudio(url);
+      audios.push(audio);
+      return audio;
+    });
+
+    queue.start({ tracks, startIndex: 0, endIndex: 1, ayahRepeatCount: 2, repeatCount: 2 });
+    assert(audios.length === 1, 'Same-ayah replay must reuse currentAudio without preloading duplicate file early');
+    // Ayah 0, iteration 1 -> ends -> Ayah 0, iteration 2 (preloads Ayah 1)
+    audios[0].finish();
+    await Promise.resolve();
+    assert(audios[0].playCalls === 2 && queue.getState().ayahIteration === 2, 'First ayah should replay on same audio element');
+    assert(audios.length === 2, 'Final iteration of current ayah should preload the next ayah');
+
+    // Ayah 0, iteration 2 -> ends -> Ayah 1, iteration 1
+    audios[0].finish();
+    await Promise.resolve();
+    assert(queue.getState().currentIndex === 1 && queue.getState().ayahIteration === 1, 'Should advance to second ayah after 2 repeats');
+
+    // Ayah 1, iteration 1 -> ends -> Ayah 1, iteration 2 (preloads Ayah 0 for cycle 2)
+    audios[1].finish();
+    await Promise.resolve();
+    assert(audios[1].playCalls === 2 && audios.length === 3, 'Second ayah should repeat and preload start of cycle 2');
+
+    // Ayah 1, iteration 2 -> ends -> Cycle 2 Ayah 0 iteration 1
+    audios[1].finish();
+    await Promise.resolve();
+    assert(queue.getState().cycle === 2 && queue.getState().currentIndex === 0 && queue.getState().ayahIteration === 1, 'Cycle 2 should restart from first ayah at iteration 1');
+
+    // Cycle 2: Ayah 0 iter 2 -> Ayah 1 iter 1 -> Ayah 1 iter 2 -> complete
+    audios[2].finish();
+    await Promise.resolve();
+    audios[2].finish();
+    await Promise.resolve();
+    audios[3].finish();
+    await Promise.resolve();
+    audios[3].finish();
+    await Promise.resolve();
+
+    assert(completed === 1 && !queue.getState().active, 'Dual-loop queue must complete after exactly 2x2x2 plays');
+    assert(
+      sequence.map(([idx, cyc, iter]) => `${idx}:${cyc}:${iter}`).join(',') ===
+      '0:1:1,0:1:2,1:1:1,1:1:2,0:2:1,0:2:2,1:2:1,1:2:2',
+      'Dual-loop track sequence order must match inner ayah loop inside outer segment loop'
+    );
+  });
+
+  await test('updates ayahRepeatCount dynamically mid-playback without dropping the queue', async () => {
+    const audios: MockQuranAudio[] = [];
+    const sequence: Array<[number, number]> = [];
+    let completed = 0;
+    const queue = new QuranAudioQueueController({
+      onTrackChange: (index, _cycle, ayahIteration) => sequence.push([index, ayahIteration]),
+      onComplete: () => { completed += 1; }
+    }, url => {
+      const audio = new MockQuranAudio(url);
+      audios.push(audio);
+      return audio;
+    });
+
+    queue.start({ tracks, startIndex: 0, endIndex: 1, ayahRepeatCount: 1, repeatCount: 1 });
+    queue.setAyahRepeatCount(2);
+    audios[0].finish();
+    await Promise.resolve();
+    assert(queue.getState().currentIndex === 0 && queue.getState().ayahIteration === 2, 'Dynamic increase should replay current ayah');
+    audios[0].finish();
+    await Promise.resolve();
+    assert(queue.getState().currentIndex === 1 && queue.getState().ayahIteration === 1, 'Should advance after completing updated ayah repeats');
+    queue.setAyahRepeatCount(1);
+    assert(audios.length === 3 && audios[2].playCalls === 1, 'Preloaded second ayah track should now be active');
+    audios[2].finish();
+    await Promise.resolve();
+    assert(completed === 1 && sequence.map(([i, a]) => `${i}:${a}`).join(',') === '0:1,0:2,1:1', 'Dynamic ayahRepeatCount change should complete expected sequence');
   });
 
   await test('rejects invalid segment bounds without creating audio', () => {

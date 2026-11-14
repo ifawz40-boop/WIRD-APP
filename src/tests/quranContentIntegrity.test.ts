@@ -3,7 +3,8 @@ import {
   VERIFIED_AYAHS, 
   TOTAL_VERIFIED_AYAHS_COUNT, 
   TOTAL_VERIFIED_SURAHS_COUNT,
-  QURAN_DATA_SOURCE_INFO 
+  QURAN_DATA_SOURCE_INFO,
+  getAyahWords
 } from '../data/verifiedAyahs';
 import fs from 'fs';
 import path from 'path';
@@ -176,6 +177,58 @@ export function runQuranIntegrityTests(): { passed: number; failed: number } {
     fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf8');
     assert(fs.existsSync(outPath), 'Validation report file must be written successfully');
     assert(isFullyVerified, `Verification failed: ${totalMismatches} mismatches found`);
+  });
+
+  // 8. End-to-end Tanzil Simple 1.1 & Uthmani word-splitting preservation (all 6,236 x 2 verses)
+  test('Word tokenization preserves 100% of characters, tashkeel, and waqf/annotation symbols across all 6,236 Uthmani and Simple verses', () => {
+    const standaloneAnnotationRe = /^[\u06D6-\u06ED\u06DE\u06E9]+$/;
+    let simpleTotal = 0;
+    let separateBismillahCount = 0;
+
+    for (const meta of ALL_SURAHS) {
+      const s = meta.number;
+      const chunkPath = path.resolve(`./src/data/quran-simple-surahs/${s}.json`);
+      assert(fs.existsSync(chunkPath), `Missing Tanzil Simple chunk for Surah ${s}`);
+      const chunk = JSON.parse(fs.readFileSync(chunkPath, 'utf8'));
+      assert(chunk.surahNumber === s, `Chunk surahNumber mismatch for Surah ${s}`);
+      assert(Array.isArray(chunk.ayahs) && chunk.ayahs.length === meta.versesCount, `Simple ayah count mismatch for Surah ${s}`);
+
+      if (s === 1 || s === 9) {
+        assert(chunk.bismillahText === null, `Surah ${s} must not have separate bismillahText`);
+      } else {
+        assert(typeof chunk.bismillahText === 'string' && chunk.bismillahText.trim().length > 0, `Surah ${s} must retain separate bismillahText`);
+        separateBismillahCount++;
+      }
+
+      const uthmaniAyahs = VERIFIED_AYAHS[s];
+      for (let i = 0; i < meta.versesCount; i++) {
+        const uthmaniText = uthmaniAyahs[i].text.trim().replace(/\s+/g, ' ');
+        const uthmaniTokens = getAyahWords(uthmaniText);
+        assert(uthmaniTokens.join(' ') === uthmaniText, `Uthmani tokenization mismatch at ${s}:${i + 1}`);
+        assert(uthmaniTokens.every(t => !standaloneAnnotationRe.test(t)), `Standalone Uthmani annotation token leaked at ${s}:${i + 1}`);
+
+        const simpleAyah = chunk.ayahs[i];
+        assert(simpleAyah.surahNumber === s && simpleAyah.ayahNumber === i + 1, `Simple coordinate mismatch at ${s}:${i + 1}`);
+        const simpleText = simpleAyah.text.trim().replace(/\s+/g, ' ');
+        assert(simpleText.length > 0, `Empty Simple text at ${s}:${i + 1}`);
+        const simpleTokens = getAyahWords(simpleText);
+        assert(simpleTokens.join(' ') === simpleText, `Tanzil Simple tokenization mismatch at ${s}:${i + 1}`);
+        assert(simpleTokens.every(t => !standaloneAnnotationRe.test(t)), `Standalone Simple annotation token leaked at ${s}:${i + 1}`);
+        simpleTotal++;
+      }
+    }
+
+    assert(simpleTotal === 6236, `Expected 6236 Tanzil Simple verses, checked ${simpleTotal}`);
+    assert(separateBismillahCount === 112, `Expected 112 separate Basmalas, found ${separateBismillahCount}`);
+
+    // Spot regressions for waqf mu'anaqah (2:2), rub-el-hizb (2:26), sajdah (7:206), saktah (18:1), stacked waqf (36:52)
+    const loadSimple = (surah: number, ayah: number) =>
+      JSON.parse(fs.readFileSync(path.resolve(`./src/data/quran-simple-surahs/${surah}.json`), 'utf8')).ayahs[ayah - 1].text;
+    assert(getAyahWords(loadSimple(2, 2)).some(w => w.includes('ۛ')), '2:2 waqf muanaqah must remain attached without deletion');
+    assert(getAyahWords(loadSimple(2, 26))[0].startsWith('۞ '), '2:26 Rub-el-Hizb must attach to first word');
+    assert(getAyahWords(loadSimple(7, 206)).slice(-1)[0].endsWith('۩'), '7:206 Sajdah mark must remain attached to final word');
+    assert(getAyahWords(loadSimple(18, 1)).slice(-1)[0].endsWith('ۜ'), '18:1 Saktah mark must remain attached');
+    assert(getAyahWords(loadSimple(36, 52)).some(w => w.includes('ۜ ۗ')), '36:52 stacked waqf markers must stay intact');
   });
 
   return { passed, failed };

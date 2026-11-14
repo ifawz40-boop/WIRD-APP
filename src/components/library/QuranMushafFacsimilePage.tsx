@@ -14,6 +14,7 @@ interface QuranMushafFacsimilePageProps {
   selectedAyah: Ayah | null;
   onSelectAyah: (ayah: Ayah) => void;
   onFallback: () => void;
+  maxWidthClass?: string;
 }
 
 interface MatchedAyahArea {
@@ -26,7 +27,8 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
   onAyahsResolved,
   selectedAyah,
   onSelectAyah,
-  onFallback
+  onFallback,
+  maxWidthClass = 'max-w-3xl'
 }) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [pageData, setPageData] = useState<MushafFacsimilePageData | null>(null);
@@ -158,16 +160,16 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
 
   if (error) {
     return (
-      <section role="alert" className="space-y-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-8 text-center dark:border-amber-800 dark:bg-amber-950/30">
-        <p className="text-sm font-semibold text-amber-950 dark:text-amber-100">{error}</p>
-        <p className="text-xs leading-6 text-amber-900/80 dark:text-amber-200/80">
+      <section role="alert" className="space-y-4 rounded-2xl border border-[#C59B27]/45 bg-[#F9F6EE] px-4 py-8 text-center dark:border-[#E0A96D]/35 dark:bg-[#111F36]">
+        <p className="text-sm font-semibold text-[#142421] dark:text-[#F5F1E8]">{error}</p>
+        <p className="text-xs leading-6 text-[#5B6F6B] dark:text-[#8B9E9B]">
           لم نستخدم أي نص قرآني من ملف الرسم. يمكنك الرجوع فورًا إلى نص وِرد المحلي، أو إعادة محاولة تحميل تخطيط الصفحة.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <button type="button" onClick={() => setRetry(value => value + 1)} className="min-h-11 rounded-xl bg-emerald-800 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-900">
+          <button type="button" onClick={() => setRetry(value => value + 1)} className="min-h-11 rounded-xl bg-[#1C4E46] dark:bg-[#1E4A47] px-4 py-2 text-xs font-bold text-white hover:bg-[#143D36]">
             إعادة المحاولة
           </button>
-          <button type="button" onClick={onFallback} className="min-h-11 rounded-xl border border-amber-400 bg-white px-4 py-2 text-xs font-bold text-amber-950 hover:bg-amber-100 dark:border-amber-700 dark:bg-stone-900 dark:text-amber-100">
+          <button type="button" onClick={onFallback} className="min-h-11 rounded-xl border border-[#C59B27]/45 bg-white px-4 py-2 text-xs font-bold text-[#142421] hover:bg-[#F2EDE2] dark:border-[#E0A96D]/35 dark:bg-[#0B132B] dark:text-[#F5F1E8]">
             متابعة القراءة بالعرض المرن
           </button>
         </div>
@@ -177,21 +179,21 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
 
   if (!pageData || matchedAreas.length === 0) {
     return (
-      <div role="status" className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-stone-200 bg-white/80 px-4 py-12 text-center text-sm text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" aria-hidden="true" />
+      <div role="status" className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-[#C59B27]/30 bg-[#F9F6EE]/90 px-4 py-12 text-center text-sm text-[#5B6F6B] dark:border-[#E0A96D]/25 dark:bg-[#0E1A2F] dark:text-[#F5F1E8]">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#1C4E46] dark:border-[#E0A96D] border-t-transparent" aria-hidden="true" />
         جارٍ تحميل رسم الصفحة والتحقق من تطابق جميع الآيات...
       </div>
     );
   }
 
   return (
-    <figure className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-[#b99b62]/50 bg-[#f8f5ed] p-2 shadow-xl dark:border-[#8d7449]/70 dark:bg-[#101b19] sm:p-4">
+    <figure className={`isolate mx-auto w-full ${maxWidthClass} overflow-hidden rounded-2xl border border-[#C59B27]/45 bg-[#F9F6EE] p-2 shadow-xl dark:border-[#E0A96D]/35 dark:bg-[#0E1A2F] sm:p-4 transition-colors`}>
       <div
         ref={hostRef}
         className="mushaf-facsimile-svg w-full"
         dangerouslySetInnerHTML={{ __html: pageData.svgMarkup }}
       />
-      <figcaption className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#b99b62]/30 px-2 pt-2 text-[10px] text-stone-500 dark:border-[#8d7449]/40 dark:text-stone-400">
+      <figcaption className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#C59B27]/30 px-2 pt-2 text-[10px] text-[#5B6F6B] dark:border-[#E0A96D]/25 dark:text-[#8B9E9B]">
         <span>رسم الصفحة: مجمع الملك فهد لطباعة المصحف الشريف</span>
         <span>مواضع الآيات التفاعلية: Quran.ws · الإصدار 1.1.1</span>
       </figcaption>

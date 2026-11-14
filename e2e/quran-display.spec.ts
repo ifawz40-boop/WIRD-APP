@@ -142,6 +142,7 @@ test('Mushaf plays a selected ayah segment continuously and repeats the bounded 
 
   await page.getByLabel('بداية المقطع الصوتي').selectOption('1');
   await page.getByLabel('نهاية المقطع الصوتي').selectOption('2');
+  await page.getByLabel('عدد مرات تكرار كل آية في المصحف').selectOption('1');
   await page.getByLabel('عدد مرات تكرار المقطع الصوتي').selectOption('2');
   await page.getByRole('button', { name: 'استماع للمقطع' }).click();
 
@@ -163,6 +164,10 @@ test('Mushaf width and line spacing controls persist and can be reset', async ({
   await page.goto('/#/library');
   await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
 
+  const displayToggle = page.getByRole('button', { name: /إعدادات العرض/ });
+  await expect(displayToggle).toHaveAttribute('aria-expanded', 'false');
+  await displayToggle.click();
+
   const pageRegion = page.getByRole('main', { name: 'صفحة المصحف 1' });
   const spacing = page.getByLabel('تباعد أسطر المصحف');
   await spacing.selectOption('relaxed');
@@ -172,6 +177,9 @@ test('Mushaf width and line spacing controls persist and can be reset', async ({
 
   await page.getByRole('button', { name: 'العودة للفهرس' }).click();
   await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+  if ((await displayToggle.getAttribute('aria-expanded')) !== 'true') {
+    await displayToggle.click();
+  }
   await expect(page.getByRole('main', { name: 'صفحة المصحف 1' })).toHaveAttribute('data-mushaf-page-width', 'full');
   await expect(page.getByLabel('تباعد أسطر المصحف')).toHaveValue('relaxed');
 
@@ -240,6 +248,10 @@ test('Mushaf reader keeps flexible layout disclosure and remembers reading displ
   await expect(page.getByRole('main', { name: /صفحة المصحف/ })).toBeVisible();
   await expect(page.getByText(/عرض الآيات موزّع داخل صفحة مرنة، وليس محاكاة مطابقة لأسطر المصحف المطبوع/)).toBeVisible();
 
+  const displayToggle = page.getByRole('button', { name: /إعدادات العرض/ });
+  await expect(displayToggle).toHaveAttribute('aria-expanded', 'false');
+  await displayToggle.click();
+
   const displayControls = page.getByRole('group', { name: 'إعدادات عرض المصحف' });
   await expect(displayControls).toBeVisible();
   await displayControls.getByRole('button', { name: 'أكبر' }).click();
@@ -251,6 +263,9 @@ test('Mushaf reader keeps flexible layout disclosure and remembers reading displ
   await page.goto('/#/library');
   await expect(page.getByRole('heading', { name: 'القرآن الكريم' })).toBeVisible();
   await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+  if ((await displayToggle.getAttribute('aria-expanded')) !== 'true') {
+    await displayToggle.click();
+  }
   const restoredControls = page.getByRole('group', { name: 'إعدادات عرض المصحف' });
   await expect(restoredControls.getByRole('button', { name: 'أكبر' })).toHaveAttribute('aria-pressed', 'true');
   await expect(restoredControls.getByRole('button', { name: 'تقليل عرض الصفحة' })).toHaveAttribute('aria-pressed', 'true');

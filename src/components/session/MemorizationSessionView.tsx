@@ -1,17 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Play, 
-  Pause, 
-  Eye, 
-  EyeOff, 
-  ChevronLeft, 
-  ChevronRight, 
-  Sparkles, 
-  Volume2, 
-  BookOpen, 
+import React, { useState, useRef, useEffect, useId, useMemo, useCallback } from 'react';
+import {
+  Play,
+  Pause,
+  EyeOff,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Volume2,
+  BookOpen,
   ArrowRight,
   Flame,
-  Award
+  Award,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  BookText,
+  FileImage,
+  Repeat
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { loadSurahVerses, getAyahWords, loadSimpleAyahText, loadSimpleAyahRange } from '../../data/quranDataLoader';
@@ -19,11 +25,20 @@ import { QuranBasmala } from '../shared/QuranBasmala';
 import { Ayah, UserProfile } from '../../types/quran';
 import { formatAyahAudioUrl } from '../../services/audioService';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
-import { getSavedAudioRepeatCount, getSavedPlaybackRate, saveAudioRepeatCount, savePlaybackRate } from '../../services/audioPreferences';
+import {
+  getSavedAudioRepeatCount,
+  getSavedPlaybackRate,
+  getSavedSegmentRepeatCount,
+  normalizeAyahSegmentRepeatCount,
+  saveAudioRepeatCount,
+  savePlaybackRate,
+  saveSegmentRepeatCount
+} from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { attachAyahRepeatHandler } from '../../services/audioRepeatController';
 import { SessionTafsirPanel } from './SessionTafsirPanel';
+import { QuranMushafFacsimilePage } from '../library/QuranMushafFacsimilePage';
 import {
   DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES,
   getMemorizationDisplayPreferences,
@@ -45,6 +60,7 @@ interface MemorizationSessionViewProps {
   mode?: 'memorize' | 'review';
   profile: UserProfile;
   onCompleteSession: (memorizedAyahs: number, reviewedPages: number, minutes: number, taskName: string, mode?: 'memorize' | 'review') => boolean | Promise<boolean>;
+  onRangeChange?: (surahNumber: number, startAyah: number, endAyah: number) => void;
   onExit: () => void;
   onProgressChange?: (inProgress: boolean) => void;
 }
@@ -56,15 +72,32 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   mode = 'memorize',
   profile,
   onCompleteSession,
+  onRangeChange,
   onExit,
   onProgressChange
 }) => {
   const [surahNumber, setSurahNumber] = useState(initialSurahNumber);
+  const [startAyah, setStartAyah] = useState(() => Math.max(1, initialStartAyah));
+  const [endAyah, setEndAyah] = useState(() => {
+    const initialMeta = ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66];
+    const safeStart = Math.min(Math.max(1, initialStartAyah || 1), initialMeta.versesCount);
+    return Math.min(Math.max(safeStart, initialEndAyah || initialMeta.versesCount), initialMeta.versesCount);
+  });
+  const [isRangeEditorOpen, setIsRangeEditorOpen] = useState(false);
   const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
   const [allSurahAyahs, setAllSurahAyahs] = useState<Ayah[]>([]);
   const [isLoadingAyahs, setIsLoadingAyahs] = useState(true);
   const [loadRetry, setLoadRetry] = useState(0);
-  
+
+  useEffect(() => {
+    const meta = ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66];
+    const safeStart = Math.min(Math.max(1, initialStartAyah || 1), meta.versesCount);
+    const safeEnd = Math.min(Math.max(safeStart, initialEndAyah || meta.versesCount), meta.versesCount);
+    setSurahNumber(meta.number);
+    setStartAyah(safeStart);
+    setEndAyah(safeEnd);
+  }, [initialSurahNumber, initialStartAyah, initialEndAyah]);
+
   // Load only the active surah's verses into the memorization session.
   const surahMeta = ALL_SURAHS.find(s => s.number === surahNumber) || ALL_SURAHS[66];
   useEffect(() => {
@@ -80,9 +113,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   }, [surahNumber, loadRetry]);
   
   // Filter ayahs within selected range
-  const sessionAyahs = allSurahAyahs.length > 0
-    ? allSurahAyahs.filter(a => a.numberInSurah >= initialStartAyah && a.numberInSurah <= (initialEndAyah || 10))
-    : [];
+  const sessionAyahs = useMemo(
+    () =>
+      allSurahAyahs.length > 0
+        ? allSurahAyahs.filter(a => a.numberInSurah >= startAyah && a.numberInSurah <= endAyah)
+        : [],
+    [allSurahAyahs, startAyah, endAyah]
+  );
 
   // Pre-cache only the active session's recitation files (bounded in the Service Worker).
   useEffect(() => {
@@ -99,7 +136,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       })
       .catch(error => console.warn('[WIRD Session] Audio cache unavailable:', error));
     return () => { cancelled = true; };
-  }, [surahNumber, profile.preferredReciter, allSurahAyahs, currentAyahIndex, initialStartAyah, initialEndAyah]);
+  }, [surahNumber, profile.preferredReciter, sessionAyahs, currentAyahIndex]);
 
   const currentAyah: Ayah | undefined = sessionAyahs[currentAyahIndex];
 
@@ -109,15 +146,64 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   useEffect(() => {
     saveMemorizationDisplayPreferences(displayPreferences);
   }, [displayPreferences]);
-  const updateDisplayPreferences = (updates: Partial<MemorizationDisplayPreferences>) => {
+  const updateDisplayPreferences = useCallback((updates: Partial<MemorizationDisplayPreferences>) => {
     setDisplayPreferences(previous => ({ ...previous, ...updates }));
-  };
+  }, []);
+
+  const settingsPanelId = useId();
+  const settingsStorageKey = 'wird:memorization-display-panel-open:v1';
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(() => {
+    if (typeof localStorage === 'undefined') return false;
+    try {
+      return localStorage.getItem(settingsStorageKey) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const settingsToggleRef = useRef<HTMLButtonElement | null>(null);
+  const setSettingsOpenPersist = useCallback((nextValue: boolean | ((prev: boolean) => boolean)) => {
+    setIsSettingsOpen(prev => {
+      const next = typeof nextValue === 'function' ? nextValue(prev) : nextValue;
+      try { localStorage.setItem(settingsStorageKey, String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isSettingsOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSettingsOpenPersist(false);
+        settingsToggleRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isSettingsOpen, setSettingsOpenPersist]);
 
   const [pageDisplayTexts, setPageDisplayTexts] = useState<string[]>([]);
   const [pageDisplayError, setPageDisplayError] = useState(false);
   const activePageAyahRef = useRef<HTMLButtonElement | null>(null);
+  const sessionPages = useMemo(
+    () => Array.from(new Set(sessionAyahs.map(ayah => ayah.page))).sort((a, b) => a - b),
+    [sessionAyahs]
+  );
+  const [printedPage, setPrintedPage] = useState<number>(() => currentAyah?.page || 1);
+  const [outOfRangeNotice, setOutOfRangeNotice] = useState<string | null>(null);
+
   useEffect(() => {
-    if (displayPreferences.viewMode !== 'page') {
+    if (currentAyah?.page) {
+      setPrintedPage(currentAyah.page);
+    }
+  }, [currentAyah?.page]);
+
+  useEffect(() => {
+    if (
+      displayPreferences.viewMode !== 'page' ||
+      isLoadingAyahs ||
+      sessionAyahs.length === 0 ||
+      sessionAyahs[0].surahNumber !== surahNumber
+    ) {
       setPageDisplayTexts([]);
       setPageDisplayError(false);
       return;
@@ -125,10 +211,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     let cancelled = false;
     setPageDisplayTexts([]);
     setPageDisplayError(false);
-    loadSimpleAyahRange(surahNumber, initialStartAyah, initialEndAyah || 10)
+    const rangeStart = sessionAyahs[0].numberInSurah;
+    const rangeEnd = sessionAyahs[sessionAyahs.length - 1].numberInSurah;
+    loadSimpleAyahRange(surahNumber, rangeStart, rangeEnd)
       .then(texts => {
         if (cancelled) return;
-        if (texts.length !== sessionAyahs.length) {
+        if (
+          texts.length !== sessionAyahs.length ||
+          texts.some(item => typeof item !== 'string' || item.trim().length === 0)
+        ) {
           throw new Error('Verified Tanzil Simple range did not match the selected memorization range.');
         }
         setPageDisplayTexts(texts);
@@ -139,23 +230,26 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         setPageDisplayError(true);
       });
     return () => { cancelled = true; };
-  }, [displayPreferences.viewMode, surahNumber, initialStartAyah, initialEndAyah, sessionAyahs.length]);
+  }, [displayPreferences.viewMode, isLoadingAyahs, surahNumber, sessionAyahs]);
 
   // Keep the selected verse visible when the user jumps from the sticky selector or the page list.
   useEffect(() => {
-    if (displayPreferences.viewMode !== 'page' || pageDisplayTexts.length !== sessionAyahs.length) return;
+    if (displayPreferences.viewMode !== 'page' || displayPreferences.mushafStyle !== 'connected') return;
+    if (pageDisplayTexts.length !== sessionAyahs.length) return;
     activePageAyahRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' });
-  }, [currentAyahIndex, displayPreferences.viewMode, pageDisplayTexts.length, sessionAyahs.length]);
+  }, [currentAyahIndex, displayPreferences.viewMode, displayPreferences.mushafStyle, pageDisplayTexts.length, sessionAyahs.length]);
 
   // 1. Audio recitation state
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(() => getSavedPlaybackRate());
   const [audioRepeatCount, setAudioRepeatCount] = useState<AudioRepeatCount>(() => getSavedAudioRepeatCount());
+  const [segmentRepeatCount, setSegmentRepeatCount] = useState<AudioRepeatCount>(() => getSavedSegmentRepeatCount());
   const [segmentStartIndex, setSegmentStartIndex] = useState(0);
   const [segmentEndIndex, setSegmentEndIndex] = useState(Math.max(0, sessionAyahs.length - 1));
   const [isSegmentPlaying, setIsSegmentPlaying] = useState(false);
   const [isSegmentPaused, setIsSegmentPaused] = useState(false);
+  const [segmentProgress, setSegmentProgress] = useState<{ ayahNumber: number; cycle: number; ayahIteration: number } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const segmentAudioQueueRef = useRef<QuranAudioQueueController | null>(null);
   const queueAdvanceRef = useRef(false);
@@ -175,6 +269,12 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     const savedCount = saveAudioRepeatCount(count);
     repeatTargetRef.current = savedCount === -1 ? null : savedCount;
     setAudioRepeatCount(savedCount);
+    segmentAudioQueueRef.current?.setAyahRepeatCount(normalizeAyahSegmentRepeatCount(savedCount));
+  };
+
+  const handleSegmentRepeatCountChange = (count: AudioRepeatCount) => {
+    const savedCount = saveSegmentRepeatCount(count);
+    setSegmentRepeatCount(savedCount);
     segmentAudioQueueRef.current?.setRepeatCount(savedCount === -1 ? null : savedCount);
   };
 
@@ -222,17 +322,61 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   useEffect(() => {
     setSegmentStartIndex(0);
     setSegmentEndIndex(Math.max(0, sessionAyahs.length - 1));
-  }, [sessionAyahs.length, surahNumber, initialStartAyah, initialEndAyah]);
+  }, [sessionAyahs.length, surahNumber, startAyah, endAyah]);
+
+  const handleStopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current.onplaying = null;
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+      setIsAudioLoading(false);
+    }
+    segmentAudioQueueRef.current?.stop();
+    segmentAudioQueueRef.current = null;
+    setIsSegmentPlaying(false);
+    setIsSegmentPaused(false);
+    setSegmentProgress(null);
+    queueAdvanceRef.current = false;
+    playbackIterationRef.current = 1;
+  }, []);
+
+  const applySessionRange = useCallback((nextSurah: number, nextStart: number, nextEnd: number) => {
+    const meta = ALL_SURAHS[nextSurah - 1] || ALL_SURAHS[66];
+    const safeStart = Math.min(Math.max(1, nextStart), meta.versesCount);
+    const safeEnd = Math.min(Math.max(safeStart, nextEnd), meta.versesCount);
+    handleStopAudio();
+    setOutOfRangeNotice(null);
+    setCurrentAyahIndex(0);
+    setRevealedWordIndices(new Set());
+    setRepeatCount(0);
+    setSurahNumber(meta.number);
+    setStartAyah(safeStart);
+    setEndAyah(safeEnd);
+    onRangeChange?.(meta.number, safeStart, safeEnd);
+  }, [handleStopAudio, onRangeChange]);
 
   useEffect(() => {
     setRevealedWordIndices(new Set());
+  }, [currentAyahIndex, maskLevel]);
+
+  useEffect(() => {
+    if (displayPreferences.viewMode !== 'focused') {
+      setMaskLevel(0);
+      setRevealedWordIndices(new Set());
+    }
+  }, [displayPreferences.viewMode]);
+
+  useEffect(() => {
     setRepeatCount(0);
     if (queueAdvanceRef.current) {
       queueAdvanceRef.current = false;
       return;
     }
     handleStopAudio();
-  }, [currentAyahIndex, maskLevel]);
+  }, [currentAyahIndex, handleStopAudio]);
 
   // Audio Playback
   const handleToggleAudio = () => {
@@ -312,22 +456,6 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     );
   };
 
-  const handleStopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.onended = null;
-      audioRef.current.pause();
-      audioRef.current = null;
-      setIsPlaying(false);
-      setIsAudioLoading(false);
-    }
-    segmentAudioQueueRef.current?.stop();
-    segmentAudioQueueRef.current = null;
-    setIsSegmentPlaying(false);
-    setIsSegmentPaused(false);
-    queueAdvanceRef.current = false;
-    playbackIterationRef.current = 1;
-  };
-
   const handleToggleSegmentAudio = () => {
     const activeQueue = segmentAudioQueueRef.current;
     if (activeQueue?.getState().active) {
@@ -343,12 +471,17 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       url: formatAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter)
     }));
     const controller = new QuranAudioQueueController({
-      onTrackChange: index => {
+      onTrackChange: (index, cycle, ayahIteration) => {
         if (index !== currentAyahIndexRef.current) {
           queueAdvanceRef.current = true;
           currentAyahIndexRef.current = index;
           setCurrentAyahIndex(index);
         }
+        setSegmentProgress({
+          ayahNumber: sessionAyahs[index]?.numberInSurah ?? 1,
+          cycle,
+          ayahIteration
+        });
       },
       onPlaying: () => { setIsSegmentPlaying(true); setIsSegmentPaused(false); },
       onPaused: () => { setIsSegmentPlaying(false); setIsSegmentPaused(true); },
@@ -357,6 +490,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         segmentAudioQueueRef.current = null;
         setIsSegmentPlaying(false);
         setIsSegmentPaused(false);
+        setSegmentProgress(null);
       },
       onError: error => {
         console.warn('[WIRD Session] Segment audio queue failed:', error);
@@ -364,6 +498,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         segmentAudioQueueRef.current = null;
         setIsSegmentPlaying(false);
         setIsSegmentPaused(false);
+        setSegmentProgress(null);
       }
     });
     segmentAudioQueueRef.current = controller;
@@ -372,7 +507,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         tracks,
         startIndex: segmentStartIndex,
         endIndex: segmentEndIndex,
-        repeatCount: audioRepeatCount === -1 ? null : audioRepeatCount,
+        ayahRepeatCount: normalizeAyahSegmentRepeatCount(audioRepeatCount),
+        repeatCount: segmentRepeatCount === -1 ? null : segmentRepeatCount,
         playbackRate: getSavedPlaybackRate()
       });
       setIsSegmentPlaying(true);
@@ -382,6 +518,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       segmentAudioQueueRef.current = null;
       setIsSegmentPlaying(false);
       setIsSegmentPaused(false);
+      setSegmentProgress(null);
       console.warn('[WIRD Session] Could not start segment audio:', error);
     }
   };
@@ -412,8 +549,18 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     loadSimpleAyahText(currentAyah.surahNumber, currentAyah.numberInSurah)
       .then(text => {
         if (!active) return;
-        if (text) setDisplayWords(getAyahWords(text));
-        else setDisplayTextError(true);
+        if (!text) {
+          setDisplayTextError(true);
+          return;
+        }
+        const normalizedInput = text.trim().replace(/\s+/g, ' ');
+        const tokenized = getAyahWords(normalizedInput);
+        if (tokenized.length === 0 || tokenized.join(' ') !== normalizedInput) {
+          console.error('[WIRD Memorization] Ayah tokenization mismatch detected:', currentAyah.surahNumber, currentAyah.numberInSurah);
+          setDisplayTextError(true);
+          return;
+        }
+        setDisplayWords(tokenized);
       })
       .catch(error => {
         console.error('[WIRD Memorization] Could not load local Tanzil Simple text:', error);
@@ -482,58 +629,96 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const handlePrintedAyahsResolved = useCallback(({ ayahs }: { page: number; ayahs: Ayah[] }) => {
+    if (!currentAyah) return;
+    const hasCurrent = ayahs.some(item => item.surahNumber === currentAyah.surahNumber && item.numberInSurah === currentAyah.numberInSurah);
+    if (!hasCurrent && ayahs.length > 0 && printedPage === currentAyah.page) {
+      const first = ayahs[0];
+      if (first.surahNumber === currentAyah.surahNumber) {
+        if (currentAyah.numberInSurah < first.numberInSurah && printedPage > 1) {
+          setPrintedPage(printedPage - 1);
+        } else if (currentAyah.numberInSurah > ayahs[ayahs.length - 1].numberInSurah && printedPage < 604) {
+          setPrintedPage(printedPage + 1);
+        }
+      }
+    }
+  }, [currentAyah, printedPage]);
+
+  const handlePrintedSelectAyah = useCallback((ayah: Ayah) => {
+    const matchIndex = sessionAyahs.findIndex(
+      item => item.surahNumber === ayah.surahNumber && item.numberInSurah === ayah.numberInSurah
+    );
+    if (matchIndex === -1) {
+      const firstNum = sessionAyahs[0]?.numberInSurah ?? startAyah;
+      const lastNum = sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah;
+      setOutOfRangeNotice(`الآية ${ayah.numberInSurah} خارج نطاق جلسة الحفظ الحالية (من آية ${firstNum} إلى آية ${lastNum}).`);
+      return;
+    }
+    setOutOfRangeNotice(null);
+    if (matchIndex !== currentAyahIndex) {
+      handleStopAudio();
+      setCurrentAyahIndex(matchIndex);
+    }
+  }, [sessionAyahs, currentAyahIndex, startAyah, endAyah, handleStopAudio]);
+
+  const handlePrintedFallback = useCallback(() => {
+    updateDisplayPreferences({ mushafStyle: 'connected' });
+  }, [updateDisplayPreferences]);
+
+  const isMaskingDisabled = displayPreferences.viewMode !== 'focused';
+
+  const handleMaskLevelChange = useCallback((nextLevel: number) => {
+    if (displayPreferences.viewMode !== 'focused' && nextLevel > 0) return;
+    setMaskLevel(nextLevel);
+  }, [displayPreferences.viewMode]);
+
   if (isLoadingAyahs) {
     return (
-      <div className="bg-white dark:bg-stone-800 rounded-3xl p-8 text-center space-y-3 border border-stone-200 dark:border-stone-700 max-w-lg mx-auto shadow-sm">
-        <BookOpen className="w-8 h-8 mx-auto text-emerald-700 animate-pulse" />
-        <p className="text-sm font-bold text-stone-700 dark:text-stone-200">جارٍ تحميل سورة {surahMeta.name}...</p>
-        <p className="text-xs text-stone-500">يتم تحميل نص السورة المطلوبة فقط.</p>
+      <div className="wird-card rounded-3xl p-8 text-center space-y-3 max-w-lg mx-auto shadow-sm">
+        <BookOpen className="w-8 h-8 mx-auto text-[#1C4E46] dark:text-[#E0A96D] animate-pulse" />
+        <p className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">جارٍ تحميل سورة {surahMeta.name}...</p>
+        <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">يتم تحميل نص السورة المطلوبة فقط.</p>
       </div>
     );
   }
 
   if (!currentAyah) {
+    const isInvalidRange = allSurahAyahs.length > 0 && sessionAyahs.length === 0;
     return (
-      <div className="bg-white dark:bg-stone-800 rounded-3xl p-8 text-center space-y-5 border border-stone-200 dark:border-stone-700 max-w-lg mx-auto shadow-sm">
-        <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800">
+      <div className="wird-card rounded-3xl p-8 text-center space-y-5 max-w-lg mx-auto shadow-sm">
+        <div className="w-14 h-14 rounded-2xl bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#9A7415] dark:text-[#E0A96D] flex items-center justify-center mx-auto border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
           <BookOpen className="w-7 h-7" />
         </div>
         <div className="space-y-2">
-          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider bg-amber-100 dark:bg-amber-950/80 px-2.5 py-1 rounded-full">
-            تعذر تحميل النص القرآني
+          <span className="text-[11px] font-bold text-[#9A7415] dark:text-[#E0A96D] tracking-wider">
+            {isInvalidRange ? 'نطاق الآيات غير صالح' : 'تعذر تحميل النص القرآني'}
           </span>
-          <h3 className="font-bold text-stone-900 dark:text-stone-100 text-lg">
+          <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-lg">
             سورة {surahMeta.name} ({surahMeta.versesCount} آية)
           </h3>
-          <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed max-w-md mx-auto">
-            تعذر تحميل النص القرآني العثماني لهذه السورة من الملفات المحلية. تحقق من سلامة ملفات التطبيق ثم أعد المحاولة؛ لم يتم استبدال النص بأي مصدر غير موثوق.
+          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed max-w-md mx-auto">
+            {isInvalidRange
+              ? `النطاق المحدد (من آية ${startAyah} إلى آية ${endAyah}) خارج حدود آيات سورة ${surahMeta.name}. اختر جلسة صحيحة للمتابعة.`
+              : 'تعذر تحميل النص القرآني العثماني لهذه السورة من الملفات المحلية. تحقق من سلامة ملفات التطبيق ثم أعد المحاولة؛ لم يتم استبدال النص بأي مصدر غير موثوق.'}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <button
             onClick={() => setLoadRetry(value => value + 1)}
-            className="w-full sm:w-auto px-5 py-2.5 bg-amber-500 text-stone-950 rounded-xl text-xs font-bold shadow-xs hover:bg-amber-400 transition-colors"
+            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[#C59B27] text-[#0B132B] rounded-xl text-xs font-bold shadow-xs hover:bg-[#d8ae37] transition-colors"
           >
             إعادة تحميل النص
           </button>
           <button
-            onClick={() => {
-              handleStopAudio();
-              setSurahNumber(67);
-              setCurrentAyahIndex(0);
-            }}
-            className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-emerald-900 transition-colors"
+            onClick={() => applySessionRange(67, 1, 10)}
+            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[#1C4E46] dark:bg-[#1E4A47] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#143D36] transition-colors"
           >
             جلسة سورة الملك (الآيات 1-10)
           </button>
           <button
-            onClick={() => {
-              handleStopAudio();
-              setSurahNumber(1);
-              setCurrentAyahIndex(0);
-            }}
-            className="w-full sm:w-auto px-5 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold transition-colors"
+            onClick={() => applySessionRange(1, 1, 7)}
+            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[#F2EDE2] hover:bg-[#E6DFCE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl text-xs font-semibold transition-colors"
           >
             سورة الفاتحة (كاملة)
           </button>
@@ -545,40 +730,40 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   // Completion Celebration View
   if (isCompleted) {
     return (
-      <div className="bg-white dark:bg-stone-800/90 rounded-3xl p-8 border border-stone-200/80 dark:border-stone-700/80 text-center space-y-6 max-w-xl mx-auto shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 flex items-center justify-center mx-auto shadow-inner border border-amber-200 dark:border-amber-800">
+      <div className="wird-card rounded-3xl p-8 text-center space-y-6 max-w-xl mx-auto shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#9A7415] dark:text-[#E0A96D] flex items-center justify-center mx-auto shadow-inner border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
           <Award className="w-8 h-8" />
         </div>
 
         <div className="space-y-2">
-          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+          <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] uppercase tracking-wider">
             {mode === 'review' ? 'مبارك إتمام المراجعة' : 'مبارك الإنجاز القرآني'}
           </span>
-          <h2 className="text-2xl font-bold font-quran text-stone-900 dark:text-stone-100">
+          <h2 className="text-2xl font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
             {mode === 'review' ? 'أتممت جلسة المراجعة بنجاح!' : 'أتممت وِرد الحفظ اليومي بنجاح!'}
           </h2>
-          <p className="text-xs text-stone-500 max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] max-w-sm mx-auto leading-relaxed">
             {mode === 'review' ? `تمت مراجعة الآيات المحددة من سورة ${surahMeta.name}.` : `تم حفظ وتكرار وتثبيت الآيات المقررة لسورة ${surahMeta.name}. ثبّت الله القرآن في قلبك ونفعك به في الدنيا والآخرة.`}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 p-4 bg-[#faf8f5] dark:bg-stone-900/60 rounded-xl border border-stone-200/70 dark:border-stone-700/60 text-xs">
+        <div className="grid grid-cols-3 gap-3 p-4 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-xs">
           <div>
-            <div className="text-stone-400">{mode === 'review' ? 'الآيات المراجعة' : 'الآيات المحفوظة'}</div>
-            <div className="text-lg font-bold text-emerald-800 dark:text-emerald-300 font-mono">
+            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">{mode === 'review' ? 'الآيات المراجعة' : 'الآيات المحفوظة'}</div>
+            <div className="text-lg font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
               {sessionAyahs.length}
             </div>
           </div>
           <div>
-            <div className="text-stone-400">زمن الجلسة</div>
-            <div className="text-lg font-bold text-stone-800 dark:text-stone-200 font-mono">
+            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">زمن الجلسة</div>
+            <div className="text-lg font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
               {formatTime(secondsElapsed)}
             </div>
           </div>
           <div>
-            <div className="text-stone-400">سلسلة المواظبة</div>
-            <div className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono flex items-center justify-center gap-1">
-              <Flame className="w-4 h-4 fill-amber-500" />
+            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">سلسلة المواظبة</div>
+            <div className="text-lg font-bold text-[#C59B27] dark:text-[#E0A96D] font-mono tabular-nums flex items-center justify-center gap-1">
+              <Flame className="w-4 h-4 fill-[#C59B27] dark:fill-[#E0A96D]" />
               <span>{profile.streakDays} يوم</span>
             </div>
           </div>
@@ -592,14 +777,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               setCurrentAyahIndex(0);
               setSecondsElapsed(0);
             }}
-            className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold"
+            className="min-h-11 px-4 py-2.5 bg-[#F2EDE2] hover:bg-[#E6DFCE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl text-xs font-semibold"
           >
             {mode === 'review' ? 'إعادة المراجعة' : 'تكرار الجلسة للتثبيت'}
           </button>
 
           <button
             onClick={handleExit}
-            className="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+            className="min-h-11 px-6 py-2.5 bg-[#1C4E46] dark:bg-[#1E4A47] hover:bg-[#143D36] text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
           >
             العودة للرئيسية
           </button>
@@ -608,33 +793,186 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     );
   }
 
+  const formatRepeatBadge = (count: AudioRepeatCount, continuousLabel: string) => {
+    if (count === -1) return continuousLabel;
+    if (count === 1) return 'مرة';
+    if (count === 2) return 'مرتين';
+    return `${count} مرات`;
+  };
+
+  const renderMaskedWords = () => (
+    <>
+      {displayTextError ? (
+        <span role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+          تعذر تحميل النص الإملائي المعتمد لهذه الآية؛ أعد المحاولة قبل متابعة التسميع.
+        </span>
+      ) : words.length === 0 ? <span role="status" className="text-sm text-[#5B6F6B] dark:text-[#8B9E9B]">جارٍ تجهيز نص الآية للتسميع...</span> : (
+        words.map((word, idx) => {
+          const masked = isWordMasked(idx);
+          if (masked) {
+            const baseCharCount = word.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u06DE\u06E9\s]/g, '').length;
+            const dotCount = Math.min(5, Math.max(2, Math.round(baseCharCount / 2)));
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleToggleWordReveal(idx)}
+                aria-label={`إظهار الكلمة رقم ${idx + 1}`}
+                className="min-h-11 px-3 py-0.5 inline-flex items-center justify-center rounded-lg select-none bg-[#E6DFCE] dark:bg-[#162744] text-[#9A7415]/80 dark:text-[#E0A96D]/80 cursor-pointer active:scale-95 border border-dashed border-[#C59B27]/70 dark:border-[#E0A96D]/50 text-[0.7em] tracking-widest transition-colors"
+                title="اضغط لإظهار الكلمة للتسميع"
+              >
+                <span aria-hidden="true">{'•'.repeat(dotCount)}</span>
+              </button>
+            );
+          }
+          return (
+            <span key={idx} className="inline-block px-2 py-0.5 select-none">
+              {word}
+            </span>
+          );
+        })
+      )}
+    </>
+  );
+
+  const activePrintedPageIdx = sessionPages.indexOf(printedPage);
+
   return (
     <div
       data-session-page-width={displayPreferences.pageWidth}
-      className={`w-full mx-auto space-y-6 ${SESSION_PAGE_WIDTH_CLASSES[displayPreferences.pageWidth]}`}
-      style={{ zoom: displayPreferences.uiScale / 100 }}
+      className={`w-full mx-auto space-y-5 ${SESSION_PAGE_WIDTH_CLASSES[displayPreferences.pageWidth]}`}
     >
-      {/* 1. Session Navigation & Progress Bar */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-4 border border-stone-200/80 dark:border-stone-700/80 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <button
-          onClick={handleExit}
-          className="min-h-11 inline-flex items-center justify-center gap-1.5 self-start rounded-xl border border-stone-200 dark:border-stone-700 px-3 py-2 text-xs font-semibold text-stone-600 hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100 transition-colors"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>خروج من الجلسة</span>
-        </button>
+      {/* 1. Streamlined Session Progress Bar & Unified Settings Drawer */}
+      <header className="wird-card rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <button
+            type="button"
+            onClick={handleExit}
+            className="min-h-11 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 px-3 py-2 text-xs font-bold text-[#142421] hover:border-[#C59B27] dark:text-[#F5F1E8] transition-colors"
+          >
+            <ArrowRight className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <span>خروج من الجلسة</span>
+          </button>
 
-        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 min-w-0">
-          <span className="font-bold text-sm text-stone-900 dark:text-stone-100 font-quran">
-            سورة {surahMeta.name}
-          </span>
-          <span aria-live="polite" className="text-xs text-stone-500 font-mono tabular-nums">
-            الآية {currentAyah.numberInSurah} من {sessionAyahs[sessionAyahs.length - 1]?.numberInSurah || surahMeta.versesCount}
-          </span>
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 font-mono">
-            ⏱ {formatTime(secondsElapsed)}
-          </span>
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 min-w-0 text-xs">
+            <span className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
+              سورة {surahMeta.name}
+            </span>
+            <span aria-hidden="true" className="text-[#5B6F6B]/50 dark:text-[#8B9E9B]/50">·</span>
+            <span aria-live="polite" className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums font-semibold">
+              الآية {currentAyah.numberInSurah} (نطاق {startAyah}–{endAyah})
+            </span>
+            <span aria-hidden="true" className="text-[#5B6F6B]/50 dark:text-[#8B9E9B]/50">·</span>
+            <span className="font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+              {formatTime(secondsElapsed)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsRangeEditorOpen(prev => !prev)}
+              aria-expanded={isRangeEditorOpen}
+              className={`min-h-9 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                isRangeEditorOpen
+                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+              }`}
+            >
+              <span>تغيير النطاق</span>
+              {isRangeEditorOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+          </div>
+
+          <button
+            ref={settingsToggleRef}
+            type="button"
+            onClick={() => setSettingsOpenPersist(prev => !prev)}
+            aria-expanded={isSettingsOpen}
+            aria-controls={settingsPanelId}
+            className={`min-h-11 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              isSettingsOpen
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4 shrink-0" />
+            <span>إعدادات العرض والصوت</span>
+            <span className={`hidden sm:inline text-[10px] font-mono tabular-nums ${
+              isSettingsOpen ? 'text-[#F5F1E8]/85' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+            }`}>
+              {displayPreferences.uiScale}% · {displayPreferences.fontSize}px
+            </span>
+            {isSettingsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
         </div>
+
+        {isRangeEditorOpen && (
+          <div
+            role="region"
+            aria-label="نطاق السورة والآيات في الجلسة"
+            className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 text-xs"
+          >
+            <label className="flex flex-col gap-1 sm:col-span-2">
+              <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">السورة</span>
+              <select
+                aria-label="اختيار سورة جلسة الحفظ"
+                value={surahNumber}
+                onChange={event => {
+                  const nextSurahNum = Number(event.target.value);
+                  const nextMeta = ALL_SURAHS[nextSurahNum - 1];
+                  if (nextMeta) applySessionRange(nextMeta.number, 1, nextMeta.versesCount);
+                }}
+                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+              >
+                {ALL_SURAHS.map(s => (
+                  <option key={s.number} value={s.number}>
+                    {s.number}. سورة {s.name} ({s.versesCount} آية)
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">من آية</span>
+              <select
+                aria-label="بداية نطاق الجلسة من الآية"
+                value={startAyah}
+                onChange={event => {
+                  const nextStart = Number(event.target.value);
+                  applySessionRange(surahNumber, nextStart, Math.max(nextStart, endAyah));
+                }}
+                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] tabular-nums focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+              >
+                {Array.from({ length: surahMeta.versesCount }, (_, i) => i + 1).map(num => (
+                  <option key={num} value={num}>آية {num}</option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex items-end gap-2">
+              <label className="flex flex-col gap-1 flex-1">
+                <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">إلى آية</span>
+                <select
+                  aria-label="نهاية نطاق الجلسة إلى الآية"
+                  value={endAyah}
+                  onChange={event => applySessionRange(surahNumber, startAyah, Number(event.target.value))}
+                  className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] tabular-nums focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                >
+                  {Array.from({ length: surahMeta.versesCount - startAyah + 1 }, (_, i) => startAyah + i).map(num => (
+                    <option key={num} value={num}>آية {num}</option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => applySessionRange(surahNumber, 1, surahMeta.versesCount)}
+                className="min-h-11 px-3 rounded-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/35 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 text-[#9A7415] dark:text-[#E0A96D] text-[11px] font-bold whitespace-nowrap hover:bg-[#C59B27]/20 transition-colors"
+                title="تحديد كامل آيات السورة"
+              >
+                كاملة
+              </button>
+            </div>
+          </div>
+        )}
 
         <div
           role="progressbar"
@@ -643,393 +981,680 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           aria-valuemax={sessionAyahs.length}
           aria-valuenow={currentAyahIndex + 1}
           aria-valuetext={`الآية ${currentAyah.numberInSurah} من ${sessionAyahs.length}`}
-          className="h-2 w-full sm:w-28 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700"
+          className="h-1.5 w-full overflow-hidden rounded-full bg-[#1C4E46]/12 dark:bg-[#162744]"
         >
-          <div className="h-full rounded-full bg-emerald-700 transition-all duration-300" style={{ width: `${((currentAyahIndex + 1) / Math.max(1, sessionAyahs.length)) * 100}%` }} />
-        </div>
-      </div>
-
-      {/* Session display controls: local-only presentation preferences */}
-      <section
-        aria-label="إعدادات عرض جلسة الحفظ"
-        className="bg-white dark:bg-stone-800/90 rounded-2xl p-4 border border-stone-200/80 dark:border-stone-700/80 shadow-xs space-y-4"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-          <label htmlFor="session-ui-scale" className="text-xs font-bold text-stone-700 dark:text-stone-200 whitespace-nowrap">
-            حجم واجهة الجلسة
-          </label>
-          <input
-            id="session-ui-scale"
-            aria-label="حجم واجهة جلسة الحفظ"
-            type="range"
-            min={80}
-            max={110}
-            step={5}
-            value={displayPreferences.uiScale}
-            aria-valuetext={`${displayPreferences.uiScale}%`}
-            onChange={event => updateDisplayPreferences({ uiScale: Number(event.target.value) })}
-            className="min-h-11 w-full accent-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          <div
+            className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-all duration-300"
+            style={{ width: `${((currentAyahIndex + 1) / Math.max(1, sessionAyahs.length)) * 100}%` }}
           />
-          <output htmlFor="session-ui-scale" aria-live="polite" className="text-xs font-mono tabular-nums text-stone-600 dark:text-stone-300 min-w-12 text-center">
-            {displayPreferences.uiScale}%
-          </output>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-          <label htmlFor="session-ayah-font-size" className="text-xs font-bold text-stone-700 dark:text-stone-200 whitespace-nowrap">
-            حجم خط الآيات
-          </label>
-          <input
-            id="session-ayah-font-size"
-            aria-label="حجم خط الآيات"
-            type="range"
-            min={20}
-            max={44}
-            step={2}
-            value={displayPreferences.fontSize}
-            aria-valuetext={`${displayPreferences.fontSize} بكسل`}
-            onChange={event => updateDisplayPreferences({ fontSize: Number(event.target.value) })}
-            className="min-h-11 w-full accent-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-          />
-          <output htmlFor="session-ayah-font-size" aria-live="polite" className="text-xs font-mono tabular-nums text-stone-600 dark:text-stone-300 min-w-12 text-center">
-            {displayPreferences.fontSize}px
-          </output>
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div role="group" aria-label="كثافة عرض العناصر" className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-stone-500">المسافات:</span>
-            <button
-              type="button"
-              aria-pressed={displayPreferences.density === 'comfortable'}
-              onClick={() => updateDisplayPreferences({ density: 'comfortable' })}
-              className={`min-h-11 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${displayPreferences.density === 'comfortable' ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-stone-50 dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700'}`}
-            >
-              مريحة
-            </button>
-            <button
-              type="button"
-              aria-pressed={displayPreferences.density === 'compact'}
-              onClick={() => updateDisplayPreferences({ density: 'compact' })}
-              className={`min-h-11 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${displayPreferences.density === 'compact' ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-stone-50 dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700'}`}
-            >
-              مضغوطة
-            </button>
-          </div>
-
-          <div role="group" aria-label="طريقة عرض الآيات" className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-stone-500">عرض الآيات:</span>
-            <button
-              type="button"
-              aria-pressed={displayPreferences.viewMode === 'focused'}
-              onClick={() => updateDisplayPreferences({ viewMode: 'focused' })}
-              className={`min-h-11 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${displayPreferences.viewMode === 'focused' ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-stone-50 dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700'}`}
-            >
-              آية واحدة
-            </button>
-            <button
-              type="button"
-              aria-pressed={displayPreferences.viewMode === 'page'}
-              onClick={() => updateDisplayPreferences({ viewMode: 'page' })}
-              className={`min-h-11 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${displayPreferences.viewMode === 'page' ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-stone-50 dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700'}`}
-            >
-              كل آيات الجلسة
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div role="group" aria-label="عرض مساحة صفحة الحفظ" className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-stone-500">عرض الصفحة:</span>
-            {([
-              { value: 'comfortable', label: 'مريحة' },
-              { value: 'wide', label: 'واسعة' },
-              { value: 'full', label: 'ملء العرض' }
-            ] as const).map(option => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={displayPreferences.pageWidth === option.value}
-                onClick={() => updateDisplayPreferences({ pageWidth: option.value })}
-                className={`min-h-11 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${displayPreferences.pageWidth === option.value ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-stone-50 dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700'}`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setDisplayPreferences({ ...DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES })}
-            className="min-h-11 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+        {isSettingsOpen && (
+          <div
+            id={settingsPanelId}
+            className="border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 pt-4 mt-1 grid grid-cols-1 lg:grid-cols-2 gap-6"
           >
-            إعادة ضبط العرض
-          </button>
-        </div>
-        <p className="text-[11px] text-stone-500 dark:text-stone-400">
-          يمكنك توسيع مساحة الصفحة أو تصغير العناصر وزيادة كثافة الآيات. تُحفظ الاختيارات على هذا الجهاز فقط، ولا تدخل ضمن مزامنة بيانات الحفظ.
-        </p>
-      </section>
+            {/* Column 1: Display & Mushaf Controls */}
+            <section aria-label="إعدادات عرض جلسة الحفظ" className="space-y-4">
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                <h3 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                  إعدادات العرض والمصحف
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDisplayPreferences({ ...DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES })}
+                  className="min-h-11 inline-flex items-center gap-1.5 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 py-1.5 text-[11px] font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>إعادة ضبط العرض</span>
+                </button>
+              </div>
 
-      {displayPreferences.viewMode === 'page' && (
-        <section
-          aria-label="كل آيات الجلسة"
-          className="bg-[#fdfbf7] dark:bg-stone-800/90 rounded-2xl p-3 sm:p-4 border border-stone-200/80 dark:border-stone-700/80 shadow-xs"
-        >
-          <div className="flex items-center justify-between gap-3 px-2 pb-3">
-            <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100">كل آيات الجلسة</h3>
-            <span className="text-[11px] text-stone-500">اضغط على أي آية للانتقال إليها</span>
-          </div>
-          {pageDisplayError ? (
-            <p role="alert" className="px-3 py-5 text-sm text-red-700 dark:text-red-300">
-              تعذر تحميل النص القرآني المعتمد لهذا النطاق؛ لم نعرض نصًا بديلًا. أعد المحاولة أو استخدم عرض الآية الواحدة.
-            </p>
-          ) : pageDisplayTexts.length !== sessionAyahs.length ? (
-            <p role="status" className="px-3 py-5 text-sm text-stone-500">جارٍ تحميل نص الآيات المعتمد...</p>
-          ) : (
-          <div className={`max-h-[55vh] overflow-y-auto overscroll-contain ${displayPreferences.density === 'compact' ? 'space-y-1' : 'space-y-3'}`}>
-            {sessionAyahs.map((ayah, index) => (
-              <button
-                ref={index === currentAyahIndex ? activePageAyahRef : undefined}
-                type="button"
-                key={ayah.numberInSurah}
-                aria-pressed={index === currentAyahIndex}
-                onClick={() => {
-                  if (index === currentAyahIndex) return;
-                  handleStopAudio();
-                  setCurrentAyahIndex(index);
-                }}
-                className={`w-full text-right rounded-xl border px-3 sm:px-4 transition-colors ${displayPreferences.density === 'compact' ? 'py-2' : 'py-4'} ${index === currentAyahIndex ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40' : 'border-stone-200 dark:border-stone-700 bg-white/70 dark:bg-stone-900/40 hover:border-emerald-400'}`}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="shrink-0 min-w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center text-xs font-bold">
-                    {ayah.numberInSurah}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <label htmlFor="session-ui-scale" className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+                      حجم واجهة الجلسة
+                    </label>
+                    <output htmlFor="session-ui-scale" aria-live="polite" className="text-xs font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                      {displayPreferences.uiScale}%
+                    </output>
+                  </div>
+                  <input
+                    id="session-ui-scale"
+                    aria-label="حجم واجهة جلسة الحفظ"
+                    type="range"
+                    min={80}
+                    max={110}
+                    step={5}
+                    value={displayPreferences.uiScale}
+                    aria-valuetext={`${displayPreferences.uiScale}%`}
+                    onChange={event => updateDisplayPreferences({ uiScale: Number(event.target.value) })}
+                    className="min-h-11 w-full accent-[#1C4E46] dark:accent-[#E0A96D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <label htmlFor="session-ayah-font-size" className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+                      حجم خط الآيات
+                    </label>
+                    <output htmlFor="session-ayah-font-size" aria-live="polite" className="text-xs font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                      {displayPreferences.fontSize}px
+                    </output>
+                  </div>
+                  <input
+                    id="session-ayah-font-size"
+                    aria-label="حجم خط الآيات"
+                    type="range"
+                    min={20}
+                    max={44}
+                    step={2}
+                    value={displayPreferences.fontSize}
+                    aria-valuetext={`${displayPreferences.fontSize} بكسل`}
+                    onChange={event => updateDisplayPreferences({ fontSize: Number(event.target.value) })}
+                    className="min-h-11 w-full accent-[#1C4E46] dark:accent-[#E0A96D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">عرض الآيات</span>
+                  <div role="group" aria-label="طريقة عرض الآيات" className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      aria-pressed={displayPreferences.viewMode === 'focused'}
+                      onClick={() => updateDisplayPreferences({ viewMode: 'focused' })}
+                      className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
+                        displayPreferences.viewMode === 'focused'
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      }`}
+                    >
+                      آية واحدة
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={displayPreferences.viewMode === 'page'}
+                      onClick={() => updateDisplayPreferences({ viewMode: 'page' })}
+                      className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
+                        displayPreferences.viewMode === 'page'
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      }`}
+                    >
+                      كل آيات الجلسة
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">المسافات والسطور</span>
+                  <div role="group" aria-label="كثافة عرض العناصر" className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      aria-pressed={displayPreferences.density === 'comfortable'}
+                      onClick={() => updateDisplayPreferences({ density: 'comfortable' })}
+                      className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
+                        displayPreferences.density === 'comfortable'
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      }`}
+                    >
+                      مريحة
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={displayPreferences.density === 'compact'}
+                      onClick={() => updateDisplayPreferences({ density: 'compact' })}
+                      className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
+                        displayPreferences.density === 'compact'
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      }`}
+                    >
+                      مضغوطة
+                    </button>
+                  </div>
+                </div>
+
+                {displayPreferences.viewMode === 'page' && (
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">نمط المصحف عند عرض كل الآيات</span>
+                    <div role="group" aria-label="نمط المصحف في الجلسة" className="grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        aria-pressed={displayPreferences.mushafStyle === 'connected'}
+                        onClick={() => updateDisplayPreferences({ mushafStyle: 'connected' })}
+                        className={`min-h-11 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
+                          displayPreferences.mushafStyle === 'connected'
+                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                        }`}
+                      >
+                        <BookText className="w-3.5 h-3.5 shrink-0" />
+                        <span>صفحة مصحف متصلة</span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={displayPreferences.mushafStyle === 'printed'}
+                        onClick={() => {
+                          setMaskLevel(0);
+                          updateDisplayPreferences({ mushafStyle: 'printed' });
+                        }}
+                        className={`min-h-11 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
+                          displayPreferences.mushafStyle === 'printed'
+                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                        }`}
+                      >
+                        <FileImage className="w-3.5 h-3.5 shrink-0" />
+                        <span>المصحف المطبوع بالرسم</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">اتساع مساحة الصفحة</span>
+                  <div role="group" aria-label="عرض مساحة صفحة الحفظ" className="grid grid-cols-3 gap-1.5">
+                    {([
+                      { value: 'comfortable', label: 'قياسية' },
+                      { value: 'wide', label: 'واسعة' },
+                      { value: 'full', label: 'ملء العرض' }
+                    ] as const).map(option => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={displayPreferences.pageWidth === option.value}
+                        onClick={() => updateDisplayPreferences({ pageWidth: option.value })}
+                        className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
+                          displayPreferences.pageWidth === option.value
+                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                تُحفظ إعدادات العرض على هذا الجهاز فقط دون مزامنة مع تقدم الحفظ.
+              </p>
+            </section>
+
+            {/* Column 2: Audio & Segment Repetition Controls */}
+            <section aria-label="إعدادات الصوت والمقطع الصوتي" className="space-y-4">
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                <h3 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                  إعدادات الصوت والمقطع
+                </h3>
+                {sessionAyahs[segmentStartIndex] && sessionAyahs[segmentEndIndex] && (
+                  <span className="text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    المقطع: من آية {sessionAyahs[segmentStartIndex].numberInSurah} إلى آية {sessionAyahs[segmentEndIndex].numberInSurah}
                   </span>
-                  <span
-                    className="font-quran quran-text text-stone-900 dark:text-stone-100 flex-1"
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="flex flex-col justify-end">
+                  <AudioPlaybackRateControl value={playbackRate} onChange={handlePlaybackRateChange} />
+                </div>
+
+                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">تكرار الآية الواحدة</span>
+                  <select
+                    aria-label="عدد مرات تكرار الصوت"
+                    value={audioRepeatCount}
+                    onChange={event => handleAudioRepeatCountChange(Number(event.target.value) as AudioRepeatCount)}
+                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  >
+                    <option value={1}>مرة واحدة</option>
+                    <option value={2}>مرتان</option>
+                    <option value={3}>3 مرات</option>
+                    <option value={5}>5 مرات</option>
+                    <option value={10}>10 مرات</option>
+                    <option value={-1}>حتى الإيقاف</option>
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">بداية المقطع (من آية)</span>
+                  <select
+                    aria-label="بداية المقطع الصوتي في الجلسة"
+                    value={segmentStartIndex}
+                    disabled={!sessionAyahs.length}
+                    onChange={event => {
+                      const next = Number(event.target.value);
+                      setSegmentStartIndex(next);
+                      if (segmentEndIndex < next) setSegmentEndIndex(next);
+                    }}
+                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  >
+                    {sessionAyahs.map((ayah, index) => (
+                      <option key={ayah.number} value={index}>آية {ayah.numberInSurah}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">نهاية المقطع (إلى آية)</span>
+                  <select
+                    aria-label="نهاية المقطع الصوتي في الجلسة"
+                    value={segmentEndIndex}
+                    disabled={!sessionAyahs.length}
+                    onChange={event => setSegmentEndIndex(Number(event.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  >
+                    {sessionAyahs.slice(segmentStartIndex).map((ayah, offset) => (
+                      <option key={ayah.number} value={segmentStartIndex + offset}>آية {ayah.numberInSurah}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] sm:col-span-2">
+                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">تكرار المقطع الصوتي كاملاً</span>
+                  <select
+                    aria-label="عدد مرات تكرار المقطع الصوتي"
+                    value={segmentRepeatCount}
+                    onChange={event => handleSegmentRepeatCountChange(Number(event.target.value) as AudioRepeatCount)}
+                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  >
+                    <option value={1}>مرة واحدة</option>
+                    <option value={2}>مرتان</option>
+                    <option value={3}>3 مرات</option>
+                    <option value={5}>5 مرات</option>
+                    <option value={10}>10 مرات</option>
+                    <option value={-1}>مستمر</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+          </div>
+        )}
+      </header>
+
+      {/* 2. Memorization Stage (Content-Only Zoom) + Merged Masking & Counter Toolbar */}
+      <div className="space-y-4" style={{ zoom: displayPreferences.uiScale / 100 }}>
+        {displayPreferences.viewMode === 'page' ? (
+          <section
+            aria-label="كل آيات الجلسة"
+            className="mushaf-page-frame rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] px-4 py-5 sm:px-8 sm:py-7 shadow-md space-y-5"
+          >
+            {/* Mushaf Header with quick style switch (Connected vs Printed Facsimile) */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#C59B27]/35 dark:border-[#E0A96D]/25 pb-3">
+              <div className="space-y-0.5">
+                <h3 className="text-base font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+                  سورة {surahMeta.name}
+                </h3>
+                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  كل آيات الجلسة · من آية {sessionAyahs[0]?.numberInSurah ?? startAyah} إلى آية {sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah} · اضغط على أي آية للانتقال إليها
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {displayPreferences.mushafStyle === 'printed' && sessionPages.length > 1 && (
+                  <div className="inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white/80 dark:bg-[#111F36] p-1 text-xs">
+                    <button
+                      type="button"
+                      disabled={activePrintedPageIdx <= 0}
+                      onClick={() => activePrintedPageIdx > 0 && setPrintedPage(sessionPages[activePrintedPageIdx - 1])}
+                      className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                      aria-label="صفحة المصحف السابقة في الجلسة"
+                    >
+                      السابقة
+                    </button>
+                    <span className="px-2 font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                      ص {printedPage}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={activePrintedPageIdx === -1 || activePrintedPageIdx >= sessionPages.length - 1}
+                      onClick={() => activePrintedPageIdx < sessionPages.length - 1 && setPrintedPage(sessionPages[activePrintedPageIdx + 1])}
+                      className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                      aria-label="صفحة المصحف التالية في الجلسة"
+                    >
+                      التالية
+                    </button>
+                  </div>
+                )}
+
+                <div role="group" aria-label="تبديل نمط عرض صفحة المصحف" className="wird-segmented-track inline-flex items-center gap-1 text-xs">
+                  <button
+                    type="button"
+                    aria-pressed={displayPreferences.mushafStyle === 'connected'}
+                    onClick={() => updateDisplayPreferences({ mushafStyle: 'connected' })}
+                    className={`min-h-11 px-3 py-1.5 rounded-xl font-bold transition-colors whitespace-nowrap ${
+                      displayPreferences.mushafStyle === 'connected'
+                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
+                        : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                    }`}
+                  >
+                    صفحة متصلة
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={displayPreferences.mushafStyle === 'printed'}
+                    onClick={() => {
+                      setMaskLevel(0);
+                      updateDisplayPreferences({ mushafStyle: 'printed' });
+                    }}
+                    className={`min-h-11 px-3 py-1.5 rounded-xl font-bold transition-colors whitespace-nowrap ${
+                      displayPreferences.mushafStyle === 'printed'
+                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
+                        : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                    }`}
+                  >
+                    مصحف مطبوع
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {displayPreferences.mushafStyle === 'printed' ? (
+              <div className="space-y-4">
+                <QuranMushafFacsimilePage
+                  page={printedPage}
+                  onAyahsResolved={handlePrintedAyahsResolved}
+                  selectedAyah={currentAyah}
+                  onSelectAyah={handlePrintedSelectAyah}
+                  onFallback={handlePrintedFallback}
+                  maxWidthClass={displayPreferences.pageWidth === 'full' ? 'max-w-none' : displayPreferences.pageWidth === 'wide' ? 'max-w-5xl' : 'max-w-3xl'}
+                />
+
+                {outOfRangeNotice && (
+                  <p role="status" className="text-center text-xs font-semibold text-[#9A7415] dark:text-[#E0A96D]">
+                    {outOfRangeNotice}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="surah-header-banner rounded-2xl py-3 px-5 text-white text-center shadow-xs">
+                  <div className="flex items-center justify-between text-[11px] text-[#F5F1E8]/90 font-sans-ui border-b border-[#C59B27]/35 pb-1.5 mb-1.5">
+                    <span>{surahMeta.revelationType}</span>
+                    <span className="font-quran text-xl md:text-2xl font-bold text-[#E0A96D]">سورة {surahMeta.name}</span>
+                    <span>الجزء {currentAyah.juz}</span>
+                  </div>
+                </div>
+
+                {sessionAyahs[0]?.numberInSurah === 1 && surahNumber !== 1 && surahNumber !== 9 && (
+                  <p className="font-quran text-xl md:text-2xl text-[#1C4E46] dark:text-[#E0A96D] text-center py-1">
+                    <QuranBasmala surahNumber={surahNumber} />
+                  </p>
+                )}
+
+                {pageDisplayError ? (
+                  <p role="alert" className="px-3 py-5 text-sm text-rose-700 dark:text-rose-300 text-center">
+                    تعذر تحميل النص القرآني المعتمد لهذا النطاق؛ لم نعرض نصًا بديلًا. أعد المحاولة أو استخدم عرض الآية الواحدة.
+                  </p>
+                ) : pageDisplayTexts.length !== sessionAyahs.length ? (
+                  <p role="status" className="px-3 py-5 text-sm text-[#5B6F6B] dark:text-[#8B9E9B] text-center">
+                    جارٍ تحميل نص الآيات المعتمد...
+                  </p>
+                ) : (
+                  <div
+                    dir="rtl"
+                    className={`quran-text font-quran text-right text-[#142421] dark:text-[#F5F1E8] max-h-[62vh] overflow-y-auto overscroll-contain px-1 sm:px-3 ${
+                      displayPreferences.density === 'compact' ? 'py-1' : 'py-2'
+                    }`}
                     style={{
                       fontSize: `${displayPreferences.fontSize}px`,
-                      lineHeight: displayPreferences.density === 'compact' ? 1.8 : 2.25
+                      lineHeight: displayPreferences.density === 'compact' ? 1.95 : 2.35
                     }}
                   >
-                    {pageDisplayTexts[index]}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-          )}
-        </section>
-      )}
+                    {sessionAyahs.map((ayah, index) => {
+                      const isActive = index === currentAyahIndex;
+                      return (
+                        <button
+                          ref={isActive ? activePageAyahRef : undefined}
+                          type="button"
+                          key={ayah.numberInSurah}
+                          aria-pressed={index === currentAyahIndex}
+                          onClick={() => {
+                            if (index === currentAyahIndex) return;
+                            handleStopAudio();
+                            setCurrentAyahIndex(index);
+                          }}
+                          className={`inline text-right rounded-xl transition-colors cursor-pointer mx-0.5 px-1.5 py-0.5 ${
+                            isActive
+                              ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/65 ring-1 ring-[#C59B27]/60'
+                              : 'hover:bg-[#1C4E46]/5 dark:hover:bg-[#162744]/70'
+                          }`}
+                        >
+                          <span>{pageDisplayTexts[index]}</span>
+                          <span className="ayah-number">{ayah.numberInSurah}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        ) : (
+          /* Single Focused Ayah Studio (only when viewMode === 'focused') */
+          <div className={`bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl ${displayPreferences.density === 'compact' ? 'p-4 md:p-6 space-y-3' : 'p-6 md:p-10 space-y-5'} border border-[#C59B27]/35 dark:border-[#E0A96D]/25 shadow-xs text-center relative`}>
+            {currentAyah.numberInSurah === 1 && surahNumber !== 1 && surahNumber !== 9 && (
+              <div className="font-quran text-lg text-[#1C4E46] dark:text-[#E0A96D] pb-2 border-b border-[#C59B27]/20">
+                <QuranBasmala surahNumber={surahNumber} />
+              </div>
+            )}
 
-      {/* 2. Main Ayah Display & Word Masking Studio */}
-      <div className={`bg-[#fdfbf7] dark:bg-stone-800/90 rounded-3xl ${displayPreferences.density === 'compact' ? 'p-4 md:p-6 space-y-4' : 'p-6 md:p-10 space-y-6'} border border-stone-200/80 dark:border-stone-700/80 shadow-xs text-center relative`}>
-        {/* Basmala on first ayah if not At-Tawbah */}
-        {currentAyah.numberInSurah === 1 && surahNumber !== 1 && surahNumber !== 9 && (
-          <div className="font-quran text-lg text-stone-500 dark:text-stone-400 pb-2 border-b border-stone-200/50 dark:border-stone-700">
-            <QuranBasmala surahNumber={surahNumber} />
+            <div className="min-h-[140px] flex items-center justify-center py-3">
+              <p
+                className="quran-text font-quran text-[#142421] dark:text-[#F5F1E8] flex flex-wrap items-center justify-center gap-x-3 gap-y-4"
+                style={{
+                  fontSize: `${displayPreferences.fontSize}px`,
+                  lineHeight: displayPreferences.density === 'compact' ? 1.8 : 2.25
+                }}
+              >
+                {renderMaskedWords()}
+                <span className="ayah-number">{currentAyah.numberInSurah}</span>
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Quranic Text with Interactive Word Masking */}
-        <div className="min-h-[140px] flex items-center justify-center py-4">
-          <p
-            className="quran-text font-quran text-stone-900 dark:text-stone-100 flex flex-wrap items-center justify-center gap-x-3 gap-y-4"
-            style={{
-              fontSize: `${displayPreferences.fontSize}px`,
-              lineHeight: displayPreferences.density === 'compact' ? 1.8 : 2.25
-            }}
-          >
-            {displayTextError ? <span role="alert" className="text-sm text-red-700 dark:text-red-300">تعذر تحميل النص الإملائي المعتمد لهذه الآية؛ أعد المحاولة قبل متابعة التسميع.</span> : words.length === 0 ? <span role="status" className="text-sm text-stone-500">جارٍ تجهيز نص الآية للتسميع...</span> : words.map((word, idx) => {
-              const masked = isWordMasked(idx);
-              return masked ? (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleToggleWordReveal(idx)}
-                  aria-label={`إظهار الكلمة رقم ${idx + 1}`}
-                  className="inline-flex min-h-11 items-center justify-center px-2.5 py-0.5 rounded-lg transition-all select-none bg-stone-200 dark:bg-stone-700 text-stone-200 dark:text-stone-700 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:text-stone-900 dark:hover:text-stone-100 active:scale-95 border border-dashed border-stone-400/80 dark:border-stone-500"
-                  title="اضغط لإظهار الكلمة للتسميع"
-                >
-                  {word}
-                </button>
-              ) : (
-                <span key={idx} className="inline-block px-2.5 py-0.5 select-none">{word}</span>
-              );
-            })}
-            <span className="ayah-number">{currentAyah.numberInSurah}</span>
-          </p>
-        </div>
+        {/* Merged Word Masking & Manual Repetition Toolbar directly below Quran text */}
+        <div className="wird-card rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5">
+          {/* Masking Controls (Focused Single-Ayah Only) */}
+          <div className="flex flex-col gap-2 text-xs">
+            <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5">
+              <div className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold">
+                <EyeOff className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
+                <span>الإخفاء:</span>
+              </div>
 
-        {/* Word Masking Selector Bar */}
-        <div className="pt-4 border-t border-stone-200/70 dark:border-stone-700/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400">
-            <EyeOff className="w-4 h-4 text-emerald-700" />
-            <span>مستوى إخفاء الكلمات للتسميع الذاتي:</span>
-          </div>
-
-          <div className="flex items-center bg-stone-200/60 dark:bg-stone-700/60 p-1 rounded-xl">
-            {[
-              { level: 0, label: 'إظهار كامل' },
-              { level: 1, label: 'إخفاء 30%' },
-              { level: 2, label: 'إخفاء 60%' },
-              { level: 3, label: 'إخفاء تام' },
-            ].map(m => (
-              <button
-                key={m.level}
-                type="button"
-                aria-pressed={maskLevel === m.level}
-                onClick={() => setMaskLevel(m.level)}
-                className={`min-h-11 px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                  maskLevel === m.level
-                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-bold shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+              <div
+                role="group"
+                aria-label="خيارات إخفاء الكلمات للتسميع"
+                className={`flex flex-wrap items-center bg-[#F2EDE2] dark:bg-[#0B132B] p-1 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 gap-1 ${
+                  isMaskingDisabled ? 'opacity-65' : ''
                 }`}
               >
-                {m.label}
+                {[
+                  { level: 0, label: 'إظهار كامل' },
+                  { level: 1, label: 'إخفاء 30%' },
+                  { level: 2, label: 'إخفاء 60%' },
+                  { level: 3, label: 'إخفاء تام' },
+                ].map(m => (
+                  <button
+                    key={m.level}
+                    type="button"
+                    disabled={isMaskingDisabled}
+                    aria-disabled={isMaskingDisabled}
+                    aria-pressed={!isMaskingDisabled && maskLevel === m.level}
+                    onClick={() => handleMaskLevelChange(m.level)}
+                    title={isMaskingDisabled ? 'التسميع بالإخفاء متاح في وضع آية واحدة فقط' : undefined}
+                    className={`min-h-11 px-3 py-1.5 rounded-lg font-bold transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${
+                      !isMaskingDisabled && maskLevel === m.level
+                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
+                        : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {isMaskingDisabled && (
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <span>الإخفاء متاح في وضع آية واحدة فقط</span>
+                <button
+                  type="button"
+                  onClick={() => updateDisplayPreferences({ viewMode: 'focused' })}
+                  className="min-h-11 px-3 py-1.5 rounded-xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30 bg-white dark:bg-[#111F36] text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:border-[#C59B27] transition-colors whitespace-nowrap"
+                >
+                  التبديل إلى آية واحدة
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="h-px lg:h-8 lg:w-px bg-[#1C4E46]/12 dark:bg-[#E0A96D]/18 shrink-0" aria-hidden="true" />
+
+          {/* Manual Repetition Counter */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+                <h4 className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">
+                  عدّاد التكرار والتثبيت ({repeatCount} / {targetRepeats})
+                </h4>
+              </div>
+              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                اختصار لوحة المفاتيح: مسافة (Space)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRepeatCount(c => Math.max(0, c - 1))}
+                className="min-h-11 min-w-11 rounded-xl bg-[#F2EDE2] hover:bg-[#E6DFCE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] font-bold text-xs flex items-center justify-center border border-[#1C4E46]/12 dark:border-[#E0A96D]/20"
+                title="إنقاص مرة واحدة"
+              >
+                -1
               </button>
-            ))}
+
+              <button
+                type="button"
+                onClick={() => setRepeatCount(c => c + 1)}
+                className="min-h-11 px-4 py-2 wird-btn-accent font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-transform active:scale-95 whitespace-nowrap"
+                title="زيادة التكرار (أو اضغط مسافة)"
+              >
+                + تكرار ({repeatCount})
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* 3. Clean Quick Audio Bar */}
+      <section aria-label="التشغيل الصوتي السريع" className="wird-card rounded-2xl p-4 shadow-xs space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          {/* Single Ayah Playback */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                type="button"
+                onClick={handleToggleAudio}
+                className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center shadow-xs transition-all ${
+                  isPlaying
+                    ? 'bg-[#C59B27] text-[#0B132B]'
+                    : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
+                }`}
+                title={isPlaying ? 'إيقاف مؤقت' : 'استماع للآية'}
+                aria-label={isPlaying ? 'إيقاف مؤقت' : 'استماع للآية'}
+              >
+                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white mr-0.5" />}
+              </button>
+              <div className="min-w-0 space-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <Volume2 className="w-3.5 h-3.5 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
+                  <h4 className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">تلاوة الآية الحالية</h4>
+                </div>
+                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] truncate">
+                  السرعة {playbackRate}× · تكرار الآية: {formatRepeatBadge(audioRepeatCount, 'مستمر')}
+                </p>
+              </div>
+            </div>
+            {isAudioLoading && (
+              <span role="status" className="text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] whitespace-nowrap">
+                جارٍ تحميل التلاوة…
+              </span>
+            )}
+          </div>
+
+          {/* Selected Segment Playback */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3 md:border-t-0 md:pt-0 md:border-r md:border-[#1C4E46]/12 md:dark:border-[#E0A96D]/18 md:pr-4">
+            <div className="space-y-0.5 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <Repeat className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                <span className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">المقطع الصوتي المحدد</span>
+              </div>
+              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                {sessionAyahs[segmentStartIndex] && sessionAyahs[segmentEndIndex]
+                  ? `من آية ${sessionAyahs[segmentStartIndex].numberInSurah} إلى آية ${sessionAyahs[segmentEndIndex].numberInSurah}`
+                  : 'نطاق الجلسة'}
+                {' · '}
+                تكرار المقطع: {formatRepeatBadge(segmentRepeatCount, 'مستمر')}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                disabled={!sessionAyahs.length}
+                onClick={handleToggleSegmentAudio}
+                className={`min-h-11 rounded-xl px-4 text-xs font-bold transition-colors disabled:opacity-50 whitespace-nowrap ${
+                  isSegmentPlaying ? 'bg-[#C59B27] text-[#0B132B]' : 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white hover:bg-[#143D36]'
+                }`}
+              >
+                {isSegmentPlaying ? 'إيقاف مؤقت للمقطع الصوتي' : isSegmentPaused ? 'استئناف المقطع الصوتي' : 'تشغيل المقطع الصوتي المحدد'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSettingsOpenPersist(true);
+                  settingsToggleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] transition-colors whitespace-nowrap"
+              >
+                ضبط الصوت والمقطع
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {segmentProgress && (
+          <div aria-live="polite" className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums text-center sm:text-right">
+            قيد التلاوة: آية {segmentProgress.ayahNumber} · تكرار الآية {segmentProgress.ayahIteration}/{normalizeAyahSegmentRepeatCount(audioRepeatCount)} · دورة المقطع {segmentProgress.cycle}{segmentRepeatCount === -1 ? ' (مستمر)' : `/${segmentRepeatCount}`}
+          </div>
+        )}
+      </section>
+
+      {/* 4. Collapsed Ayah Tafsir Accordion */}
       <SessionTafsirPanel ayah={currentAyah} />
 
-      {/* 3. Audio & Repetition Counter Deck */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Recitation Audio Control */}
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200/80 dark:border-stone-700/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-emerald-700" />
-              <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100">
-                الاستماع والترتيل المتقن
-              </h4>
-            </div>
-            <p className="text-[11px] text-stone-500">
-              استمع لمخارج الحروف مع كل تكرار لضبط التلاوة
-            </p>
-          </div>
-
-          <button
-            onClick={handleToggleAudio}
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs transition-all ${
-              isPlaying
-                ? 'bg-amber-500 text-white'
-                : 'bg-emerald-800 hover:bg-emerald-900 text-white'
-            }`}
-            title={isPlaying ? "إيقاف مؤقت" : "استماع للآية"}
-            aria-label={isPlaying ? "إيقاف مؤقت" : "استماع للآية"}
-          >
-            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white mr-0.5" />}
-          </button>
-          <AudioPlaybackRateControl value={playbackRate} onChange={handlePlaybackRateChange} />
-          <label className="inline-flex min-h-11 items-center gap-2 text-xs text-stone-600 dark:text-stone-300">
-            <span className="whitespace-nowrap">تكرار التلاوة</span>
-            <select
-              aria-label="عدد مرات تكرار الصوت"
-              value={audioRepeatCount}
-              onChange={event => handleAudioRepeatCountChange(Number(event.target.value) as AudioRepeatCount)}
-              className="min-h-11 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-2.5 text-xs font-semibold text-stone-800 dark:text-stone-100 focus:outline-none focus:border-emerald-600"
-            >
-              <option value={1}>مرة واحدة</option>
-              <option value={2}>مرتان</option>
-              <option value={3}>3 مرات</option>
-              <option value={5}>5 مرات</option>
-              <option value={10}>10 مرات</option>
-              <option value={-1}>حتى الإيقاف</option>
-            </select>
-          </label>
-          <div className="basis-full flex flex-wrap items-center gap-2 border-t border-stone-100 dark:border-stone-700 pt-3">
-            <span className="text-xs font-semibold text-stone-600 dark:text-stone-300">تحديد مقطع للحفظ أو المراجعة</span>
-            <label className="inline-flex items-center gap-1.5 text-xs text-stone-600 dark:text-stone-300">
-              <span>من</span>
-              <select
-                aria-label="بداية المقطع الصوتي في الجلسة"
-                value={segmentStartIndex}
-                disabled={!sessionAyahs.length}
-                onChange={event => {
-                  const next = Number(event.target.value);
-                  setSegmentStartIndex(next);
-                  if (segmentEndIndex < next) setSegmentEndIndex(next);
-                }}
-                className="min-h-11 max-w-36 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-2"
-              >
-                {sessionAyahs.map((ayah, index) => <option key={ayah.number} value={index}>{surahNumber}:{ayah.numberInSurah}</option>)}
-              </select>
-            </label>
-            <label className="inline-flex items-center gap-1.5 text-xs text-stone-600 dark:text-stone-300">
-              <span>إلى</span>
-              <select
-                aria-label="نهاية المقطع الصوتي في الجلسة"
-                value={segmentEndIndex}
-                disabled={!sessionAyahs.length}
-                onChange={event => setSegmentEndIndex(Number(event.target.value))}
-                className="min-h-11 max-w-36 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-2"
-              >
-                {sessionAyahs.slice(segmentStartIndex).map((ayah, offset) => (
-                  <option key={ayah.number} value={segmentStartIndex + offset}>{surahNumber}:{ayah.numberInSurah}</option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              disabled={!sessionAyahs.length}
-              onClick={handleToggleSegmentAudio}
-              className={`min-h-11 rounded-xl px-4 text-xs font-bold transition-colors disabled:opacity-50 ${isSegmentPlaying ? 'bg-amber-500 text-white' : 'bg-emerald-800 text-white hover:bg-emerald-900'}`}
-            >
-              {isSegmentPlaying ? 'إيقاف مؤقت للمقطع الصوتي' : isSegmentPaused ? 'استئناف المقطع الصوتي' : 'تشغيل المقطع الصوتي المحدد'}
-            </button>
-          </div>
-          {isAudioLoading && <span role="status" className="text-xs text-stone-500">جارٍ تحميل التلاوة…</span>}
-        </div>
-
-        {/* Repetition Counter (Traditional Method - طريقة التكرار والتثبيت) */}
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200/80 dark:border-stone-700/80 shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100">
-                عدّاد التكرار والتثبيت ({repeatCount} / {targetRepeats})
-              </h4>
-            </div>
-            <p className="text-[11px] text-stone-500">
-              اضغط مسافة (Space) في لوحة المفاتيح للتكرار السريع
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setRepeatCount(c => Math.max(0, c - 1))}
-              className="min-h-11 min-w-11 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 font-bold text-xs flex items-center justify-center"
-              title="إنقاص مرة واحدة"
-            >
-              -1
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setRepeatCount(c => c + 1)}
-              className="min-h-11 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-emerald-950 font-bold rounded-xl text-sm shadow-xs transition-transform active:scale-95"
-              title="زيادة التكرار (أو اضغط مسافة)"
-            >
-              + تكرار ({repeatCount})
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Sticky session navigation — always reachable while reading */}
+      {/* 5. Sticky Session Navigation */}
       <div
         role="group"
         aria-label="التنقل بين آيات جلسة الحفظ"
-        className="sticky bottom-2 z-30 flex items-center justify-between gap-2 rounded-2xl border border-stone-200/90 dark:border-stone-700 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md p-2 sm:p-3 shadow-lg"
+        className="sticky bottom-2 z-30 flex items-center justify-between gap-2 rounded-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/25 bg-[#F9F6EE]/95 dark:bg-[#0B132B]/95 backdrop-blur-md p-2 sm:p-3 shadow-lg"
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
       >
         <button
           onClick={handlePrevAyah}
           disabled={currentAyahIndex === 0}
-          className="min-h-14 flex flex-1 items-center justify-center gap-2 px-3 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="min-h-14 flex flex-1 items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-[#F2EDE2] dark:bg-[#111F36] dark:hover:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl text-xs sm:text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight className="w-4 h-4 shrink-0" />
           <span>السابقة</span>
@@ -1047,7 +1672,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             handleStopAudio();
             setCurrentAyahIndex(nextIndex);
           }}
-          className="min-h-14 w-20 sm:w-28 shrink-0 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-1 text-center text-xs font-semibold text-stone-700 dark:text-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          className="min-h-14 w-20 sm:w-28 shrink-0 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-1 text-center text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
         >
           {sessionAyahs.map((ayah, index) => (
             <option key={ayah.number} value={index}>آية {ayah.numberInSurah}</option>
@@ -1056,7 +1681,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
         <button
           onClick={handleNextAyah}
-          className="min-h-14 flex flex-[1.4] items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors active:scale-[0.98]"
+          className="min-h-14 flex flex-[1.4] items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors active:scale-[0.98]"
         >
           <span>
             {currentAyahIndex === sessionAyahs.length - 1 ? 'إتمام الجلسة' : 'الآية التالية'}

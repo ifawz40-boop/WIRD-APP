@@ -50,8 +50,39 @@ export async function loadAyahByCoordinate(surahNumber: number, ayahNumber: numb
   return verses.find(ayah => ayah.numberInSurah === ayahNumber);
 }
 
+const QURAN_ANNOTATION_TOKEN_RE = /^[\u06D6-\u06ED\u06DE\u06E9]+$/;
+
+/**
+ * Split an ayah into reading/masking word units while preserving 100% of diacritics,
+ * waqf pause signs (ۚ ۖ ۗ ۛ ۙ ۘ ۜ), sajdah (۩), and rub-el-hizb (۞) symbols.
+ */
 export function getAyahWords(text: string): string[] {
-  return text.split(/\s+/).filter(word => word.trim().length > 0 && !['ۚ', 'ۖ', 'ۗ', 'ۛ'].includes(word));
+  const rawTokens = text.trim().split(/\s+/).filter(Boolean);
+  if (rawTokens.length === 0) return [];
+
+  const merged: string[] = [];
+  const leadingSymbols: string[] = [];
+
+  for (const token of rawTokens) {
+    if (QURAN_ANNOTATION_TOKEN_RE.test(token)) {
+      if (merged.length > 0) {
+        merged[merged.length - 1] = `${merged[merged.length - 1]} ${token}`;
+      } else {
+        leadingSymbols.push(token);
+      }
+    } else if (leadingSymbols.length > 0) {
+      merged.push(`${leadingSymbols.join(' ')} ${token}`);
+      leadingSymbols.length = 0;
+    } else {
+      merged.push(token);
+    }
+  }
+
+  if (leadingSymbols.length > 0) {
+    merged.push(leadingSymbols.join(' '));
+  }
+
+  return merged;
 }
  
 // Tanzil Simple is stored separately from the canonical Uthmani corpus and loaded per surah.

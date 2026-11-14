@@ -37,6 +37,7 @@ test.describe('Memorization session audio repetition', () => {
     await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
     await page.goto('/#/session?surah=67&start=1&end=3&mode=memorize');
 
+    await page.getByRole('button', { name: /إعدادات العرض والصوت/ }).click();
     const repeatPicker = page.getByLabel('عدد مرات تكرار الصوت');
     await expect(repeatPicker).toHaveValue('2');
     await repeatPicker.selectOption('3');
@@ -117,6 +118,10 @@ test.describe('Memorization session audio repetition', () => {
     await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
     await page.goto('/#/session?surah=67&start=1&end=3&mode=memorize');
 
+    const displayToggle = page.getByRole('button', { name: /إعدادات العرض والصوت/ });
+    await expect(displayToggle).toHaveAttribute('aria-expanded', 'false');
+    await displayToggle.click();
+
     const scale = page.getByLabel('حجم واجهة جلسة الحفظ');
     await expect(scale).toHaveValue('100');
     await scale.focus();
@@ -145,6 +150,7 @@ test('session segment playback can pause and resume without losing its selected 
   await page.goto('/');
   await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
   await page.goto('/#/session?surah=67&start=1&end=3&mode=memorize');
+  await page.getByRole('button', { name: /إعدادات العرض والصوت/ }).click();
   await page.getByLabel('بداية المقطع الصوتي في الجلسة').selectOption('1');
   await page.getByLabel('نهاية المقطع الصوتي في الجلسة').selectOption('2');
   await page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' }).click();
@@ -191,9 +197,11 @@ test('memorization and review share continuous segment playback with bounded rep
   await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
   await page.goto('/#/session?surah=67&start=1&end=3&mode=memorize');
 
+  await page.getByRole('button', { name: /إعدادات العرض والصوت/ }).click();
   await page.getByLabel('بداية المقطع الصوتي في الجلسة').selectOption('1');
   await page.getByLabel('نهاية المقطع الصوتي في الجلسة').selectOption('2');
-  await page.getByLabel('عدد مرات تكرار الصوت').selectOption('2');
+  await page.getByLabel('عدد مرات تكرار الصوت').selectOption('1');
+  await page.getByLabel('عدد مرات تكرار المقطع الصوتي').selectOption('2');
   await page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' }).click();
 
   await expect.poll(() => page.evaluate(() => (window as any).__wirdMockAudios.length)).toBe(2);
@@ -210,6 +218,37 @@ test('memorization and review share continuous segment playback with bounded rep
     '067003.mp3',
     '067002.mp3',
     '067003.mp3'
+  ]);
+  await expect(page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' })).toBeVisible();
+});
+
+test('segment playback supports independent per-ayah and full-segment repeat counts together', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
+  await page.goto('/#/session?surah=67&start=1&end=3&mode=memorize');
+
+  await page.getByRole('button', { name: /إعدادات العرض والصوت/ }).click();
+  await page.getByLabel('بداية المقطع الصوتي في الجلسة').selectOption('1');
+  await page.getByLabel('نهاية المقطع الصوتي في الجلسة').selectOption('2');
+  await page.getByLabel('عدد مرات تكرار الصوت').selectOption('2');
+  await page.getByLabel('عدد مرات تكرار المقطع الصوتي').selectOption('2');
+  await page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' }).click();
+
+  for (let i = 0; i < 8; i++) {
+    await expect.poll(() => page.evaluate(() => (window as any).__wirdAudioPlayCalls)).toBe(i + 1);
+    await page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onended?.(new Event('ended')));
+  }
+
+  const urls = await page.evaluate(() => (window as any).__wirdMockAudios.map((audio: { url: string }) => audio.url.split('/').pop()));
+  expect(urls).toEqual([
+    '067002.mp3',
+    '067002.mp3',
+    '067003.mp3',
+    '067003.mp3',
+    '067002.mp3',
+    '067002.mp3',
+    '067003.mp3',
+    '067003.mp3',
   ]);
   await expect(page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' })).toBeVisible();
 });

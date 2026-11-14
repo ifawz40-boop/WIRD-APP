@@ -255,3 +255,40 @@ body {
     display: none;
   }
 }
+
+/* Smooth scrolling & hidden scrollbars for horizontal scroll rails */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.wird-scroll-rail {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wird-segmented-track {
+  background: var(--wird-surface-muted);
+  border: 1px solid var(--wird-border);
+  border-radius: 1rem;
+  padding: 0.25rem;
+}
+
+.dark .wird-segmented-track {
+  background: rgba(14, 26, 47, 0.9);
+  border-color: rgba(224, 169, 109, 0.16);
+}

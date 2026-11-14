@@ -26,6 +26,9 @@ import {
 import { getRuqyahItemsByCategory } from '../../data/ruqyahData';
 import type { RuqyahCategory, RuqyahItem } from '../../data/ruqyahData';
 import { WirdIslamicPattern } from '../brand/WirdPattern';
+import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+import { ReadingDisplaySettingsMenu, useReadingDisplayPreferences } from '../shared/DisplaySettingsMenu';
+import { READING_PAGE_WIDTH_CLASSES } from '../../services/readingDisplayPreferences';
 
 interface RuqyahViewProps {
   onToast?: (message: string, type?: 'success' | 'info' | 'warn' | 'error') => void;
@@ -42,6 +45,11 @@ const CATEGORY_TABS: { id: RuqyahCategory; label: string; iconName: string; dura
 
 export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const currentStorageScope = StorageService.getStorageScope();
+  const {
+    preferences: displayPreferences,
+    updatePreferences: updateDisplayPreferences,
+    resetPreferences: resetDisplayPreferences,
+  } = useReadingDisplayPreferences('ruqyah');
   const [activeCategory, setActiveCategory] = useState<RuqyahCategory>('brief');
   const [viewMode, setViewMode] = useState<'interactive' | 'api_library'>('interactive');
   
@@ -530,31 +538,53 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const completedCount = trackedItems.filter(item => item.repeatTarget === null ? (counts[item.id] || 0) > 0 : (counts[item.id] || 0) >= item.repeatTarget).length;
   const progressPercent = trackedItems.length > 0 ? Math.round((completedCount / trackedItems.length) * 100) : 0;
 
+  const ruqyahListSpacing =
+    displayPreferences.spacing === 'compact'
+      ? 'space-y-3'
+      : displayPreferences.spacing === 'relaxed'
+      ? 'space-y-6'
+      : 'space-y-4';
+  const ruqyahCardPadding =
+    displayPreferences.spacing === 'compact'
+      ? 'p-3.5 sm:p-5'
+      : displayPreferences.spacing === 'relaxed'
+      ? 'p-6 sm:p-8 md:p-9'
+      : 'p-4 sm:p-6 md:p-7';
+  const ruqyahLineHeight =
+    displayPreferences.spacing === 'compact'
+      ? 2.0
+      : displayPreferences.spacing === 'relaxed'
+      ? 2.75
+      : 2.35;
+
   return (
-    <div className="space-y-6 md:space-y-8 pb-20 max-w-6xl mx-auto px-1 sm:px-2" dir="rtl">
+    <div
+      className={`space-y-6 md:space-y-8 pb-20 ${READING_PAGE_WIDTH_CLASSES[displayPreferences.pageWidth]} mx-auto px-1 sm:px-2 overflow-x-hidden transition-all`}
+      dir="rtl"
+    >
       {progressCorrupt && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-300/70 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4">
-          <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-[#C59B27]/50 dark:border-[#E0A96D]/40 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 p-4">
+          <p className="text-sm text-[#142421] dark:text-[#F5F1E8] leading-relaxed">
             تعذر قراءة تقدم الرقية المحفوظ. احتفظنا بالبيانات الأصلية دون استبدالها؛ يمكنك متابعة القراءة دون حفظ حتى تختار إعادة ضبط هذا السجل.
           </p>
-          <button type="button" onClick={handleRecoverProgress} className="min-h-11 shrink-0 rounded-xl bg-amber-200 dark:bg-amber-900 px-3 py-2 text-xs font-bold text-amber-950 dark:text-amber-100">
+          <button type="button" onClick={handleRecoverProgress} className="min-h-11 shrink-0 rounded-xl bg-[#C59B27] dark:bg-[#E0A96D] px-4 py-2 text-xs font-bold text-[#0B132B]">
             إعادة ضبط سجل الرقية
           </button>
         </div>
       )}
       {/* Top Banner / Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#102D29] via-[#1D4940] to-[#102D29] text-white rounded-3xl p-6 md:p-8 shadow-xl border border-[#B99B62]/30">
-        <WirdIslamicPattern opacity={0.06} className="text-white" />
-        <div className="absolute top-0 left-0 translate-x-[-20%] translate-y-[-20%] w-96 h-96 bg-[#B99B62]/15 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#102D29]/60 text-[#DFCAA2] border border-[#B99B62]/40 rounded-full text-xs font-bold">
-              <ShieldCheck className="w-4 h-4 text-[#B99B62]" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0B132B] via-[#1C4E46] to-[#0B132B] text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl border border-[#C59B27]/35">
+        <WirdIslamicPattern opacity={0.07} className="text-[#E0A96D]" />
+        <div className="absolute top-0 left-0 -translate-x-1/4 -translate-y-1/4 w-72 h-72 bg-[#C59B27]/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div className="space-y-2 max-w-2xl min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0B132B]/70 text-[#E0A96D] border border-[#C59B27]/40 rounded-lg text-xs font-bold">
+              <ShieldCheck className="w-4 h-4 text-[#C59B27]" />
               <span>الرقية من القرآن والسنة</span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight font-quran leading-relaxed text-[#F6F3EA]">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight font-quran leading-relaxed text-[#F5F1E8]">
               الرقية الشرعية الكاملة من القرآن والسنة
             </h1>
 
@@ -564,15 +594,15 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
           </div>
 
           {/* Mode Switch Controls */}
-          <div role="group" aria-label="طرق استخدام الرقية" className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1.5 bg-[#0A1F1C]/80 rounded-2xl border border-[#B99B62]/30 shadow-inner w-full md:w-auto md:min-w-[320px]">
+          <div role="group" aria-label="طرق استخدام الرقية" className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1.5 bg-[#0B132B]/80 rounded-2xl border border-[#C59B27]/35 shadow-inner w-full md:w-auto md:min-w-[320px]">
             <button
               type="button"
               aria-pressed={viewMode === 'interactive'}
               onClick={() => { setShowResetConfirmation(false); setViewMode('interactive'); }}
-              className={`flex items-center justify-center gap-2 px-4 py-3 min-h-12 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B99B62] ${
+              className={`flex items-center justify-center gap-2 px-4 py-3 min-h-12 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E0A96D] ${
                 viewMode === 'interactive'
-                  ? 'bg-gradient-to-r from-[#DFCAA2] to-[#B99B62] text-[#102D29] shadow-md scale-[1.02]'
-                  : 'text-stone-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-gradient-to-r from-[#E0A96D] to-[#C59B27] text-[#0B132B] shadow-md'
+                  : 'text-[#CBD5E1] hover:text-white hover:bg-white/10'
               }`}
             >
               <Sparkles className="w-4 h-4" />
@@ -583,10 +613,10 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
               type="button"
               aria-pressed={viewMode === 'api_library'}
               onClick={() => { stopRuqyahAudio(); setShowResetConfirmation(false); setViewMode('api_library'); }}
-              className={`flex items-center justify-center gap-2 px-4 py-3 min-h-12 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B99B62] ${
+              className={`flex items-center justify-center gap-2 px-4 py-3 min-h-12 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E0A96D] ${
                 viewMode === 'api_library'
-                  ? 'bg-gradient-to-r from-[#DFCAA2] to-[#B99B62] text-[#102D29] shadow-md scale-[1.02]'
-                  : 'text-stone-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-gradient-to-r from-[#E0A96D] to-[#C59B27] text-[#0B132B] shadow-md'
+                  : 'text-[#CBD5E1] hover:text-white hover:bg-white/10'
               }`}
             >
               <BookOpen className="w-4 h-4" />
@@ -599,18 +629,18 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       {/* Main Mode 1: Interactive Reading with Counter */}
       {viewMode === 'interactive' && (
         <div className="space-y-6" onKeyDown={(event) => { if (showResetConfirmation && event.key === 'Escape') { event.preventDefault(); closeResetConfirmation(); } }}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-4">
-            <div>
-              <p className="text-sm font-bold text-stone-800 dark:text-stone-200">مصدر الآيات والتلاوة</p>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">نصوص الآيات من مصحف وِرد المعتمد، والتلاوة الصوتية تُحمّل من خدمة القرآن المحددة داخل المشغل.</p>
+          <div className="wird-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">مصدر الآيات والتلاوة</p>
+              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">نصوص الآيات من مصحف وِرد المعتمد، والتلاوة الصوتية تُحمّل من خدمة القرآن المحددة داخل المشغل.</p>
             </div>
-            <div className="min-w-52 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-2 text-xs text-stone-500 dark:text-stone-400" role="status">
+            <div className="sm:min-w-52 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 px-3 py-2 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]" role="status">
               المتاح هنا تلاوة الآيات القرآنية فقط، وليس تسجيلًا كاملًا يضم الأدعية
             </div>
           </div>
 
-          {/* Category Tabs Bar */}
-          <div role="group" aria-label="تصنيفات الرقية" className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
+          {/* Category Tabs Bar (Horizontal Scrollable Rail for Effortless Mobile & Desktop Browsing) */}
+          <HorizontalScrollRail ariaLabel="تصنيفات الرقية" activeKey={activeCategory}>
             {CATEGORY_TABS.map(tab => {
               const isActive = activeCategory === tab.id;
               return (
@@ -619,16 +649,16 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => { stopRuqyahAudio(); setShowResetConfirmation(false); setActiveCategory(tab.id); }}
-                  className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 px-2 sm:px-3 py-3 min-h-[64px] rounded-2xl text-[11px] sm:text-xs font-bold text-center whitespace-normal leading-snug transition-all border min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                  className={`shrink-0 snap-start flex items-center gap-2 px-4 py-2.5 min-h-12 rounded-2xl text-xs font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
                     isActive
-                      ? 'bg-emerald-800 text-amber-200 border-emerald-700 shadow-sm'
-                      : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200/80 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800'
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-sm'
+                      : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]'
                   }`}
                 >
                   <span>{tab.label}</span>
                   {tab.duration !== 'إرشادات' && (
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      isActive ? 'bg-amber-400/20 text-amber-200' : 'bg-stone-100 dark:bg-stone-800 text-stone-500'
+                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${
+                      isActive ? 'bg-[#C59B27]/25 text-[#F5E6C4]' : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B]'
                     }`}>
                       {tab.duration}
                     </span>
@@ -636,33 +666,42 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                 </button>
               );
             })}
-          </div>
+          </HorizontalScrollRail>
 
+          <ReadingDisplaySettingsMenu
+            viewLabel="الرقية الشرعية"
+            preferences={displayPreferences}
+            onUpdate={updateDisplayPreferences}
+            onReset={resetDisplayPreferences}
+            fontLabel="حجم خط الآيات والأدعية"
+          />
+
+          <div className="space-y-6" style={{ zoom: displayPreferences.uiScale / 100 }}>
           {activeCategory !== 'guidelines' && (
-            <section aria-label="مشغل تلاوة آيات الرقية" className="rounded-2xl border border-emerald-200/80 dark:border-emerald-900 bg-white dark:bg-stone-900 p-4 md:p-5 space-y-4">
+            <section aria-label="مشغل تلاوة آيات الرقية" className="wird-card rounded-2xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 p-4 md:p-5 space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h2 className="text-sm font-extrabold text-stone-900 dark:text-stone-100">تلاوة آيات الرقية</h2>
-                  <p className="mt-1 text-xs leading-relaxed text-stone-500 dark:text-stone-400">تشغيل متتابع للآيات القرآنية المعروضة، مع إبقاء نص المصحف من نسخة وِرد المعتمدة. لا تُحتسب التلاوة تلقائيًا ضمن عدادات القراءة.</p>
+                  <h2 className="text-sm font-extrabold text-[#142421] dark:text-[#F5F1E8]">تلاوة آيات الرقية</h2>
+                  <p className="mt-1 text-xs leading-relaxed text-[#5B6F6B] dark:text-[#8B9E9B]">تشغيل متتابع للآيات القرآنية المعروضة، مع إبقاء نص المصحف من نسخة وِرد المعتمدة. لا تُحتسب التلاوة تلقائيًا ضمن عدادات القراءة.</p>
                 </div>
                 <div className="flex flex-wrap items-end gap-2">
-                  <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600 dark:text-stone-300">
+                  <label className="flex flex-col gap-1 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] min-w-0 flex-1 sm:flex-initial">
                     <span>القارئ</span>
-                    <select aria-label="اختيار قارئ الرقية" value={selectedReciterId} onChange={event => handleAudioReciterChange(event.target.value)} className="min-h-11 min-w-48 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+                    <select aria-label="اختيار قارئ الرقية" value={selectedReciterId} onChange={event => handleAudioReciterChange(event.target.value)} className="min-h-11 w-full sm:min-w-48 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 py-2 text-xs text-[#142421] dark:text-[#F5F1E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">
                       {reciters.map(reciter => <option key={reciter.id} value={reciter.id}>{reciter.arabicName}</option>)}
                     </select>
                   </label>
-                  <button type="button" onClick={() => startRuqyahAudio()} disabled={audioIsLoading || !currentItems.some(item => item.type === 'quran')} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-800 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+                  <button type="button" onClick={() => startRuqyahAudio()} disabled={audioIsLoading || !currentItems.some(item => item.type === 'quran')} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#1C4E46] hover:bg-[#143b35] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] px-4 py-2.5 text-xs font-bold text-white dark:text-[#0B132B] disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">
                     <Play className="w-4 h-4" />
                     <span>تشغيل آيات القسم</span>
                   </button>
                   {audioQueueLength > 0 && (
                     <>
-                      <button type="button" onClick={toggleAudioPlayback} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-stone-300 dark:border-stone-700 px-3 py-2.5 text-xs font-bold text-stone-700 dark:text-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+                      <button type="button" onClick={toggleAudioPlayback} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 py-2.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">
                         {audioIsPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                         <span>{audioIsPlaying ? 'إيقاف مؤقت' : 'استكمال'}</span>
                       </button>
-                      <button type="button" onClick={stopRuqyahAudio} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-stone-300 dark:border-stone-700 px-3 py-2.5 text-xs font-bold text-stone-700 dark:text-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+                      <button type="button" onClick={stopRuqyahAudio} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 py-2.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">
                         <Square className="w-3.5 h-3.5" />
                         <span>إيقاف</span>
                       </button>
@@ -671,12 +710,12 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                 </div>
               </div>
               {audioQueueLength > 0 && (
-                <div className="space-y-2 rounded-xl bg-stone-50 dark:bg-stone-800/70 p-3">
+                <div className="space-y-2.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 p-3.5">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                    <p role="status" aria-live="polite" className="font-bold text-emerald-800 dark:text-emerald-300">
+                    <p role="status" aria-live="polite" className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
                       {audioIsLoading ? 'جارٍ تحميل التلاوة...' : audioIsPlaying ? 'يتم التشغيل: ' + audioCurrentItemTitle : 'متوقف مؤقتًا: ' + audioCurrentItemTitle}
                     </p>
-                    <span className="font-mono text-stone-500">{audioQueuePosition} / {audioQueueRef.current.length} — {audioQueueLabel}</span>
+                    <span className="font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">{audioQueuePosition} / {audioQueueRef.current.length} — {audioQueueLabel}</span>
                   </div>
                   <div
                     role="progressbar"
@@ -685,55 +724,55 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                     aria-valuemax={audioQueueRef.current.length}
                     aria-valuenow={audioQueuePosition}
                     aria-valuetext={`الآية ${audioQueuePosition} من ${audioQueueRef.current.length}`}
-                    className="h-1.5 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700"
+                    className="h-2 overflow-hidden rounded-full bg-[#E6DFD0] dark:bg-[#162744]"
                   >
-                    <div className="h-full rounded-full bg-emerald-700 transition-[width]" style={{ width: `${audioQueueLength ? (audioQueuePosition / audioQueueRef.current.length) * 100 : 0}%` }} />
+                    <div className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-[width]" style={{ width: `${audioQueueLength ? (audioQueuePosition / audioQueueRef.current.length) * 100 : 0}%` }} />
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <input type="range" min="0" max={audioDuration || 0} step="0.1" value={Math.min(audioCurrentTime, audioDuration || 0)} disabled={!audioDuration} aria-label="موضع التلاوة الصوتية" onChange={event => { const nextTime = Number(event.target.value); setAudioCurrentTime(nextTime); if (audioRef.current) audioRef.current.currentTime = nextTime; }} className="min-h-11 w-full accent-emerald-700 disabled:opacity-50" />
-                    <span className="shrink-0 font-mono text-[11px] text-stone-500">{formatAudioTime(audioCurrentTime)} / {formatAudioTime(audioDuration)}</span>
-                    <label className="flex shrink-0 items-center gap-2 text-[11px] text-stone-500">
+                    <input type="range" min="0" max={audioDuration || 0} step="0.1" value={Math.min(audioCurrentTime, audioDuration || 0)} disabled={!audioDuration} aria-label="موضع التلاوة الصوتية" onChange={event => { const nextTime = Number(event.target.value); setAudioCurrentTime(nextTime); if (audioRef.current) audioRef.current.currentTime = nextTime; }} className="min-h-11 w-full accent-[#1C4E46] dark:accent-[#E0A96D] disabled:opacity-50" />
+                    <span className="shrink-0 font-mono tabular-nums text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">{formatAudioTime(audioCurrentTime)} / {formatAudioTime(audioDuration)}</span>
+                    <label className="flex shrink-0 items-center gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                       <Volume2 className="w-4 h-4" />
                       <span>الصوت</span>
-                      <input type="range" min="0" max="1" step="0.05" value={audioVolume} aria-label="مستوى صوت التلاوة" onChange={event => setAudioVolume(Number(event.target.value))} className="min-h-11 w-20 accent-emerald-700" />
+                      <input type="range" min="0" max="1" step="0.05" value={audioVolume} aria-label="مستوى صوت التلاوة" onChange={event => setAudioVolume(Number(event.target.value))} className="min-h-11 w-20 accent-[#1C4E46] dark:accent-[#E0A96D]" />
                     </label>
                   </div>
                 </div>
               )}
-              {audioError && <p role="alert" className="text-xs text-red-700 dark:text-red-300">{audioError}</p>}
-              {audioStatusMessage && <p role="status" className="text-xs text-emerald-700 dark:text-emerald-300">{audioStatusMessage}</p>}
-              <p className="text-[10px] text-stone-400 dark:text-stone-500">المصدر الصوتي: Al Quran Cloud — تلاوات الآيات من القراء المعتمدين في القائمة. التسجيلات الكاملة التي تتضمن الأدعية لا تزال قيد التحقق.</p>
+              {audioError && <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">{audioError}</p>}
+              {audioStatusMessage && <p role="status" className="text-xs text-[#1C4E46] dark:text-[#E0A96D]">{audioStatusMessage}</p>}
+              <p className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B]">المصدر الصوتي: Al Quran Cloud — تلاوات الآيات من القراء المعتمدين في القائمة. التسجيلات الكاملة التي تتضمن الأدعية لا تزال قيد التحقق.</p>
             </section>
           )}
 
           {/* Progress Header & Settings Control */}
           {activeCategory !== 'guidelines' && (
-            <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 border border-stone-200/80 dark:border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
+            <div className="wird-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4 w-full md:w-auto">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60 dark:border-emerald-800/60">
+                <div className="w-12 h-12 rounded-2xl bg-[#1C4E46]/10 dark:bg-[#E0A96D]/15 text-[#1C4E46] dark:text-[#E0A96D] flex items-center justify-center font-bold text-sm tabular-nums shrink-0 border border-[#C59B27]/30">
                   {progressPercent}%
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 text-xs font-bold text-stone-800 dark:text-stone-200 mb-1">
+                  <div className="flex items-center justify-between gap-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] mb-1.5">
                     <span>نسبة إنجاز رقية القسم الحالي</span>
-                    <span className="text-stone-500 font-mono tabular-nums">{completedCount} من {trackedItems.length} عناصر</span>
+                    <span className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">{completedCount} من {trackedItems.length} عناصر</span>
                   </div>
-                  <div role="progressbar" aria-label="نسبة إنجاز رقية القسم الحالي" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent} className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-emerald-700 dark:bg-emerald-500 h-full transition-all duration-500 rounded-full"
+                  <div role="progressbar" aria-label="نسبة إنجاز رقية القسم الحالي" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent} className="w-full bg-[#F2EDE2] dark:bg-[#162744] h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#1C4E46] dark:bg-[#E0A96D] h-full transition-all duration-500 rounded-full"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 self-end md:self-auto">
-                <label className="flex items-center gap-2 text-xs font-medium text-stone-600 dark:text-stone-400 cursor-pointer">
+              <div className="flex flex-wrap items-center gap-3 self-end md:self-auto">
+                <label className="flex items-center gap-2 text-xs font-medium text-[#5B6F6B] dark:text-[#CBD5E1] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={autoAdvance}
                     onChange={(e) => setAutoAdvance(e.target.checked)}
-                    className="w-4 h-4 rounded text-emerald-700 focus:ring-emerald-600 dark:bg-stone-800 dark:border-stone-700"
+                    className="w-4 h-4 rounded text-[#1C4E46] focus:ring-[#C59B27] dark:bg-[#0B132B] dark:border-[#E0A96D]/30"
                   />
                   <span>الانتقال التلقائي للبطاقة التالية عند الإكمال</span>
                 </label>
@@ -745,7 +784,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                   disabled={!progressHydrated || progressCorrupt || !progressDeviceId}
                   aria-expanded={showResetConfirmation}
                   aria-controls="ruqyah-reset-confirmation"
-                  className="flex min-h-11 items-center gap-1.5 px-3 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                  className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#e7dfd0] dark:hover:bg-[#1e3357] disabled:opacity-50 disabled:cursor-not-allowed text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-semibold transition-colors border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
                   title={progressCorrupt ? "أعد ضبط سجل الرقية التالف من رسالة الاسترداد أعلاه" : "إعادة ضبط عداد القسم"}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -756,20 +795,20 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
           )}
 
           {showResetConfirmation && (
-            <div id="ruqyah-reset-confirmation" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-300/70 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4" role="group" aria-labelledby="ruqyah-reset-confirmation-title" aria-describedby="ruqyah-reset-confirmation-description" aria-live="polite">
+            <div id="ruqyah-reset-confirmation" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-[#C59B27]/50 dark:border-[#E0A96D]/40 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 p-4" role="group" aria-labelledby="ruqyah-reset-confirmation-title" aria-describedby="ruqyah-reset-confirmation-description" aria-live="polite">
               <div className="min-w-0">
-                <p id="ruqyah-reset-confirmation-title" className="text-sm font-bold text-amber-950 dark:text-amber-100">تأكيد إعادة ضبط القسم</p>
-                <p id="ruqyah-reset-confirmation-description" className="mt-1 text-xs leading-relaxed text-amber-900 dark:text-amber-200">سيتم تصفير عدادات هذا القسم فقط. لن تتغير نصوص القرآن أو الأدعية أو بيانات الأقسام الأخرى.</p>
+                <p id="ruqyah-reset-confirmation-title" className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">تأكيد إعادة ضبط القسم</p>
+                <p id="ruqyah-reset-confirmation-description" className="mt-1 text-xs leading-relaxed text-[#5B6F6B] dark:text-[#CBD5E1]">سيتم تصفير عدادات هذا القسم فقط. لن تتغير نصوص القرآن أو الأدعية أو بيانات الأقسام الأخرى.</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button type="button" onClick={closeResetConfirmation} className="min-h-11 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-xs font-bold text-stone-700 dark:text-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">إلغاء</button>
-                <button type="button" onClick={handleResetCategoryCounts} disabled={!progressHydrated || progressCorrupt || !progressDeviceId} className="min-h-11 rounded-xl bg-amber-700 px-3 py-2 text-xs font-bold text-white hover:bg-amber-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">تأكيد إعادة الضبط</button>
+                <button type="button" onClick={closeResetConfirmation} className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3.5 py-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">إلغاء</button>
+                <button type="button" onClick={handleResetCategoryCounts} disabled={!progressHydrated || progressCorrupt || !progressDeviceId} className="min-h-11 rounded-xl bg-[#C59B27] hover:bg-[#b1891f] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] px-4 py-2 text-xs font-bold text-[#0B132B] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">تأكيد إعادة الضبط</button>
               </div>
             </div>
           )}
 
           {/* Cards List */}
-          <div className="space-y-4">
+          <div className={ruqyahListSpacing}>
             {currentItems.map((item, idx) => {
               const currentCount = counts[item.id] || 0;
               const isCompleted = item.type !== 'guideline' && (item.repeatTarget === null ? currentCount > 0 : currentCount >= item.repeatTarget);
@@ -778,32 +817,32 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                 <article
                   key={item.id}
                   id={`ruqyah-card-${item.id}`}
-                  className={`group relative bg-white dark:bg-stone-900 rounded-3xl p-6 md:p-7 border transition-all duration-300 ${
+                  className={`group relative wird-card rounded-3xl ${ruqyahCardPadding} border transition-all duration-300 ${
                     isCompleted
-                      ? 'border-emerald-500/60 dark:border-emerald-700/60 bg-emerald-50/20 dark:bg-emerald-950/10 shadow-xs'
-                      : 'border-stone-200/90 dark:border-stone-800 hover:border-emerald-300 dark:hover:border-emerald-800 hover:shadow-md'
+                      ? 'border-[#1C4E46]/60 dark:border-[#E0A96D]/60 bg-[#1C4E46]/[0.04] dark:bg-[#1E4A47]/20 shadow-xs'
+                      : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]/55 dark:hover:border-[#E0A96D]/50 hover:shadow-md'
                   }`}
                 >
                   {/* Card Top Row: Number, Type badge, Title, Audio Button */}
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-bold text-xs flex items-center justify-center font-mono">
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <span className="w-7 h-7 shrink-0 rounded-xl bg-[#F2EDE2] dark:bg-[#162744] border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#1C4E46] dark:text-[#E0A96D] font-bold text-xs flex items-center justify-center font-mono tabular-nums">
                         {idx + 1}
                       </span>
 
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">
                             {item.title}
                           </h3>
                           {item.surahName && (
-                            <span className="text-[11px] text-emerald-800 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md font-semibold">
+                            <span className="text-[11px] text-[#1C4E46] dark:text-[#E0A96D] bg-[#1C4E46]/10 dark:bg-[#E0A96D]/15 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 px-2 py-0.5 rounded-md font-semibold tabular-nums">
                               سورة {item.surahName} [{item.verseRange}]
                             </span>
                           )}
                         </div>
                         {item.source && (
-                          <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
+                          <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
                             المصدر: {item.source}
                           </p>
                         )}
@@ -817,10 +856,10 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                         onClick={() => toggleItemAudio(item)}
                         aria-pressed={audioCurrentItemId === item.id && audioIsPlaying}
                         aria-label={audioCurrentItemId === item.id && audioIsPlaying ? 'إيقاف تلاوة ' + item.title : 'تشغيل تلاوة ' + item.title}
-                        className={`flex min-h-11 items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                        className={`flex min-h-11 shrink-0 items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
                           audioCurrentItemId === item.id && audioIsPlaying
-                            ? 'bg-emerald-800 text-white'
-                            : 'text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900'
+                            ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
+                            : 'text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:bg-[#e7dfd0] dark:hover:bg-[#1d3257]'
                         }`}
                       >
                         {audioCurrentItemId === item.id && audioIsPlaying ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -830,10 +869,16 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                   </div>
 
                   {/* Text Content */}
-                  <div className="my-4 p-4 rounded-2xl bg-[#faf8f5] dark:bg-stone-950/70 border border-stone-200/50 dark:border-stone-800/80">
-                    <p className={`text-base md:text-xl text-stone-800 dark:text-stone-100 leading-loose text-center font-quran ${
-                      item.type === 'quran' ? 'tracking-normal' : 'font-sans font-medium'
-                    }`}>
+                  <div className="my-4 p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+                    <p
+                      className={`text-[#142421] dark:text-[#F5F1E8] text-center font-quran ${
+                        item.type === 'quran' ? 'tracking-normal' : 'font-sans font-medium'
+                      }`}
+                      style={{
+                        fontSize: `${item.type === 'quran' ? displayPreferences.fontSize : Math.max(16, displayPreferences.fontSize - 3)}px`,
+                        lineHeight: ruqyahLineHeight,
+                      }}
+                    >
                       {item.type === 'quran'
                         ? quranLoadingItems[item.id]
                           ? <span role="status" className="text-sm font-sans text-stone-500">جارٍ تحميل الآيات من المصحف المحلي المعتمد…</span>
@@ -856,23 +901,23 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
 
                   {/* Explanation Note */}
                   {item.explanation && (
-                    <div className="flex items-start gap-2 text-xs text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-stone-800/40 p-3 rounded-xl border border-stone-100 dark:border-stone-800 mb-4">
-                      <Info className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-2 text-xs text-[#5B6F6B] dark:text-[#CBD5E1] bg-[#F9F6EE]/80 dark:bg-[#0B132B]/45 p-3 rounded-xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 mb-4">
+                      <Info className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0 mt-0.5" />
                       <p className="leading-relaxed">{item.explanation}</p>
                     </div>
                   )}
 
                   {/* Card Bottom Row: Counter Controls */}
                   {item.type !== 'guideline' && (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-stone-100 dark:border-stone-800">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                       <div className="flex items-center gap-2">
                         {isCompleted ? (
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100/60 dark:bg-emerald-950/80 px-3 py-1 rounded-xl">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] bg-[#1C4E46]/10 dark:bg-[#E0A96D]/15 px-3 py-1 rounded-xl tabular-nums">
                             <CheckCircle2 className="w-4 h-4" />
                             <span>{item.repeatTarget === null ? 'تم تسجيل القراءة' : `اكتمل التكرار المحدد (${item.repeatTarget})`}</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-stone-500 font-medium">
+                          <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-medium">
                             {item.repeatTarget === null ? 'لا يوجد عدد ثابت؛ سجّل كل قراءة على حدة' : 'سجّل القراءة بعد إتمامها'}
                           </span>
                         )}
@@ -885,7 +930,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                         aria-label={item.repeatTarget === null
                           ? `تسجيل قراءة جديدة لـ ${item.title}. العدد الحالي ${currentCount}`
                           : `تسجيل قراءة ${item.title}`}
-                        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 disabled:bg-stone-200 disabled:text-stone-500 dark:disabled:bg-stone-800 text-white px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                        className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#1C4E46] hover:bg-[#143b35] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] disabled:bg-[#E6DFD0] disabled:text-[#5B6F6B] dark:disabled:bg-[#162744] dark:disabled:text-[#8B9E9B] text-white dark:text-[#0B132B] px-4 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         <span>{item.repeatTarget !== null && isCompleted ? 'اكتمل' : currentCount > 0 ? 'تسجيل قراءة أخرى' : 'سجل قراءة'}</span>
@@ -893,7 +938,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
 
                       {/* Repetition Counter Badge */}
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-stone-500">{item.repeatTarget === null ? 'عدد القراءات:' : 'المتبقي:'}</span>
+                        <span className="text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">{item.repeatTarget === null ? 'عدد القراءات:' : 'المتبقي:'}</span>
                         <div
                           role="status"
                           aria-live="polite"
@@ -901,10 +946,10 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                           aria-label={item.repeatTarget === null
                             ? `عدد القراءات: ${currentCount}`
                             : `المتبقي: ${Math.max(0, item.repeatTarget - currentCount)} من ${item.repeatTarget}`}
-                          className={`px-4 py-2 rounded-2xl font-mono text-sm font-bold transition-all ${
+                          className={`px-4 py-2 rounded-2xl font-mono tabular-nums text-sm font-bold transition-all ${
                           isCompleted
-                            ? 'bg-emerald-700 text-white shadow-xs'
-                            : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 group-hover:scale-105'
+                            ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] shadow-xs'
+                            : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#1C4E46] dark:text-[#E0A96D] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25'
                         }`}>
                           {item.repeatTarget === null ? currentCount + ' قراءة' : Math.max(0, item.repeatTarget - currentCount) + ' / ' + item.repeatTarget}
                         </div>
@@ -915,10 +960,15 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
               );
             })}
           </div>
+          </div>
         </div>
       )}
 
-      {viewMode === 'api_library' && <RuqyahApiLibrary />}
+      {viewMode === 'api_library' && (
+        <div style={{ zoom: displayPreferences.uiScale / 100 }}>
+          <RuqyahApiLibrary />
+        </div>
+      )}
     </div>
   );
 };

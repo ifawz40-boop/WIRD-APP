@@ -1,6 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { AUDIO_REPEAT_COUNTS, normalizeAudioRepeatCount, PLAYBACK_RATES, normalizePlaybackRate } from './audioPreferences';
+import {
+  AUDIO_REPEAT_COUNTS,
+  AYAH_SEGMENT_REPEAT_COUNTS,
+  normalizeAudioRepeatCount,
+  normalizeAyahSegmentRepeatCount,
+  PLAYBACK_RATES,
+  normalizePlaybackRate
+} from './audioPreferences';
 import { attachAyahRepeatHandler } from './audioRepeatController';
 
 export function runAudioPreferencesTests(): { passed: number; failed: number } {
@@ -18,8 +25,12 @@ export function runAudioPreferencesTests(): { passed: number; failed: number } {
   });
   test('Audio repeat choices include bounded counts and continuous playback', () => {
     if (AUDIO_REPEAT_COUNTS.join(',') !== '1,2,3,5,10,-1') throw new Error('Unexpected audio repeat choices');
+    if (AYAH_SEGMENT_REPEAT_COUNTS.join(',') !== '1,2,3,5,10') throw new Error('Unexpected segment per-ayah repeat choices');
     if (normalizeAudioRepeatCount(5) !== 5 || normalizeAudioRepeatCount(-1) !== -1 || normalizeAudioRepeatCount(0) !== 1 || normalizeAudioRepeatCount('invalid') !== 1) {
       throw new Error('Invalid audio repeat preference normalization');
+    }
+    if (normalizeAyahSegmentRepeatCount(3) !== 3 || normalizeAyahSegmentRepeatCount(-1) !== 1 || normalizeAyahSegmentRepeatCount(99) !== 1) {
+      throw new Error('Invalid per-ayah segment repeat normalization');
     }
   });
   test('Ayah repeat controller plays the exact target count', () => {

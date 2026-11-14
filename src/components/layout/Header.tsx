@@ -1,8 +1,7 @@
 import React from 'react';
-import { Flame, Play, Moon, Sun, BookOpen, ChevronLeft, Download, Cloud, CloudCheck, CloudOff, CloudAlert, RefreshCw, Menu } from 'lucide-react';
+import { Play, Moon, Sun, Download, Cloud, CloudCheck, CloudOff, CloudAlert, RefreshCw, Menu } from 'lucide-react';
 import { UserProfile } from '../../types/quran';
 import { useCloudSync } from '../../hooks/useCloudSync';
-import { WirdSymbol } from '../brand/WirdLogo';
 
 interface HeaderProps {
   currentTab: string;
@@ -30,85 +29,63 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSidebar
 }) => {
   const { status, pendingCount, triggerSync } = useCloudSync();
+
   return (
-    <header className="sticky top-0 z-30 h-[68px] bg-[#F9F6EE]/90 dark:bg-[#0B132B]/90 backdrop-blur-xl border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 px-4 md:px-7 flex items-center justify-between gap-3 transition-colors">
-      {/* Page context with official WIRD Symbol badge and Sidebar Toggle */}
+    <header className="sticky top-0 z-30 h-16 bg-[#F9F6EE]/92 dark:bg-[#0B132B]/92 backdrop-blur-xl border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 px-4 md:px-7 flex items-center justify-between gap-3 transition-colors">
+      {/* Page context with Sidebar Toggle */}
       <div className="flex items-center gap-2.5 min-w-0">
         {onToggleSidebar && (
           <button
             type="button"
             onClick={onToggleSidebar}
-            className={`p-2 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] shrink-0 ${
+            className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] shrink-0 ${
               !isSidebarOpen
                 ? 'bg-[#F2EDE2] dark:bg-[#111F36] text-[#1C4E46] dark:text-[#E0A96D] ring-1 ring-[#C59B27]/40 shadow-2xs'
-                : 'text-stone-700 dark:text-stone-300 hover:text-[#1C4E46] dark:hover:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36]'
+                : 'text-[#142421] dark:text-[#F5F1E8] hover:text-[#1C4E46] dark:hover:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36]'
             }`}
             title={isSidebarOpen
-              ? "إغلاق الشريط الجانبي (Ctrl+B / Cmd+B)"
-              : "فتح الشريط الجانبي (Ctrl+B / Cmd+B)"}
-            aria-label={isSidebarOpen ? "إغلاق الشريط الجانبي" : "فتح الشريط الجانبي"}
+              ? 'إغلاق الشريط الجانبي (Ctrl+B / Cmd+B)'
+              : 'فتح الشريط الجانبي (Ctrl+B / Cmd+B)'}
+            aria-label={isSidebarOpen ? 'إغلاق الشريط الجانبي' : 'فتح الشريط الجانبي'}
             data-sidebar-toggle="desktop"
             aria-keyshortcuts="Control+B Meta+B"
             aria-expanded={isSidebarOpen}
-            data-sidebar-state={isSidebarOpen ? "open" : "closed"}
+            data-sidebar-state={isSidebarOpen ? 'open' : 'closed'}
           >
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <nav aria-label="مسار التنقل" className="flex items-center gap-2 text-xs min-w-0">
-          <span className="hidden sm:inline-flex items-center gap-1.5 font-bold text-[#1C4E46] dark:text-[#F5F1E8] bg-[#F2EDE2] dark:bg-[#111F36] border border-[#C59B27]/30 px-2.5 py-1 rounded-xl shadow-2xs font-quran">
-            <WirdSymbol size={20} variant="primary" />
-            <span>وِرد</span>
-          </span>
-          <ChevronLeft className="hidden sm:block w-3.5 h-3.5 text-stone-400 dark:text-stone-500 shrink-0" aria-hidden="true" />
-          <h1 className="text-sm md:text-base font-bold text-[#142421] dark:text-[#F5F1E8] truncate max-w-[42vw] sm:max-w-none">{tabTitle}</h1>
-        </nav>
+        <h1 className="text-base md:text-lg font-bold text-[#142421] dark:text-[#F5F1E8] truncate font-quran">
+          {tabTitle}
+        </h1>
       </div>
 
-      {/* Zone 2: Informational items (Streak & Daily reminder) */}
-      <div className="hidden lg:flex items-center gap-4 text-xs font-medium text-stone-600 dark:text-stone-400">
-        <div className="flex items-center gap-1.5 bg-[#F2EDE2]/70 dark:bg-[#111F36] border border-[#C59B27]/30 px-3 py-1.5 rounded-xl text-[#142421] dark:text-[#F5F1E8]">
-          <Flame className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] fill-[#C59B27]/30" />
-          <span>سلسلة الالتزام:</span>
-          <span className="font-bold tabular-nums font-mono text-[#C59B27] dark:text-[#E0A96D]">
-            {profile.streakDays} يوماً
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400">
-          <BookOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-          <span>الورد اليومي يتحدد وفق خطتك والمراجعات المستحقة</span>
-        </div>
-      </div>
-
-      {/* Zone 3: Actions (PWA Install + Theme Toggle + Start Session CTA) */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        {/* PWA Install Button when prompt available */}
-        {!isStandalone && (pwaInstallPrompt || onInstallPwa) && (
+      {/* Actions: Optional PWA Install (only when prompt ready) + Sync + Theme + Session CTA on secondary views */}
+      <div className="flex items-center gap-2 shrink-0">
+        {!isStandalone && pwaInstallPrompt && onInstallPwa && (
           <button
+            type="button"
             onClick={onInstallPwa}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-900 dark:text-emerald-200 bg-emerald-100/80 dark:bg-emerald-950/80 border border-emerald-300/80 dark:border-emerald-800/80 rounded-lg hover:bg-emerald-200/80 transition-colors"
+            className="hidden sm:inline-flex min-h-11 items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#111F36] border border-[#C59B27]/35 dark:border-[#E0A96D]/25 rounded-xl hover:border-[#C59B27] transition-colors"
             title="تثبيت التطبيق على الجهاز كبرنامج مستقل"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-            <span>تثبيت التطبيق</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>تثبيت</span>
           </button>
         )}
 
-        {/* Cloud Sync Quick Status */}
         <button
+          type="button"
           onClick={() => triggerSync()}
           disabled={status === 'syncing'}
-          className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all ${
+          className={`min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
             status === 'synced'
-              ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60'
+              ? 'text-[#1C4E46] dark:text-[#6EE7B7] hover:bg-[#1C4E46]/8 dark:hover:bg-[#1E4A47]/40'
               : status === 'syncing'
-              ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200/80 animate-pulse'
-              : status === 'offline'
-              ? 'bg-stone-100 dark:bg-stone-800 text-stone-500 border-stone-200 dark:border-stone-700'
+              ? 'text-[#9A7415] dark:text-[#E0A96D] bg-[#C59B27]/10 dark:bg-[#E0A96D]/12'
               : status === 'unverified'
-              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/60'
-              : 'bg-stone-50 dark:bg-stone-850 text-stone-600 dark:text-stone-400 border-stone-200 dark:border-stone-700'
+              ? 'text-[#9A7415] dark:text-[#E0A96D] hover:bg-[#C59B27]/10 dark:hover:bg-[#E0A96D]/12'
+              : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36]'
           }`}
           title={
             status === 'synced'
@@ -123,15 +100,15 @@ export const Header: React.FC<HeaderProps> = ({
           }
         >
           {status === 'syncing' ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
+            <RefreshCw className="w-4 h-4 animate-spin text-[#C59B27] dark:text-[#E0A96D]" />
           ) : status === 'synced' ? (
-            <CloudCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <CloudCheck className="w-4 h-4 text-[#1C4E46] dark:text-[#6EE7B7]" />
           ) : status === 'offline' ? (
-            <CloudOff className="w-3.5 h-3.5 text-stone-400" />
+            <CloudOff className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B]" />
           ) : status === 'unverified' ? (
-            <CloudAlert className="w-3.5 h-3.5 text-amber-600" />
+            <CloudAlert className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
           ) : (
-            <Cloud className="w-3.5 h-3.5 text-stone-500" />
+            <Cloud className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B]" />
           )}
           <span className="hidden sm:inline">
             {status === 'synced'
@@ -145,16 +122,17 @@ export const Header: React.FC<HeaderProps> = ({
               : 'محلي'}
           </span>
           {pendingCount > 0 && (
-            <span className="bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 text-[10px] font-mono px-1 rounded-full">
-              {pendingCount}
+            <span className="text-[#8A6914] dark:text-[#E0A96D] text-[11px] font-mono tabular-nums">
+              ({pendingCount})
             </span>
           )}
         </button>
 
         <button
+          type="button"
           onClick={onToggleTheme}
-          className="p-2 text-stone-600 dark:text-stone-300 hover:bg-[#F2EDE2] dark:hover:bg-[#111F36] rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-[#C59B27]"
-          title={profile.theme === 'dark' ? "التبديل إلى الوضع النهاري" : "التبديل إلى الوضع الليلي"}
+          className="min-h-11 min-w-11 inline-flex items-center justify-center text-[#142421] dark:text-[#F5F1E8] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+          title={profile.theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
           aria-label="تبديل المظهر النهاري والليلي"
         >
           {profile.theme === 'dark' ? (
@@ -164,10 +142,11 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </button>
 
-        {currentTab !== 'dashboard' && (
+        {currentTab !== 'dashboard' && currentTab !== 'session' && (
           <button
+            type="button"
             onClick={onStartDailySession}
-            className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-bold text-white bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] rounded-xl shadow-xs transition-all hover:shadow-sm active:scale-95 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-[#C59B27] ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/30"
+            className="min-h-11 inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-bold text-white bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] rounded-xl shadow-xs transition-all active:scale-95 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/30"
           >
             <Play className="w-3.5 h-3.5 fill-white" />
             <span>جلسة اليوم</span>
@@ -177,3 +156,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

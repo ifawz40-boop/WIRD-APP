@@ -5,7 +5,7 @@ import { QuranText } from './QuranText';
 function renderSegment(segment: HadithMatnSegment, index: number) {
   if (segment.type === 'text') return <React.Fragment key={index}>{segment.value}</React.Fragment>;
   if (segment.type === 'invalid-quran') {
-    return <span key={index} className="mx-1 inline rounded bg-amber-50 px-1.5 py-0.5 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">[تعذر التحقق من موضع الآية]</span>;
+    return <span key={index} className="mx-1 inline rounded bg-[#C59B27]/12 px-1.5 py-0.5 text-sm text-[#9A7512] dark:bg-[#E0A96D]/15 dark:text-[#E0A96D]">[تعذر التحقق من موضع الآية]</span>;
   }
   return (
     <span key={index} className="hadith-quran-quote mx-0.5 inline">

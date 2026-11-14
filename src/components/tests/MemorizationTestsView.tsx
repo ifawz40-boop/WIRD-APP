@@ -1,25 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  CheckCircle, 
-  RotateCcw, 
-  Award, 
-  Sparkles, 
-  Check, 
-  X, 
+import {
+  CheckCircle,
+  RotateCcw,
+  Award,
+  Sparkles,
+  Check,
+  X,
   ArrowLeft,
   BookOpen,
   Shuffle,
   ArrowUpDown,
-  AlertTriangle,
-  ChevronRight
+  AlertTriangle
 } from 'lucide-react';
-import { MUTASHABIHAT_DATA } from '../../data/mutashabihatData';
 import { TestResult, WirdPortion } from '../../types/quran';
 import { RetentionService } from '../../services/retentionService';
 import { createSecureId } from '../../services/secureId';
 import { loadSimpleAyahText } from '../../data/quranDataLoader';
 import { generateDynamicTestQuestions } from '../../services/testQuestionGenerator';
 import type { QuestionGenerationResult } from '../../services/testQuestionGenerator';
+import { ReadingDisplaySettingsMenu, useReadingDisplayPreferences } from '../shared/DisplaySettingsMenu';
+import { NARROW_READING_WIDTH_CLASSES } from '../../services/readingDisplayPreferences';
 
 interface MemorizationTestsViewProps {
   onSaveTestResult: (result: TestResult) => boolean | Promise<boolean>;
@@ -34,6 +34,11 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
   onSaveTestResult,
   onAddVerseToRevision
 }) => {
+  const {
+    preferences: displayPreferences,
+    updatePreferences: updateDisplayPreferences,
+    resetPreferences: resetDisplayPreferences,
+  } = useReadingDisplayPreferences('tests');
   const [selectedTestType, setSelectedTestType] = useState<TestType>('complete_verse');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -50,7 +55,6 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
   const saveInProgressRef = useRef(false);
   const [sessionKey, setSessionKey] = useState(0);
 
-  // Generate questions asynchronously from only the Surahs present in the user's memorized portions.
   const [generationResult, setGenerationResult] = useState<QuestionGenerationResult>({
     questions: [],
     hasSufficientData: false,
@@ -131,7 +135,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
       setIsAnswered(false);
       setWeakVerseFeedback(null);
     } else {
-      const finalScore = score + (selectedOption === currentQ.correctIndex ? 1 : 0);
+      const finalScore = score;
       const resultToSave: TestResult = pendingTestResult || {
         id: `test-${createSecureId()}`,
         date: new Date().toISOString().split('T')[0],
@@ -165,8 +169,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     }
   };
 
-  const handleResetTest = () => {
-    if (pendingTestResult || saveInProgressRef.current || weakVerseSaveInFlightRef.current) return;
+  const resetQuizState = (bumpSession: boolean) => {
     setCurrentQuestionIndex(0);
     setSelectedOption(null);
     setIsAnswered(false);
@@ -175,7 +178,22 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     setWeakVerseFeedback(null);
     setTestSaveError(null);
     setPendingTestResult(null);
-    setSessionKey(k => k + 1);
+    if (bumpSession) setSessionKey(k => k + 1);
+  };
+
+  const handleResetTest = () => {
+    if (pendingTestResult || saveInProgressRef.current || weakVerseSaveInFlightRef.current) return;
+    resetQuizState(true);
+  };
+
+  const handleSwitchTestType = (nextType: TestType) => {
+    if (isModeSwitchLocked) return;
+    if (nextType === selectedTestType) {
+      resetQuizState(true);
+      return;
+    }
+    setSelectedTestType(nextType);
+    resetQuizState(false);
   };
 
   const handleAddCurrentToWeakVerses = async () => {
@@ -215,16 +233,39 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     });
   };
 
+  const questionCardPadding =
+    displayPreferences.spacing === 'compact'
+      ? 'p-4 md:p-6'
+      : displayPreferences.spacing === 'relaxed'
+      ? 'p-7 md:p-10'
+      : 'p-6 md:p-8';
+  const optionsSpacingClass =
+    displayPreferences.spacing === 'compact'
+      ? 'space-y-2'
+      : displayPreferences.spacing === 'relaxed'
+      ? 'space-y-4'
+      : 'space-y-3';
+  const textLineHeight =
+    displayPreferences.spacing === 'compact'
+      ? 1.9
+      : displayPreferences.spacing === 'relaxed'
+      ? 2.5
+      : 2.2;
+
+  const isModeSwitchLocked = Boolean(pendingTestResult) || saveInProgressRef.current || weakVerseSaveInFlightRef.current;
+
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div
+      className={`space-y-6 ${NARROW_READING_WIDTH_CLASSES[displayPreferences.pageWidth]} mx-auto transition-all`}
+    >
       {/* 1. Header & Test Mode Switcher */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200/80 dark:border-stone-700/80 shadow-xs space-y-4">
+      <div className="wird-card p-6 space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2 font-quran">
-            <CheckCircle className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-            اختبارات الحفظ والتقييم الذاتي المتقدمة
+          <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
+            <CheckCircle className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <span>اختبارات الحفظ والتقييم الذاتي المتقدمة</span>
           </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
             امتحانات قرآنية تفاعلية دقيقة: إكمال الآيات، الاسترجاع العكسي، المتشابهات اللفظية، وسحب عشوائي من المحفوظ
           </p>
         </div>
@@ -234,20 +275,16 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           <button
             type="button"
             aria-pressed={selectedTestType === 'complete_verse'}
-            onClick={() => {
-              if (pendingTestResult || saveInProgressRef.current || weakVerseSaveInFlightRef.current) return;
-              setSelectedTestType('complete_verse');
-              handleResetTest();
-            }}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+            onClick={() => handleSwitchTestType('complete_verse')}
+            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               selectedTestType === 'complete_verse'
-                ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs'
-                : 'bg-[#faf8f5] dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-emerald-500'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
             }`}
           >
-            <BookOpen className="w-4 h-4 text-emerald-400" />
+            <BookOpen className={`w-4 h-4 ${selectedTestType === 'complete_verse' ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
             <div className="font-bold text-xs">أكمل الآية التالية</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'complete_verse' ? 'text-emerald-100' : 'text-stone-400'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'complete_verse' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
               التسلسل الأمامي
             </div>
           </button>
@@ -255,20 +292,16 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           <button
             type="button"
             aria-pressed={selectedTestType === 'bidirectional_recall'}
-            onClick={() => {
-              if (pendingTestResult) return;
-              setSelectedTestType('bidirectional_recall');
-              handleResetTest();
-            }}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+            onClick={() => handleSwitchTestType('bidirectional_recall')}
+            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               selectedTestType === 'bidirectional_recall'
-                ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs'
-                : 'bg-[#faf8f5] dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-emerald-500'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
             }`}
           >
-            <ArrowUpDown className="w-4 h-4 text-amber-500" />
+            <ArrowUpDown className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
             <div className="font-bold text-xs">الآية السابقة والتالية</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'bidirectional_recall' ? 'text-emerald-100' : 'text-stone-400'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'bidirectional_recall' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
               الاسترجاع الثنائي
             </div>
           </button>
@@ -276,20 +309,16 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           <button
             type="button"
             aria-pressed={selectedTestType === 'random_recall'}
-            onClick={() => {
-              if (pendingTestResult) return;
-              setSelectedTestType('random_recall');
-              handleResetTest();
-            }}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+            onClick={() => handleSwitchTestType('random_recall')}
+            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               selectedTestType === 'random_recall'
-                ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs'
-                : 'bg-[#faf8f5] dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-emerald-500'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
             }`}
           >
-            <Shuffle className="w-4 h-4 text-sky-400" />
+            <Shuffle className={`w-4 h-4 ${selectedTestType === 'random_recall' ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
             <div className="font-bold text-xs">عشوائي من المحفوظ</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'random_recall' ? 'text-emerald-100' : 'text-stone-400'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'random_recall' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
               اختبار المفاجأة
             </div>
           </button>
@@ -297,55 +326,60 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           <button
             type="button"
             aria-pressed={selectedTestType === 'mutashabihat'}
-            onClick={() => {
-              if (pendingTestResult) return;
-              setSelectedTestType('mutashabihat');
-              handleResetTest();
-            }}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+            onClick={() => handleSwitchTestType('mutashabihat')}
+            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               selectedTestType === 'mutashabihat'
-                ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs'
-                : 'bg-[#faf8f5] dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-emerald-500'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-purple-400" />
+            <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
             <div className="font-bold text-xs">المتشابهات اللفظية</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'mutashabihat' ? 'text-emerald-100' : 'text-stone-400'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'mutashabihat' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
               الضوابط القرآنية
             </div>
           </button>
         </div>
+
+        <ReadingDisplaySettingsMenu
+          viewLabel="اختبارات الحفظ"
+          preferences={displayPreferences}
+          onUpdate={updateDisplayPreferences}
+          onReset={resetDisplayPreferences}
+          fontLabel="حجم خط الأسئلة"
+        />
       </div>
 
-      {/* 2. Finished Test Result Card */}
+      {/* 2. Finished Test Result Card / Question Body */}
+      <div style={{ zoom: displayPreferences.uiScale / 100 }}>
       {isFinished ? (
-        <div className="bg-white dark:bg-stone-800/90 rounded-3xl p-8 border border-stone-200/80 dark:border-stone-700/80 text-center space-y-6 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center mx-auto shadow-inner border border-emerald-200 dark:border-emerald-800">
+        <div className="wird-card p-8 text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 text-[#1C4E46] dark:text-[#E0A96D] flex items-center justify-center mx-auto border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
             <Award className="w-8 h-8" />
           </div>
 
           <div className="space-y-1">
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] uppercase tracking-wider">
               نتيجة الاختبار القرآني
             </span>
-            <h3 className="text-2xl font-bold font-quran text-stone-900 dark:text-stone-100">
+            <h3 className="text-2xl font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
               أحسنت بارك الله فيك ونفع بك!
             </h3>
-            <p className="text-xs text-stone-500">
-              حصلت على <strong className="text-emerald-700 font-mono text-sm">{score}</strong> من <strong className="font-mono text-sm">{currentQuestions.length}</strong>
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+              حصلت على <strong className="text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums text-sm">{score}</strong> من <strong className="font-mono tabular-nums text-sm">{currentQuestions.length}</strong>
             </p>
           </div>
 
-          <div className="p-4 bg-[#faf8f5] dark:bg-stone-900/60 rounded-xl border border-stone-200/70 dark:border-stone-700/60 max-w-sm mx-auto text-xs space-y-2">
+          <div className="p-4 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 max-w-sm mx-auto text-xs space-y-2">
             <div className="flex justify-between">
-              <span className="text-stone-500">معدل الدقة الإجمالي:</span>
-              <span className="font-bold text-emerald-800 dark:text-emerald-300 font-mono">
+              <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">معدل الدقة الإجمالي:</span>
+              <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
                 {Math.round((score / currentQuestions.length) * 100)}%
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-stone-500">مستوى الرسوخ الذهني:</span>
-              <span className="font-bold text-stone-800 dark:text-stone-200">
+              <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">مستوى الرسوخ الذهني:</span>
+              <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
                 {score === currentQuestions.length ? 'ممتاز ومتقن تماماً' : score >= currentQuestions.length * 0.7 ? 'جيد جداً مع حاجة للتثبيت' : 'يحتاج مراجعة وتكرار'}
               </span>
             </div>
@@ -353,8 +387,9 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <button
+              type="button"
               onClick={handleResetTest}
-              className="flex min-h-11 items-center gap-2 px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="wird-btn-primary flex min-h-11 items-center gap-2 px-5 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
             >
               <RotateCcw className="w-4 h-4" />
               <span>إعادة الاختبار</span>
@@ -362,32 +397,31 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           </div>
         </div>
       ) : isGenerating ? (
-        <div role="status" aria-live="polite" className="bg-white dark:bg-stone-800/90 rounded-3xl p-8 border border-stone-200/80 dark:border-stone-700/80 text-center text-sm text-stone-500">
+        <div role="status" aria-live="polite" className="wird-card p-8 text-center text-sm text-[#5B6F6B] dark:text-[#8B9E9B]">
           جارٍ تجهيز أسئلة الاختبار من السور المحفوظة فقط...
         </div>
       ) : currentQuestions.length === 0 ? (
-        /* 3. Empty State Card when user has no memorized portions for test mode */
-        <div className="bg-white dark:bg-stone-800/90 rounded-3xl p-8 border border-stone-200/80 dark:border-stone-700/80 text-center space-y-5 shadow-xs">
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800">
+        <div className="wird-card p-8 text-center space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center mx-auto border border-[#C59B27]/30 dark:border-[#E0A96D]/25">
             <AlertTriangle className="w-7 h-7" />
           </div>
           <div className="space-y-2 max-w-md mx-auto">
-            <h3 className="font-bold text-stone-900 dark:text-stone-100 text-base">
+            <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
               لا تتوفر أسئلة مؤهلة من المحفوظ حالياً
             </h3>
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed">
               {generationResult.messageAr || 'يرجى تسجيل مقاطع محفوظة أولاً في خطتك أو إتمام جلسة حفظ قبل إجراء الاختبارات المبنية على المحفوظ الفعلي.'}
             </p>
           </div>
         </div>
       ) : (
         /* 4. Question Card */
-        <div className="bg-white dark:bg-stone-800/90 rounded-3xl p-6 md:p-8 border border-stone-200/80 dark:border-stone-700/80 shadow-xs space-y-6">
-          <div className="flex items-center justify-between text-xs pb-3 border-b border-stone-100 dark:border-stone-700">
-            <span className="font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-md">
+        <div className={`wird-card ${questionCardPadding} space-y-6`}>
+          <div className="flex items-center justify-between text-xs pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+            <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
               السؤال {currentQuestionIndex + 1} من {currentQuestions.length}
             </span>
-            <span className="text-stone-500 font-mono tabular-nums">
+            <span className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
               الدرجة الحالية: {score}
             </span>
           </div>
@@ -399,44 +433,48 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             aria-valuemax={currentQuestions.length}
             aria-valuenow={currentQuestionIndex + 1}
             aria-valuetext={`السؤال ${currentQuestionIndex + 1} من ${currentQuestions.length}`}
-            className="h-2 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-700"
+            className="h-2 overflow-hidden rounded-full bg-[#F2EDE2] dark:bg-[#0B132B]"
           >
             <div
-              className="h-full rounded-full bg-emerald-700 transition-[width]"
+              className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-[width]"
               style={{ width: `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%` }}
             />
           </div>
 
-          {/* Insufficient data notification banner */}
           {(!generationResult.hasSufficientData || generationResult.messageAr) && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="p-3 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 border border-[#C59B27]/30 dark:border-[#E0A96D]/25 rounded-xl text-xs text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
               <span>{generationResult.messageAr || 'ملاحظة: هذا الاختبار مستخرج من المقاطع المحفوظة في سجلك الفعلي.'}</span>
             </div>
           )}
 
           {/* Prompt */}
           <div className="space-y-3">
-            <h3 aria-live="polite" aria-atomic="true" className="font-quran text-xl md:text-2xl text-stone-900 dark:text-stone-100 leading-relaxed text-right bg-[#fdfbf7] dark:bg-stone-900/60 p-5 rounded-2xl border border-stone-200/60 dark:border-stone-700/60">
+            <h3
+              aria-live="polite"
+              aria-atomic="true"
+              className="font-quran text-[#142421] dark:text-[#F5F1E8] text-right bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-5 rounded-2xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/22"
+              style={{ fontSize: `${displayPreferences.fontSize}px`, lineHeight: textLineHeight }}
+            >
               {displayPrompt || 'جارٍ تحميل النص الإملائي المعتمد...'}
             </h3>
           </div>
 
           {/* Options with Arabic letter marks (أ، ب، ج، د) */}
-          <div role="group" aria-label="خيارات الإجابة" className="space-y-3">
+          <div role="group" aria-label="خيارات الإجابة" className={optionsSpacingClass}>
             {displayOptions.map((opt, idx) => {
               const isSelected = selectedOption === idx;
               const isCorrect = idx === currentQ.correctIndex;
               const letterMark = ARABIC_OPTION_LETTERS[idx] || 'أ';
 
-              let style = 'bg-[#faf8f5] dark:bg-stone-900/60 border-stone-200 dark:border-stone-700/80 text-stone-800 dark:text-stone-200 hover:border-emerald-400';
+              let style = 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] dark:hover:border-[#E0A96D]';
               if (isAnswered) {
                 if (isCorrect) {
-                  style = 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 text-emerald-950 dark:text-emerald-200 font-bold ring-1 ring-emerald-500';
+                  style = 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 border-[#1C4E46] dark:border-[#E0A96D] text-[#142421] dark:text-[#F5F1E8] font-bold ring-1 ring-[#1C4E46] dark:ring-[#E0A96D]';
                 } else if (isSelected && !isCorrect) {
-                  style = 'bg-red-50 dark:bg-red-950/70 border-red-500 text-red-950 dark:text-red-200';
+                  style = 'bg-rose-50 dark:bg-rose-950/50 border-rose-500 text-rose-950 dark:text-rose-200';
                 } else {
-                  style = 'opacity-50 border-stone-200 dark:border-stone-700';
+                  style = 'opacity-50 border-[#1C4E46]/10 dark:border-[#E0A96D]/10';
                 }
               }
 
@@ -447,19 +485,22 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
                   aria-pressed={isSelected}
                   onClick={() => handleSelectOption(idx)}
                   disabled={isAnswered}
-                  className={`w-full min-h-11 p-4 rounded-xl border text-right transition-all flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${style}`}
+                  className={`w-full min-h-11 p-4 rounded-xl border text-right transition-all flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${style}`}
                 >
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold font-quran ${
                     isAnswered && isCorrect
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
                       : isAnswered && isSelected && !isCorrect
-                      ? 'bg-red-600 text-white'
-                      : 'bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300'
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#1C4E46] dark:text-[#E0A96D]'
                   }`}>
                     {isAnswered && isCorrect ? <Check className="w-3.5 h-3.5" /> : isAnswered && isSelected && !isCorrect ? <X className="w-3.5 h-3.5" /> : letterMark}
                   </div>
 
-                  <div className="font-quran text-lg md:text-xl flex-1 leading-loose">
+                  <div
+                    className="font-quran flex-1"
+                    style={{ fontSize: `${Math.max(16, displayPreferences.fontSize - 4)}px`, lineHeight: textLineHeight }}
+                  >
                     {opt}
                   </div>
                 </button>
@@ -467,27 +508,25 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             })}
           </div>
 
-          {/* Explanation if Mutashabihat and answered */}
           {isAnswered && 'distinctionRule' in currentQ && (
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-xs space-y-1 text-right">
-              <div className="font-bold text-amber-900 dark:text-amber-200">
-                💡 ضابط الحفظ وقاعدة التمييز المعتمدة:
+            <div className="p-4 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 text-xs space-y-1 text-right">
+              <div className="font-bold text-[#142421] dark:text-[#E0A96D]">
+                ضابط الحفظ وقاعدة التمييز المعتمدة:
               </div>
-              <p className="text-stone-700 dark:text-stone-300 leading-relaxed text-[11px]">
-                {(currentQ as any).distinctionRule}
+              <p className="text-[#5B6F6B] dark:text-[#F5F1E8] leading-relaxed text-[11px]">
+                {(currentQ as { distinctionRule?: string }).distinctionRule}
               </p>
             </div>
           )}
 
-          {/* Weak verse persistence feedback */}
           {weakVerseFeedback && (
             <div role="status" aria-live="polite" className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
               weakVerseFeedback.success
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-900 dark:text-emerald-200'
+                ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border-[#1C4E46]/30 dark:border-[#E0A96D]/35 text-[#142421] dark:text-[#F5F1E8]'
                 : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-900 dark:text-rose-200'
             }`}>
               {weakVerseFeedback.success
-                ? <Check className="w-4 h-4 text-emerald-600" />
+                ? <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
                 : <AlertTriangle className="w-4 h-4 text-rose-600" />}
               <span>{weakVerseFeedback.message}</span>
             </div>
@@ -499,32 +538,39 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             </div>
           )}
 
-          {/* Action Row */}
           {isAnswered && (
-            <div className="flex items-center justify-between pt-4 border-t border-stone-100 dark:border-stone-700 flex-wrap gap-3">
+            <div className="flex items-center justify-between pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={handleAddCurrentToWeakVerses}
                   disabled={isSavingWeakVerse}
-                  className="min-h-11 text-xs text-amber-700 dark:text-amber-400 hover:text-amber-900 font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  className="min-h-11 text-xs text-[#142421] dark:text-[#E0A96D] hover:border-[#C59B27] font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/35 bg-[#C59B27]/12 dark:bg-[#E0A96D]/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
                 >
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
                   <span>{isSavingWeakVerse ? 'جارٍ حفظ الآية...' : 'تسجيل هذه الآية في قائمة الآيات الملتبسة'}</span>
                 </button>
               </div>
 
               <button
+                type="button"
                 onClick={handleNext}
                 disabled={isSavingTestResult}
-                className="flex min-h-11 items-center gap-2 px-6 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="wird-btn-primary flex min-h-11 items-center gap-2 px-6 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
               >
-                <span>{currentQuestionIndex === currentQuestions.length - 1 && testSaveError ? 'إعادة محاولة حفظ النتيجة' : 'السؤال التالي'}</span>
+                <span>
+                  {currentQuestionIndex === currentQuestions.length - 1
+                    ? (testSaveError ? 'إعادة محاولة حفظ النتيجة' : 'إنهاء الاختبار وعرض النتيجة')
+                    : 'السؤال التالي'}
+                </span>
                 <ArrowLeft className="w-4 h-4" />
               </button>
             </div>
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };
+

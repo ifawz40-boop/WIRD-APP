@@ -80,12 +80,7 @@ export function getAyahsByJuz(juzNumber: number): Ayah[] {
   return result;
 }
 
-/**
- * Split ayah text into words safely, preserving meaning and isolating pause symbols
- */
-export function getAyahWords(text: string): string[] {
-  return text.split(/\s+/).filter(w => w.trim().length > 0 && w !== 'ۚ' && w !== 'ۖ' && w !== 'ۗ' && w !== 'ۛ');
-}
+export { getAyahWords } from './quranDataLoader';
 
 /** Returns the original, unmodified Tanzil Uthmani text stored in Ayah.text. */
 export function getAyahUthmaniText(ayah: Ayah): string {

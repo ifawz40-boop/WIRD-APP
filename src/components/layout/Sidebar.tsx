@@ -7,7 +7,6 @@ import {
   Repeat, 
   CheckCircle, 
   BarChart3, 
-  Compass, 
   Settings, 
   X,
   ShieldCheck,
@@ -135,13 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'المتابعة والمساندة',
       items: [
         { id: 'progress', label: 'التقدم والإنجاز', icon: BarChart3 },
-        { id: 'advisor', label: 'المستشار القرآني', icon: Compass },
         { id: 'ruqyah', label: 'الرقية الشرعية', icon: ShieldCheck },
-      ]
-    },
-    {
-      label: 'إعدادات التطبيق',
-      items: [
         { id: 'settings', label: 'الإعدادات', icon: Settings },
       ]
     }
@@ -164,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button 
               type="button"
               onClick={onToggleDesktop}
-              className="hidden lg:flex min-h-11 min-w-11 items-center justify-center p-1.5 text-stone-500 hover:text-[#1C4E46] dark:hover:text-[#E0A96D] hover:bg-stone-200/50 dark:hover:bg-stone-800/50 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              className="hidden lg:flex min-h-11 min-w-11 items-center justify-center p-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#1C4E46] dark:hover:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
               title="إغلاق الشريط الجانبي (Ctrl+B / Cmd+B)"
               aria-label="إغلاق الشريط الجانبي"
               aria-expanded="true"
@@ -180,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               type="button"
               ref={mobileCloseButtonRef}
               onClick={onCloseMobile}
-              className="lg:hidden min-h-11 min-w-11 flex items-center justify-center p-1.5 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              className="lg:hidden min-h-11 min-w-11 flex items-center justify-center p-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
               title="إغلاق القائمة"
               aria-label="إغلاق القائمة"
             >
@@ -210,12 +203,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#C59B27] dark:text-[#E0A96D]' : 'text-stone-500 dark:text-stone-400'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#C59B27] dark:text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`} />
                     <span className="truncate">{item.label}</span>
                   </span>
                   {item.badge !== undefined && (
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold tabular-nums font-mono ${
-                      isActive ? 'bg-[#C59B27] text-[#0B132B]' : 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/80 text-[#1C4E46] dark:text-[#F5F1E8]'
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold tabular-nums font-mono ${
+                      isActive ? 'bg-[#C59B27] text-[#0B132B]' : 'text-[#1C4E46] dark:text-[#E0A96D]'
                     }`}>{item.badge}</span>
                   )}
                 </button>
@@ -225,9 +218,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
 
-      {/* User Mini Profile Card */}
-      <div className="p-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-        <div className="bg-white/90 dark:bg-[#111F36]/80 rounded-xl p-3 flex items-center gap-3 border border-stone-200/80 dark:border-[#E0A96D]/20 shadow-2xs">
+      {/* User Mini Profile */}
+      <div className="p-3.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+        <div className="flex items-center gap-3 px-1.5 py-1">
           <WirdAvatar size="sm" shape="circle" variant="primary" />
           <div className="min-w-0 flex-1 text-right">
             <h4 className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] truncate">
@@ -261,7 +254,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
             aria-hidden="true"
-            className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-[#0B132B]/70 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
           />
           <div

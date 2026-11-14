@@ -39,26 +39,46 @@ import { buildWeakVerseFailureTransaction, buildWeakVerseResolutionSnapshot } fr
 import { createSecureId } from '../../services/secureId';
 import type { RevisionRatedEvent, WeakVerseFailedEvent, WeakVerseResolvedEvent } from '../../services/domainEvents';
 
+import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+import { SurahPickerControl } from '../shared/SurahPickerControl';
+import { ReadingDisplaySettingsMenu, useReadingDisplayPreferences } from '../shared/DisplaySettingsMenu';
+import { READING_PAGE_WIDTH_CLASSES } from '../../services/readingDisplayPreferences';
+
 interface RevisionCenterViewProps {
   profile: UserProfile;
   onStartSession?: (surahNumber: number, startAyah: number, endAyah: number, mode?: 'memorize' | 'review') => void;
+  onOpenAdvisor?: () => void;
 }
 
 type RevisionTab = 'daily_queue' | 'weekly_overview' | 'weak_verses' | 'history' | 'retention_dashboard';
 
-const STATUS_LABELS: Record<PortionMemorizationStatus, { label: string; bg: string; text: string; border: string }> = {
-  stable: { label: 'راسخ ومتقن', bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800/60' },
-  recently_memorized: { label: 'محفوظ حديثاً', bg: 'bg-sky-50 dark:bg-sky-950/40', text: 'text-sky-800 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800/60' },
-  needs_revision: { label: 'يحتاج مراجعة', bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-800 dark:text-amber-300', border: 'border-amber-200 dark:border-amber-800/60' },
-  weak: { label: 'ضعيف ويتفلت', bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-800 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800/60' },
-  currently_memorizing: { label: 'قيد الحفظ', bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-800/60' },
-  not_memorized: { label: 'غير محفوظ', bg: 'bg-stone-50 dark:bg-stone-800/40', text: 'text-stone-600 dark:text-stone-400', border: 'border-stone-200 dark:border-stone-700' }
+const STATUS_LABELS: Record<PortionMemorizationStatus, { label: string; bg: string; text: string; border: string; dot: string }> = {
+  stable: { label: 'راسخ ومتقن', bg: 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40', text: 'text-[#1C4E46] dark:text-[#6EE7B7]', border: 'border-[#1C4E46]/25 dark:border-[#1E4A47]', dot: 'bg-[#1C4E46] dark:bg-[#6EE7B7]' },
+  recently_memorized: { label: 'محفوظ حديثاً', bg: 'bg-sky-50 dark:bg-sky-950/40', text: 'text-sky-800 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800/60', dot: 'bg-sky-600 dark:bg-sky-400' },
+  needs_revision: { label: 'يحتاج مراجعة', bg: 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15', text: 'text-[#9A7415] dark:text-[#E0A96D]', border: 'border-[#C59B27]/35 dark:border-[#E0A96D]/35', dot: 'bg-[#C59B27] dark:bg-[#E0A96D]' },
+  weak: { label: 'ضعيف ويتفلت', bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-800 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800/60', dot: 'bg-rose-600 dark:bg-rose-400' },
+  currently_memorizing: { label: 'قيد الحفظ', bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-800/60', dot: 'bg-purple-600 dark:bg-purple-400' },
+  not_memorized: { label: 'غير محفوظ', bg: 'bg-[#F2EDE2]/70 dark:bg-[#162744]/50', text: 'text-[#5B6F6B] dark:text-[#8B9E9B]', border: 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20', dot: 'bg-[#5B6F6B] dark:bg-[#8B9E9B]' }
 };
+
+const PORTION_STATUS_OPTIONS: Array<{ value: PortionMemorizationStatus; label: string; hint: string }> = [
+  { value: 'recently_memorized', label: 'محفوظ حديثاً', hint: 'مراجعة قريبة' },
+  { value: 'stable', label: 'راسخ ومتقن', hint: 'مراجعة متباعدة' },
+  { value: 'needs_revision', label: 'يحتاج مراجعة', hint: 'تثبيت قريب' },
+  { value: 'weak', label: 'ضعيف ويتفلت', hint: 'مراجعة يومية' },
+  { value: 'currently_memorizing', label: 'قيد الحفظ', hint: 'جاري التسميع' }
+];
 
 export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
   profile,
-  onStartSession
+  onStartSession,
+  onOpenAdvisor
 }) => {
+  const {
+    preferences: displayPreferences,
+    updatePreferences: updateDisplayPreferences,
+    resetPreferences: resetDisplayPreferences,
+  } = useReadingDisplayPreferences('revision');
   const [activeTab, setActiveTab] = useState<RevisionTab>('daily_queue');
   const [portions, setPortions] = useState<PortionStatusRecord[]>(() => RetentionService.getPortions());
   const [weakVerses, setWeakVerses] = useState<WeakVerseItem[]>(() => {
@@ -638,17 +658,39 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
     (v.notes && v.notes.includes(weakSearchQuery))
   );
 
+  const revisionSpacingGapClass =
+    displayPreferences.spacing === 'compact'
+      ? 'gap-3'
+      : displayPreferences.spacing === 'relaxed'
+      ? 'gap-6'
+      : 'gap-4';
+  const revisionCardPaddingClass =
+    displayPreferences.spacing === 'compact'
+      ? 'p-4'
+      : displayPreferences.spacing === 'relaxed'
+      ? 'p-6 md:p-7'
+      : 'p-5';
+  const weakVerseLineHeight =
+    displayPreferences.spacing === 'compact'
+      ? 2.0
+      : displayPreferences.spacing === 'relaxed'
+      ? 2.75
+      : 2.35;
+  const selectedNewSurahMax = ALL_SURAHS.find(s => s.number === newSurahNum)?.versesCount || 286;
+
   return (
-    <div className="space-y-6">
+    <div
+      className={`space-y-6 ${READING_PAGE_WIDTH_CLASSES[displayPreferences.pageWidth]} mx-auto transition-all`}
+    >
       {/* 1. Header Banner */}
-      <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-4">
+      <div className="wird-card rounded-3xl p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2 font-quran">
-              <Repeat className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+            <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
+              <Repeat className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
               مركز المراجعة ومنظومة قياس جودة الرسوخ
             </h2>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
               خوارزمية التكرار المتباعد التكيفية لمتابعة محفوظك القرآني وتثبيت المتشابهات والمتفلتات
             </p>
           </div>
@@ -656,19 +698,21 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               ref={addWeakVerseTriggerRef}
+              type="button"
               onClick={() => setIsAddWeakVerseModalOpen(true)}
-              className="flex min-h-11 items-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 rounded-xl text-xs font-semibold border border-amber-200 dark:border-amber-800/60 transition-colors"
+              className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#9A7415] dark:text-[#E0A96D] hover:bg-[#C59B27]/20 rounded-xl text-xs font-bold border border-[#C59B27]/35 dark:border-[#E0A96D]/35 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <AlertTriangle className="w-3.5 h-3.5" />
               <span>تسجيل آية ملتبسة</span>
             </button>
 
             <button
               ref={addPortionTriggerRef}
+              type="button"
               onClick={() => setIsAddPortionModalOpen(true)}
-              className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+              className="flex min-h-11 items-center gap-1.5 px-4 py-2 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#255C58] text-white rounded-xl text-xs font-bold transition-all shadow-xs border border-[#C59B27]/30 dark:border-[#E0A96D]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 text-[#E0A96D]" />
               <span>إضافة مقطع متابعة جديد</span>
             </button>
           </div>
@@ -676,52 +720,69 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
         {/* Global Action Feedback Alert */}
         {actionFeedback && (
-          <div role="status" aria-live="polite" className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 animate-fade-in ${
+          <div role="status" aria-live="polite" className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 ${
             actionFeedback.type === 'success' 
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-900 dark:text-emerald-200' 
+              ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border-[#1C4E46]/30 dark:border-[#6EE7B7]/30 text-[#1C4E46] dark:text-[#6EE7B7]' 
               : actionFeedback.type === 'warn'
-              ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-900 dark:text-rose-200'
-              : 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 text-blue-900 dark:text-blue-200'
+              ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'
+              : 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 border-[#C59B27]/35 text-[#9A7415] dark:text-[#E0A96D]'
           }`}>
             <div className="flex items-center gap-2 font-medium">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{actionFeedback.message}</span>
             </div>
-            <button type="button" aria-label="إغلاق التنبيه" onClick={() => setActionFeedback(null)} className="min-h-11 min-w-11 opacity-70 hover:opacity-100">
+            <button type="button" aria-label="إغلاق التنبيه" onClick={() => setActionFeedback(null)} className="min-h-11 min-w-11 flex items-center justify-center opacity-70 hover:opacity-100">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
-        {/* Navigation Tabs (5 Views) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-stone-200 dark:border-stone-700/60 text-xs font-semibold">
+        <ReadingDisplaySettingsMenu
+          viewLabel="مركز المراجعة"
+          preferences={displayPreferences}
+          onUpdate={updateDisplayPreferences}
+          onReset={resetDisplayPreferences}
+          fontLabel="حجم خط الآيات"
+        />
+
+        {/* Navigation Tabs (5 Views) with smooth horizontal scroll */}
+        <HorizontalScrollRail
+          ariaLabel="أقسام مركز المراجعة"
+          activeKey={activeTab}
+          className="border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3"
+          contentClassName="gap-2"
+        >
           <button
+            type="button"
             onClick={() => setActiveTab('daily_queue')}
             aria-pressed={activeTab === 'daily_queue'}
-            className={`flex min-h-11 items-center gap-2 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               activeTab === 'daily_queue'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
             }`}
           >
             <Clock className="w-4 h-4" />
             <span>طابور المراجعة اليومي</span>
-            <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
-              dailyQueue.length > 0 
-                ? 'bg-emerald-700 text-white font-bold' 
-                : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-400'
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
+              activeTab === 'daily_queue'
+                ? 'bg-[#C59B27] text-[#0B132B] font-bold'
+                : dailyQueue.length > 0 
+                ? 'bg-[#1C4E46] text-white font-bold' 
+                : 'bg-white/70 dark:bg-[#0B132B]/70 text-[#5B6F6B] dark:text-[#8B9E9B]'
             }`}>
               {dailyQueue.length}
             </span>
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('weekly_overview')}
             aria-pressed={activeTab === 'weekly_overview'}
-            className={`flex min-h-11 items-center gap-2 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               activeTab === 'weekly_overview'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -729,125 +790,142 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('weak_verses')}
             aria-pressed={activeTab === 'weak_verses'}
-            className={`flex min-h-11 items-center gap-2 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               activeTab === 'weak_verses'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
             }`}
           >
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <AlertTriangle className={`w-4 h-4 ${activeTab === 'weak_verses' ? 'text-[#E0A96D]' : 'text-[#C59B27] dark:text-[#E0A96D]'}`} />
             <span>الآيات الملتبسة والصعبة</span>
-            <span className="px-1.5 py-0.2 rounded-md text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-mono">
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
+              activeTab === 'weak_verses'
+                ? 'bg-[#C59B27] text-[#0B132B]'
+                : 'bg-[#C59B27]/20 dark:bg-[#E0A96D]/20 text-[#9A7415] dark:text-[#E0A96D]'
+            }`}>
               {weakVerses.length}
             </span>
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('history')}
             aria-pressed={activeTab === 'history'}
-            className={`flex min-h-11 items-center gap-2 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               activeTab === 'history'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
             }`}
           >
             <History className="w-4 h-4" />
             <span>سجل المراجعات السابقة</span>
-            <span className="px-1.5 py-0.2 rounded-md text-[10px] bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-400 font-mono">
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
+              activeTab === 'history'
+                ? 'bg-[#C59B27] text-[#0B132B]'
+                : 'bg-white/70 dark:bg-[#0B132B]/70 text-[#5B6F6B] dark:text-[#8B9E9B]'
+            }`}>
               {revisionHistory.length}
             </span>
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('retention_dashboard')}
             aria-pressed={activeTab === 'retention_dashboard'}
-            className={`flex min-h-11 items-center gap-2 px-3.5 py-2 rounded-t-xl transition-colors border-b-2 whitespace-nowrap ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
               activeTab === 'retention_dashboard'
-                ? 'border-emerald-700 text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold'
-                : 'border-transparent text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
             }`}
           >
             <TrendingUp className="w-4 h-4" />
             <span>لوحة قياس جودة الرسوخ</span>
-            <span className="px-1.5 py-0.2 rounded-md text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-mono">
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
+              activeTab === 'retention_dashboard'
+                ? 'bg-[#C59B27] text-[#0B132B]'
+                : 'bg-[#1C4E46]/15 dark:bg-[#1E4A47]/60 text-[#1C4E46] dark:text-[#E0A96D]'
+            }`}>
               %{metrics.retentionScorePercentage}
             </span>
           </button>
-        </div>
+        </HorizontalScrollRail>
       </div>
 
+      <div className="space-y-6" style={{ zoom: displayPreferences.uiScale / 100 }}>
       {/* VIEW 1: DAILY REVISION QUEUE */}
       {activeTab === 'daily_queue' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-stone-500">
+          <div className="flex items-center justify-between text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
             <span>المقاطع المستحقة للمراجعة اليوم (مرتبة حسب الأولوية والحاجة للتثبيت):</span>
-            <span>إجمالي المقاطع المستحقة: <strong className="text-stone-800 dark:text-stone-200">{dailyQueue.length}</strong></span>
+            <span className="tabular-nums">إجمالي المقاطع المستحقة: <strong className="text-[#142421] dark:text-[#F5F1E8]">{dailyQueue.length}</strong></span>
           </div>
 
           {dailyQueue.length === 0 ? (
-            <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-8 border border-stone-200 dark:border-stone-700/70 text-center space-y-3">
-              <Award className="w-12 h-12 text-emerald-700 dark:text-emerald-400 mx-auto" />
-              <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+            <div className="wird-card rounded-2xl p-8 text-center space-y-3">
+              <Award className="w-12 h-12 text-[#1C4E46] dark:text-[#E0A96D] mx-auto" />
+              <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]">
                 أحسنت! أتممت جميع مراجعات اليوم بنجاح
               </h3>
-              <p className="text-xs text-stone-500 max-w-md mx-auto">
+              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] max-w-md mx-auto">
                 لا توجد مقاطع قرآنية مستحقة للمراجعة اليوم. تم حفظ جميع الفواصل الزمنية وفق جدول التكرار المتباعد.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${revisionSpacingGapClass}`}>
               {dailyQueue.map((item) => {
                 const statusStyle = STATUS_LABELS[item.status];
                 const versesCount = (item.endAyah - item.startAyah + 1) || 1;
                 return (
                   <div 
                     key={item.id}
-                    className={`bg-white dark:bg-stone-800/90 rounded-2xl p-5 border shadow-xs space-y-4 transition-all ${
+                    className={`wird-card rounded-2xl ${revisionCardPaddingClass} space-y-4 transition-all ${
                       item.status === 'weak' 
-                        ? 'border-rose-300 dark:border-rose-800/80 bg-rose-50/20' 
-                        : 'border-stone-200 dark:border-stone-700/70'
+                        ? 'border-rose-300 dark:border-rose-800/80' 
+                        : ''
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 font-quran">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
                             سورة {item.surahName}
                           </h3>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                          <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md font-bold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
                             {statusStyle.label}
                           </span>
                         </div>
-                        <div className="text-xs text-stone-500 mt-1">
+                        <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1 tabular-nums">
                           الآيات: {item.startAyah} إلى {item.endAyah} ({versesCount} آيات)
                           {item.pageNumber && ` • صفحة ${item.pageNumber}`}
                         </div>
                       </div>
 
-                      <div className="text-left font-mono text-[11px] text-stone-400">
+                      <div className="text-left font-mono tabular-nums text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                         التكرار: {item.repetitionCount}x
                       </div>
                     </div>
 
                     {/* Stats strip */}
-                    <div className="grid grid-cols-3 gap-2 bg-[#faf8f5] dark:bg-stone-900/60 p-2.5 rounded-xl border border-stone-200/60 dark:border-stone-700/50 text-[11px]">
+                    <div className="grid grid-cols-3 gap-2 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-2.5 rounded-xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px]">
                       <div>
-                        <div className="text-stone-400 text-[10px]">الفاصل الحالي</div>
-                        <div className="font-semibold text-stone-700 dark:text-stone-300 font-mono">
+                        <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px]">الفاصل الحالي</div>
+                        <div className="font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
                           {item.intervalDays} {item.intervalDays === 1 ? 'يوم' : 'أيام'}
                         </div>
                       </div>
                       <div>
-                        <div className="text-stone-400 text-[10px]">عامل السهولة (EF)</div>
-                        <div className="font-semibold text-stone-700 dark:text-stone-300 font-mono">
+                        <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px]">عامل السهولة (EF)</div>
+                        <div className="font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
                           {item.easeFactor.toFixed(1)}
                         </div>
                       </div>
                       <div>
-                        <div className="text-stone-400 text-[10px]">الأخطاء السابقة</div>
-                        <div className={`font-semibold font-mono ${(item.mistakesCount || 0) > 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                        <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px]">الأخطاء السابقة</div>
+                        <div className={`font-bold font-mono tabular-nums ${(item.mistakesCount || 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-[#1C4E46] dark:text-[#6EE7B7]'}`}>
                           {item.mistakesCount || 0}
                         </div>
                       </div>
@@ -855,35 +933,38 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
                     {/* Action buttons */}
                     <div className="space-y-2 pt-1">
-                      <div className="text-[11px] font-semibold text-stone-600 dark:text-stone-300">
+                      <div className="text-[11px] font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
                         تقييم رسوخ المقطع بعد التسميع:
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
                         <button
+                          type="button"
                           disabled={isSavingRating}
                           onClick={() => handleRatePortion('successful', item)}
-                          className="min-h-11 py-2 px-1 text-center bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold border border-emerald-200 dark:border-emerald-800/60 transition-all flex flex-col items-center gap-1"
+                          className="min-h-11 py-2 px-1 text-center bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 hover:bg-[#1C4E46]/20 text-[#1C4E46] dark:text-[#6EE7B7] rounded-xl text-xs font-bold border border-[#1C4E46]/25 dark:border-[#6EE7B7]/30 transition-all flex flex-col items-center justify-center gap-1"
                         >
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <Check className="w-3.5 h-3.5" />
                           <span>ناجحة (متقن)</span>
                         </button>
 
                         <button
+                          type="button"
                           disabled={isSavingRating}
                           onClick={() => handleRatePortion('difficult', item)}
-                          className="min-h-11 py-2 px-1 text-center bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-800/60 transition-all flex flex-col items-center gap-1"
+                          className="min-h-11 py-2 px-1 text-center bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 hover:bg-[#C59B27]/22 text-[#9A7415] dark:text-[#E0A96D] rounded-xl text-xs font-bold border border-[#C59B27]/35 dark:border-[#E0A96D]/35 transition-all flex flex-col items-center justify-center gap-1"
                         >
-                          <Clock className="w-3.5 h-3.5 text-amber-600" />
+                          <Clock className="w-3.5 h-3.5" />
                           <span>صعبة (بتردد)</span>
                         </button>
 
                         <button
+                          type="button"
                           disabled={isSavingRating}
                           onClick={(event) => { ratingTriggerRef.current = event.currentTarget; setRatingPortion(item); setReviewNotes(''); setWeakAyahNum(''); }}
-                          className="min-h-11 py-2 px-1 text-center bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-800 dark:text-rose-300 rounded-xl text-xs font-bold border border-rose-200 dark:border-rose-800/60 transition-all flex flex-col items-center gap-1"
+                          className="min-h-11 py-2 px-1 text-center bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-800 dark:text-rose-300 rounded-xl text-xs font-bold border border-rose-200 dark:border-rose-800/60 transition-all flex flex-col items-center justify-center gap-1"
                         >
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                           <span>غير متقنة (يتفلت)</span>
                         </button>
                       </div>
@@ -891,10 +972,11 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                       {/* Launch Interactive Recitation / Session button */}
                       {onStartSession && (
                         <button
+                          type="button"
                           onClick={() => onStartSession(item.surahNumber, item.startAyah, item.endAyah, 'review')}
-                          className="w-full mt-2 min-h-11 py-1.5 px-3 bg-[#faf8f5] dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-[11px] font-semibold border border-stone-200 dark:border-stone-700 transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full mt-2 min-h-11 py-2 px-3 bg-[#F2EDE2]/75 dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white dark:hover:bg-[#1E4A47] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-[11px] font-bold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <Play className="w-3 h-3 text-emerald-700" />
+                          <Play className="w-3 h-3" />
                           <span>فتح المقطع في جلسة التسميع التفاعلية</span>
                         </button>
                       )}
@@ -910,39 +992,39 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {/* VIEW 2: WEEKLY REVISION OVERVIEW */}
       {activeTab === 'weekly_overview' && (
         <div className="space-y-4">
-          <div className="text-xs text-stone-500">
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
             توزيع المقاطع المجدولة للأيام السبعة القادمة حسب خوارزمية التكرار المتباعد:
           </div>
 
           <div role="region" aria-label="جدول المراجعات الأسبوعي" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
-            {weeklyOverview.map((day, idx) => (
+            {weeklyOverview.map((day) => (
               <div 
                 key={day.date}
-                className={`bg-white dark:bg-stone-800/90 rounded-2xl p-4 border flex flex-col justify-between min-h-[220px] transition-all ${
+                className={`wird-card rounded-2xl p-4 flex flex-col justify-between min-h-[220px] transition-all ${
                   day.isToday 
-                    ? 'border-emerald-700 dark:border-emerald-500 ring-2 ring-emerald-600/20 shadow-xs' 
-                    : 'border-stone-200 dark:border-stone-700/70'
+                    ? 'border-[#C59B27] dark:border-[#E0A96D] ring-2 ring-[#C59B27]/20 dark:ring-[#E0A96D]/20 shadow-sm' 
+                    : ''
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-xs text-stone-900 dark:text-stone-100">
+                    <span className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">
                       {day.dayName}
                     </span>
                     {day.isToday && (
-                      <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded-md font-bold">
+                      <span className="text-[10px] bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] px-1.5 py-0.5 rounded-md font-bold">
                         اليوم
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-stone-400 font-mono mb-3">
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums mb-3">
                     {day.date}
                   </div>
 
                   {/* Scheduled Items list */}
                   <div className="space-y-2">
                     {day.portions.length === 0 ? (
-                      <div className="text-[11px] text-stone-400 italic py-4 text-center">
+                      <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] italic py-4 text-center">
                         لا توجد مراجعات مجدولة
                       </div>
                     ) : (
@@ -951,16 +1033,16 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                         return (
                           <div 
                             key={p.id}
-                            className="p-2 rounded-xl bg-[#faf8f5] dark:bg-stone-900/80 border border-stone-200/60 dark:border-stone-700/50 text-[11px] space-y-1"
+                            className="p-2 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px] space-y-1"
                           >
-                            <div className="font-bold text-stone-800 dark:text-stone-200 font-quran truncate">
+                            <div className="font-bold text-[#142421] dark:text-[#F5F1E8] font-quran truncate">
                               {p.surahName} ({p.startAyah}-{p.endAyah})
                             </div>
                             <div className="flex items-center justify-between text-[10px]">
                               <span className={statusBadge.text}>
                                 {p.status === 'weak' ? 'ضعيف' : p.status === 'needs_revision' ? 'يحتاج ضبط' : 'مراجعة دورية'}
                               </span>
-                              <span className="text-stone-400 font-mono">{p.intervalDays}d</span>
+                              <span className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">{p.intervalDays}d</span>
                             </div>
                           </div>
                         );
@@ -969,9 +1051,9 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-stone-100 dark:border-stone-700/60 mt-3 text-[11px] text-stone-500 flex justify-between items-center">
+                <div className="pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 mt-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] flex justify-between items-center">
                   <span>المجموع:</span>
-                  <span className="font-bold font-mono text-stone-900 dark:text-stone-100">
+                  <span className="font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8]">
                     {day.portions.length}
                   </span>
                 </div>
@@ -986,84 +1068,104 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute right-3 top-3 text-stone-400" />
+              <Search className="w-4 h-4 absolute right-3 top-3.5 text-[#5B6F6B] dark:text-[#8B9E9B]" />
               <input
                 type="text"
                 aria-label="البحث في الآيات الملتبسة"
                 placeholder="ابحث في الآيات الملتبسة أو السور..."
                 value={weakSearchQuery}
                 onChange={e => setWeakSearchQuery(e.target.value)}
-                className="w-full pr-9 pl-4 py-2 bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-xs focus:ring-1 focus:ring-emerald-700 focus:outline-none"
+                className="w-full min-h-11 pr-9 pl-4 py-2 bg-white dark:bg-[#111F36] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-xs text-[#142421] dark:text-[#F5F1E8] focus:ring-2 focus:ring-[#C59B27] focus:outline-none"
               />
             </div>
 
-            <div className="text-xs text-stone-500">
-              إجمالي الآيات المرصودة: <strong className="text-stone-800 dark:text-stone-200">{filteredWeakVerses.length}</strong>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                إجمالي الآيات المرصودة: <strong className="text-[#142421] dark:text-[#F5F1E8]">{filteredWeakVerses.length}</strong>
+              </div>
+              {onOpenAdvisor && (
+                <button
+                  type="button"
+                  onClick={onOpenAdvisor}
+                  className="min-h-11 px-3.5 py-2 rounded-xl bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white text-[#1C4E46] dark:text-[#E0A96D] border border-[#C59B27]/35 dark:border-[#E0A96D]/35 text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>حلّل مواضع التفلت مع المستشار</span>
+                </button>
+              )}
             </div>
           </div>
 
           {filteredWeakVerses.length === 0 ? (
-            <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-8 border border-stone-200 dark:border-stone-700/70 text-center space-y-3">
-              <BookmarkCheck className="w-12 h-12 text-emerald-700 mx-auto" />
-              <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+            <div className="wird-card rounded-2xl p-8 text-center space-y-3">
+              <BookmarkCheck className="w-12 h-12 text-[#1C4E46] dark:text-[#E0A96D] mx-auto" />
+              <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]">
                 سجل الآيات الملتبسة نظيف ومثبت
               </h3>
-              <p className="text-xs text-stone-500 max-w-md mx-auto">
+              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] max-w-md mx-auto">
                 لم يتم تسجيل أي آيات متعثرة حالياً. يمكنك تسجيل أي آية تلتبس عليك أثناء القراءة أو التسميع لمراجعتها دورياً.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${revisionSpacingGapClass}`}>
               {filteredWeakVerses.map(item => (
                 <div 
                   key={item.id}
-                  className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-rose-200 dark:border-rose-900/60 shadow-xs space-y-3 relative overflow-hidden"
+                  className={`wird-card rounded-2xl ${revisionCardPaddingClass} border-rose-200/80 dark:border-rose-900/60 space-y-3 relative overflow-hidden`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-stone-900 dark:text-stone-100 font-quran">
+                        <span className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
                           سورة {item.surahName}
                         </span>
-                        <span className="text-[11px] font-mono text-stone-500">
+                        <span className="text-[11px] font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
                           الآية {item.ayahNumber}
                         </span>
                       </div>
-                      <div className="text-[10px] text-stone-400 mt-0.5">
+                      <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5 tabular-nums">
                         آخر تعثر: {item.lastFailedDate}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-[11px] font-bold font-mono">
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-[11px] font-bold font-mono tabular-nums">
                       <span>تكرار الخطأ:</span>
                       <span>{item.mistakeCount}x</span>
                     </div>
                   </div>
 
                   {/* Ayah Text in Uthmani Quranic Font */}
-                  <div className="p-3 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200/70 dark:border-stone-700/60 text-sm font-quran leading-loose text-stone-900 dark:text-stone-100">
+                  <div
+                    className="p-3 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 font-quran text-[#142421] dark:text-[#F5F1E8]"
+                    style={{
+                      fontSize: `${Math.max(16, displayPreferences.fontSize - 4)}px`,
+                      lineHeight: weakVerseLineHeight,
+                    }}
+                  >
                     «<QuranText surahNumber={item.surahNumber} ayahNumber={item.ayahNumber}>{item.text}</QuranText>»
                   </div>
 
                   {item.notes && (
-                    <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-900/40">
+                    <div className="text-xs text-[#9A7415] dark:text-[#E0A96D] bg-[#C59B27]/10 dark:bg-[#E0A96D]/12 p-2.5 rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/25">
                       <strong>ملاحظة التثبيت: </strong>{item.notes}
                     </div>
                   )}
 
                   <div className="pt-2 flex items-center justify-between gap-2">
                     <button
+                      type="button"
                       onClick={() => handleResolveWeakVerse(item.id, `آية ${item.ayahNumber} من سورة ${item.surahName}`)}
-                      className="flex-1 py-1.5 px-3 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold border border-emerald-200 dark:border-emerald-800/60 transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 min-h-11 py-2 px-3 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 hover:bg-[#1C4E46]/20 text-[#1C4E46] dark:text-[#6EE7B7] rounded-xl text-xs font-bold border border-[#1C4E46]/25 dark:border-[#6EE7B7]/30 transition-colors flex items-center justify-center gap-1.5"
                     >
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <Check className="w-3.5 h-3.5" />
                       <span>إزالة من قائمة الالتباس</span>
                     </button>
 
                     {onStartSession && (
                       <button
+                        type="button"
                         onClick={() => onStartSession(item.surahNumber, item.ayahNumber, item.ayahNumber, 'review')}
-                        className="py-1.5 px-3 bg-[#faf8f5] dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 transition-colors"
+                        className="min-h-11 py-2 px-3 bg-[#F2EDE2]/80 dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 transition-colors"
                       >
                         تكرار وسماع
                       </button>
@@ -1078,26 +1180,26 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
       {/* VIEW 4: REVISION HISTORY */}
       {activeTab === 'history' && (
-        <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-4">
+        <div className="wird-card rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-              <History className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
+              <History className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
               <span>سجل التدقيق الزمني لعمليات المراجعة والتسميع السابقة</span>
             </h3>
-            <span className="text-xs text-stone-500 font-mono">
+            <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
               إجمالي السجلات: {revisionHistory.length}
             </span>
           </div>
 
           {revisionHistory.length === 0 ? (
-            <div className="text-center py-10 text-xs text-stone-400">
+            <div className="text-center py-10 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
               لم يتم تسجيل أي مراجعات سابقة بعد. ابدأ مراجعتك الأولى من طابور المراجعة اليومي.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
                 <thead>
-                  <tr className="border-b border-stone-200 dark:border-stone-700 text-stone-400 pb-2">
+                  <tr className="border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/18 text-[#5B6F6B] dark:text-[#8B9E9B] pb-2">
                     <th className="py-2 px-3 font-semibold">التاريخ</th>
                     <th className="py-2 px-3 font-semibold">المقطع القرآني</th>
                     <th className="py-2 px-3 font-semibold">التقييم المسجل</th>
@@ -1105,28 +1207,28 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                     <th className="py-2 px-3 font-semibold">ملاحظات التثبيت</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100 dark:divide-stone-700/60">
+                <tbody className="divide-y divide-[#1C4E46]/8 dark:divide-[#E0A96D]/10">
                   {revisionHistory.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-stone-50 dark:hover:bg-stone-700/20">
-                      <td className="py-3 px-3 font-mono text-stone-500">{entry.date}</td>
-                      <td className="py-3 px-3 font-bold font-quran text-stone-900 dark:text-stone-100">
+                    <tr key={entry.id} className="hover:bg-[#F2EDE2]/50 dark:hover:bg-[#162744]/50">
+                      <td className="py-3 px-3 font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">{entry.date}</td>
+                      <td className="py-3 px-3 font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
                         سورة {entry.surahName} ({entry.startAyah}-{entry.endAyah})
                       </td>
                       <td className="py-3 px-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
                           entry.rating === 'successful' 
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-[#1C4E46]/12 text-[#1C4E46] dark:bg-[#1E4A47]/50 dark:text-[#6EE7B7]'
                             : entry.rating === 'difficult'
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                            ? 'bg-[#C59B27]/15 text-[#9A7415] dark:bg-[#E0A96D]/20 dark:text-[#E0A96D]'
                             : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                         }`}>
                           {entry.rating === 'successful' ? 'ناجحة (متقن)' : entry.rating === 'difficult' ? 'صعبة (بتردد)' : 'غير متقنة (يتفلت)'}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-mono text-stone-600 dark:text-stone-400">
+                      <td className="py-3 px-3 font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
                         {entry.intervalDaysBefore}d ➔ {entry.intervalDaysAfter}d
                       </td>
-                      <td className="py-3 px-3 text-stone-500">
+                      <td className="py-3 px-3 text-[#5B6F6B] dark:text-[#8B9E9B]">
                         {entry.notes || '—'}
                       </td>
                     </tr>
@@ -1143,116 +1245,116 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
         <div className="space-y-6">
           {/* Key Metric Gauges */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-              <div className="text-xs text-stone-500">مؤشر جودة الرسوخ التراكمي</div>
-              <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400 font-mono">
+            <div className="wird-card rounded-2xl p-5 space-y-1">
+              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">مؤشر جودة الرسوخ التراكمي</div>
+              <div className="text-3xl font-bold text-[#1C4E46] dark:text-[#6EE7B7] font-mono tabular-nums">
                 %{metrics.retentionScorePercentage}
               </div>
-              <div className="text-[11px] text-stone-400">
+              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                 مقياس علمي مبني على استقرار الفواصل
               </div>
             </div>
 
-            <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-              <div className="text-xs text-stone-500">المقاطع المتتبعة</div>
-              <div className="text-3xl font-bold text-stone-900 dark:text-stone-100 font-mono">
+            <div className="wird-card rounded-2xl p-5 space-y-1">
+              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">المقاطع المتتبعة</div>
+              <div className="text-3xl font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
                 {metrics.totalTrackedPortions}
               </div>
-              <div className="text-[11px] text-stone-400">
+              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
                 تشمل {metrics.totalMemorizedAyahs} آية محفوظة
               </div>
             </div>
 
-            <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-              <div className="text-xs text-stone-500">متوسط عامل السهولة (EF)</div>
-              <div className="text-3xl font-bold text-stone-900 dark:text-stone-100 font-mono">
+            <div className="wird-card rounded-2xl p-5 space-y-1">
+              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">متوسط عامل السهولة (EF)</div>
+              <div className="text-3xl font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
                 {metrics.averageEaseFactor}
               </div>
-              <div className="text-[11px] text-stone-400">
+              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
                 المعدل الطبيعي: 2.2 - 2.8
               </div>
             </div>
 
-            <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-5 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-1">
-              <div className="text-xs text-stone-500">الآيات المتعثرة حالياً</div>
-              <div className="text-3xl font-bold text-amber-700 dark:text-amber-400 font-mono">
+            <div className="wird-card rounded-2xl p-5 space-y-1">
+              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الآيات المتعثرة حالياً</div>
+              <div className="text-3xl font-bold text-[#C59B27] dark:text-[#E0A96D] font-mono tabular-nums">
                 {metrics.weakVersesCount}
               </div>
-              <div className="text-[11px] text-stone-400">
+              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                 تحتاج تركيزاً في الأيام القادمة
               </div>
             </div>
           </div>
 
           {/* Breakdown by 6 Exact Statuses */}
-          <div className="bg-white dark:bg-stone-800/90 rounded-2xl p-6 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-5">
+          <div className="wird-card rounded-2xl p-6 space-y-5">
             <div>
-              <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-emerald-700" />
+              <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
                 <span>توزيع المحفوظ القرآني حسب الحالات الست الدقيقة</span>
               </h3>
-              <p className="text-xs text-stone-500 mt-1">
+              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
                 تصنيف إحصائي شامل لجميع مقاطع وسور القرآن المتتبعة
               </p>
             </div>
 
             {/* Visual Multi-Segment Bar */}
             <div className="space-y-2">
-              <div className="w-full h-4 bg-stone-100 dark:bg-stone-700 rounded-full overflow-hidden flex">
-                <div style={{ width: `${metrics.statusPercentages.stable}%` }} className="bg-emerald-600" title={`راسخ: ${metrics.statusPercentages.stable}%`} />
+              <div className="w-full h-4 bg-[#F2EDE2] dark:bg-[#0B132B] rounded-full overflow-hidden flex">
+                <div style={{ width: `${metrics.statusPercentages.stable}%` }} className="bg-[#1C4E46]" title={`راسخ: ${metrics.statusPercentages.stable}%`} />
                 <div style={{ width: `${metrics.statusPercentages.recently_memorized}%` }} className="bg-sky-500" title={`محفوظ حديثاً: ${metrics.statusPercentages.recently_memorized}%`} />
-                <div style={{ width: `${metrics.statusPercentages.needs_revision}%` }} className="bg-amber-500" title={`يحتاج مراجعة: ${metrics.statusPercentages.needs_revision}%`} />
+                <div style={{ width: `${metrics.statusPercentages.needs_revision}%` }} className="bg-[#C59B27]" title={`يحتاج مراجعة: ${metrics.statusPercentages.needs_revision}%`} />
                 <div style={{ width: `${metrics.statusPercentages.weak}%` }} className="bg-rose-500" title={`ضعيف: ${metrics.statusPercentages.weak}%`} />
                 <div style={{ width: `${metrics.statusPercentages.currently_memorizing}%` }} className="bg-purple-500" title={`قيد الحفظ: ${metrics.statusPercentages.currently_memorizing}%`} />
               </div>
 
               {/* Legend & Count Cards */}
               <div className="grid grid-cols-2 md:grid-cols-6 gap-3 pt-2 text-xs">
-                <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
-                  <div className="font-bold text-emerald-900 dark:text-emerald-300">راسخ ومتقن</div>
-                  <div className="text-lg font-bold font-mono mt-1 text-emerald-800">{metrics.statusBreakdown.stable}</div>
-                  <div className="text-[10px] text-stone-400 font-mono">%{metrics.statusPercentages.stable}</div>
+                <div className="p-3 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 rounded-xl border border-[#1C4E46]/25 dark:border-[#1E4A47]">
+                  <div className="font-bold text-[#1C4E46] dark:text-[#6EE7B7]">راسخ ومتقن</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[#142421] dark:text-[#F5F1E8]">{metrics.statusBreakdown.stable}</div>
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.stable}</div>
                 </div>
 
                 <div className="p-3 bg-sky-50/70 dark:bg-sky-950/30 rounded-xl border border-sky-200 dark:border-sky-800/40">
                   <div className="font-bold text-sky-900 dark:text-sky-300">محفوظ حديثاً</div>
-                  <div className="text-lg font-bold font-mono mt-1 text-sky-800">{metrics.statusBreakdown.recently_memorized}</div>
-                  <div className="text-[10px] text-stone-400 font-mono">%{metrics.statusPercentages.recently_memorized}</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-sky-800 dark:text-sky-200">{metrics.statusBreakdown.recently_memorized}</div>
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.recently_memorized}</div>
                 </div>
 
-                <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40">
-                  <div className="font-bold text-amber-900 dark:text-amber-300">يحتاج مراجعة</div>
-                  <div className="text-lg font-bold font-mono mt-1 text-amber-800">{metrics.statusBreakdown.needs_revision}</div>
-                  <div className="text-[10px] text-stone-400 font-mono">%{metrics.statusPercentages.needs_revision}</div>
+                <div className="p-3 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
+                  <div className="font-bold text-[#9A7415] dark:text-[#E0A96D]">يحتاج مراجعة</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[#142421] dark:text-[#F5F1E8]">{metrics.statusBreakdown.needs_revision}</div>
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.needs_revision}</div>
                 </div>
 
                 <div className="p-3 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-800/40">
                   <div className="font-bold text-rose-900 dark:text-rose-300">ضعيف ويتفلت</div>
-                  <div className="text-lg font-bold font-mono mt-1 text-rose-800">{metrics.statusBreakdown.weak}</div>
-                  <div className="text-[10px] text-stone-400 font-mono">%{metrics.statusPercentages.weak}</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-rose-800 dark:text-rose-200">{metrics.statusBreakdown.weak}</div>
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.weak}</div>
                 </div>
 
                 <div className="p-3 bg-purple-50/70 dark:bg-purple-950/30 rounded-xl border border-purple-200 dark:border-purple-800/40">
                   <div className="font-bold text-purple-900 dark:text-purple-300">قيد الحفظ</div>
-                  <div className="text-lg font-bold font-mono mt-1 text-purple-800">{metrics.statusBreakdown.currently_memorizing}</div>
-                  <div className="text-[10px] text-stone-400 font-mono">%{metrics.statusPercentages.currently_memorizing}</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-purple-800 dark:text-purple-200">{metrics.statusBreakdown.currently_memorizing}</div>
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.currently_memorizing}</div>
                 </div>
 
-                <div className="p-3 bg-stone-50/70 dark:bg-stone-800/50 rounded-xl border border-stone-200 dark:border-stone-700">
-                  <div className="font-bold text-stone-700 dark:text-stone-300">غير محفوظ</div>
-                  <div className="text-lg font-bold font-mono mt-1 text-stone-700">{metrics.statusBreakdown.not_memorized}</div>
-                  <div className="text-[10px] text-stone-400">باقي المصحف</div>
+                <div className="p-3 bg-[#F2EDE2]/70 dark:bg-[#162744]/60 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/15">
+                  <div className="font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">غير محفوظ</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[#142421] dark:text-[#F5F1E8]">{metrics.statusBreakdown.not_memorized}</div>
+                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B]">باقي المصحف</div>
                 </div>
               </div>
             </div>
 
             {/* Smart Pedagogical Guidance */}
-            <div className="p-4 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200/80 dark:border-stone-700 space-y-2 text-xs">
-              <div className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-700" />
+            <div className="p-4 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/25 space-y-2 text-xs">
+              <div className="font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
                 <span>توصية منهجية لمسارك الحالي:</span>
               </div>
-              <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-[11px]">
+              <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed text-[11px]">
                 {metrics.statusBreakdown.weak > 0 
                   ? `لديك ${metrics.statusBreakdown.weak} مقطع بحاجة إلى رعاية عاجلة وتكرار يومي. نوصيك بتقديم مراجعة المقاطع الضعيفة قبل البدء بأي حفظ جديد، تماشياً مع قاعدة الإمام الشاطبي: «والتثبيت مقدم على الاستكثار».`
                   : 'نسبة الرسوخ لديك ممتازة ومستقرة! يمكنك مواصلة إدراج سور جديدة وفق خطتك مع الالتزام بالورد اليومي للتكرار المتباعد.'}
@@ -1261,27 +1363,28 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
           </div>
         </div>
       )}
+      </div>
 
       {/* MODAL: RATE FAILED REVISION DETAILS */}
       {ratingPortion && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={ratingDialogRef} role="dialog" aria-modal="true" aria-labelledby="revision-rating-dialog-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white dark:bg-stone-800 rounded-2xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-xl space-y-4">
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div ref={ratingDialogRef} role="dialog" aria-modal="true" aria-labelledby="revision-rating-dialog-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 id="revision-rating-dialog-title" className="text-base font-bold text-stone-900 dark:text-stone-100 font-quran">
+              <h3 id="revision-rating-dialog-title" className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
                 تسجيل تعثر في سورة {ratingPortion.surahName}
               </h3>
-              <button ref={ratingCloseRef} type="button" aria-label="إغلاق نافذة تسجيل التعثر" disabled={isSavingRating} onClick={() => { setRatingPortion(null); setReviewNotes(''); setWeakAyahNum(''); }} className="min-h-11 min-w-11 flex items-center justify-center text-stone-400 hover:text-stone-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+              <button ref={ratingCloseRef} type="button" aria-label="إغلاق نافذة تسجيل التعثر" disabled={isSavingRating} onClick={() => { setRatingPortion(null); setReviewNotes(''); setWeakAyahNum(''); }} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
               سيتم إعادة ضبط فاصل المراجعة إلى يوم واحد للمراجعة غداً. هل ترغب في تحديد رقم الآية التي حدث فيها اللبس لحفظها في قائمة المتشابهات والمتعثرات؟
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
+                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
                   رقم الآية الملتبسة (اختياري، بين {ratingPortion.startAyah} و {ratingPortion.endAyah}):
                 </label>
                 <input
@@ -1291,12 +1394,12 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   value={weakAyahNum}
                   onChange={e => setWeakAyahNum(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="مثال: 8"
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27] font-mono tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
+                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
                   ملاحظة سبب الخطأ أو الكلمة المشكلة:
                 </label>
                 <input
@@ -1304,7 +1407,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   value={reviewNotes}
                   onChange={e => setReviewNotes(e.target.value)}
                   placeholder="مثال: نسيان رأس الآية، التباس بآية أخرى..."
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
                 />
               </div>
             </div>
@@ -1314,7 +1417,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                 type="button"
                 disabled={isSavingRating}
                 onClick={() => { setRatingPortion(null); setReviewNotes(''); setWeakAyahNum(''); }}
-                className="min-h-11 px-4 py-2 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-700 dark:text-stone-200 rounded-xl text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
               >
                 إلغاء
               </button>
@@ -1333,100 +1436,176 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
       {/* MODAL: ADD NEW PORTION */}
       {isAddPortionModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={addPortionDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-portion-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white dark:bg-stone-800 rounded-2xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-xl space-y-4">
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div ref={addPortionDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-portion-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-lg w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 id="wird-add-portion-title" className="text-base font-bold text-stone-900 dark:text-stone-100 font-quran">
+              <h3 id="wird-add-portion-title" className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
                 إضافة مقطع حفظ ومراجعة جديد
               </h3>
-              <button ref={addPortionCloseRef} type="button" aria-label="إغلاق نافذة إضافة مقطع" onClick={() => setIsAddPortionModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center text-stone-400 hover:text-stone-600">
+              <button ref={addPortionCloseRef} type="button" aria-label="إغلاق نافذة إضافة مقطع" onClick={() => setIsAddPortionModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddNewPortion} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                  اختر السورة:
-                </label>
-                <select
-                  value={newSurahNum}
-                  onChange={e => {
-                    const num = Number(e.target.value);
-                    setNewSurahNum(num);
-                    const s = ALL_SURAHS.find(sur => sur.number === num);
-                    if (s) {
-                      setNewStartAyah(1);
-                      setNewEndAyah(Math.min(15, s.versesCount));
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-quran"
-                >
-                  {ALL_SURAHS.map(s => (
-                    <option key={s.number} value={s.number}>
-                      {s.number}. سورة {s.name} ({s.versesCount} آية)
-                    </option>
-                  ))}
-                </select>
+            <form onSubmit={handleAddNewPortion} className="space-y-4 text-xs">
+              <SurahPickerControl
+                label="اختر السورة:"
+                ariaLabel="اختر السورة لإضافة مقطع"
+                value={newSurahNum}
+                onChange={(num) => {
+                  setNewSurahNum(num);
+                  const s = ALL_SURAHS.find(sur => sur.number === num);
+                  if (s) {
+                    setNewStartAyah(1);
+                    setNewEndAyah(Math.min(15, s.versesCount));
+                  }
+                }}
+              />
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="revision-add-start-ayah" className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                      من الآية:
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        aria-label="إنقاص آية البداية"
+                        onClick={() => {
+                          const next = Math.max(1, newStartAyah - 1);
+                          setNewStartAyah(next);
+                        }}
+                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                      >
+                        -
+                      </button>
+                      <input
+                        id="revision-add-start-ayah"
+                        type="number"
+                        min={1}
+                        max={selectedNewSurahMax}
+                        value={newStartAyah}
+                        onChange={e => {
+                          const parsed = Number(e.target.value);
+                          if (!Number.isFinite(parsed)) return;
+                          const clamped = Math.min(selectedNewSurahMax, Math.max(1, Math.trunc(parsed)));
+                          setNewStartAyah(clamped);
+                          if (newEndAyah < clamped) setNewEndAyah(clamped);
+                        }}
+                        className="w-full min-h-11 px-3 py-2 text-center bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums"
+                        required
+                      />
+                      <button
+                        type="button"
+                        aria-label="زيادة آية البداية"
+                        onClick={() => {
+                          const next = Math.min(selectedNewSurahMax, newStartAyah + 1);
+                          setNewStartAyah(next);
+                          if (newEndAyah < next) setNewEndAyah(next);
+                        }}
+                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="revision-add-end-ayah" className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                      إلى الآية:
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        aria-label="إنقاص آية النهاية"
+                        onClick={() => {
+                          const next = Math.max(newStartAyah, newEndAyah - 1);
+                          setNewEndAyah(next);
+                        }}
+                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                      >
+                        -
+                      </button>
+                      <input
+                        id="revision-add-end-ayah"
+                        type="number"
+                        min={newStartAyah}
+                        max={selectedNewSurahMax}
+                        value={newEndAyah}
+                        onChange={e => {
+                          const parsed = Number(e.target.value);
+                          if (!Number.isFinite(parsed)) return;
+                          const clamped = Math.min(selectedNewSurahMax, Math.max(newStartAyah, Math.trunc(parsed)));
+                          setNewEndAyah(clamped);
+                        }}
+                        className="w-full min-h-11 px-3 py-2 text-center bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums"
+                        required
+                      />
+                      <button
+                        type="button"
+                        aria-label="زيادة آية النهاية"
+                        onClick={() => {
+                          const next = Math.min(selectedNewSurahMax, newEndAyah + 1);
+                          setNewEndAyah(next);
+                        }}
+                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-[#F2EDE2]/70 dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 px-3 py-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums text-center">
+                  النطاق المحدد: من آية {newStartAyah} إلى آية {newEndAyah} ({Math.max(1, newEndAyah - newStartAyah + 1)} آيات)
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                    من الآية:
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={newStartAyah}
-                    onChange={e => setNewStartAyah(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 font-mono"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                    إلى الآية:
-                  </label>
-                  <input
-                    type="number"
-                    min={newStartAyah}
-                    value={newEndAyah}
-                    onChange={e => setNewEndAyah(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 font-mono"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
+              <div className="space-y-1.5">
+                <span className="block text-[#142421] dark:text-[#F5F1E8] font-bold">
                   الحالة المبدئية للمقطع:
-                </label>
-                <select
-                  value={newStatus}
-                  onChange={e => setNewStatus(e.target.value as PortionMemorizationStatus)}
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700"
-                >
-                  <option value="recently_memorized">محفوظ حديثاً (مراجعة قريبة)</option>
-                  <option value="stable">راسخ ومتقن (مراجعة دورية متباعدة)</option>
-                  <option value="needs_revision">يحتاج مراجعة وتثبيت</option>
-                  <option value="weak">ضعيف ويتفلت (مراجعة يومية)</option>
-                  <option value="currently_memorizing">قيد الحفظ الآن</option>
-                </select>
+                </span>
+                <div role="group" aria-label="الحالة المبدئية للمقطع" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PORTION_STATUS_OPTIONS.map(opt => {
+                    const isSelected = newStatus === opt.value;
+                    const cfg = STATUS_LABELS[opt.value];
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() => setNewStatus(opt.value)}
+                        className={`min-h-11 px-3 py-2 rounded-xl border text-right flex items-center justify-between gap-2 transition-all ${
+                          isSelected
+                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                            : 'bg-white dark:bg-[#0B132B]/70 text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 font-bold">
+                          <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-[#E0A96D]' : cfg.dot}`} />
+                          <span>{opt.label}</span>
+                        </span>
+                        <span className={`text-[10px] ${isSelected ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                          {opt.hint}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                 <button
                   type="button"
                   onClick={() => setIsAddPortionModalOpen(false)}
-                  className="px-4 py-2 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-700 dark:text-stone-200 rounded-xl font-semibold"
+                  className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold"
+                  className="min-h-11 px-5 py-2 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#C59B27] dark:hover:bg-[#E0A96D] text-white dark:text-[#0B132B] rounded-xl font-bold shadow-xs"
                 >
                   إضافة المقطع
                 </button>
@@ -1438,58 +1617,34 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
       {/* MODAL: ADD MANUAL WEAK VERSE */}
       {isAddWeakVerseModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={addWeakVerseDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-weak-verse-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white dark:bg-stone-800 rounded-2xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-xl space-y-4">
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div ref={addWeakVerseDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-weak-verse-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-lg w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 id="wird-add-weak-verse-title" className="text-base font-bold text-stone-900 dark:text-stone-100 font-quran">
+              <h3 id="wird-add-weak-verse-title" className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
                 تسجيل آية ملتبسة أو متعثرة يدوياً
               </h3>
-              <button ref={addWeakVerseCloseRef} type="button" aria-label="إغلاق نافذة تسجيل آية ملتبسة" onClick={() => setIsAddWeakVerseModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center text-stone-400 hover:text-stone-600">
+              <button ref={addWeakVerseCloseRef} type="button" aria-label="إغلاق نافذة تسجيل آية ملتبسة" onClick={() => setIsAddWeakVerseModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddManualWeakVerse} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                  اختر السورة:
-                </label>
-                <select
-                  value={weakSurahNum}
-                  onChange={e => {
-                    const num = Number(e.target.value);
-                    setWeakSurahNum(num);
-                    const s = ALL_SURAHS.find(sur => sur.number === num);
-                    if (s) {
-                      setManualWeakAyahNum(1);
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 font-quran"
-                >
-                  {ALL_SURAHS.map(s => (
-                    <option key={s.number} value={s.number}>
-                      {s.number}. سورة {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <form onSubmit={handleAddManualWeakVerse} className="space-y-4 text-xs">
+              <SurahPickerControl
+                label="اختر السورة والآية:"
+                ariaLabel="اختر السورة للآية الملتبسة"
+                value={weakSurahNum}
+                onChange={(num) => {
+                  setWeakSurahNum(num);
+                  setManualWeakAyahNum(1);
+                }}
+                ayahValue={manualWeakAyahNum}
+                onAyahChange={setManualWeakAyahNum}
+                ayahLabel="رقم الآية"
+                maxAyah={ALL_SURAHS.find(s => s.number === weakSurahNum)?.versesCount || 286}
+              />
 
               <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
-                  رقم الآية:
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={manualWeakAyahNum}
-                  onChange={e => setManualWeakAyahNum(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 font-mono"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
+                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
                   نص الآية (اختياري - يتم جلبه تلقائياً إن وُجد):
                 </label>
                 <textarea
@@ -1497,12 +1652,12 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   onChange={e => setManualWeakText(e.target.value)}
                   placeholder="اكتب نص الآية بالرسم القرآني إن أردت..."
                   rows={2}
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 font-quran"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-quran"
                 />
               </div>
 
               <div>
-                <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">
+                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
                   سبب اللبس أو المتشابه المشكل:
                 </label>
                 <input
@@ -1510,22 +1665,22 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   value={manualWeakNotes}
                   onChange={e => setManualWeakNotes(e.target.value)}
                   placeholder="مثال: الخلط مع موضع سورة البقرة، أو تشابه خواتيم الآيات..."
-                  className="w-full px-3 py-2 bg-[#faf8f5] dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700"
+                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                 <button
                   type="button"
                   onClick={() => setIsAddWeakVerseModalOpen(false)}
-                  className="px-4 py-2 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 text-stone-700 dark:text-stone-200 rounded-xl font-semibold"
+                  className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingWeakVerse}
-                  className="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl font-bold disabled:opacity-60"
+                  className="min-h-11 px-5 py-2 bg-[#C59B27] hover:bg-[#af851a] dark:bg-[#E0A96D] dark:hover:bg-[#f3b77b] text-[#0B132B] rounded-xl font-bold disabled:opacity-60"
                 >
                   {isSavingWeakVerse ? 'جارٍ حفظ الآية...' : 'تسجيل الآية الملتبسة'}
                 </button>

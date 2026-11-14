@@ -621,6 +621,15 @@ export async function runPhase3CoreRemediationTests(): Promise<{ passed: number;
     const invalidRoute = parseRoute('#/invalid_tab_name');
     assert(invalidRoute.tab === 'dashboard', 'parseRoute falls back to dashboard on invalid tab');
 
+    const showcaseRoute = parseRoute('#/showcase');
+    assert(showcaseRoute.tab === 'showcase', 'parseRoute accepts showcase view');
+
+    const outOfRangeSurah = parseRoute('#/session?surah=999&start=5&end=10');
+    assert(outOfRangeSurah.surahNumber === undefined && outOfRangeSurah.startAyah === undefined, 'parseRoute ignores out-of-range surah numbers');
+
+    const clampedBounds = parseRoute('#/session?surah=1&start=20&end=3');
+    assert(clampedBounds.surahNumber === 1 && clampedBounds.startAyah === 7 && clampedBounds.endAyah === 7, 'parseRoute clamps ayah bounds to surah verse count and orders end >= start');
+
     const constructedHash = buildRouteHash({ tab: 'session', mode: 'review', surahNumber: 1 });
     assert(constructedHash === '#/session?surah=1&mode=review', 'buildRouteHash constructs correct query string');
   }

@@ -23,11 +23,71 @@ export function runSessionStudyUiTests(): { passed: number; failed: number } {
     assert(session.includes('viewMode === \'page\'') && session.includes('كل آيات الجلسة'), 'whole-session verse view must be available');
     assert(session.includes('aria-pressed={index === currentAyahIndex}'), 'active verse must be announced to assistive technology');
     assert(session.includes('role="progressbar"') && session.includes('aria-valuetext={`الآية'), 'session progress must expose its current ayah and total');
-    assert(session.includes('aria-pressed={maskLevel === m.level}'), 'mask level selection must expose its selected state');
+    assert(session.includes('aria-pressed={!isMaskingDisabled && maskLevel === m.level}'), 'mask level selection must expose its selected state only when active');
     assert(session.includes('words.length === 0 ? <span role="status"'), 'session must announce local ayah text preparation');
     assert(session.includes('loadSimpleAyahRange(') && session.includes('{pageDisplayTexts[index]}'), 'whole-session view must use the same verified Tanzil Simple source as word masking');
     assert(session.includes('لم نعرض نصًا بديلًا'), 'Missing verified page text must fail closed instead of switching Quran text sources');
     assert(preferences.toLowerCase().includes('device-local') && preferences.includes('wird:memorization-display:v1'), 'presentation preferences must remain device-local and separate from cloud sync');
+  });
+  test('memorization session consolidates display/audio settings and supports connected/printed Mushaf without duplicating verses', () => {
+    const session = read('src/components/session/MemorizationSessionView.tsx');
+    const header = read('src/components/layout/Header.tsx');
+    assert(session.includes('إعدادات العرض والصوت'), 'unified settings toggle must be present');
+    assert(session.includes('aria-label="إعدادات عرض جلسة الحفظ"') && session.includes('aria-label="إعدادات الصوت والمقطع الصوتي"'), 'unified settings grid must group display and audio controls clearly');
+    assert(session.includes('wird:memorization-display-panel-open:v1'), 'settings drawer open state must persist cleanly');
+    assert(session.includes('<QuranMushafFacsimilePage') && session.includes('mushaf-page-frame'), 'all-ayahs view must offer both printed facsimile and connected Mushaf frame');
+    assert(header.includes("currentTab !== 'dashboard' && currentTab !== 'session'"), 'header must hide redundant session shortcut inside an active session');
+  });
+  test('whole-session verified text loader waits for loaded sessionAyahs and uses bounded session bounds', () => {
+    const session = read('src/components/session/MemorizationSessionView.tsx');
+    assert(
+      session.includes('isLoadingAyahs ||') &&
+      session.includes('sessionAyahs.length === 0 ||') &&
+      session.includes('sessionAyahs[0].surahNumber !== surahNumber'),
+      'whole-session Tanzil Simple loader must wait until surah verses finish loading before comparing lengths'
+    );
+    assert(
+      session.includes('const rangeStart = sessionAyahs[0].numberInSurah;') &&
+      session.includes('const rangeEnd = sessionAyahs[sessionAyahs.length - 1].numberInSurah;') &&
+      session.includes('loadSimpleAyahRange(surahNumber, rangeStart, rangeEnd)'),
+      'whole-session Tanzil Simple loader must query the exact loaded session ayah bounds'
+    );
+  });
+  test('session isolates word masking strictly to Single-Ayah view, keeps All-Ayahs uninterrupted, and verifies tokenized Quran text', () => {
+    const session = read('src/components/session/MemorizationSessionView.tsx');
+    const library = read('src/components/library/QuranLibraryView.tsx');
+    const testsView = read('src/components/tests/MemorizationTestsView.tsx');
+
+    assert(
+      session.includes('تغيير النطاق') &&
+      session.includes('applySessionRange(') &&
+      !session.includes('initialEndAyah || 10'),
+      'session must allow selecting any surah and ayah range beyond 10 verses'
+    );
+    assert(
+      !library.includes('Math.min(10, surah.versesCount)') &&
+      !library.includes('Math.min(10, selectedSurah.versesCount)') &&
+      library.includes('sessionRangeStart') &&
+      library.includes('sessionRangeEnd'),
+      'library must remove the 10-ayah cap and offer custom/full range selection'
+    );
+    assert(
+      !session.includes('تسميع الآية {currentAyah.numberInSurah}') &&
+      !session.includes('renderMaskedWords(true)') &&
+      session.includes('const isMaskingDisabled = displayPreferences.viewMode !== \'focused\';') &&
+      session.includes('disabled={isMaskingDisabled}') &&
+      session.includes('التبديل إلى آية واحدة') &&
+      session.includes('tokenized.join(\' \') !== normalizedInput') &&
+      session.includes("'•'.repeat(dotCount)"),
+      'word masking must be scoped strictly to single-ayah view with disabled controls + quick switch in all-ayahs mode and runtime round-trip verification'
+    );
+    assert(
+      testsView.includes('const finalScore = score;') &&
+      !testsView.includes('score + (selectedOption === currentQ.correctIndex ? 1 : 0)') &&
+      testsView.includes('إنهاء الاختبار وعرض النتيجة') &&
+      testsView.includes('handleSwitchTestType('),
+      'memorization tests must not double-count the final question score or run duplicate generation on mode switch'
+    );
   });
   return { passed, failed };
 }

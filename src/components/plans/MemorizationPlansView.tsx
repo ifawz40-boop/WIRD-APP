@@ -1,13 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  Calendar, 
-  Plus, 
-  CheckCircle2, 
-  Sparkles, 
-  Trash2, 
-  Play, 
+import {
+  Sparkles,
+  Trash2,
+  Play,
   Layers,
-  Check
+  Compass
 } from 'lucide-react';
 import { MemorizationPlan } from '../../types/quran';
 import { EngineGeneratedPlan } from '../../services/planningEngine';
@@ -21,6 +18,7 @@ interface MemorizationPlansViewProps {
   enginePlans: EngineGeneratedPlan[];
   onUpdateEnginePlans: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
   onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
+  onOpenAdvisor?: () => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
 
@@ -30,6 +28,7 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
   enginePlans,
   onUpdateEnginePlans,
   onStartSession,
+  onOpenAdvisor,
   onToast
 }) => {
   const [activeTab, setActiveTab] = useState<'engine' | 'presets'>('engine');
@@ -80,16 +79,13 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
     };
   }, [planToDelete]);
 
-  // Toggle active plan in presets
   const handleToggleActive = async (planId: string) => {
     const updated = plans.map(p => ({
       ...p,
       isActive: p.id === planId
     }));
     if (!await onUpdatePlans(updated)) return;
-    if (onToast) {
-      onToast("تم تفعيل الخطة المحددة بنجاح", "success");
-    }
+    onToast?.('تم تفعيل الخطة المحددة بنجاح', 'success');
   };
 
   const handleConfirmDelete = async () => {
@@ -103,9 +99,9 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
       }
       if (!await onUpdatePlans(updated)) return;
       setPlanToDelete(null);
-      if (onToast) onToast("تم حذف الخطة من قائمتك بنجاح", "info");
+      onToast?.('تم حذف الخطة من قائمتك بنجاح', 'info');
     } catch {
-      if (onToast) onToast("تعذر حذف الخطة. لم يتم تأكيد حفظ التغيير.", "error");
+      onToast?.('تعذر حذف الخطة. لم يتم تأكيد حفظ التغيير.', 'error');
     } finally {
       isDeletingRef.current = false;
       setIsDeleting(false);
@@ -115,34 +111,47 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Segmented Control */}
-      <div role="group" aria-label="طرق إدارة خطط الحفظ" className="bg-white dark:bg-stone-800/90 p-2 rounded-2xl border border-stone-200/80 dark:border-stone-700/80 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs font-bold">
+      <div role="group" aria-label="طرق إدارة خطط الحفظ" className="wird-card p-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-bold">
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
           <button
+            type="button"
             onClick={() => setActiveTab('engine')}
             aria-pressed={activeTab === 'engine'}
-            className={`flex w-full min-h-11 items-center justify-center gap-2 px-4 py-2 rounded-xl text-center transition-all sm:w-auto ${
+            className={`flex w-full min-h-11 items-center justify-center gap-2 px-4 py-2 rounded-xl text-center whitespace-nowrap transition-all sm:w-auto ${
               activeTab === 'engine'
-                ? 'bg-emerald-800 text-white shadow-xs'
-                : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>محرك التخطيط الذكي (WIRD Engine)</span>
+            <Sparkles className={`w-4 h-4 ${activeTab === 'engine' ? 'text-[#E0A96D]' : 'text-[#C59B27]'}`} />
+            <span>الخطط الذكية المخصصة</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('presets')}
             aria-pressed={activeTab === 'presets'}
-            className={`flex w-full min-h-11 items-center justify-center gap-2 px-4 py-2 rounded-xl text-center transition-all sm:w-auto ${
+            className={`flex w-full min-h-11 items-center justify-center gap-2 px-4 py-2 rounded-xl text-center whitespace-nowrap transition-all sm:w-auto ${
               activeTab === 'presets'
-                ? 'bg-emerald-800 text-white shadow-xs'
-                : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]'
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>النماذج والخطط المعتمدة ({plans.length})</span>
+            <span>النماذج المنهجية ({plans.length})</span>
           </button>
         </div>
+
+        {onOpenAdvisor && (
+          <button
+            type="button"
+            onClick={onOpenAdvisor}
+            className="min-h-11 px-3.5 py-2 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors w-full sm:w-auto"
+          >
+            <Compass className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+            <span>استشارة المستشار القرآني</span>
+          </button>
+        )}
       </div>
 
       {/* TAB 1: Real Functional Planning Engine */}
@@ -151,6 +160,7 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
           enginePlans={enginePlans}
           onUpdateEnginePlans={onUpdateEnginePlans}
           onStartSession={onStartSession}
+          onOpenAdvisor={onOpenAdvisor}
           onToast={onToast}
         />
       )}
@@ -159,22 +169,26 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
       {activeTab === 'presets' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm font-bold text-stone-800 dark:text-stone-200">
+            <h3 className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">
               النماذج المنهجية الجاهزة ({plans.length})
             </h3>
-            <span className="text-xs text-stone-500">
+            <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
               خطط دور التحفيظ المعتمدة
             </span>
           </div>
 
           {plans.length === 0 ? (
-            <div role="status" className="rounded-2xl border border-dashed border-stone-300 bg-white/80 px-6 py-10 text-center dark:border-stone-700 dark:bg-stone-800/60">
-              <Layers className="mx-auto h-10 w-10 text-emerald-700 dark:text-emerald-400" />
-              <h4 className="mt-3 text-sm font-bold text-stone-900 dark:text-stone-100">لم تحفظ أي خطة بعد</h4>
-              <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-stone-500 dark:text-stone-400">
-                يمكنك إنشاء خطة تناسب وقتك ومقدار الحفظ اليومي من محرك التخطيط، وستظهر هنا لمتابعة تقدمك.
+            <div role="status" className="wird-card border-dashed px-6 py-10 text-center">
+              <Layers className="mx-auto h-10 w-10 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <h4 className="mt-3 text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">لم تحفظ أي خطة بعد</h4>
+              <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                يمكنك إنشاء خطة تناسب وقتك ومقدار الحفظ اليومي من الخطط الذكية، وستظهر هنا لمتابعة تقدمك.
               </p>
-              <button type="button" onClick={() => setActiveTab('engine')} className="mt-4 min-h-11 rounded-xl bg-emerald-800 px-5 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+              <button
+                type="button"
+                onClick={() => setActiveTab('engine')}
+                className="wird-btn-primary mt-4 min-h-11 px-5 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              >
                 إنشاء خطة حفظ
               </button>
             </div>
@@ -190,34 +204,35 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
               return (
                 <div
                   key={plan.id}
-                  className={`rounded-2xl p-6 border transition-all flex flex-col justify-between ${
+                  className={`wird-card p-6 transition-all flex flex-col justify-between ${
                     plan.isActive
-                      ? 'bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/30 dark:to-stone-800/90 border-emerald-500 dark:border-emerald-600 shadow-sm ring-1 ring-emerald-500/20'
-                      : 'bg-white dark:bg-stone-800/90 border-stone-200/80 dark:border-stone-700/80 hover:border-stone-300 dark:hover:border-stone-600 shadow-xs'
+                      ? 'border-[#C59B27]/60 dark:border-[#E0A96D]/50 ring-1 ring-[#C59B27]/25'
+                      : ''
                   }`}
                 >
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-base text-stone-900 dark:text-stone-100 font-quran">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8] font-quran">
                             {plan.title}
                           </h4>
                           {plan.isActive && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-700 text-white">
-                              الخطة النشطة
+                            <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                              · الخطة النشطة
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                        <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1 leading-relaxed">
                           {plan.description}
                         </p>
                       </div>
 
                       <button
+                        type="button"
                         onClick={(event) => { deleteTriggerRef.current = event.currentTarget; setPlanToDelete(plan.id); }}
                         aria-label={`حذف الخطة ${plan.title}`}
-                        className="min-h-11 min-w-11 text-stone-400 hover:text-red-500 p-1 transition-colors"
+                        className="min-h-11 min-w-11 flex items-center justify-center text-[#5B6F6B] hover:text-rose-600 dark:hover:text-rose-400 p-1 transition-colors"
                         title="حذف الخطة"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -225,43 +240,44 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
                     </div>
 
                     {/* Progress Info */}
-                    <div className="space-y-2 mt-4 pt-3 border-t border-stone-100 dark:border-stone-700">
+                    <div className="space-y-2 mt-4 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-stone-500 dark:text-stone-400">نسبة الإنجاز:</span>
-                        <span className="font-bold text-stone-900 dark:text-stone-100 font-mono tabular-nums">
+                        <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">نسبة الإنجاز:</span>
+                        <span className="font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
                           {plan.completedUnits} / {plan.totalUnits} {plan.unitType === 'page' ? 'صفحة' : 'آية'} ({percent}%)
                         </span>
                       </div>
 
-                      <div role="progressbar" aria-label={`نسبة إنجاز خطة ${plan.title}`} aria-valuemin={0} aria-valuemax={Math.max(1, plan.totalUnits)} aria-valuenow={Math.min(Math.max(0, plan.completedUnits), Math.max(1, plan.totalUnits))} aria-valuetext={`${percent}%`} className="w-full bg-stone-100 dark:bg-stone-700 h-2 rounded-full overflow-hidden">
+                      <div role="progressbar" aria-label={`نسبة إنجاز خطة ${plan.title}`} aria-valuemin={0} aria-valuemax={Math.max(1, plan.totalUnits)} aria-valuenow={Math.min(Math.max(0, plan.completedUnits), Math.max(1, plan.totalUnits))} aria-valuetext={`${percent}%`} className="w-full bg-[#F2EDE2] dark:bg-[#0B132B] h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                          className="bg-[#1C4E46] dark:bg-[#E0A96D] h-full rounded-full transition-all duration-500"
                           style={{ width: `${percent}%` }}
                         />
                       </div>
                     </div>
 
-                    {/* Plan Specs */}
-                    <div className="grid grid-cols-2 gap-2 mt-4 text-[11px] text-stone-600 dark:text-stone-400 bg-[#faf8f5] dark:bg-stone-900/60 p-3 rounded-xl border border-stone-200/60 dark:border-stone-700/60">
+                    {/* Plan Specs (hairline unboxed metadata grid) */}
+                    <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                       <div>
-                        المستهدف اليومي: <strong className="text-stone-800 dark:text-stone-200">{plan.dailyTarget} {plan.unitType === 'page' ? 'صفحة' : 'آيات'}</strong>
+                        المستهدف اليومي: <strong className="text-[#142421] dark:text-[#F5F1E8] tabular-nums">{plan.dailyTarget} {plan.unitType === 'page' ? 'صفحة' : 'آيات'}</strong>
                       </div>
                       <div>
-                        أيام الحفظ / المراجعة: <strong className="text-stone-800 dark:text-stone-200">{plan.memorizationDaysPerWeek} / {plan.revisionDaysPerWeek}</strong>
+                        أيام الحفظ / المراجعة: <strong className="text-[#142421] dark:text-[#F5F1E8] tabular-nums">{plan.memorizationDaysPerWeek} / {plan.revisionDaysPerWeek}</strong>
                       </div>
                       <div>
-                        تاريخ البدء: <span className="font-mono">{plan.startDate}</span>
+                        تاريخ البدء: <span className="font-mono tabular-nums">{plan.startDate}</span>
                       </div>
                       <div>
-                        الختم المتوقع: <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{plan.targetEndDate}</span>
+                        الختم المتوقع: <span className="font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] font-bold">{plan.targetEndDate}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Plan Card Actions */}
-                  <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-stone-100 dark:border-stone-700">
+                  <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                     {plan.isActive ? (
                       <button
+                        type="button"
                         disabled={!nextRange}
                         onClick={() => {
                           if (nextRange) onStartSession(nextRange.surahNumber, nextRange.startAyah, nextRange.endAyah, 'memorize');
@@ -269,15 +285,16 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
                         title={!quickStartSupported
                           ? 'البدء السريع غير متاح لخطط الصفحات والأجزاء حتى يتوفر تحديد آيات دقيق.'
                           : !nextRange ? 'اكتملت نطاقات الحفظ المحددة في هذه الخطة.' : 'ابدأ من أول آية غير مسجلة في نطاق الخطة'}
-                        className="flex-1 flex min-h-11 items-center justify-center gap-2 py-2 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="wird-btn-primary flex-1 flex min-h-11 items-center justify-center gap-2 py-2 px-4 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Play className="w-3.5 h-3.5 fill-white" />
                         <span>{nextRange ? 'متابعة جلسة اليوم' : quickStartSupported ? 'اكتملت نطاقات الخطة' : 'البدء السريع غير متاح'}</span>
                       </button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => handleToggleActive(plan.id)}
-                        className="flex-1 min-h-11 py-2 px-4 bg-stone-100 hover:bg-emerald-100 dark:bg-stone-700 dark:hover:bg-emerald-950 text-stone-800 hover:text-emerald-900 dark:text-stone-200 dark:hover:text-emerald-300 rounded-xl text-xs font-semibold transition-colors"
+                        className="flex-1 min-h-11 py-2 px-4 bg-[#F2EDE2] hover:bg-[#1C4E46] dark:bg-[#162744] dark:hover:bg-[#1E4A47] text-[#142421] hover:text-white dark:text-[#F5F1E8] rounded-xl text-xs font-semibold transition-colors"
                       >
                         تفعيل هذه الخطة كورد رئيسي
                       </button>
@@ -293,23 +310,23 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
 
       {/* In-app Plan Delete Confirmation Modal */}
       {planToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div ref={deleteDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-plan-delete-title" className="bg-white dark:bg-stone-800 rounded-3xl p-6 max-w-md w-full border border-stone-200 dark:border-stone-700 shadow-2xl space-y-4 text-right">
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4">
+          <div ref={deleteDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-plan-delete-title" className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 id="wird-plan-delete-title" className="font-bold text-stone-900 dark:text-stone-100 text-base">
+                <h3 id="wird-plan-delete-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   تأكيد حذف الخطة
                 </h3>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
                   هل تريد إزالة هذه الخطة من قائمتك؟
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed bg-[#faf8f5] dark:bg-stone-900/60 p-3.5 rounded-xl border border-stone-200/70 dark:border-stone-700/60">
+            <p className="text-xs text-[#142421] dark:text-[#F5F1E8] leading-relaxed bg-white dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
               سيتم حذف بطاقة الخطة المحددة. لن يؤثر ذلك على سجلات الأوراد التي أنجزتها سابقاً.
             </p>
 
@@ -319,7 +336,7 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
                 ref={cancelDeleteRef}
                 onClick={() => setPlanToDelete(null)}
                 disabled={isDeleting}
-                className="min-h-11 disabled:opacity-50 px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl transition-colors"
+                className="min-h-11 disabled:opacity-50 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >
                 إلغاء
               </button>
@@ -327,7 +344,7 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="min-h-11 disabled:opacity-50 px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition-colors"
+                className="min-h-11 disabled:opacity-50 px-5 py-2 text-xs font-bold text-white bg-rose-700 hover:bg-rose-800 rounded-xl shadow-xs transition-colors"
               >
                 {isDeleting ? 'جارٍ الحذف...' : 'تأكيد الحذف'}
               </button>
@@ -338,3 +355,4 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
     </div>
   );
 };
+

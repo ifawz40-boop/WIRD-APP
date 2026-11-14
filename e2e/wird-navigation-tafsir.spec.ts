@@ -70,6 +70,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
 
     await expect(page.getByRole('button', { name: 'إخفاء تام' })).toHaveCSS('min-height', '44px');
     await expect(page.getByRole('button', { name: /\+ تكرار/ })).toHaveCSS('min-height', '44px');
+    await page.getByRole('button', { name: /إعدادات العرض والصوت/ }).click();
     await expect(page.getByRole('combobox', { name: 'سرعة تشغيل الصوت' })).toHaveCSS('min-height', '44px');
     const navigation = page.getByRole('group', { name: 'التنقل بين آيات جلسة الحفظ' });
     await expect(navigation.getByRole('button', { name: 'السابقة' })).toHaveCSS('min-height', '56px');
