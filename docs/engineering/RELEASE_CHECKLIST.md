@@ -29,7 +29,7 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 - [ ] NOT VERIFIED — implementation PR Playwright checks remain independent.
 - [x] PASS — PR #373 exact-head Vercel Preview build completed on `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca`.
 - [x] PASS — PR #364 exact-head Vercel Preview build completed on `ad33875b0304020f930c7b606ef8782d36148707`.
-- [x] PASS — Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact main SHA `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- [x] PASS — Vercel Production deployment `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV` is READY on docs-only main commit `1c025e0e476ebdaa1250fffce2e154848ca52eee`, which includes application-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 ## C. Quran and Ruqyah
 

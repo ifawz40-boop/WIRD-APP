@@ -7,7 +7,7 @@
 - PR #363 documentation standard merged; `DOCUMENTATION_OPERATING_STANDARD.md`, `AGENTS.md`, `GEMINI.md`, and root `README.md` are on main.
 - PR #373 Ruqyah lazy-loading fix merged at `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - Exact PR #373 Quality Gate run `43634212804`: **711 passed / 0 failed**, Firestore Rules Emulator, TypeScript, build, server smoke, and **160 desktop/mobile Playwright checks passed**. The 604 Mushaf coordinate-map check was SKIPPED.
-- Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact main SHA; alias `wird-app.vercel.app`.
+- Vercel Production deployment `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV` is READY on docs-only main commit `1c025e0...`, which includes application-code merge `d265bdf...`; alias `wird-app.vercel.app`.
 - Production app loaded at `/#/session` in connected browser; Ruqyah route/audio has not been directly live-smoke-tested.
 - Ruqyah uses local verified per-Surah Quran chunks; IslamicAPI supplies numeric coordinates only. Provider Quran text/translation is not rendered. Full-program recordings remain disabled pending independent content/rights verification.
 - Production sync flags were previously observed as `true`; do not change either without explicit owner authorization. No secrets or production settings changed.

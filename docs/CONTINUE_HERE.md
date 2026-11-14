@@ -16,7 +16,7 @@
 - Ruqyah lazy loading: PASS / merged. PR #373 merged; removes eager complete-Quran dependency, loads selected local Surah chunks, keeps API indexes coordinate-only, and renders local verified Quran text.
 - PR #373 exact-head CI: PASS. Run `43634212804`, job `132567343695`, exact PR head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`. Automated suites: 711 passed / 0 failed; Firestore Rules Emulator, TypeScript, production build, server smoke and desktop/mobile Playwright passed. Playwright: 160 passed, including Ruqyah audio/category and locator-library cases.
 - 604 printed Mushaf coordinate-map verification was SKIPPED; remains NOT VERIFIED.
-- Vercel Production: READY, deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q`, source SHA exactly `d265bdf37e9410ad6cd99273bb595526dce63b50`, alias `https://wird-app.vercel.app/`.
+- Vercel Production: READY, deployment `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV`, source SHA `1c025e0e476ebdaa1250fffce2e154848ca52eee` (docs-only descendant containing application merge `d265bdf...`), alias `https://wird-app.vercel.app/`.
 - Browser readback confirmed Production app loaded at `/#/session`; Ruqyah route/audio was not directly live-smoke-tested.
 - Preview: READY on PR #373 head `c42286f...`, deployment `dpl_JE7AddCKxTgu5XygzznNjnSL4STq`.
 - Previous read-only inventory reported both sync flags `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true`. No changes authorized or made.

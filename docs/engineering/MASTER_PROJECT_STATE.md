@@ -19,7 +19,7 @@
 | Firestore Rules Emulator / TypeScript / build / server smoke | Passed in run `43634212804` | PASS |
 | Desktop + mobile Playwright | 160 passed, including Ruqyah E2E | PASS |
 | 604 Mushaf coordinate-map check | SKIPPED | NOT VERIFIED |
-| Vercel Production | READY, `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q`, exact main SHA | PASS |
+| Vercel Production | READY, `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV`, source SHA `1c025e0...` (docs-only descendant containing code merge `d265bdf...`) | PASS |
 | Production Ruqyah route/audio smoke | Not directly tested | NOT VERIFIED |
 | Google AI Studio sync | Studio pull not observed | NOT VERIFIED |
 | Firebase Production Rules | Not independently verified | NOT VERIFIED |

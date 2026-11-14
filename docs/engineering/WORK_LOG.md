@@ -753,3 +753,13 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - No Quran corpus, Firebase Rules/data, secrets, Vercel settings, sync flags or manual deployment changed.
 - Next: reconcile #372/#374 lockfile overlap; keep offline-audio duplicate-store PRs #358/#359 separate from #368.
 
+
+
+## 2026-11-14 22:02 +02:00 — Post-merge documentation reconciliation and release evidence
+
+- Refreshed the continuation queue, master state, release checklist, Google AI Studio handoff, architecture, performance audit, sync release gates, Ruqyah release checklist, and documentation catalog after PR #373.
+- PR #373 code merge remains `d265bdf37e9410ad6cd99273bb595526dce63b50`; documentation-only checkpoint commits `1c025e0e476ebdaa1250fffce2e154848ca52eee` and `f8935344f16c35a4ab4739bc0484df220d8d267a` followed it.
+- Production deployment `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV` is READY on docs-only main commit `1c025e0...`, which includes the Ruqyah code merge. The current branch head before this work-log update was `f893534...`; re-fetch main after this commit for the exact latest HEAD.
+- Documentation catalog count corrected from 45 to 55 Markdown files under `docs/`; canonical WORK_LOG path corrected to `docs/engineering/WORK_LOG.md`.
+- Current-state documents now distinguish the application-code merge SHA from later docs-only commits and avoid claiming live Ruqyah audio verification.
+- Google AI Studio synchronization remains NOT VERIFIED. The 604 Mushaf coordinate-map check remains SKIPPED/NOT VERIFIED.
