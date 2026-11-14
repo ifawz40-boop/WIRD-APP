@@ -639,3 +639,13 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Exact-head Quality Gate run `43570929405`, job `132374935104`, failed with no recorded steps/logs. Vercel combined status reports Free-plan `build-rate-limit`.
 - The PR branch documentation reports seven isolated range tests PASS, but these were not independently executed in this session; the claim is therefore not independently verified here.
 - Updated PR #369 description with the finding. Remaining gate: table-driven coverage for all 30 Juz boundaries and browser interaction tests.
+
+
+## 2026-11-14 — Owner master handoff requirements integrated into canonical plan
+
+- Source: owner-provided WIRD MASTER HANDOFF & AUTONOMOUS EXECUTION prompt. Incorporated as requirements only; no application code, production setting, secret, Firebase data/rule, sync flag, or deployment was changed.
+- Updated the live continuation queue, unified development roadmap, and release checklist with the ordered recovery → CI → Ruqyah → Engine Plans/memorization → offline/PWA → security → Seerah → documentation → release workstreams.
+- Added acceptance requirements for verified local Quran text/provenance, lazy Ruqyah route loading, flexible memorization ranges and lossless archive migration, unified offline-audio ownership/recovery, Advisor/API security, sourced/licensed Seerah, historical work-log preservation, exact-SHA evidence and separate local/CI/build/Preview/Production/live verification.
+- Preserved existing change-control rules: serialize shared paths; no blind PR merges; no production secrets/settings, Firebase Rules/data or sync-flag changes; no destructive user-data operations or sync activation without required approval.
+- PR inventory in the supplied prompt is treated as a historical review index only. Re-fetch exact PR states/heads/files/checks before action. PR #375 remains closed/superseded by #363 and no competing master handoff was recreated.
+- No tests were run because this was a documentation-only planning update. Exact-head CI/Preview evidence must be re-fetched after these commits; no pass is claimed.
