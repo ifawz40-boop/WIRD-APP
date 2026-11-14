@@ -1,21 +1,22 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-14 22:41 +02:00  
+**Last verified:** 2026-11-14 22:47 +02:00  
 **Current release decision:** BLOCKED — PR #378 documentation/package hygiene candidate awaits a fresh complete exact-head Quality Gate after documentation reconciliation; Production remains unchanged.
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
 
-## Current PR #378 release gate — 2026-11-14 22:41 +02:00
+## Current PR #378 release gate — 2026-11-14 22:47 +02:00
 
-- [x] PASS — current main baseline: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
-- [x] PASS — artwork-preserving candidate contains no image/media deletion; the gold Arabic حُكم artwork blob is present.
-- [x] PASS — package/lockfile changes are root workspace-name changes only; no dependency resolutions changed.
-- [x] PASS — PR #378 Preview `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn` READY on candidate head `33a0b6f265df87d0f1761576d85994a25cadb7d3`.
-- [x] PASS — candidate run `43638493787` executed and passed the 604 printed Mushaf coordinate-map validation, Firestore Emulator, automated tests, TypeScript, build and server smoke steps.
-- [ ] BLOCKED — candidate Playwright desktop/mobile step was still running at snapshot time; full workflow not yet successful.
-- [ ] BLOCKED — docs refresh changes candidate SHA; all CI/Preview gates must be rechecked on the new exact head.
-- [ ] BLOCKED — do not merge #378 until new exact-head Quality Gate succeeds and Preview is READY.
-- [ ] BLOCKED — #377 artwork-deleting PR and obsolete #374 must remain unmerged; close only after safe replacement merges.
+- [x] PASS — main baseline SHA: `f32988e8586431b0e5cadebe0cf84c6208e0341c`; Production `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj` READY on that SHA.
+- [x] PASS — candidate diff limited to `package.json`, `bun.lock`, four canonical docs, and the hygiene audit; package/lockfile are root-name-only changes with dependency resolutions unchanged.
+- [x] PASS — gold Arabic حُكم artwork retained; candidate blob `c4e29d1c8db5234ef5dc4dfcfee94edf74499b55` identical to main; no media deletions.
+- [x] PASS — exact-head Quality Gate `43638841818`, job `132581609413`, SUCCESS on `dafb54647cb71b13ff742beedba9ed49601aaf49`.
+- [x] PASS — 604 printed Mushaf coordinate maps, automated tests, Bun install/audit, API imports, Quran audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium/runtime checks and cleanup.
+- [x] PASS — Desktop/mobile Playwright: 160 passed, 2 skipped. Diagnostics upload step succeeded but no files were found at its configured path.
+- [ ] BLOCKED — Vercel status is `build-rate-limit`; no Preview for this exact SHA. Prior READY Preview belongs to older SHA `33a0b6f265df87d0f1761576d85994a25cadb7d3`. Owner accepts safe merge despite quota-only block; do not change Vercel settings.
+- [ ] BLOCKED — this documentation reconciliation creates a new candidate SHA; a fresh full exact-head Quality Gate must succeed before merge.
+- [ ] BLOCKED — PR #378 remains Draft until fresh exact-head CI and final diff checks pass.
+- [ ] BLOCKED — #377 artwork-deleting PR and obsolete #374 must remain unmerged; close only after #378 merges successfully.
 
 ## A. Repository and change control
 
@@ -114,7 +115,7 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 - [x] PASS — Production deployment is READY on the exact main SHA.
 
-## Hygiene replacement release gate — 2026-11-14 22:24 +02:00
+## Historical hygiene replacement release gate — 2026-11-14 22:24 +02:00
 
 - [x] PASS — current main SHA re-fetched: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
 - [x] PASS — PR #377 exact-head CI run `43636848964` completed successfully; 160 Playwright passed, 2 skipped.
