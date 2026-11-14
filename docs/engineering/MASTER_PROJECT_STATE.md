@@ -1,29 +1,31 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-14 22:41 +02:00  
+**Current snapshot reconciled:** 2026-11-14 22:47 +02:00  
 **Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
 **Verified main HEAD:** `f32988e8586431b0e5cadebe0cf84c6208e0341c`.  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
-- #372 executed gates passed: Bun frozen install, audit, automated tests, API imports, audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium install, and desktop/mobile Playwright; optional 604 Mushaf map check was skipped.
-- #374 must not merge as-is. Port verified temporary artifact deletion and workspace rename onto current main only after lockfile regeneration and exact-head CI; discard its obsolete engineering README.
-- Live Production Ruqyah route/audio and Google AI Studio synchronization remain NOT VERIFIED.
+- Current `main` HEAD: `f32988e8586431b0e5cadebe0cf84c6208e0341c`; Production deployment `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj` READY on that SHA.
+- PR #378: OPEN / Draft, artwork-preserving, head at this snapshot `dafb54647cb71b13ff742beedba9ed49601aaf49`, 13 ahead / 0 behind; only package metadata, lockfile root name, and engineering documentation/audit changed.
+- Exact-head Quality Gate `43638841818` / job `132581609413`: SUCCESS. All 604 Mushaf coordinate maps passed; Playwright 160 passed / 2 skipped; Bun audit, automated tests, API imports, Quran audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium/runtime and cleanup steps passed.
+- Vercel check on that SHA failed only with `build-rate-limit`; no Preview exists for that exact head. Prior READY Preview belongs to older SHA `33a0b6f265df87d0f1761576d85994a25cadb7d3`. Owner accepts safe merge despite quota-only block.
+- PR #377 remains HOLD because it deletes the inspected gold Arabic حُكم artwork; #374 remains obsolete. Neither may merge.
+- This documentation update changes the PR head; require a fresh complete exact-head Quality Gate before merge. Production and Google AI Studio settings remain untouched; live Ruqyah behavior and Studio sync remain NOT VERIFIED.
 
 > This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
 
 ## Previous repository snapshot — superseded by the current PR #378 checkpoint
 
-## Current verified continuation state — 2026-11-14 22:41 +02:00
+## Current candidate detail — 2026-11-14 22:47 +02:00
 
-- Repository: `xm8eslam-stack/WIRD-APP`; production URL: https://wird-app.vercel.app/.
-- Verified `main` HEAD and production source SHA: `f32988e8586431b0e5cadebe0cf84c6208e0341c`. Production deployment `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj` is provider-reported READY. No Production mutation was made.
-- PR #378 is the artwork-preserving replacement for #377: OPEN / Draft, base `main`, baseline SHA above, head at the time of this snapshot `33a0b6f265df87d0f1761576d85994a25cadb7d3`, 8 commits ahead / 0 behind. Changed paths are limited to `package.json`, `bun.lock`, four canonical docs, and the new hygiene audit. No runtime code, Quran corpus, user data, artwork, Firebase Rules/data, secrets, Vercel settings, sync flags, or Google AI Studio settings changed.
-- The gold Arabic حُكم artwork is retained in the candidate branch; the image blob is present and unchanged from main. PR #377 deletes this artwork and remains OPEN / Draft / HOLD. PR #374 is obsolete, divergent/non-mergeable, and must not merge.
-- PR #378 Preview deployment `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn` is READY for head `33a0b6f265df87d0f1761576d85994a25cadb7d3`.
-- Quality Gate run `43638493787`, job `132580521842`, was still IN PROGRESS at snapshot time. Bun install/audit, automated tests, 604 printed Mushaf coordinate maps, native TypeScript API imports, Quran audio CDN/byte-range checks, Firestore Rules Emulator, TypeScript, production build, and server startup smoke test all completed SUCCESS. Desktop/mobile Playwright remained IN PROGRESS; upload/cleanup steps had not completed. This is not a full CI pass.
-- Because this documentation refresh changes the PR head, the prior run above is historical evidence for its old exact SHA. Re-fetch and require a new complete exact-head Quality Gate and READY Preview before merge.
-- Merge sequence: verify final diff and exact-head CI/Preview; squash-merge #378 with expected head SHA; verify resulting main and Production deployment; then close #377 and #374 as superseded/obsolete with explanatory comments.
-- Live Production Ruqyah route/audio, Google AI Studio synchronization, and direct production behavior remain NOT VERIFIED. No local checkout or local test execution is claimed.
+- Repository: `xm8eslam-stack/WIRD-APP`; Production URL: https://wird-app.vercel.app/.
+- Verified `main` HEAD: `f32988e8586431b0e5cadebe0cf84c6208e0341c`. Production deployment `dpl_3mxckEPrdrR92kHX3T9sY55YJXUj` is provider-reported READY on that exact SHA. No Production mutation was made.
+- PR #378 is OPEN / Draft, base `main`, candidate head at this snapshot `dafb54647cb71b13ff742beedba9ed49601aaf49`, 13 commits ahead / 0 behind. It changes only `package.json`, `bun.lock`, four canonical docs, and the hygiene audit. The package/lockfile diff is one root-name line each; dependency resolutions are unchanged.
+- The gold Arabic حُكم artwork is retained: its Git blob is identical in main and candidate (`c4e29d1c8db5234ef5dc4dfcfee94edf74499b55`). No image/media deletion is present. PR #377 remains OPEN / Draft / HOLD because it deletes this artwork. PR #374 remains obsolete and must not merge.
+- Exact-head Quality Gate run `43638841818`, job `132581609413`, completed SUCCESS on `dafb54647cb71b13ff742beedba9ed49601aaf49`. It passed Bun frozen install/audit, automated tests, all 604 printed Mushaf coordinate maps, native TypeScript API imports, Quran audio CDN/byte-range, Firestore Rules Emulator, TypeScript, production build, server startup smoke, Chromium install, runtime checks, and desktop/mobile Playwright. Playwright result: 160 passed, 2 skipped. Diagnostics upload step completed successfully but reported no files found at its configured path.
+- Vercel status for this exact head is FAILURE solely with `build-rate-limit`; no Preview deployment exists for this SHA. Prior Preview `dpl_6Tf4wRCueTYqDkWjcS7boD32hwUn` was READY only for the earlier head `33a0b6f265df87d0f1761576d85994a25cadb7d3`. This is a provider quota block, not a verified application build failure. Owner explicitly accepts safe merge when GitHub CI and safety gates pass despite this quota block; do not change Vercel settings.
+- This documentation reconciliation itself changes the candidate head. Therefore run a fresh complete Quality Gate on the resulting exact head before merging; the successful run above remains evidence for its exact prior SHA only.
+- Next: verify new exact-head CI, re-fetch PR diff and artwork blob, mark #378 ready, squash-merge with expected head SHA, verify main and Production, then close #377 and #374 with supersession comments. No Google AI Studio sync or live Production Ruqyah verification is claimed.
 
 ## Repository and documentation status
 
@@ -123,7 +125,7 @@ Any new owner request is eligible for evaluation even if it is outside the exist
 
 ## Reconciliation contract for future sessions
 
-## Current verified state — 2026-11-14 22:24 +02:00
+## Historical verified state — 2026-11-14 22:24 +02:00
 
 - `main`: `f32988e8586431b0e5cadebe0cf84c6208e0341c`.
 - PR #377: OPEN / Draft / HOLD due to deletion of verified حُكم brand artwork. The exact-head Quality Gate passed (run `43636848964`), but its 604 Mushaf coordinate-map validation step was SKIPPED; Playwright reported 160 passed / 2 skipped.
