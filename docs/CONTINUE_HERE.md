@@ -2,7 +2,7 @@
 
 **Last reconciled:** 2026-11-14 20:16 +02:00  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
-**Latest application-code merge on main:** `f264e4bdea7496090f60940e9e8db03e2fb15696`  
+**Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
 **Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
 **PR #363:** MERGED at `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`  
 **PR #373:** MERGED at `d265bdf37e9410ad6cd99273bb595526dce63b50`  
@@ -18,7 +18,7 @@
 - Live Production Ruqyah route/audio and Google AI Studio sync remain NOT VERIFIED.
 
 
-- Latest application-code merge: `d265bdf37e9410ad6cd99273bb595526dce63b50`; main has subsequent documentation-only commits. Re-fetch exact branch HEAD before acting.
+- Latest application-code merge remains `d265bdf37e9410ad6cd99273bb595526dce63b50` (Ruqyah). Latest `main` HEAD is `f264e4bdea7496090f60940e9e8db03e2fb15696` after CI-only PR #372.
 - Documentation policy: PASS. PR #363 merged; `DOCUMENTATION_OPERATING_STANDARD.md`, `AGENTS.md`, `GEMINI.md`, and root `README.md` are on main.
 - Ruqyah lazy loading: PASS / merged. PR #373 merged; removes eager complete-Quran dependency, loads selected local Surah chunks, keeps API indexes coordinate-only, and renders local verified Quran text.
 - PR #373 exact-head CI: PASS. Run `43634212804`, job `132567343695`, exact PR head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`. Automated suites: 711 passed / 0 failed; Firestore Rules Emulator, TypeScript, production build, server smoke and desktop/mobile Playwright passed. Playwright: 160 passed, including Ruqyah audio/category and locator-library cases.
