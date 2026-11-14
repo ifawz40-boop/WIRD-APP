@@ -1,7 +1,7 @@
 # WIRD — Master Project State
 
 **Current snapshot reconciled:** 2026-11-14 20:16 +02:00  
-**Latest application-code merge on main:** `f264e4bdea7496090f60940e9e8db03e2fb15696`  
+**Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
 **Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
@@ -15,7 +15,8 @@
 
 | Item | Observed value | Status |
 |---|---|---|
-| Latest application-code merge on main | `f264e4bdea7496090f60940e9e8db03e2fb15696` | PASS |
+| Latest application-code merge on main | `d265bdf37e9410ad6cd99273bb595526dce63b50` | PASS |
+| Latest main HEAD (CI-only PR #372) | `f264e4bdea7496090f60940e9e8db03e2fb15696` | PASS |
 | PR #372 Bun CI migration | Merged; exact-head run `43391729769` on `950640ea78d29e87d426a89d8887c15e4de2abac` | PASS |
 | PR #372 Vercel Production | `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` READY on merge SHA | PASS |
 | PR #374 repository hygiene | Open Draft, 8 commits behind main; package/lockfile overlap | BLOCKED |
