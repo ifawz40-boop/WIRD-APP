@@ -1,5 +1,4 @@
-> **Verified update 2026-11-14:** Current main is `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; Production is READY on the same SHA. Current release is BLOCKED: GitHub Actions runner failures provide no steps/logs; PR #373's Ruqyah fix is Preview-only; Plans chunk persistence is not integrated; Offline cross-tab/recovery work is incomplete; Seerah content is not verified. Both Vercel Production sync flags are currently `true`, contrary to the disabled-until-gates policy; do not change them without explicit owner authorization. Use [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md) and [RELEASE_CHECKLIST.md](./engineering/RELEASE_CHECKLIST.md) for current evidence. Older status tables below are historical and must be revalidated before action.
-
+> **Roadmap scope note — 2026-11-14:** This file defines product direction and sequencing, not the live operational state. For current main/PR heads, CI, Vercel, Firebase, owner decisions and the next executable task, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). The dated implementation/status notes below are retained as history and must be revalidated before action.
 
 ---
 

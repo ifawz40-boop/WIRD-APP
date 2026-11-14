@@ -1,4 +1,4 @@
-
+> **Historical engineering checkpoint archive.** Do not use dated SHA, PR, CI, Vercel, Firebase, Production, or “next action” statements in this file as current. The live queue is [CONTINUE_HERE.md](./CONTINUE_HERE.md); the current-state index is [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). Preserve this file as historical evidence and re-fetch live platform state before acting.
 
 # Latest continuation — 2026-11-13 (follow-up audit)
 

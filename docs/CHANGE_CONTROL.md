@@ -1,9 +1,11 @@
 # WIRD — Change Control & Evidence Reconciliation
 
 **Status:** Mandatory operating policy  
-**Updated:** 2026-11-13  
+**Updated:** 2026-11-14  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
-**Production source branch:** `main` (Google AI Studio is configured to use main; actual AI Studio sync must be verified separately)
+**Production source branch:** `main` (Google AI Studio sync must be verified separately)
+
+> This is the mandatory change-control policy, not a live status report. The sole live queue and evidence snapshot are `docs/CONTINUE_HERE.md` and `docs/engineering/MASTER_PROJECT_STATE.md`. Dated PR inventories, SHAs, deployment states, and configuration observations later in this file are historical unless re-fetched in the current session.
 
 ## 1. Source-of-truth hierarchy
 

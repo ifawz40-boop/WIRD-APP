@@ -1,22 +1,27 @@
-# تحديث تدقيق المالك — 2026-11-13
+# WIRD — Owner Actions and External Decisions
 
-هذه البنود محدثة وفق قراءة GitHub/Vercel. لم يتم تنفيذ أي تغيير Production.
+**Current owner-action snapshot:** 2026-11-14  
+**Live technical state:** [CONTINUE_HERE.md](./CONTINUE_HERE.md) · [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
 
-1. **قرار Sync flags:** Vercel يؤكد أن `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` و`VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` في Production. هذا يصف الإعداد الحالي فقط؛ بوابات الإطلاق الكاملة لم تُثبت. القرار المطلوب: الإبقاء على القيم الحالية أو السماح بتعطيلهما مؤقتًا. لا تغيير قبل رد محدد.
-2. **الوصول العام:** SSO protection مفعّل على كل نطاقات Vercel غير المخصصة، والقائمة تحتوي فقط `wird-app.vercel.app`. الدومين verified، لكن ذلك لا يثبت وصول الزوار دون تسجيل دخول. القرار المطلوب: هل يجب أن يكون التطبيق عامًا دون SSO؟ لا نغير الحماية أو الدومين قبل موافقة.
-3. **GitHub branch protection:** `main` غير محمي، وrequired checks enforcement متوقف، ولا توجد repository rulesets. القرار المطلوب: اعتماد حماية main مع Quality Gate exact-SHA ومراجعة PR. لا يتم تفعيلها قبل تحديد من يملك صلاحية الموافقة ومتطلبات الدمج.
-4. **Google AI Studio:** تحقق من أن المشروع المتصل بالمستودع قد سحب آخر `main`. GitHub لا يثبت مزامنة واجهة AI Studio.
-5. **Firebase Production Rules:** Emulator tests ليست دليل نشر. قبل أي تعديل Rules، يجب ربط النشر اليدوي بآخر workflow ناجح وsource/blob SHA مطابقين.
-6. **أجهزة حقيقية:** بعد حل CI واستقرار بوابات الإصدار، نفذ A↔B واختبار Offline/restart. النجاح السابق المبلغ عنه يظل OWNER-REPORTED PASS محدود النطاق.
+> This page lists actions that genuinely require owner approval, external access, or physical-device testing. Dated material below the snapshot is historical unless explicitly revalidated.
 
-## تصحيحات من تدقيق 2026-11-13
-- `ISLAMICAPI_API_KEY` موجود في Vercel لكل من Preview وProduction كمتغير sensitive؛ لا حاجة لإعادة إدخاله استنادًا إلى الملاحظات القديمة التي ذكرت `ISLAMICAPI_API_KEY1`.
-- لا يوجد دليل في هذا التدقيق على أن Vercel public access مفتوح.
-- لا تغيّر أي عنصر أعلاه أثناء إصلاحات الكود/التوثيق العادية.
+## Current observed items
+
+1. **Production sync flags — owner decision required:** Vercel currently reports `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` in Production. Neither value was changed. Decide separately whether to authorize disabling them while release gates are completed. Do not perform sync-related Production actions or toggle either value without explicit approval.
+2. **Vercel access protection:** password protection is OFF; SSO protection is ON for all non-custom domains. The production custom domain is `wird-app.vercel.app`, which is excluded from the non-custom SSO rule. This configuration does not by itself prove anonymous user access; a read-only public smoke is still NOT VERIFIED. Do not change protection settings without approval.
+3. **GitHub branch protection:** the latest branch-protection API read returned 403 `Resource not accessible by integration`. A 2026-11-13 snapshot recorded main protection/required-check enforcement as disabled, but current settings are NOT VERIFIED in this session. Do not change branch protection or rulesets without an authorized read and owner decision.
+4. **Firebase:** repository code and applet config expect project `wird-quran-app` and the default Firestore database. The Vercel `VITE_FIREBASE_PROJECT_ID` entry is encrypted and was not decrypted; the deployed Production Firestore Rules release is NOT VERIFIED. No Firebase configuration, Rules, or data was changed.
+5. **API credentials:** Vercel has sensitive `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` entries for Preview and Production. Values were not read and upstream validity was not tested. Do not paste secrets into chat or prompts.
+6. **Google AI Studio synchronization:** GitHub does not prove that AI Studio has pulled the latest main. Verify its connected repository/branch and sync only after the canonical docs merge.
+7. **Real-device validation:** physical Android/iOS restart, airplane-mode, audio-download and cross-device sync scenarios remain NOT VERIFIED. Prefer automated multi-client/emulator coverage; request owner device testing only when no automated substitute exists.
+
+## Approval boundaries
+
+No Production settings, Vercel secrets, Firebase project/Rules/data, sync flags, user data, deployment promotion, manual deployment, or destructive migration may be changed without the specific owner authorization required by `AGENTS.md` and `CHANGE_CONTROL.md`.
 
 ---
 
-# WIRD — إجراءات المالك المؤجلة
+## Historical owner actions
 
 تُجمع هنا الخطوات التي تتطلب جهازًا حقيقيًا أو صلاحية مالك. لا توقف الأعمال الآلية المستقلة بسببها.
 

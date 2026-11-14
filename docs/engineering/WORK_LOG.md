@@ -689,3 +689,10 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Removed self-updating PR-head and preview claims from static current-state text where they could become stale immediately after a documentation commit. Future sessions must fetch live PR metadata, checks and deployment SHA.
 - Changed the merge recommendation to describe the docs branch's large branch-only history without pinning a commit count; use squash only if the reviewed PR is accepted.
 - Current #363 head at this note: `243d15092c61c6cc0a5cc8f18831267bf2db5114`. Its exact-head Quality Gate is pending; no pass is claimed for this head.
+
+
+## 2026-11-14 — Historical document demotion and owner-action refresh
+
+- Added explicit routing banners to `CHANGE_CONTROL.md`, `DEVELOPMENT_ROADMAP.md`, and `DEVELOPMENT_CHECKPOINT.md` so policy/product planning is not mistaken for live PR/deployment state and old dated checkpoints cannot override the canonical queue.
+- Replaced the leading `OWNER_ACTIONS.md` section with current read-only observations: sync flags remain true; Vercel password protection is off and non-custom-domain SSO is on; branch-protection read is currently denied by the GitHub integration; Firebase project identity is canonical in source but encrypted Vercel project-ID env and deployed Rules remain unverified; API credentials exist as sensitive entries but were not read or validated; AI Studio sync and physical-device checks remain unverified.
+- No owner-only setting was changed. Historical owner-action notes remain below the new current snapshot for traceability.
