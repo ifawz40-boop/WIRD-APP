@@ -1,61 +1,64 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-14 21:40 +02:00  
+**Current snapshot reconciled:** 2026-11-14 21:58 +02:00  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
-> This leading section is the sole current-state summary. Older snapshots below the historical divider are retained evidence and must not override these facts. Re-fetch live state before action.
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
 
 ## Repository and documentation status
 
 | Item | Observed value | Status |
 |---|---|---|
-| GitHub main | `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e` | PASS |
-| PR #363 | MERGED, squash commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded` | PASS |
-| Canonical documentation operating standard | Present on main and linked from README/AGENTS/GEMINI | PASS |
-| Exact-head GitHub Actions | Run `43632493503`, job `132562026967`, passed on pre-merge PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d` | PASS |
-| 604 Mushaf coordinate-map check | Explicitly SKIPPED in that workflow | NOT VERIFIED |
-| Vercel Preview | READY, `dpl_xUZ388H5z3tqvUSqqeG6nVc3itcu`, exact PR-head SHA | PASS |
-| Vercel Production | READY, `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, still serves pre-merge main SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; documentation-only merge has not been Production-verified | PASS (existing deployment identity only) |
-| Google AI Studio sync | GitHub merge confirmed; Studio pull not observed | NOT VERIFIED |
-| Local checkout/tests | No local checkout; no local execution claimed | NOT VERIFIED |
-| Firebase Production Rules | Not independently verified in this checkpoint | NOT VERIFIED |
+| GitHub main | `d265bdf37e9410ad6cd99273bb595526dce63b50` | PASS |
+| PR #363 documentation standard | Merged; canonical docs/agent bootstrap present on main | PASS |
+| PR #373 Ruqyah lazy loading | Merged at `d265bdf37e9410ad6cd99273bb595526dce63b50` | PASS |
+| PR #373 exact-head Quality Gate | Run `43634212804` on `c42286fa6a5a85bba414a45383a56bd7a00f0cc2` | PASS |
+| Automated tests | 711 passed / 0 failed | PASS |
+| Firestore Rules Emulator / TypeScript / build / server smoke | Passed in run `43634212804` | PASS |
+| Desktop + mobile Playwright | 160 passed, including Ruqyah E2E | PASS |
+| 604 Mushaf coordinate-map check | SKIPPED | NOT VERIFIED |
+| Vercel Production | READY, `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q`, exact main SHA | PASS |
+| Production Ruqyah route/audio smoke | Not directly tested | NOT VERIFIED |
+| Google AI Studio sync | Studio pull not observed | NOT VERIFIED |
+| Firebase Production Rules | Not independently verified | NOT VERIFIED |
+| Local checkout/tests | No local checkout or local execution claimed | NOT VERIFIED |
 
 ## Current scope and safety
 
-- PR #363 changed 46 documentation/instruction paths only; no runtime code, Quran corpus, Firebase Rules/data, Vercel settings, secrets, sync flags, or Production deployment was changed.
-- Previous read-only Vercel inventory reported both `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` as `true` in Production. No change is authorized or made; do not perform sync-related Production actions or alter either flag without explicit owner approval.
-- The post-merge documentation checkpoint commit `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e` is on main; no GitHub Actions run has yet been observed for that follow-up commit and Vercel status is PENDING. The full repository stale-document audit is not complete. The newly merged standard is active; remaining docs need classification into current snapshots, historical evidence, and obsolete instructions.
+- PR #363 was documentation/instructions only; PR #373 contains Ruqyah lazy-loader/API-coordinate/UI/audio-queue changes and regression coverage.
+- No Quran source corpus, Firebase Rules/data, Vercel environment variables, secrets, sync flags, or manual deployment changed.
+- Previous read-only Vercel inventory reported `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` as `true`. Do not change either without explicit owner approval.
+- Full stale-document audit remains IN PROGRESS; 55 Markdown files exist under `docs/`.
 
 ## Open PR inventory — refreshed 2026-11-14
 
 | PR | Head SHA | Disposition |
 |---:|---|---|
 | #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; reconcile with #372 |
-| #373 | `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca` | Ruqyah lazy loading/restoration; exact-head gate and live-safe smoke |
-| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI candidate; reconcile dependency graph |
-| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Codec-only; not end-to-end persistence |
+| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI candidate; previous run failed before steps/logs |
+| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Codec-only |
 | #370 | `32bad0846b9f9a64b8ac1b78c292ea1f1c603e0c` | Session display settings |
-| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-Surah/Juz/ranges; generated-index E2E outstanding |
-| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Unified offline audio; lifecycle/cross-tab gaps |
+| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-range; generated-index E2E outstanding |
+| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Offline audio; lifecycle/cross-tab gaps |
 | #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Interim payload cap only |
 | #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline; reconcile with #368 |
-| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; outside current focused scope pending owner decision |
-| #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor/API security; full verification outstanding |
-| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio store; do not merge beside #368 |
-| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio store; do not merge beside #368 |
+| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; pending owner scope |
+| #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor security |
+| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio; do not merge beside #368 |
+| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio; do not merge beside #368 |
 | #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy; do not merge wholesale |
 
-PR #363 is merged. PR #375 and #360 are closed/superseded; #361/#362 are merged.
+PR #363 and #373 are merged. PR #375 and #360 are closed/superseded; #361/#362 are merged.
 
 ## Next execution order
 
-1. #373 Ruqyah: exact-head source/diff/CI/Preview audit; ensure ayah text comes only from local verified Quran data; fix index 500 and validate short/medium/long audio continuity.
-2. #372/#374 dependency hygiene: reconcile lockfile/package ownership before any merge.
-3. #366/#368 offline audio: one canonical store and recovery protocol; no parallel duplicate DBs.
-4. #364 Advisor security: complete adversarial and exact-head checks.
-5. #369/#370 memorization/session UX: generated index, boundaries, browser E2E and persistence.
-6. #367/#371 archive: do not claim chunked sync until actual storage adapter, manifest, atomic publish, recovery, and multi-client tests exist.
-7. Full stale-document audit and release certification; preserve historical evidence and remove only truly obsolete instructions after migration.
+1. #372/#374 dependency hygiene; reconcile package/lockfile ownership and verify exact-head CI.
+2. #366/#368 offline audio: one canonical store, recoverable cache protocol, cross-tab and account-isolation tests.
+3. #364 Advisor security; complete adversarial verification.
+4. #369/#370 memorization/session UX; generated index, boundaries, browser E2E and persistence.
+5. #367/#371 archive; no chunked sync claim before real storage integration and multi-client recovery tests.
+6. Full stale-document audit and release certification.
+7. Verify Google AI Studio has pulled main.
 
 
 ## Historical PR #363 documentation consolidation — merged 2026-11-14

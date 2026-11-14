@@ -1,20 +1,22 @@
-# GOOGLE AI STUDIO — Current handoff overlay — 2026-11-13
+# GOOGLE AI STUDIO — Current handoff overlay — 2026-11-14
 
-> This dated overlay supersedes all older SHA/deployment status in this handoff. Do not treat GitHub updates as proof of AI Studio synchronization.
+> This is the current operational overlay. It supersedes older SHA/deployment/PR status below. GitHub updates do not prove AI Studio synchronization.
 
-- Repository: `xm8eslam-stack/WIRD-APP`.
-- Current GitHub main: `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
-- Production deployment: `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, READY on the exact main SHA, alias `wird-app.vercel.app`.
-- Vercel SSO protection is enabled for non-custom domains; anonymous public access is not established.
-- Production sync flags are both true; this is configuration state, not complete sync release approval.
-- `ISLAMICAPI_API_KEY` exists in Preview and Production; never expose its value.
-- GitHub main branch protection is off. Recent PR Quality Gate runs lack steps/logs and are BLOCKED for observability.
-- Actual Google AI Studio sync/build status remains NOT TESTED. Confirm from AI Studio directly after the owner-approved documentation PR is merged.
-- No merge, production deployment, environment/secret/protection change, Firebase Rules change, or sync-flag change was performed in this audit.
-
-Read `AGENTS.md`, `docs/CHANGE_CONTROL.md`, and `docs/CONTINUE_HERE.md` before further work.
+- Repository: `xm8eslam-stack/WIRD-APP`; source branch: `main`.
+- Current GitHub main: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- PR #363 documentation standard merged; `DOCUMENTATION_OPERATING_STANDARD.md`, `AGENTS.md`, `GEMINI.md`, and root `README.md` are on main.
+- PR #373 Ruqyah lazy-loading fix merged at `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- Exact PR #373 Quality Gate run `43634212804`: **711 passed / 0 failed**, Firestore Rules Emulator, TypeScript, build, server smoke, and **160 desktop/mobile Playwright checks passed**. The 604 Mushaf coordinate-map check was SKIPPED.
+- Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact main SHA; alias `wird-app.vercel.app`.
+- Production app loaded at `/#/session` in connected browser; Ruqyah route/audio has not been directly live-smoke-tested.
+- Ruqyah uses local verified per-Surah Quran chunks; IslamicAPI supplies numeric coordinates only. Provider Quran text/translation is not rendered. Full-program recordings remain disabled pending independent content/rights verification.
+- Production sync flags were previously observed as `true`; do not change either without explicit owner authorization. No secrets or production settings changed.
+- Actual Google AI Studio pull/synchronization remains **NOT VERIFIED**. Confirm repository/branch and pull latest main before editing there.
+- Remaining open PRs: #374, #372, #371, #370, #369, #368, #367, #366, #365, #364, #359, #358, #2. Re-fetch each head/checks; do not merge duplicate offline stores (#358/#359) beside #368.
+- Read `AGENTS.md`, `docs/engineering/DOCUMENTATION_OPERATING_STANDARD.md`, `docs/CONTINUE_HERE.md`, and `docs/engineering/MASTER_PROJECT_STATE.md` before further work.
 
 ---
+
 
 # أولوية تسليم جديدة — Offline-first / app readiness (2026-11-12)
 

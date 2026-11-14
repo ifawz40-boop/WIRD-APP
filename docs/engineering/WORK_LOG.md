@@ -737,3 +737,19 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Follow-up docs-only commit: `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e`. Main ref update was confirmed; this is the current recorded docs checkpoint SHA.
 - No GitHub Actions run was returned for this follow-up SHA at verification time; combined Vercel status was PENDING. Do not claim CI or Preview success for this follow-up commit.
 - Corrected the release checklist to distinguish the existing Production deployment (still on pre-merge runtime SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`) from the new documentation-only main commits. No Production deployment is claimed.
+
+
+## 2026-11-14 21:58 +02:00 — PR #373 Ruqyah lazy-loading fix merged
+
+- PR #373 merged by Squash with expected head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`.
+- Merge commit / current main: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- Exact-head GitHub Actions run `43634212804`, job `132567343695`: SUCCESS; automated suites **711 passed / 0 failed**.
+- Firestore Rules Emulator, TypeScript, production build, server startup smoke, API import checks, approved audio CDN/range checks passed.
+- Desktop + mobile Playwright: **160 passed**. Ruqyah E2E covered section playback/pause/resume/stop, individual ayah controls, delayed play cancellation on category change, category-change stop, local-only Quran text, index error/cache/retry states and responsive controls.
+- The dedicated 604 printed Mushaf coordinate-map verification step was SKIPPED; it remains NOT VERIFIED.
+- Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact main SHA `d265bdf...`; alias `wird-app.vercel.app`.
+- Connected browser readback showed the Production app loaded at `/#/session`. The Ruqyah route/audio was not directly opened or live-smoke-tested.
+- Ruqyah now uses the existing per-Surah lazy loader and validates local Quran chunks. API records remain coordinate-only; UI displays WIRD-local verified Quran text. Full-program recordings remain disabled pending content/rights verification.
+- No Quran corpus, Firebase Rules/data, secrets, Vercel settings, sync flags or manual deployment changed.
+- Next: reconcile #372/#374 lockfile overlap; keep offline-audio duplicate-store PRs #358/#359 separate from #368.
+

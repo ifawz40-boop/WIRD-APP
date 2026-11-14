@@ -1,19 +1,21 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-14 21:40 +02:00  
-**Current release decision:** BLOCKED (application release gates remain open; documentation PR #363 is merged)
+**Last verified:** 2026-11-14 21:58 +02:00  
+**Current release decision:** BLOCKED (PR #363 and Ruqyah #373 are merged; other application release gates remain open)
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
 
 ## A. Repository and change control
 
-- [x] PASS — main SHA recorded after docs merge: `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
+- [x] PASS — main SHA recorded after docs merge: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 - [ ] NOT VERIFIED — Production deployment identity does not yet match the post-merge documentation main SHA; the latest observed Production deployment remains on pre-merge runtime SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`. This documentation-only change has not been promoted/verified in Production.
 - [x] PASS — documentation PR #363 reviewed and merged at expected head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`; merge commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
+- [x] PASS — PR #373 Ruqyah lazy-loading fix reviewed and merged at exact tested head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`.
 - [ ] BLOCKED — every remaining candidate PR must be re-fetched and reviewed at its exact current head.
-- [x] PASS — PR #363 exact-head Quality Gate run `43632493503` passed, including desktop/mobile Playwright; this authorizes only the documentation merge already completed.
+- [x] PASS — PR #363 exact-head Quality Gate run `43632493503` passed; documentation policy merged.
+- [x] PASS — PR #373 exact-head Quality Gate run `43634212804` passed: 711/0 automated tests, Firestore Emulator, TypeScript, build, server smoke and 160 desktop/mobile Playwright checks; Ruqyah fix merged.
 - [ ] BLOCKED — no remaining implementation PR merge until its own exact-head CI checks are inspectable and pass.
-- [ ] NOT VERIFIED — Google AI Studio synchronization of main commit `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`.
+- [ ] NOT VERIFIED — Google AI Studio synchronization of main commit `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 ## B. CI and build
 
@@ -22,11 +24,12 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 - [ ] NOT VERIFIED — full test suite on a local complete checkout.
 - [ ] NOT VERIFIED — TypeScript/lint exact-head run.
 - [ ] NOT VERIFIED — Firestore Rules Emulator exact-head run.
-- [x] PASS — PR #363 desktop/mobile Playwright smoke completed on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
+- [x] PASS — PR #363 desktop/mobile Playwright smoke completed on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad3f`.
+- [x] PASS — PR #373 Ruqyah desktop/mobile E2E passed in both projects; 160 total Playwright tests.
 - [ ] NOT VERIFIED — implementation PR Playwright checks remain independent.
 - [x] PASS — PR #373 exact-head Vercel Preview build completed on `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca`.
 - [x] PASS — PR #364 exact-head Vercel Preview build completed on `ad33875b0304020f930c7b606ef8782d36148707`.
-- [x] PASS — existing Production deployment is READY on pre-merge main parent `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`; documentation-only merge does not claim a new Production deployment.
+- [x] PASS — Vercel Production deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q` is READY on exact main SHA `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 ## C. Quran and Ruqyah
 
@@ -35,9 +38,9 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 - [x] PASS — targeted Ruqyah view/audio-lock tests: 14/14 in isolated Node 26.
 - [x] PASS — full 171-entry long-program handler fixture normalizes coordinates and strips provider text.
 - [x] PASS — Preview build generated 114 Surah chunks and validated 6,236 ayah coordinates.
-- [ ] BLOCKED — merge/deploy the long-index whole-Surah locator fix through exact-head CI.
-- [ ] NOT VERIFIED — post-fix Production API short/medium/long smoke.
-- [ ] NOT VERIFIED — browser-level Ruqyah playback and navigation on protected Preview.
+- [x] PASS — whole-Surah locator and lazy local Quran loading merged in PR #373 after exact-head CI.
+- [ ] NOT VERIFIED — post-merge Production API short/medium/long smoke.
+- [x] PASS — CI desktop/mobile Ruqyah E2E on exact PR head; [ ] NOT VERIFIED — live Production Ruqyah playback/navigation smoke.
 - [ ] NOT VERIFIED — real-device/offline audio playback.
 
 ## D. Engine Plans and memorization

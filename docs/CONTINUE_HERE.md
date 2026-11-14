@@ -1,58 +1,58 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-14 21:40 +02:00  
+**Last reconciled:** 2026-11-14 21:58 +02:00  
 **Repository:** `xm8eslam-stack/WIRD-APP`  
-**Main:** `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e`  
-**Documentation PR #363:** MERGED at `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`  
-**Canonical queue:** this file · **Roadmap:** [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) · **State:** [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
+**Main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
+**PR #363:** MERGED at `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`  
+**PR #373:** MERGED at `d265bdf37e9410ad6cd99273bb595526dce63b50`
 
-> This is the authoritative post-merge snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before every new task.
+> This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before every new task.
 
-## Verified post-merge state — 2026-11-14
+## Verified current state — 2026-11-14
 
-- **Latest docs checkpoint:** main now includes follow-up snapshot/work-log refresh commit `d23f2d0cf4186f04bc4c7b7b0afa4c6b2b39b38e`. Its GitHub Actions workflow run has not yet been observed; Vercel commit status is PENDING. This is documentation-only and does not invalidate the PR #363 exact-head CI result above.
+- Main: `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- Documentation policy: PASS. PR #363 merged; `DOCUMENTATION_OPERATING_STANDARD.md`, `AGENTS.md`, `GEMINI.md`, and root `README.md` are on main.
+- Ruqyah lazy loading: PASS / merged. PR #373 merged; removes eager complete-Quran dependency, loads selected local Surah chunks, keeps API indexes coordinate-only, and renders local verified Quran text.
+- PR #373 exact-head CI: PASS. Run `43634212804`, job `132567343695`, exact PR head `c42286fa6a5a85bba414a45383a56bd7a00f0cc2`. Automated suites: 711 passed / 0 failed; Firestore Rules Emulator, TypeScript, production build, server smoke and desktop/mobile Playwright passed. Playwright: 160 passed, including Ruqyah audio/category and locator-library cases.
+- 604 printed Mushaf coordinate-map verification was SKIPPED; remains NOT VERIFIED.
+- Vercel Production: READY, deployment `dpl_6rDxKfTk19xmc94uqnY7toYKfm5Q`, source SHA exactly `d265bdf37e9410ad6cd99273bb595526dce63b50`, alias `https://wird-app.vercel.app/`.
+- Browser readback confirmed Production app loaded at `/#/session`; Ruqyah route/audio was not directly live-smoke-tested.
+- Preview: READY on PR #373 head `c42286f...`, deployment `dpl_JE7AddCKxTgu5XygzznNjnSL4STq`.
+- Previous read-only inventory reported both sync flags `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true`. No changes authorized or made.
+- Google AI Studio pull/synchronization is NOT VERIFIED.
+- No Quran corpus, Firebase Rules/data, secrets, Vercel settings, sync flags, or manual deployment changed.
 
-- **Documentation integration:** PASS. PR #363 merged by squash; main points to `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`. The canonical `DOCUMENTATION_OPERATING_STANDARD.md`, `AGENTS.md`, `GEMINI.md`, and root `README.md` are confirmed readable from main.
-- **Exact-head CI:** PASS for pre-merge PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`, GitHub Actions run `43632493503`, job `132562026967`. Automated suites, dependency audit, API import checks, audio CDN/range checks, Firestore Rules Emulator, TypeScript, production build, server startup, and desktop/mobile Playwright smoke all completed successfully.
-- **Explicit skipped check:** the 604 printed Mushaf coordinate-map verification step was SKIPPED. It is not a pass and remains a separate follow-up verification item.
-- **Vercel Preview:** READY on the exact PR head `26c9deb...`, deployment `dpl_xUZ388H5z3tqvUSqqeG6nVc3itcu`. Preview evidence does not transfer to the squash commit or Production.
-- **Vercel Production:** latest verified deployment remains READY, deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu`, source SHA `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b` (the pre-documentation main parent). The merged change is documentation-only; do not claim a new Production deployment or live app verification.
-- **Runtime scope:** PR #363 changed documentation/instructions only; no runtime code, Quran corpus, Firebase Rules/data, secrets, Vercel settings, sync flags, or Production deployment was changed.
-- **Production sync flags:** previous read-only inventory found both `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` set to `true`. No change is authorized or made. Treat sync-related Production actions as prohibited pending explicit owner authorization and release certification.
-- **Google AI Studio:** GitHub main now contains the canonical instructions. Actual Studio pull/synchronization remains NOT VERIFIED.
-- **Local checkout:** none is exposed; no local tests are claimed.
+## Open PR inventory — refreshed after #373 merge
 
-## Open PR inventory — refreshed 2026-11-14 after #363 merge
-
-All listed PRs were returned OPEN / DRAFT with the following heads at refresh time. Re-fetch exact head, changed paths, base, reviews, CI and Preview before action.
+All listed PRs were OPEN / DRAFT at refresh time. Re-fetch exact heads/checks before action.
 
 | PR | Head SHA | Current handling |
 |---:|---|---|
-| #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; reconcile package/lockfile with #372 |
-| #373 | `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca` | Ruqyah lazy loading/restoration; exact-head tests and live smoke required |
-| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun/CI dependency graph candidate |
-| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Archive codec not integrated into persistence |
+| #374 | `6673bb149a2ffa58177c35b9f68c76423dfb2a0b` | Hygiene; overlaps #372 package/lockfile; defer until reconciled |
+| #372 | `950640ea78d29e87d426a89d8887c15e4de2abac` | Bun CI/lockfile candidate; previous run failed before steps/logs; rerun after #373 |
+| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Codec only; not integrated into persistence |
 | #370 | `32bad0846b9f9a64b8ac1b78c292ea1f1c603e0c` | Session display settings |
-| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-Surah/Juz/range; generated-index E2E outstanding |
-| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Unified offline audio; lifecycle/cross-tab gaps |
-| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Payload cap only, not chunked archive |
-| #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline shell; reconcile with #368 |
-| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; outside current focused WIRD scope pending owner decision |
+| #369 | `3478ae22a200a817a240d8b28e532b01674427bf` | Multi-Surah/Juz/ranges; generated-index E2E outstanding |
+| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Offline audio; lifecycle/cross-tab gaps |
+| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Interim payload cap only |
+| #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/offline; reconcile with #368 |
+| #365 | `adc1ef01b7a0c5eb7e280395520108c94788af5d` | Seerah prototype; outside focused scope pending owner decision |
 | #364 | `2a98c6da77bd849811326696ab7075fe6c9c85b8` | Advisor/API security; full verification outstanding |
-| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio; do not merge beside #368 |
-| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio; do not merge beside #368 |
+| #359 | `7d31af20fe9cdc69aee4855acaf02e278fbf8b70` | Legacy audio store; do not merge beside #368 |
+| #358 | `4970b87d6ba712d3899093f4e8dd297bef17985e` | Legacy audio store; do not merge beside #368 |
 | #2 | `9e6d7a119c26ca7f37e69c21dbf7b934b016ad0d` | Legacy; do not merge wholesale |
 
-PR #363 is MERGED and must not be reopened. PR #375 and #360 remain closed/superseded. #358/#359 are competing legacy audio approaches and must not be merged alongside #368. #365 Seerah is outside the currently approved focused Qur'an/daily-worship product direction unless the owner explicitly expands scope.
+PR #363 and #373 are MERGED. PR #375 and #360 remain closed/superseded. #358/#359 are competing legacy audio stores; do not merge alongside #368.
 
 ## Immediate next actions
 
-1. Continue with #373 Ruqyah restoration/lazy loading: re-fetch exact head and full diff, verify it uses the local verified Quran corpus for displayed ayah text, inspect index/HTTP 500 path, run exact-head CI and Preview/live-safe smoke. Do not expose unverified provider text.
-2. Reconcile #372 and #374 dependency/lockfile changes before merging either; avoid duplicate lockfile owners and confirm frozen install behavior.
-3. Review coupled offline PRs #366/#368 and legacy #358/#359 as one architecture decision; do not merge duplicate stores. Preserve crash/orphan/cross-tab/account-isolation gates.
-4. Keep #367/#371 as partial storage work only; no claim of end-to-end chunked persistence/sync until IndexedDB, manifest, atomic publication, recovery, and multi-client tests are integrated.
-5. Audit current repository docs and active PRs for stale current-state claims. Keep historical evidence, but label it HISTORICAL and remove obsolete instructions only after preserving unique information.
-6. Verify Google AI Studio has pulled main when access is available; do not infer sync from GitHub merge.
+1. #372/#374 dependency hygiene: reconcile package/lockfile overlap, rerun exact-head CI with inspectable logs, then consider merge. Port #374's safe artifact cleanup separately if still needed.
+2. #366/#368 offline audio: one canonical DB/cache model; resolve crash, cross-tab, restart, quota and account-isolation gates.
+3. #364 Advisor: finish adversarial/security review.
+4. #369/#370: verify generated Juz/range indexes, boundary fixtures, browser E2E and persisted settings.
+5. #367/#371: no end-to-end chunked persistence/sync claim until IndexedDB archive, manifest integrity, atomic publication, rollback and multi-client tests exist.
+6. Continue the stale-document audit across all 55 Markdown files under `docs/`.
+7. Verify Google AI Studio has pulled main SHA `d265bdf...`; GitHub merge does not prove Studio sync.
 
 
 ## Historical snapshot — superseded by post-merge state
