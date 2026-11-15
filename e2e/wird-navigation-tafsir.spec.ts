@@ -41,7 +41,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await tafsirToggle.click();
     await expect(tafsirToggle).toHaveAttribute('aria-expanded', 'false');
     await expect.poll(() => page.evaluate(() => localStorage.getItem('wird_session_tafsir_expanded_v1'))).toBe('0');
-    await expect(page.getByText(/الآية 1 من 3/)).toBeVisible();
+    await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuetext', 'الآية 1 من 3');
   });
 
   test('Space shortcut ignores focused controls while masked words remain keyboard operable', async ({ page }) => {
