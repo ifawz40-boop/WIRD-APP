@@ -93,7 +93,7 @@ test.describe('Memorization session audio repetition', () => {
     await page.getByRole('button', { name: 'استماع للآية' }).click();
     await expect.poll(() => page.evaluate(() => (window as any).__wirdAudioPlayCalls)).toBe(1);
     await page.getByRole('button', { name: 'الآية التالية' }).click();
-    await expect(page.getByText(/الآية 2 من 3/)).toBeVisible();
+    await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuetext', 'الآية 2 من 3');
     await expect.poll(() => page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onended)).toBeNull();
   });
 
@@ -141,7 +141,7 @@ test.describe('Memorization session audio repetition', () => {
     await expect.poll(() => navigation.evaluate(element => getComputedStyle(element).position)).toBe('sticky');
     await expect(navigation.getByRole('button', { name: 'السابقة' })).toBeDisabled();
     await navigation.getByRole('button', { name: 'الآية التالية' }).click();
-    await expect(page.getByText(/الآية 2 من 3/)).toBeVisible();
+    await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuetext', 'الآية 2 من 3');
     await expect(navigation.getByRole('button', { name: 'السابقة' })).toBeEnabled();
   });
 
@@ -236,7 +236,7 @@ test('segment playback supports independent per-ayah and full-segment repeat cou
 
   for (let i = 0; i < 8; i++) {
     await expect.poll(() => page.evaluate(() => (window as any).__wirdAudioPlayCalls)).toBe(i + 1);
-    await page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onended?.(new Event('ended')));
+    await page.evaluate(() => (window as any).__wirdMockAudios.findLast((audio: any) => typeof audio.onended === 'function')?.onended?.(new Event('ended')));
   }
 
   const urls = await page.evaluate(() => (window as any).__wirdMockAudios.map((audio: { url: string }) => audio.url.split('/').pop()));
