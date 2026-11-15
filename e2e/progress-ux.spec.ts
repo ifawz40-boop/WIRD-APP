@@ -61,7 +61,7 @@ test.describe('WIRD progress map UX', () => {
     await expect(trigger).toBeFocused();
 
     await trigger.click();
-    await dialog.getByRole('button', { name: 'فتح الصفحة في جلسة التسميع' }).click();
-    await expect(page.getByText(/الآية 1 من 7/)).toBeVisible();
+    await dialog.getByRole('button', { name: /فتح (?:أول مقطع من الصفحة|الصفحة في جلسة التسميع)/ }).click();
+    await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuetext', 'الآية 1 من 7');
   });
 });
