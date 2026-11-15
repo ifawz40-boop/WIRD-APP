@@ -50,7 +50,7 @@ test.describe('WIRD memorization plans UX', () => {
     await expect(page.getByRole('heading', { name: 'لم تحفظ أي خطة بعد' })).toBeVisible();
     await page.getByRole('button', { name: 'إنشاء خطة حفظ' }).click();
     await expect(page.getByRole('button', { name: /الخطط الذكية المخصصة/ })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('button', { name: /إنشاء خطة جديدة/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^\\+ إنشاء خطة جديدة$/ })).toBeVisible();
   });
 
   test('plan mode selector fits narrow phones without horizontal overflow', async ({ page }) => {
@@ -86,7 +86,7 @@ test.describe('WIRD memorization plans UX', () => {
   });
 
   test('planning wizard pacing and rest-day controls are keyboard and touch accessible', async ({ page }) => {
-    await page.getByRole('button', { name: /إنشاء خطة جديدة/ }).click();
+    await page.getByRole('button', { name: /^\\+ إنشاء خطة جديدة$/ }).click();
 
     const versesPace = page.getByRole('button', { name: /عدد آيات ثابت/ });
     const pagesPace = page.getByRole('button', { name: /عدد صفحات ثابت/ });
