@@ -49,7 +49,7 @@ test.describe('WIRD memorization session display controls', () => {
     await jump.selectOption('4');
     await expect(jump).toHaveValue('4');
     await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuenow', '5');
-    await expect(page.getByText('الآية 5 من 10')).toBeVisible();
+    await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuetext', 'الآية 5 من 10');
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await expect(jump).toBeInViewport();
@@ -85,7 +85,7 @@ test.describe('WIRD memorization session display controls', () => {
     const jump = page.getByRole('combobox', { name: 'الانتقال المباشر إلى آية في الجلسة' });
     await jump.selectOption('8');
     await expect(page.getByRole('progressbar', { name: 'تقدم جلسة الحفظ' })).toHaveAttribute('aria-valuenow', '9');
-    const activeAyah = pageList.getByRole('button', { pressed: true });
+    const activeAyah = pageList.getByRole('button', { pressed: true }).last();
     await expect(activeAyah).toBeVisible();
     await expect(activeAyah).toBeInViewport();
 
