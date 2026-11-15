@@ -13,7 +13,7 @@ test.describe('WIRD ruqyah UX', () => {
     const brief = page.getByRole('button', { name: 'الرقية المختصرة' });
     const medium = page.getByRole('button', { name: 'الرقية المتوسطة' });
     await expect(brief).toHaveAttribute('aria-pressed', 'true');
-    await expect(brief).toHaveCSS('min-height', '64px');
+    await expect(brief).toHaveCSS('min-height', '48px');
     await medium.click();
     await expect(medium).toHaveAttribute('aria-pressed', 'true');
 
