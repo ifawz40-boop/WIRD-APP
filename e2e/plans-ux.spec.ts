@@ -29,8 +29,8 @@ test.describe('WIRD memorization plans UX', () => {
   test('plan library tabs expose selected state accessibly', async ({ page }) => {
     const selector = page.getByRole('group', { name: 'طرق إدارة خطط الحفظ' });
     await expect(selector).toBeVisible();
-    const engineTab = selector.getByRole('button', { name: /محرك التخطيط الذكي/ });
-    const presetsTab = selector.getByRole('button', { name: /النماذج والخطط المعتمدة/ });
+    const engineTab = selector.getByRole('button', { name: /الخطط الذكية المخصصة/ });
+    const presetsTab = selector.getByRole('button', { name: /النماذج المنهجية/ });
 
     await expect(engineTab).toHaveAttribute('aria-pressed', 'true');
     await expect(presetsTab).toHaveAttribute('aria-pressed', 'false');
@@ -46,18 +46,18 @@ test.describe('WIRD memorization plans UX', () => {
   });
 
   test('empty preset library guides the user to create a plan', async ({ page }) => {
-    await page.getByRole('button', { name: /النماذج والخطط المعتمدة/ }).click();
+    await page.getByRole('button', { name: /النماذج المنهجية/ }).click();
     await expect(page.getByRole('heading', { name: 'لم تحفظ أي خطة بعد' })).toBeVisible();
     await page.getByRole('button', { name: 'إنشاء خطة حفظ' }).click();
-    await expect(page.getByRole('button', { name: /محرك التخطيط الذكي/ })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('button', { name: /إنشاء خطة ذكية جديدة/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /الخطط الذكية المخصصة/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: /إنشاء خطة جديدة/ })).toBeVisible();
   });
 
   test('plan mode selector fits narrow phones without horizontal overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const selector = page.getByRole('group', { name: 'طرق إدارة خطط الحفظ' });
-    const engineTab = selector.getByRole('button', { name: /محرك التخطيط الذكي/ });
-    const presetsTab = selector.getByRole('button', { name: /النماذج والخطط المعتمدة/ });
+    const engineTab = selector.getByRole('button', { name: /الخطط الذكية المخصصة/ });
+    const presetsTab = selector.getByRole('button', { name: /النماذج المنهجية/ });
     const tabWidths = await Promise.all([engineTab, presetsTab].map(tab => tab.evaluate(element => element.getBoundingClientRect().width)));
     expect(tabWidths[0]).toBeGreaterThan(320);
     expect(Math.abs(tabWidths[0] - tabWidths[1])).toBeLessThanOrEqual(1);
@@ -68,7 +68,7 @@ test.describe('WIRD memorization plans UX', () => {
   });
 
   test('delete confirmation traps focus, closes on Escape, and restores its trigger', async ({ page }) => {
-    await page.getByRole('button', { name: /النماذج والخطط المعتمدة/ }).click();
+    await page.getByRole('button', { name: /النماذج المنهجية/ }).click();
     const trigger = page.getByRole('button', { name: /حذف الخطة/ }).first();
     await trigger.click();
 
@@ -86,7 +86,7 @@ test.describe('WIRD memorization plans UX', () => {
   });
 
   test('planning wizard pacing and rest-day controls are keyboard and touch accessible', async ({ page }) => {
-    await page.getByRole('button', { name: /إنشاء خطة ذكية جديدة/ }).click();
+    await page.getByRole('button', { name: /إنشاء خطة جديدة/ }).click();
 
     const versesPace = page.getByRole('button', { name: /عدد آيات ثابت/ });
     const pagesPace = page.getByRole('button', { name: /عدد صفحات ثابت/ });
