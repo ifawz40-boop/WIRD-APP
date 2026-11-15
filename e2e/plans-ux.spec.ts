@@ -100,7 +100,7 @@ test.describe('WIRD memorization plans UX', () => {
     await expect(pagesPace).toHaveAttribute('aria-pressed', 'true');
     await expect(versesPace).toHaveAttribute('aria-pressed', 'false');
 
-    const friday = page.getByRole('button', { name: 'الجمعة (راحة)' });
+    const friday = page.getByRole('button', { name: /الجمعة.*راحة/ });
     await expect(friday).toHaveAttribute('aria-pressed', 'false');
     await expect(friday).toHaveCSS('min-height', '44px');
     await friday.click();
