@@ -6,6 +6,7 @@ test.describe('Memorization session audio repetition', () => {
       localStorage.setItem('wird.audio.repeatCount.v1', '2');
       const audios: Array<{ onended: ((event: Event) => void) | null; onplaying: (() => void) | null }> = [];
       (window as any).__wirdMockAudios = audios;
+      (window as any).__wirdAudioPlayUrls = [];
       (window as any).__wirdAudioPlayCalls = 0;
       (window as any).__wirdRejectAudioPlay = false;
       (window as any).__wirdMarkAudioPlaying = () => audios.at(-1)?.onplaying?.();
@@ -21,6 +22,7 @@ test.describe('Memorization session audio repetition', () => {
         constructor(url: string) { this.url = url; audios.push(this); }
         play() {
           (window as any).__wirdAudioPlayCalls++;
+          (window as any).__wirdAudioPlayUrls.push(this.url);
           if ((window as any).__wirdRejectAudioPlay) {
             (window as any).__wirdRejectAudioPlay = false;
             return Promise.reject(new Error('blocked'));
@@ -239,7 +241,7 @@ test('segment playback supports independent per-ayah and full-segment repeat cou
     await page.evaluate(() => (window as any).__wirdMockAudios.findLast((audio: any) => typeof audio.onended === 'function')?.onended?.(new Event('ended')));
   }
 
-  const urls = await page.evaluate(() => (window as any).__wirdMockAudios.map((audio: { url: string }) => audio.url.split('/').pop()));
+  const urls = await page.evaluate(() => (window as any).__wirdAudioPlayUrls.map((url: string) => url.split('/').pop()));
   expect(urls).toEqual([
     '067002.mp3',
     '067002.mp3',
