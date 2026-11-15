@@ -88,7 +88,11 @@ test.describe('WIRD memorization plans UX', () => {
   test('planning wizard pacing and rest-day controls are keyboard and touch accessible', async ({ page }) => {
     await page.getByRole('button', { name: /^\+ إنشاء خطة جديدة$/ }).click();
 
+    // Pacing controls belong to step 2; advance from the wizard's initial scope step first.
+    await page.getByRole('button', { name: 'التالي' }).click();
+
     const versesPace = page.getByRole('button', { name: /عدد آيات ثابت/ });
+    await expect(versesPace).toBeVisible();
     const pagesPace = page.getByRole('button', { name: /عدد صفحات ثابت/ });
     await expect(versesPace).toHaveAttribute('aria-pressed', 'true');
     await expect(versesPace).toHaveCSS('min-height', '44px');
