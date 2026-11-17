@@ -889,3 +889,11 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Code-fix commit: `3d4bcbaac5e1830faf369125536294a8f8487e02`; subsequent commits on the branch are documentation-only. Re-fetch PR #386 for the live exact head. The last observed Vercel status remains FAILED due `build-rate-limit`; no GitHub Actions run returned. PR #386 remains OPEN/Draft. Its Vercel status is FAILED due `build-rate-limit`; no GitHub Actions run was returned for the current head.
 - #382 run #4461 fails `bun audit` on picomatch 4.0.7 / GHSA-fc5q-39xc-vjpf. #383 run #4460 fails `bun install --frozen-lockfile`. #384/#385 previews were READY on their exact older heads; neither has a GitHub Actions run.
 - No local checkout/terminal was available. No local test/build pass is claimed. Do not merge or deploy until the lockfile/security blocker is resolved and each task passes exact-head gates. No Production, Firebase, Vercel settings/secrets, sync flags or user data changed.
+
+
+## 2026-11-17 — Task 1 duplicate-plan completion identity
+
+- During follow-up review of the multi-plan Dashboard fix, identified an ambiguity: if two active plans contain the same ayah coordinates, coordinate-only completion matching could update the wrong plan when the user started the other plan's card.
+- PR #383 code commit `77f360a4390466863c487dd164d567a95a83a605` now passes the originating engine plan ID from both the primary daily task and additional plan cards into session state.
+- Session completion filters by that exact plan ID when present; changing the session range clears the plan identity. Deep-linked sessions without an originating ID keep the coordinate fallback.
+- Added a regression assertion that the primary daily selection retains the exact plan ID. PR #383 remains OPEN/Draft and its current exact-head Quality Gate is still blocked by the frozen lockfile/security prerequisite; no local test pass is claimed.
