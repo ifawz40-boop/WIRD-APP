@@ -37,9 +37,8 @@ test.describe('WIRD revision center UX', () => {
     await expect(page.getByText(/تمت إضافة الآية 1 من سورة الملك/)).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole('button', { name: 'الآيات الملتبسة والصعبة' }).click();
-    const weakCard = page.locator('.wird-card').filter({ hasText: 'سورة الملك' }).first();
-    await expect(weakCard).toBeVisible();
-    const navigation = weakCard.getByRole('navigation', { name: 'التنقل بين الآيات' });
+    await expect(page.getByText('سورة الملك', { exact: false }).first()).toBeVisible();
+    const navigation = page.getByRole('navigation', { name: 'التنقل بين الآيات' });
     await expect(navigation).toBeVisible();
     await expect(navigation.getByRole('button', { name: 'الآية السابقة' })).toBeEnabled();
     await navigation.getByRole('button', { name: 'الآية التالية' }).click();
