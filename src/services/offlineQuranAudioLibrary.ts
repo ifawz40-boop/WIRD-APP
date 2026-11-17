@@ -17,11 +17,14 @@ export const STORE_AUDIO_FILES = 'files';
 export const STORE_AUDIO_JOB_ITEMS = 'jobItems';
 export const STORE_AUDIO_LOCKS = 'locks';
 export const STORE_AUDIO_STAGING = 'staging';
+export const STORE_AUDIO_STAGING = 'staging';
 export const DEFAULT_AUDIO_STAGING_GRACE_MS = 5 * 60 * 1000;
 export const DEFAULT_AUDIO_ORPHAN_GRACE_MS = 24 * 60 * 60 * 1000;
 export const DEFAULT_AUDIO_LOCK_LEASE_MS = 60_000;
 export const DEFAULT_AUDIO_LOCK_POLL_INTERVAL_MS = 50;
 export const DEFAULT_AUDIO_LOCK_WAIT_TIMEOUT_MS = 120_000;
+export const DEFAULT_AUDIO_STAGING_GRACE_MS = 5 * 60 * 1000;
+export const DEFAULT_AUDIO_ORPHAN_GRACE_MS = 24 * 60 * 60 * 1000;
 
 export type OfflineAudioJobStatus =
   | 'queued'
@@ -94,6 +97,18 @@ export interface CacheStorageLike {
     delete(request: Request | string): Promise<boolean>;
     keys?(request?: Request | string): Promise<readonly Request[]>;
   }>;
+}
+
+export interface OfflineAudioStagingRecord {
+  cacheKey: string;
+  kind: 'download' | 'orphan';
+  fileKey?: string;
+  reciterId?: string;
+  globalAyahNumber?: number;
+  cacheGenerationId?: string;
+  jobId?: string;
+  createdAtMs: number;
+  schemaVersion: 1;
 }
 
 export interface OfflineAudioStagingRecord {
@@ -541,6 +556,9 @@ export class OfflineQuranAudioLibrary {
         if (!db.objectStoreNames.contains(STORE_AUDIO_STAGING)) {
           db.createObjectStore(STORE_AUDIO_STAGING, { keyPath: 'cacheKey' });
         }
+        if (!db.objectStoreNames.contains(STORE_AUDIO_STAGING)) {
+          db.createObjectStore(STORE_AUDIO_STAGING, { keyPath: 'cacheKey' });
+        }
       };
 
       req.onsuccess = () => {
@@ -682,6 +700,26 @@ export class OfflineQuranAudioLibrary {
     } catch {
       return false;
     }
+  }
+
+  private async putStagingRecord(record: OfflineAudioStagingRecord): Promise<void> {
+    await this.runWithLock('wird-offline-audio-jobs', async () => {
+      const db = await this.openDatabase();
+      const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
+      const done = idbTx(tx);
+      tx.objectStore(STORE_AUDIO_STAGING).put(record);
+      await done;
+    });
+  }
+
+  private async deleteStagingRecord(cacheKey: string): Promise<void> {
+    await this.runWithLock('wird-offline-audio-jobs', async () => {
+      const db = await this.openDatabase();
+      const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
+      const done = idbTx(tx);
+      tx.objectStore(STORE_AUDIO_STAGING).delete(cacheKey);
+      await done;
+    });
   }
 
   private async putStagingRecord(record: OfflineAudioStagingRecord): Promise<void> {
@@ -1006,6 +1044,9 @@ export class OfflineQuranAudioLibrary {
       }
       await idbTx(tx);
     });
+    await this.deleteStagingRecord(buildCacheGenerationKey(
+      orphan.reciterId, orphan.globalAyahNumber, orphan.cacheGenerationId
+    )).catch(() => undefined);
   }
 
   async startOrResumeJob(jobId: string): Promise<OfflineAudioJob | null> {
@@ -1378,6 +1419,7 @@ export class OfflineQuranAudioLibrary {
    */
   async reconcileLibrary(): Promise<{ evictedCount: number; cleanedOrphansCount: number }> {
     let evictedCount = 0;
+    let cleanedStagedOrphansCount = 0;
     const orphansToFinalize: Array<{
       fileKey: string;
       reciterId: string;
@@ -1386,9 +1428,13 @@ export class OfflineQuranAudioLibrary {
     }> = [];
 
     const db = await this.openDatabase();
-    const txRead = db.transaction([STORE_AUDIO_FILES], 'readonly');
+    const txRead = db.transaction([STORE_AUDIO_FILES, STORE_AUDIO_STAGING, STORE_AUDIO_LOCKS], 'readonly');
     const filesDone = idbTx(txRead);
-    const allFiles = (await idbReq(txRead.objectStore(STORE_AUDIO_FILES).getAll())) as OfflineAudioFileRecord[];
+    const [allFiles, allStaging, allLocks] = await Promise.all([
+      idbReq(txRead.objectStore(STORE_AUDIO_FILES).getAll()) as Promise<OfflineAudioFileRecord[]>,
+      idbReq(txRead.objectStore(STORE_AUDIO_STAGING).getAll()) as Promise<OfflineAudioStagingRecord[]>,
+      idbReq(txRead.objectStore(STORE_AUDIO_LOCKS).getAll()) as Promise<OfflineAudioLockRecord[]>
+    ]);
     await filesDone;
 
     const missingGenerationByKey = new Map<string, string>();
@@ -1451,8 +1497,65 @@ export class OfflineQuranAudioLibrary {
     for (const orphan of orphansToFinalize) {
       await this.finalizeOrphanDeletion(orphan);
     }
+
+    const fileByCacheKey = new Map(allFiles.map(file => [
+      buildCacheGenerationKey(file.reciterId, file.globalAyahNumber, file.cacheGenerationId),
+      file
+    ]));
+    const stagedCacheKeys = new Set(allStaging.map(record => record.cacheKey));
+    const knownCacheKeys = new Set(fileByCacheKey.keys());
+    const activeWorkerLocks = new Set(allLocks
+      .filter(lock => lock.expiresAtMs > Date.now())
+      .map(lock => lock.lockName));
+
+    if (this.cacheStorageFactory) {
+      const cache = await this.openAudioCache();
+      const now = Date.now();
+      for (const record of allStaging) {
+        const file = fileByCacheKey.get(record.cacheKey);
+        if (file && file.available && !file.deletionPending &&
+            record.cacheGenerationId && file.cacheGenerationId === record.cacheGenerationId) {
+          await this.deleteStagingRecord(record.cacheKey).catch(() => undefined);
+          stagedCacheKeys.delete(record.cacheKey);
+          continue;
+        }
+        if (file?.deletionPending) continue; // handled by the reference-aware deletion journal above
+        if (record.kind === 'download' && record.jobId &&
+            activeWorkerLocks.has(`wird-offline-audio-worker:${record.jobId}`)) continue;
+        const graceMs = record.kind === 'download' ? this.stagingGraceMs : this.orphanGraceMs;
+        if (now - record.createdAtMs < graceMs) continue;
+        try {
+          await cache.delete(record.cacheKey);
+          const remaining = await cache.match(record.cacheKey);
+          if (!remaining) {
+            await this.deleteStagingRecord(record.cacheKey);
+            stagedCacheKeys.delete(record.cacheKey);
+            cleanedStagedOrphansCount++;
+          }
+        } catch {
+          // Keep the durable staging record; the next reconciliation retries safely.
+        }
+      }
+
+      // Discover pre-v3 orphan keys that have no file metadata or staging record.
+      // They are staged now and deleted only after the conservative orphan grace period.
+      if (cache.keys) {
+        try {
+          const cacheKeys = await cache.keys();
+          for (const request of cacheKeys) {
+            const cacheKey = typeof request === 'string' ? request : request.url;
+            if (knownCacheKeys.has(cacheKey) || stagedCacheKeys.has(cacheKey)) continue;
+            await this.putStagingRecord({ cacheKey, kind: 'orphan', createdAtMs: now, schemaVersion: 1 });
+            stagedCacheKeys.add(cacheKey);
+          }
+        } catch {
+          // Enumeration is best-effort; explicit staging records remain recoverable.
+        }
+      }
+    }
+
     this.notifyListeners();
-    return { evictedCount, cleanedOrphansCount: orphansToFinalize.length };
+    return { evictedCount, cleanedOrphansCount: orphansToFinalize.length + cleanedStagedOrphansCount };
   }
 
   /**
