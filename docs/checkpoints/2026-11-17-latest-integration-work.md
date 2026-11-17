@@ -43,3 +43,12 @@
 - Corrected the reusable component contract to `Pick<Ayah, 'surahNumber' | 'numberInSurah'>` on commit `6c62465d97e855701217ce2e3b8fe00d0574ba58`. This is the correct narrow type; no dummy Quran text/page/juz fields are fabricated.
 - Current PR #386 head is now `6c62465d97e855701217ce2e3b8fe00d0574ba58`. Re-fetch workflow runs for this exact SHA; a new run was not yet visible at the first poll after the push. Run #4494 does not validate the fix and never reached Playwright because TypeScript stopped the application job.
 - Security audit remains failed on picomatch. No merge/deploy/config changes.
+
+
+## Cumulative release PR reconciliation — 2026-11-17
+- Existing Draft integration PR #387 was discovered; no duplicate PR was opened. The more complete cumulative integration branch was reconciled into its existing head branch `release/wird-offline-tasks-integration-20261117` using a force-with-lease update from the verified prior head.
+- The cumulative tree includes PR #383 multiple-plan Dashboard logic, #384 navigation plus the newly ported weak-verse card controls, #385 facing Mushaf, #386 offline Muyassar Tafsir, the corrected responsive navigation tests, the narrow coordinate-only navigation prop, and the mobile audio-error cleanup fix.
+- PR #387 exact head first became `6dec1cbb...`; its workflow file was then corrected because it had inherited the older one-job CI workflow from the #386 branch. Restored the #382 split full dependency audit + application test jobs and extended the 604-page coverage condition to run on Tafsir and offline integration branches.
+- Current PR #387 exact head: `199743fa60974ee650d51e6579bb5db87fba6487`. Quality Gate #4504 / run `44179885024`: separate dependency audit completed FAILURE on picomatch; application job is running independently (last poll: Node.js setup). Re-poll through Playwright and inspect artifacts.
+- Run #4503 on previous head `6dec1cbb...` used the older single-job workflow and failed within that job; it is superseded by #4504 and does not validate the split gate.
+- Current PR #387 remains Draft/HOLD. No merge or Production deploy; no Firebase/Vercel settings/secrets or sync-flag changes. Main remains unchanged at the last verified SHA.
