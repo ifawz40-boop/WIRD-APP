@@ -106,6 +106,8 @@ test.describe('WIRD memorization plans UX', () => {
     await friday.click();
     await expect(page.getByRole('button', { name: 'الجمعة ✓' })).toHaveAttribute('aria-pressed', 'true');
 
-    await expect(page.getByRole('button', { name: /معاينة الجدول الزمني المقترح/ })).toHaveCSS('min-height', '44px');
+    // Step 3 exposes the preview action; step 2's action is still labelled 'التالي'.
+    await page.getByRole('button', { name: 'التالي' }).click();
+    await expect(page.getByRole('button', { name: /معاينة الجدول المقترح/ })).toHaveCSS('min-height', '44px');
   });
 });
