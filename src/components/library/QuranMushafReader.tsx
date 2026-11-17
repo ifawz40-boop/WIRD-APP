@@ -349,6 +349,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   }, []);
 
   const stopAudio = () => {
+    autoPlayNextPageRef.current = false;
     audioQueueRef.current?.stop();
     audioQueueRef.current = null;
     setIsPlaying(false);
