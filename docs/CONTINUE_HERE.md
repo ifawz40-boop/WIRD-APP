@@ -332,3 +332,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - PR #386 latest head updated after TypeScript correction: `6c62465d97e855701217ce2e3b8fe00d0574ba58`. See the latest integration checkpoint for #4494's 759 unit passes / 31 Rules passes / TS failure and the narrow prop-type correction; fetch a new exact-head run before proceeding.
 
 - Cumulative release integration is tracked in existing Draft PR #387, current head `199743fa60974ee650d51e6579bb5db87fba6487`. Exact-head Quality Gate #4504 (`44179885024`) has the security audit failed separately and the application job running. The latest checkpoint records the integration tree and workflow correction; re-poll #4504 before any status change.
+
+- PR #387 now also preserves the originating engine plan ID in the session URL so refresh/reopen cannot route completion to a different plan when ranges overlap. Latest head `6d7f435dd2caca3cc400783fc2a7ee152f3e1fd1`; tests added. Run #4504 is still validating the preceding head; fetch a new exact-head run after it concludes.
