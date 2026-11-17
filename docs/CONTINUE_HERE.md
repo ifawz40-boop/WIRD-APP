@@ -379,3 +379,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Full checkpoint file: docs/checkpoints/2026-11-18-PR390-4563.md (exact candidate SHA, cumulative scope, current CI, security blocker, real-device gates, and safe continuation sequence).
 
 - Security dependency detail rechecked against Vite v8.3.5 package manifest: Vite declares picomatch ^4.0.7 directly and also brings tinyglobby ^0.2.17. The current audit log reports the resolved path vite > tinyglobby > fdir > picomatch@4.0.7; this is not just an unrelated optional development package that can be removed by pruning a leaf. No safe released fix is available yet.
+
+- Final public-asset allowlist review added JS/MJS/WASM extensions (in addition to CSS, images, fonts, JSON and webmanifest), still excluding sw.js. This ensures public worker/wasm assets are not silently omitted from the explicit app-shell package. Regression assertion added. Latest PR #390 head `086aac24baa380a0801e00e88b9e7c777b621010`; earlier run #4563 no longer validates this change; new exact-head Quality Gate required.
