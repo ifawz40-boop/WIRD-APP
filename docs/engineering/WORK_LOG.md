@@ -822,3 +822,17 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - **Next action:** Push Studio workspace changes to a dedicated GitHub feature branch/PR and execute GitHub Quality Gate CI (including Firestore Rules Emulator with Java); keep Vercel Production deployment and sync flags unchanged until explicit owner authorization.
 
 
+
+
+## 2026-11-17 — Quran ayah navigation controls
+
+- Owner request remains local/offline app readiness, with four ordered tasks: all active memorization plans on Dashboard; navigation beneath ayat; one-/two-page printed Mushaf; opposite-page Tafsir al-Muyassar.
+- Task 2 PR #384, branch feat/ayah-navigation-controls-20261117, stacked on lockfile prerequisite PR #382.
+- Added src/components/shared/AyahNavigationControls.tsx: accessible previous/next controls with Surah-boundary handling and no network dependency.
+- Integrated controls beneath each ayah card and the continuous-reading block in src/components/library/QuranLibraryView.tsx; integrated beneath the Mushaf page in src/components/library/QuranMushafReader.tsx. The session view already provides its own sticky ayah navigation and was left unchanged.
+- Added E2E coverage in e2e/wird-navigation-tafsir.spec.ts for study-card and Mushaf navigation. No local tests/build were run; task 2 remains NOT VERIFIED until exact-head CI and browser checks pass.
+- PR #382's Bun lockfile alignment fixed the frozen install issue on its branch; last known Playwright failures were caused by tests firing the shortcut before listener readiness and firing media error before the new audio instance existed. Follow-up test synchronization was committed; await rerun.
+- Task 4 data research: QuranEnc official Arabic At-Tafsir al-Muyassar page identifies source key arabic_moyassar and provides a surah API. Its displayed reuse conditions require content not to be modified/added/deleted, clear publisher/source attribution, version number, preserving edition information, reporting translation feedback, updating to new releases, and avoiding unsuitable ads. This supports a controlled offline package path but does not yet verify the exact source edition version or a complete bundled corpus.
+- No Quran text was modified; no Firebase/Vercel production configuration or user data changed.
+- Next: complete task 3 in its own PR; then verify the official Tafsir edition metadata and implement complete, resumable local Tafsir storage before task 4 UI.
+

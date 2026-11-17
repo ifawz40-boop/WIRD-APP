@@ -1,5 +1,19 @@
 # WIRD — Master Project State
 
+## Current GitHub implementation snapshot — 2026-11-17 21:55 +02:00
+
+- Last verified live main SHA: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a. Re-fetch before merge/deploy.
+- Owner scope: local/offline readiness only; four tasks in order: all active memorization plans on Dashboard, navigation below ayat, one-/two-page printed Mushaf, opposite-page Tafsir al-Muyassar.
+- Task 1: PR #383, branch fix/dashboard-multiple-due-plan-tasks-20261117. Aggregates all due tasks across active non-paused plans and resolves completion against the matching plan. NOT VERIFIED: initial CI was blocked by bun.lock/package.json override mismatch.
+- Task 2: PR #384, branch feat/ayah-navigation-controls-20261117, stacked on PR #382. Shared accessible controls added beneath Library study cards, continuous reading and Mushaf pages; session's existing sticky navigation remains. E2E coverage added. NOT VERIFIED pending exact-head CI.
+- CI prerequisite: PR #382 aligns bun.lock. Its last inspectable run passed install, automated tests, API/audio checks, Rules Emulator, TypeScript, build and server smoke; desktop/mobile Playwright failed two timing-sensitive tests. Follow-up commits in #382 wait for the shortcut listener and the new audio instance. Re-fetch current run before proceeding.
+- Task 3: NOT STARTED — one-/two-page printed Mushaf with responsive fallback and preservation of page/audio/bookmark state.
+- Task 4: NOT STARTED — opposite-page Tafsir al-Muyassar requires a full verified offline corpus. QuranEnc's official Arabic Muyassar source is identified as arabic_moyassar; its reuse terms require unchanged content, explicit publisher/source attribution, version metadata and retention of embedded edition information. Existing per-ayah cache is insufficient for full offline use.
+- No local build/test was run in this connector session. Vercel Preview readiness is not equivalent to Quality Gate or production verification.
+- No production deployment, Firebase Rules/data, Vercel secrets/settings, sync flags, or user data changed.
+
+> The older Google AI Studio workspace snapshot below is historical context only; it is not evidence for current GitHub or deployed state.
+
 **Current snapshot reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`

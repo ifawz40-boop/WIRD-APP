@@ -1,5 +1,20 @@
 > **Roadmap scope note — 2026-11-14:** This file defines product direction and sequencing, not the live operational state. For current main/PR heads, CI, Vercel, Firebase, owner decisions and the next executable task, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). The dated implementation/status notes below are retained as history and must be revalidated before action.
 
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+**Priority:** active owner request. Execute only these tasks in order; do not expand product scope or introduce runtime network dependencies.
+
+1. **Multiple active memorization plans on Dashboard.** Aggregate every due/overdue incomplete memorization task from all active, non-paused engine plans. Sort deterministically; exclude future tasks, paused/inactive plans, completed tasks and completed days. Show originating plan and direct start action; completion updates the matching due plan.
+2. **Verse navigation controls.** Place accessible previous/next ayah controls directly beneath ayah displays in Quran reading interfaces. Support Surah boundaries and local navigation.
+3. **Printed Mushaf page layout.** Add one-page and facing two-page modes. Side-by-side on wide screens, with a usable one-page fallback on narrow screens; preserve bookmarks, current position and audio semantics.
+4. **Opposite-page Tafsir al-Muyassar.** Each side independently supports Quran or locally available Tafsir for the ayah selected on the opposite Quran page. Both sides default to Quran. Use a complete verified local corpus and preserve publisher/source/version metadata.
+
+**Release rules:** one narrow PR per task; unit/integration and desktop/mobile E2E coverage; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Preview or branch creation is not completion. No Firebase Rules/data, Production secrets/settings, sync flags, or user-data changes.
+
+**Current status:** #383 task 1 OPEN / Draft / CI blocked by frozen-lockfile mismatch. #384 task 2 OPEN / Draft / stacked on #382 and not yet verified. #382 is the lockfile prerequisite with Playwright timing failures under retest. Tasks 3–4 NOT STARTED. See docs/CONTINUE_HERE.md.
+
+---
+
 ---
 
 # مسار منتجي جديد — Offline-first والتطبيق المستقبلي

@@ -38,6 +38,7 @@ import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { TafsirSheet } from './TafsirSheet';
 import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
+import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
 import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
@@ -168,6 +169,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const [tafsirAyah, setTafsirAyah] = useState<Ayah | null>(null);
+  const [readingAyah, setReadingAyah] = useState<Ayah | null>(null);
   const [readerLayout, setReaderLayout] = useState<'flow' | 'printed'>(() => {
     try { return localStorage.getItem('wird.quran.readerLayout.v1') === 'printed' ? 'printed' : 'flow'; }
     catch { return 'flow'; }
@@ -391,6 +393,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     pendingTargetRef.current = null;
     autoPlayNextPageRef.current = false;
     stopAudio();
+    setReadingAyah(null);
     setPage(nextPage);
   };
 
@@ -436,6 +439,26 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const jumpToHizbQuarter = (quarter: number) => {
     const point = HIZB_INDEX[String(quarter)];
     if (point) jumpToNavigationPoint(point);
+  };
+
+  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number) => {
+    const pageEntry = Object.entries(PAGE_INDEX).find(([, segments]) =>
+      segments.some(segment =>
+        segment.surahNumber === surahNumber &&
+        ayahNumber >= segment.startAyah &&
+        ayahNumber <= segment.endAyah
+      )
+    );
+    if (!pageEntry) return;
+    jumpToNavigationPoint({ surahNumber, ayahNumber, page: Number(pageEntry[0]) });
+    void loadSurahVerses(surahNumber)
+      .then(verses => setReadingAyah(verses.find(ayah => ayah.numberInSurah === ayahNumber) || null))
+      .catch(error => console.warn('[WIRD Mushaf] Could not resolve the target ayah locally:', error));
+  };
+
+  const handleSelectAyah = (ayah: Ayah) => {
+    setReadingAyah(ayah);
+    setTafsirAyah(ayah);
   };
 
   const jumpToSurah = (surahNumber: number) => {
@@ -911,8 +934,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
           <QuranMushafFacsimilePage
             page={page}
             onAyahsResolved={setPrintedPageAyahs}
-            selectedAyah={tafsirAyah}
-            onSelectAyah={setTafsirAyah}
+            selectedAyah={readingAyah}
+            onSelectAyah={handleSelectAyah}
             onFallback={() => selectReaderLayout('flow')}
             maxWidthClass={isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-5xl' : 'max-w-3xl'}
           />
@@ -999,7 +1022,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
                   <button
                     id={'wird-ayah-' + ayah.surahNumber + '-' + ayah.numberInSurah}
                     type="button"
-                    onClick={() => setTafsirAyah(ayah)}
+                    onClick={() => handleSelectAyah(ayah)}
                     title={`عرض التفسير المعتمد لسورة ${surah?.name || ayah.surahNumber}، الآية ${ayah.numberInSurah}`}
                     className={`inline rounded-xl px-1.5 py-0.5 text-right transition-all cursor-pointer ${
                       isCurrent
@@ -1050,6 +1073,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
           </div>
         )}
       </main>
+
+      {(readingAyah || audioAyahs[0] || ayahs[0]) && (
+        <div className="mx-auto mt-3 w-full max-w-4xl">
+          <AyahNavigationControls
+            currentAyah={(readingAyah || audioAyahs[0] || ayahs[0]) as Ayah}
+            onNavigate={handleNavigateToAyah}
+          />
+        </div>
+      )}
 
       {/* Hizb Quarters Modal Picker */}
       {showHizbPicker && (
