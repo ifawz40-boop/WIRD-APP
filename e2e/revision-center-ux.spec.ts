@@ -34,7 +34,7 @@ test.describe('WIRD revision center UX', () => {
     const dialog = page.getByRole('dialog', { name: 'تسجيل آية ملتبسة أو متعثرة يدوياً' });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: 'تسجيل الآية الملتبسة' }).click();
-    await expect(page.getByRole('status')).toContainText('تمت إضافة الآية 1 من سورة الملك', { timeout: 15_000 });
+    await expect(page.getByText(/تمت إضافة الآية 1 من سورة الملك/)).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole('button', { name: 'الآيات الملتبسة والصعبة' }).click();
     const weakCard = page.locator('.wird-card').filter({ hasText: 'سورة الملك' }).first();
