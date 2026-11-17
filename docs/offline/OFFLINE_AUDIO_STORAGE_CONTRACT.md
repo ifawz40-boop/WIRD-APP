@@ -263,3 +263,9 @@ PR #368 is a stale alternative implementation based on an older main. Its Cache 
 - Cross-tab pause/cancel and UI refresh: not implemented yet.
 - Cold restart + airplane-mode playback on desktop/mobile real devices: not verified.
 - Full audio quota exhaustion, interrupted download, resume, corruption, cache eviction and deletion/replacement generation tests: required before release.
+
+
+### PR #388 exact-head test follow-up — 2026-11-17
+- Run #4520 on initial PR #388 head `06b0b5f98fab89ee6509f67816ecf2c67c9edd4e`: **768 unit assertions passed**, including the new cross-tab lease and database-upgrade tests. TypeScript then failed only on TS2774 because the DOM type marks `navigator.locks.request` as always defined.
+- Corrected feature detection by structurally treating `navigator.locks` as optional at runtime; commit `271d886945a7c98a3441e6ff75543df47bb6f972`.
+- A new exact-head Quality Gate is required. Run #4520 does not validate the correction and did not reach production build/Playwright. The separate picomatch security audit remains blocked.
