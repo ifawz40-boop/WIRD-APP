@@ -1,5 +1,32 @@
 # WIRD — Master Project State
 
+## Current GitHub implementation snapshot — 2026-11-17 21:55 +02:00
+
+- Last verified live main SHA: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a. Re-fetch before merge/deploy.
+- Owner scope: local/offline readiness only; four tasks in order: all active memorization plans on Dashboard, navigation below ayat, one-/two-page printed Mushaf, opposite-page Tafsir al-Muyassar.
+- Task 1: PR #383, branch fix/dashboard-multiple-due-plan-tasks-20261117. Aggregates all due tasks across active non-paused plans and resolves completion against the matching plan. NOT VERIFIED: initial CI was blocked by bun.lock/package.json override mismatch.
+- Task 2: PR #384, branch feat/ayah-navigation-controls-20261117, stacked on PR #382. Shared accessible controls added beneath Library study cards, continuous reading and Mushaf pages; session's existing sticky navigation remains. E2E coverage added. NOT VERIFIED pending exact-head CI.
+- CI prerequisite: PR #382 aligns bun.lock. Its last inspectable run passed install, automated tests, API/audio checks, Rules Emulator, TypeScript, build and server smoke; desktop/mobile Playwright failed two timing-sensitive tests. Follow-up commits in #382 wait for the shortcut listener and the new audio instance. Re-fetch current run before proceeding.
+- Task 3: NOT STARTED — one-/two-page printed Mushaf with responsive fallback and preservation of page/audio/bookmark state.
+- Task 4: NOT STARTED — opposite-page Tafsir al-Muyassar requires a full verified offline corpus. QuranEnc's official Arabic Muyassar source is identified as arabic_moyassar; its reuse terms require unchanged content, explicit publisher/source attribution, version metadata and retention of embedded edition information. Existing per-ayah cache is insufficient for full offline use.
+- No local build/test was run in this connector session. Vercel Preview readiness is not equivalent to Quality Gate or production verification.
+- No production deployment, Firebase Rules/data, Vercel secrets/settings, sync flags, or user data changed.
+
+> The older Google AI Studio workspace snapshot below is historical context only; it is not evidence for current GitHub or deployed state.
+
+## Current GitHub implementation snapshot — 2026-11-17 22:05 +02:00
+
+- Live main last verified: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a.
+- Owner scope: local/offline readiness only; tasks are all active plan due-work, navigation beneath ayat, one-/two-page printed Mushaf, and opposite-page Tafsir al-Muyassar.
+- PR #383: task 1 multiple-plan aggregation, OPEN / Draft / NOT VERIFIED.
+- PR #384: task 2 shared adjacent-ayah controls beneath Quran Library and Mushaf reading surfaces, OPEN / Draft / NOT VERIFIED.
+- PR #385: task 3 printed Mushaf single/facing-spread mode, OPEN / Draft / NOT VERIFIED. Single page is default; spread aligns lower-numbered page to the right, steps by two, combines both page ayahs for audio in reading order, and stores preference locally. E2E coverage includes one/two-page switching and offline opening.
+- PR #382: frozen Bun lockfile mismatch is addressed on its branch, but the exact-head Quality Gate now fails at bun audit because picomatch@4.0.7 is covered by a newly surfaced high-severity ReDoS advisory GHSA-fc5q-39xc-vjpf. No fixed version is stated; do not suppress audit or lower severity. No downstream PR may merge until this is safely resolved and all exact-head checks pass.
+- Task 4: NOT STARTED. Official QuranEnc catalogue identifies Arabic Tafsir al-Muyassar as translation key arabic_moyassar, publisher King Fahd Complex, version 1.0.1 dated 2026-11-09. QuranEnc API returns per-surah aya/translation/footnotes. Its republishing rules require no content modification/addition/deletion, clear publisher and source attribution, version number, preserving embedded edition info, reporting feedback, updating to source versions and no unsuitable ads. A complete 114-surah local IndexedDB package with validation/resume/update metadata is required.
+- No local build/tests were run in this connector session. No production deploy, Firebase Rules/data, Vercel secrets/settings, sync flags or user data changed.
+
+> The older Google AI Studio workspace snapshot below is historical context only.
+
 **Current snapshot reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`

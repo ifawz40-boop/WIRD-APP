@@ -77,3 +77,16 @@ Implementation rules:
 - A separate service-worker cache stores only recently viewed pinned Hafs/KFGQPC SVG pages, with a strict 24-file bound.
 
 The feature is not yet approved as the default reader mode. Required remaining gates: exact local coordinate coverage across all 604 pages, opening-spread and dense-page visual review, actual device testing on iPadOS/Android, and first-load/offline cache verification. Until those gates pass, the flexible local-text mode remains the default and permanent fallback.
+
+
+## 2026-11-17 — Printed Mushaf facing-page mode
+
+- The printed facsimile reader now has a local preference key: wird.quran.pageDisplayMode.v1.
+- Default mode is one page. Facing spread mode treats the odd/lower page as the right-hand page and the next page as the left-hand page; page 603 therefore pairs with page 604.
+- In spread mode, page jumps normalize to the correct right-hand spread start, navigation and touch swipes move by two pages, and page labels show both visible page numbers.
+- Both page SVGs are independently validated against WIRD's local ayah data through QuranMushafFacsimilePage; page art is never used as a Quran text source.
+- Audio queue order is right page then left page. Playback and auto-continue wait until the left page's ayah map is available. Switching display mode stops active playback to avoid stale queue semantics.
+- On narrow screens the spread remains side-by-side in a horizontally scrollable 640px minimum-width surface rather than shrinking Arabic text to unreadable columns.
+- E2E coverage was added for one/two-page switching, left/right order, two-page stepping, preference persistence and offline opening. No local run is claimed; see PR #385 and exact-head CI.
+- Opposite-page Tafsir is intentionally not implemented in this change. It must be a separate task with a complete, source-attributed local corpus and independently controlled Quran/Tafsir side modes.
+

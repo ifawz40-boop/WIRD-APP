@@ -152,3 +152,14 @@ This is **device-capability adaptation**, not subscription-tier entitlement. It 
 PR #367 currently keeps a safe 800,000-byte maximum for a single engine-plan Firestore document. The total size of a plan must not be confused with the maximum size of one Firestore document. Larger plans require versioned multi-document chunk storage, integrity verification, and atomic manifest publication. Do not raise the single-document limit beyond its reviewed envelope.
 
 Future plan storage should derive chunk count from actual UTF-8 serialized bytes and enforce a separately configured account entitlement only after real product tiers/quotas are defined. Until then, do not invent Free/Pro storage allowances. The proposed chunk protocol must use deterministic idempotent chunk IDs, per-version manifests (count/length/hash/schema), verified complete upload before pointer publication, optimistic revision checks, safe old-version retention, and conflict references rather than duplicating large plan bodies. No Firestore Rules or production changes are authorized by this design note.
+
+
+## Printed Mushaf spread assets — 2026-11-17
+
+- One-page mode remains the default. Optional facing-page mode is a device-local UI preference and introduces no network dependency.
+- A spread consists of the odd/lower page on the right and the following page on the left. Both facsimile assets must be present in the local app cache for offline use.
+- Each facsimile page is validated against WIRD's canonical local Quran ayah corpus; the SVG is a layout/selection surface only, never the source of Quran text.
+- Spread audio must wait for both pages' local ayah maps and play in reading order (right, then left). Automatic continuation advances to the next spread, not the next single page.
+- Offline E2E must verify both page assets after device preparation and while network is disabled.
+- Tafsir al-Muyassar is not yet part of the offline package. The current small per-ayah cache is insufficient. Task 4 must add a resumable 114-surah IndexedDB package with exact source text and footnotes, edition version, attribution and per-surah integrity validation.
+

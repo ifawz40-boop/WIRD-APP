@@ -1,5 +1,35 @@
 > **Roadmap scope note — 2026-11-14:** This file defines product direction and sequencing, not the live operational state. For current main/PR heads, CI, Vercel, Firebase, owner decisions and the next executable task, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). The dated implementation/status notes below are retained as history and must be revalidated before action.
 
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+**Priority:** active owner request. Execute only these tasks in order; do not expand product scope or introduce runtime network dependencies.
+
+1. **Multiple active memorization plans on Dashboard.** Aggregate every due/overdue incomplete memorization task from all active, non-paused engine plans. Sort deterministically; exclude future tasks, paused/inactive plans, completed tasks and completed days. Show originating plan and direct start action; completion updates the matching due plan.
+2. **Verse navigation controls.** Place accessible previous/next ayah controls directly beneath ayah displays in Quran reading interfaces. Support Surah boundaries and local navigation.
+3. **Printed Mushaf page layout.** Add one-page and facing two-page modes. Side-by-side on wide screens, with a usable one-page fallback on narrow screens; preserve bookmarks, current position and audio semantics.
+4. **Opposite-page Tafsir al-Muyassar.** Each side independently supports Quran or locally available Tafsir for the ayah selected on the opposite Quran page. Both sides default to Quran. Use a complete verified local corpus and preserve publisher/source/version metadata.
+
+**Release rules:** one narrow PR per task; unit/integration and desktop/mobile E2E coverage; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Preview or branch creation is not completion. No Firebase Rules/data, Production secrets/settings, sync flags, or user-data changes.
+
+**Current status:** #383 task 1 OPEN / Draft / CI blocked by frozen-lockfile mismatch. #384 task 2 OPEN / Draft / stacked on #382 and not yet verified. #382 is the lockfile prerequisite with Playwright timing failures under retest. Tasks 3–4 NOT STARTED. See docs/CONTINUE_HERE.md.
+
+---
+
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+Execute only these four tasks in order; no unrelated feature expansion or new always-online dependency.
+
+1. **Multiple active memorization plans on Dashboard:** show all due/overdue incomplete tasks across active non-paused plans, excluding future/completed work, with plan identity and direct start; completion updates the matching plan.
+2. **Verse navigation controls:** accessible previous/next controls directly beneath ayah displays in Quran reading interfaces, including Surah boundaries and local navigation.
+3. **Printed Mushaf display:** one-page default and optional facing two-page spread; lower page number on the right, next page on the left; odd-page spread alignment, two-page navigation, audio in reading order, locally persisted preference and narrow-screen horizontal scroll.
+4. **Opposite-page Tafsir al-Muyassar:** each side can show Quran or locally stored Tafsir for the opposite Quran page's selected ayah(s); both Quran by default. Source: QuranEnc key arabic_moyassar, King Fahd Complex edition, catalog V1.0.1 (2026-11-09). Preserve the source's aya/translation/footnotes unchanged and follow QuranEnc's republishing terms.
+
+**Release rules:** one narrow PR per task; tests for unit/integration, desktop/mobile and offline; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Never suppress a high-severity audit or merge with missing/failing checks. No Firebase Rules/data, Production secrets/settings, sync flags, or user-data changes.
+
+**Status:** #383 task 1, #384 task 2, #385 task 3 OPEN / Draft / NOT VERIFIED. #382 lockfile prerequisite currently fails bun audit on GHSA-fc5q-39xc-vjpf affecting picomatch@4.0.7; no fixed version is stated. Task 4 NOT STARTED pending complete, verified local Tafsir storage. See docs/CONTINUE_HERE.md.
+
+---
+
 ---
 
 # مسار منتجي جديد — Offline-first والتطبيق المستقبلي
