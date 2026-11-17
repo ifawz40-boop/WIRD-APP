@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   downloadOfflineTafsirMuyassar,
   getOfflineTafsirDownloadStatus,
@@ -18,7 +18,7 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
   const [error, setError] = useState('');
   const controllerRef = useRef<AbortController | null>(null);
 
-  const refreshStatus = async () => {
+  const refreshStatus = useCallback(async () => {
     try {
       const current = await getOfflineTafsirDownloadStatus();
       setStatus(current);
@@ -26,12 +26,12 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'تعذر قراءة حالة التفسير المحلي.');
     }
-  };
+  }, []);
 
   useEffect(() => {
     void refreshStatus();
     return () => controllerRef.current?.abort();
-  }, []);
+  }, [refreshStatus]);
 
   const startDownload = async () => {
     const controller = new AbortController();
