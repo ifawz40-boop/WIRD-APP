@@ -1,5 +1,15 @@
 # WIRD — Continuation Entry Point
 
+## Latest integrity follow-up — 2026-11-17
+
+- Re-reviewed the offline Tafsir persistence path and found that previously stored IndexedDB rows were counted as downloaded based only on their keys/version; malformed or incomplete payloads could therefore be skipped during resume and briefly contribute to a false offline-ready count.
+- Fixed in `src/services/tafsirOfflineLibrary.ts`: both the status calculation and resume-skip set now validate every persisted surah against WIRD's canonical verse count, sequential coordinates, requested surah and non-empty translation before counting/skipping it. Invalid existing rows are treated as missing and fetched again.
+- Added E2E regression coverage that seeds a corrupt surah-1 record and stale manifest, confirms progress remains 0/114, then verifies resume fetches and validates all 114 surahs.
+- Code commits: `2dfe56cdced650f45a004b183b1cca793edb1fe1` (service fix), `b41262195a14760faa75d4f530814ee13e56d070` (E2E regression). These are on PR #386's branch; re-fetch its exact current head before any further action.
+- Verification: source and test changes are committed, but no local Bun/Playwright run is available here and PR #386 targets a feature branch, so no GitHub Actions Quality Gate has run. NOT VERIFIED; do not merge or deploy.
+- Security note: picomatch advisory remains published, while its maintainer publicly disputes exploitability for trusted glob patterns. In WIRD, Vite is dynamically imported only in the non-production development path; production serves prebuilt `dist`. This supports a production-vs-build dependency risk assessment, but does not remove the advisory or authorize suppressing it. Keep the full finding visible pending an explicit, evidence-based gate decision.
+
+
 ## Live execution checkpoint — 2026-11-17 22:45 +02:00
 
 **Owner priority:** local/offline readiness only. Do not expand scope beyond the requested work: (1) due memorization tasks from all active plans, (2) adjacent-ayah navigation beneath Quran reading surfaces, (3) one-page/facing two-page printed Mushaf, and (4) offline Tafsir al-Muyassar on either opposite spread side.
