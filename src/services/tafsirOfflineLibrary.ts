@@ -97,6 +97,14 @@ function requestValue<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
+function transactionDone(transaction: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error('تعذر حفظ بيانات التفسير المحلية.'));
+    transaction.onabort = () => reject(transaction.error || new Error('تم إلغاء حفظ بيانات التفسير المحلية.'));
+  });
+}
+
 async function readManifest(database: IDBDatabase): Promise<StoredManifest | null> {
   const transaction = database.transaction(META_STORE, 'readonly');
   const value = await requestValue(transaction.objectStore(META_STORE).get(META_KEY)) as StoredManifest | undefined;
@@ -105,7 +113,8 @@ async function readManifest(database: IDBDatabase): Promise<StoredManifest | nul
 
 async function writeManifest(database: IDBDatabase, manifest: StoredManifest): Promise<void> {
   const transaction = database.transaction(META_STORE, 'readwrite');
-  await requestValue(transaction.objectStore(META_STORE).put(manifest));
+  transaction.objectStore(META_STORE).put(manifest);
+  await transactionDone(transaction);
 }
 
 async function readStoredSurah(database: IDBDatabase, surahNumber: number): Promise<StoredSurah | null> {
@@ -116,7 +125,8 @@ async function readStoredSurah(database: IDBDatabase, surahNumber: number): Prom
 
 async function writeStoredSurah(database: IDBDatabase, record: StoredSurah): Promise<void> {
   const transaction = database.transaction(SURAH_STORE, 'readwrite');
-  await requestValue(transaction.objectStore(SURAH_STORE).put(record));
+  transaction.objectStore(SURAH_STORE).put(record);
+  await transactionDone(transaction);
 }
 
 function extractRows(payload: unknown): QuranEncTafsirRow[] {
@@ -200,6 +210,7 @@ export async function downloadOfflineTafsirMuyassar(options: DownloadOptions = {
     const clearTransaction = database.transaction([SURAH_STORE, META_STORE], 'readwrite');
     clearTransaction.objectStore(SURAH_STORE).clear();
     clearTransaction.objectStore(META_STORE).clear();
+    await transactionDone(clearTransaction);
     manifest = null;
   }
 
@@ -296,4 +307,5 @@ export async function deleteOfflineTafsirMuyassar(): Promise<void> {
   const transaction = database.transaction([SURAH_STORE, META_STORE], 'readwrite');
   transaction.objectStore(SURAH_STORE).clear();
   transaction.objectStore(META_STORE).clear();
+  await transactionDone(transaction);
 }
