@@ -1110,6 +1110,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
                         sourceSideLabel="الصفحة اليمنى"
                         ayahs={printedPageAyahs[page] || EMPTY_MUSHAF_AYAHS}
                         selectedAyah={readingSide === 'right' ? readingAyah : null}
+                        onNavigate={handleNavigateToAyah}
                       />
                     ) : (
                       <QuranMushafFacsimilePage
@@ -1135,6 +1136,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
                     sourceSideLabel="الصفحة اليسرى"
                     ayahs={printedPageAyahs[page + 1] || EMPTY_MUSHAF_AYAHS}
                     selectedAyah={readingSide === 'left' ? readingAyah : null}
+                    onNavigate={handleNavigateToAyah}
                   />
                 ) : (
                   <QuranMushafFacsimilePage
