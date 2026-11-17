@@ -104,6 +104,10 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     const viteConfig = fs.readFileSync(path.resolve('./vite.config.ts'), 'utf8');
     assert(viteConfig.includes('offlineShellManifestPlugin'), 'Vite must install the offline shell manifest plugin');
     assert(viteConfig.includes('wird-precache-manifest.json'), 'Vite must emit a generated precache manifest');
+    const settingsSource = fs.readFileSync(path.resolve('./src/components/settings/SettingsView.tsx'), 'utf8');
+    assert(settingsSource.includes('تنزيل المصحف المصوّر كاملًا') && settingsSource.includes('استكمال تنزيل المصحف') && settingsSource.includes('إيقاف مؤقت'), 'Settings must expose full Mushaf download, resume and pause controls');
+    assert(!settingsSource.includes('يعمل دون إنترنت 100%'), 'Offline readiness UI must not claim 100% offline support for optional external assets');
+
     assert(viteConfig.includes('listOfflinePublicAssets'), 'Vite must include recursive public assets in the explicit offline package manifest');
     assert(viteConfig.includes('allAssets.length > 2000'), 'Vite must fail safely if the offline package exceeds the service-worker asset limit');
     const publicAssetScript = fs.readFileSync(path.resolve('./scripts/offlinePublicAssets.ts'), 'utf8');
