@@ -707,26 +707,6 @@ export class OfflineQuranAudioLibrary {
     });
   }
 
-  private async putStagingRecord(record: OfflineAudioStagingRecord): Promise<void> {
-    await this.runWithLock('wird-offline-audio-jobs', async () => {
-      const db = await this.openDatabase();
-      const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
-      const done = idbTx(tx);
-      tx.objectStore(STORE_AUDIO_STAGING).put(record);
-      await done;
-    });
-  }
-
-  private async deleteStagingRecord(cacheKey: string): Promise<void> {
-    await this.runWithLock('wird-offline-audio-jobs', async () => {
-      const db = await this.openDatabase();
-      const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
-      const done = idbTx(tx);
-      tx.objectStore(STORE_AUDIO_STAGING).delete(cacheKey);
-      await done;
-    });
-  }
-
   async listJobs(): Promise<OfflineAudioJob[]> {
     const db = await this.openDatabase();
     const tx = db.transaction([STORE_AUDIO_JOBS], 'readonly');
