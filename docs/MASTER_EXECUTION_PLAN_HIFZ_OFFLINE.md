@@ -525,3 +525,8 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Offline audio audit: #366 app-shell/storage improvements and #368 IndexedDB/cache/downloader foundation are still stale Draft branches based on old main. #368 lacks worker protocol, UI, local-first playback, cross-tab lock and real-device offline playback proof. See `docs/checkpoints/2026-11-17-offline-audio-integration-audit.md`.
 - Vite 8.3.8 and supported Vite 7.3/6.4 branches still declare picomatch 4.x in the vulnerable range. Vite 5 is unsupported and incompatible with the current plugin-react v6 peer requirement; do not downgrade as a production workaround.
 - No merge, deployment, Firebase/Vercel settings/secrets change, or sync-flag activation. `main` remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a` at last verification.
+
+
+## 2026-11-18 — Printed Mushaf full-offline package candidate
+
+PR #390 adds an explicit optional full-604-page Hafs/KFGQPC facsimile download to the local/offline readiness track. It uses the pinned Quran.ws commit, samples pages 1/300/604 for a quota estimate, preserves a 32MB/15% storage reserve, validates and sanitizes each SVG before Cache Storage commit, resumes missing/corrupt pages, and supports pause/status/delete. The printed reader resolves cached artwork before network; all Quran text and ayah data continue to come from WIRD's verified local corpus. Settings no longer claims blanket “100% offline” readiness and clearly states that external content must be downloaded. PR #390 remains Draft/HOLD pending exact-head tests, the full dependency audit, and real-device cold-start/airplane-mode checks.
