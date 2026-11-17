@@ -421,21 +421,34 @@ export default function App() {
     let updatedEnginePlans: EngineGeneratedPlan[] | undefined;
     if (mode === 'memorize' && sessionParams.surahNumber) {
       const currentEnginePlans = StorageService.getEnginePlans();
-      const activeEnginePlan = currentEnginePlans.find(plan => plan.isActive && !plan.isPaused);
-      const matchingDay = activeEnginePlan?.schedule.find(day =>
-        day.memorizationTask && !day.memorizationTask.completed &&
-        day.memorizationTask.surahNumber === sessionParams.surahNumber &&
-        day.memorizationTask.startAyah === sessionParams.startAyah &&
-        day.memorizationTask.endAyah === sessionParams.endAyah
-      );
-      if (activeEnginePlan && matchingDay?.memorizationTask) {
-        const updatedPlan = PlanLifecycle.updateTask(activeEnginePlan, matchingDay.id, {
-          status: ((matchingDay.minorRevisionTask && !matchingDay.minorRevisionTask.completed) ||
-            (matchingDay.majorRevisionTask && !matchingDay.majorRevisionTask.completed))
+      const today = getLocalDateString();
+      const matchingEntry = currentEnginePlans
+        .filter(plan => plan.isActive && !plan.isPaused)
+        .flatMap(plan => plan.schedule
+          .filter(day =>
+            day.date <= today &&
+            day.status !== 'completed' &&
+            day.memorizationTask &&
+            !day.memorizationTask.completed &&
+            day.memorizationTask.surahNumber === sessionParams.surahNumber &&
+            day.memorizationTask.startAyah === sessionParams.startAyah &&
+            day.memorizationTask.endAyah === sessionParams.endAyah
+          )
+          .map(day => ({ plan, day })))
+        .sort((a, b) =>
+          a.day.date.localeCompare(b.day.date) ||
+          (a.plan.input?.title || a.plan.title).localeCompare(b.plan.input?.title || b.plan.title, 'ar') ||
+          a.plan.id.localeCompare(b.plan.id)
+        )[0];
+      if (matchingEntry?.day.memorizationTask) {
+        const { plan, day } = matchingEntry;
+        const updatedPlan = PlanLifecycle.updateTask(plan, day.id, {
+          status: ((day.minorRevisionTask && !day.minorRevisionTask.completed) ||
+            (day.majorRevisionTask && !day.majorRevisionTask.completed))
             ? 'partially_completed' : 'completed',
-          memorizationTask: { ...matchingDay.memorizationTask, completed: true, completedAt: new Date().toISOString() }
+          memorizationTask: { ...day.memorizationTask, completed: true, completedAt: new Date().toISOString() }
         });
-        updatedEnginePlans = currentEnginePlans.map(plan => plan.id === activeEnginePlan.id ? updatedPlan : plan);
+        updatedEnginePlans = currentEnginePlans.map(item => item.id === plan.id ? updatedPlan : item);
       }
     }
 

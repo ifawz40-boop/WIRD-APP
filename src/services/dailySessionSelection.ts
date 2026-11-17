@@ -30,22 +30,53 @@ export type DailySessionSelection =
  * Return only an engine-plan task due today or overdue.
  * Future tasks must never be started early by the dashboard quick-start.
  */
+export interface DueEngineTask {
+  planId: string;
+  planTitle: string;
+  date: string;
+  task: ScheduledTaskUnit;
+}
+
+/**
+ * Collect every incomplete memorization task due today or overdue across all
+ * active, non-paused engine plans. A completed day is authoritative even if
+ * an older snapshot left its nested task flag unset.
+ */
+export function getDueEngineTasks(
+  plans: EngineGeneratedPlan[],
+  todayStr: string
+): DueEngineTask[] {
+  return plans.flatMap(plan => {
+    if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) return [];
+    return plan.schedule.flatMap(day => {
+      const task = day.memorizationTask;
+      if (
+        typeof day.date !== 'string' ||
+        day.date > todayStr ||
+        day.status === 'completed' ||
+        !task ||
+        task.completed
+      ) return [];
+      return [{
+        planId: plan.id,
+        planTitle: plan.input?.title || plan.title || 'خطة الحفظ',
+        date: day.date,
+        task
+      }];
+    });
+  }).sort((a, b) =>
+    a.date.localeCompare(b.date) ||
+    a.planTitle.localeCompare(b.planTitle, 'ar') ||
+    a.planId.localeCompare(b.planId)
+  );
+}
+
 export function getNextDueEngineTask(
   plan: EngineGeneratedPlan | null | undefined,
   todayStr: string
 ): ScheduledTaskUnit | null {
-  if (!plan || !plan.isActive || plan.isPaused) return null;
-
-  const dueDay = plan.schedule
-    .filter(day =>
-      typeof day.date === 'string' &&
-      day.date <= todayStr &&
-      Boolean(day.memorizationTask) &&
-      !day.memorizationTask?.completed
-    )
-    .sort((a, b) => a.date.localeCompare(b.date))[0];
-
-  return dueDay?.memorizationTask || null;
+  if (!plan) return null;
+  return getDueEngineTasks([plan], todayStr)[0]?.task || null;
 }
 
 /**
@@ -84,17 +115,17 @@ export function getDailySessionSelection(
   portions: WirdPortion[],
   todayStr: string
 ): DailySessionSelection {
-  const activeEnginePlan = enginePlans.find(plan => plan.isActive && !plan.isPaused);
-  const engineTask = getNextDueEngineTask(activeEnginePlan, todayStr);
-  if (engineTask) {
+  const nextDueEngineTask = getDueEngineTasks(enginePlans, todayStr)[0];
+  if (nextDueEngineTask) {
+    const { task, planTitle } = nextDueEngineTask;
     return {
       kind: 'session',
       mode: 'memorize',
       source: 'engine_plan',
-      surahNumber: engineTask.surahNumber,
-      startAyah: engineTask.startAyah,
-      endAyah: engineTask.endAyah,
-      label: `خطة: ${activeEnginePlan?.input.title || activeEnginePlan?.title || 'الحفظ الذكي'}`
+      surahNumber: task.surahNumber,
+      startAyah: task.startAyah,
+      endAyah: task.endAyah,
+      label: `خطة: ${planTitle}`
     };
   }
 
@@ -111,7 +142,8 @@ export function getDailySessionSelection(
     };
   }
 
-  const activePreset = activeEnginePlan ? undefined : plans.find(plan => plan.isActive);
+  const hasActiveEnginePlan = enginePlans.some(plan => plan.isActive && !plan.isPaused);
+  const activePreset = hasActiveEnginePlan ? undefined : plans.find(plan => plan.isActive);
   if (activePreset) {
     if (!isPresetAutoStartSupported(activePreset)) {
       return {
@@ -141,7 +173,7 @@ export function getDailySessionSelection(
     };
   }
 
-  if (activeEnginePlan) {
+  if (hasActiveEnginePlan) {
     return {
       kind: 'blocked',
       mode: 'memorize',
