@@ -350,3 +350,14 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Cumulative PR #389 now targets `main` and includes the full release stack plus offline audio cross-tab leases, durable staging/orphan sweep, cross-tab pause/cancel, recursive public-asset precache manifest, 6s navigation fallback timeout, quota-adaptive runtime caches, and accurate persistence diagnostics. Exact head `6bec8fbabd260d3abcfd6e9f9ca1bbf960504057`; Quality Gate #4543 has audit FAIL on picomatch and application job running at 604-page coverage. Continue polling before any release decision.
 
 - Clarification for PR #389: recursive public-asset manifest does not include the 604 external Quran.ws Mushaf SVG pages; those remain a bounded on-demand runtime cache. A separate optional full-604-page download package is still outstanding and must be quota-preflighted/resumable. Local Quran text remains independent of facsimile images.
+
+
+## Checkpoint 2026-11-18 — full offline Mushaf package candidate
+
+- New PR #390: https://github.com/xm8eslam-stack/WIRD-APP/pull/390 — Draft/HOLD, branch `feat/offline-mushaf-package-20261117`, currently based on `main` and includes cumulative candidate code from PR #387/#389 plus full offline printed-Mushaf work.
+- Offline printed-Mushaf package: all 604 pinned Hafs/KFGQPC SVG pages; sample pages 1/300/604 for size estimate; 1.35 safety factor; 32MB/15% storage reserve; sequential verified caching; resume; pause; inspect status; delete. Reader checks the versioned Cache Storage package before network. Local Quran text/ayah data remain authoritative.
+- Settings now offers the optional package and removes the inaccurate “100% offline” claim. It explicitly warns that the artwork package may consume hundreds of MB and that offline readiness depends on downloading optional external content.
+- Added unit/source checks and E2E that seeds page 1 in the dedicated cache, switches the browser offline, and expects printed page rendering without any external request.
+- New candidate commit sequence includes `b7e6c537...`, `1e7ef121...`, `33e5ee4b...`, `c5ec160f...`, `6e80d237...`, `3bc565c0...`, `003a4407...`, `665cd02f...`, and latest docs commit `8ee956df...`. Confirm latest branch head before test assertions.
+- PR #389 exact-head run #4550 (`44186321154`) is still running its desktop/mobile Playwright job; audit job fails on picomatch. Do not treat #4550 as validation for PR #390 because #390 adds new source and E2E tests.
+- Next: confirm #390 exact-head CI starts; inspect and fix any TypeScript/unit/Playwright issues; poll #4550 and verify the QuranEnc version fixture change. Security audit remains blocking due picomatch@4.0.7 GHSA-fc5q-39xc-vjpf. No merge/deploy.
