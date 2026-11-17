@@ -185,9 +185,11 @@ export async function downloadMushafOfflinePackage(
         parseMushafViewBox(markup);
         parseMushafAyahCoordinates(markup);
         sanitizeMushafSvgMarkup(markup);
+        await validatePageAgainstLocalQuran(page, markup);
         continue;
       } catch {
         await cache.delete(svgUrl);
+        cached = Math.max(0, cached - 1);
       }
     }
     const downloaded = await fetchValidatedPage(page, signal);
