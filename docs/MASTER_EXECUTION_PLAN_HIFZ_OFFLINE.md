@@ -431,3 +431,11 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 2. If no patch is available, evaluate a supported Vite/toolchain version that removes picomatch from the resolved graph; prove compatibility with build, preview, test and dev server before changing dependencies.
 3. Once security gate is genuinely clean, rerun the full exact-head Quality Gate and review #383's dashboard behavior with three active plans, duplicate ayah ranges across plans, overdue tasks, pause/inactive/future/completed cases, and reload persistence.
 4. Continue #384–#386 only with the same exact-SHA gates and keep the offline-readiness plan as the release criterion.
+
+
+## Integration / CI recheck — 2026-11-17 23:05 +02:00
+- PR #383 exact head `8c7c5cd47cf186c8da23a2cf5fe3360afb7cd341` Quality Gate run #4474: functional validation job PASS (756 unit assertions; 31 Firestore Rules tests; API/audio/server smoke; TypeScript; production build; 164 Playwright tests passed). Overall gate remains FAIL only at `bun audit` for `picomatch@4.0.7`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. The official advisory has no patched version listed. Keep all dependent PRs Draft/HOLD.
+- PRs #384, #385, #386 have no workflow runs associated with their current exact heads. Their current CI status is NOT VERIFIED, regardless of older Preview statuses.
+- Branch ancestry is not a clean linear stack: #384 head vs #385 head compares as diverged (14 commits ahead / 4 behind; merge base `3f59506204e21f702749159333162e80ab2f324d`). #386 is ahead of #385 by 92 commits with no divergence. #384 head vs #383 head is also diverged (19 ahead / 13 behind; merge base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`). Therefore do not assume #384/#385/#386 are safely sequential or merge them by number; first reconcile branch ancestry and overlapping Mushaf/AyahNavigationControls files, then run integration tests.
+- #385 and #386 both touch Mushaf reading/navigation code; #386 is based on #385. #385 has copied/shared navigation changes but is not a descendant of #384, so a later merge of #384 may conflict or overwrite behavior. Resolve this deliberately before integration.
+- No PR merge, production deploy, Firebase/Vercel configuration change, secret change, or sync-flag change.
