@@ -902,7 +902,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
               onClick={() => changePage(page + pageStep)}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
-              الصفحة التالية <ChevronLeft className="h-4 w-4" />
+              {isSpreadModeActive ? 'الصفحتان التاليتان' : 'الصفحة التالية'} <ChevronLeft className="h-4 w-4" />
             </button>
           </div>
 
