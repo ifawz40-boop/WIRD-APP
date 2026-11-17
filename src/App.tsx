@@ -439,19 +439,19 @@ export default function App() {
             day.memorizationTask.startAyah === sessionParams.startAyah &&
             day.memorizationTask.endAyah === sessionParams.endAyah
           )
-          .map(day => ({ plan, day })))
+          .map(day => ({ plan, day, task: day.memorizationTask! })))
         .sort((a, b) =>
           a.day.date.localeCompare(b.day.date) ||
           (a.plan.input?.title || a.plan.title).localeCompare(b.plan.input?.title || b.plan.title, 'ar') ||
           a.plan.id.localeCompare(b.plan.id)
         )[0];
-      if (matchingEntry?.day.memorizationTask) {
-        const { plan, day } = matchingEntry;
+      if (matchingEntry) {
+        const { plan, day, task } = matchingEntry;
         const updatedPlan = PlanLifecycle.updateTask(plan, day.id, {
           status: ((day.minorRevisionTask && !day.minorRevisionTask.completed) ||
             (day.majorRevisionTask && !day.majorRevisionTask.completed))
             ? 'partially_completed' : 'completed',
-          memorizationTask: { ...day.memorizationTask, completed: true, completedAt: new Date().toISOString() }
+          memorizationTask: { ...task, completed: true, completedAt: new Date().toISOString() }
         });
         updatedEnginePlans = currentEnginePlans.map(item => item.id === plan.id ? updatedPlan : item);
       }
