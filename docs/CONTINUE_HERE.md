@@ -38,6 +38,16 @@
 
 ---
 
+## Latest live PR graph — 2026-11-17
+
+- `main`: `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`.
+- #380: head `99408208b8bd4027b05ee544b908211911949c96`; branch diverged from main, 13 ahead / 2 behind, merge base `68dc6ea...`; `mergeable=false`. No GitHub Actions run returned for this head. Vercel context is not CI evidence. Rebase/reconcile and rerun all gates.
+- #381: head `eb0c71ea09987e61c7a8b944866265e8ded4e5b3`; current PR merge ref `3f0430a4fd951de8fdbaa6223d3fb5f1c3f4c914`; no workflow run/status returned for that latest merge ref yet. Previous merge-ref run #4446 failed on frozen Bun install due to missing `overrides` in main's `bun.lock`. The latest docs commits may trigger a new run; re-fetch it before proceeding.
+
+**Continuation instruction:** first inspect the current #381 workflow on merge ref `3f0430a...`; then reconcile #380 with current main. Keep both PRs Draft/HOLD until their exact merge-ref checks pass. Read `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md` for the full roadmap, gap matrix, safeguards and evidence history.
+
+---
+
 ## Immediate next actions
 
 1. **Sync & commit workspace changes to GitHub feature branch/PR:** review the workspace diff, push to a dedicated feature branch (not directly to `main`), and run the full GitHub Quality Gate workflow (which provides Java for `test:firestore-rules` alongside Bun install/audit, unit tests, build, and Playwright).
