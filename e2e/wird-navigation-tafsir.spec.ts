@@ -77,6 +77,21 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(navigation.getByRole('button', { name: 'الآية التالية' })).toHaveCSS('min-height', '56px');
   });
 
+  test('Mushaf exposes previous and next ayah controls directly below the displayed page', async ({ page }) => {
+    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+
+    await expect(page.locator('#wird-ayah-1-1')).toBeVisible();
+    const navigation = page.getByRole('navigation', { name: 'التنقل بين الآيات' });
+    await expect(navigation).toBeVisible();
+    await expect(navigation.getByRole('button', { name: 'الآية السابقة' })).toBeDisabled();
+    await expect(navigation.getByRole('button', { name: 'الآية التالية' })).toBeEnabled();
+
+    await navigation.getByRole('button', { name: 'الآية التالية' }).click();
+    await expect(page.locator('#wird-ayah-1-2')).toBeVisible();
+    await expect(navigation).toContainText('1:2');
+  });
+
   test('full offline preparation caches lazy Quran assets and opens the mushaf offline', async ({ page, context }) => {
     test.skip((page.viewportSize()?.width ?? 1280) < 768, 'The full asset download is exercised once on desktop; mobile settings reachability is covered separately.');
     test.setTimeout(180_000);
