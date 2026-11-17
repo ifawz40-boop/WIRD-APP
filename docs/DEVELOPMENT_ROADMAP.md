@@ -498,3 +498,15 @@ Religious-content restrictions remain absolute: verified local Quran text is aut
 - #383 exact head 45acc719: run #4460 failed bun install --frozen-lockfile because main's lockfile is out of sync; #382 is the prerequisite lockfile alignment.
 - #384–#386 are stacked on feature branches and currently have no workflow runs. Do not treat absent checks as passing.
 - GitHub advisory reviewed/updated 2026-11-17, High CVSS 8.7, no fixed version stated; npm latest remains 4.0.7. Upstream candidate fixes remain open/unmerged. Keep all PRs Draft until safe remediation and exact-head CI.
+
+
+### Local/offline owner tasks — execution update 2026-11-17 22:45 +02:00
+
+- #383 multi-plan due queue: OPEN/Draft; exact Quality Gate #4460 fails frozen Bun install because committed lockfile needs alignment.
+- #384 adjacent-ayah navigation: OPEN/Draft; Vercel Preview READY on exact head, but GitHub Actions checks are absent. Controls cover Quran study and Mushaf surfaces; memorization session already includes its own controls.
+- #385 one-/two-page printed Mushaf: OPEN/Draft; Vercel Preview READY on exact head, but GitHub Actions checks are absent.
+- #386 offline Tafsir al-Muyassar: OPEN/Draft; Vercel Preview for the latest head was rejected by Vercel `build-rate-limit`; no GitHub Actions run. Includes a resumable, device-local 114-surah package, exact source version and coverage validation, unchanged source payload/footnotes, and either-direction opposite-page display.
+- #386 follow-up: corrected spread anchor behavior when navigating from Tafsir back to a Quran ayah on the Tafsir side; added E2E regression coverage. Completeness now requires exactly surahs 1–114.
+- #382 is the prerequisite security/lockfile PR. Its exact-head Quality Gate fails `bun audit` on picomatch@4.0.7, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. No fixed version was stated in the advisory as of 2026-11-17. Do not suppress audit or pin an unmerged partial patch.
+- No local tests/build are claimed. Keep all task PRs Draft until lockfile/security remediation and exact-head Quality Gate, desktop/mobile E2E, offline tests and printed-page coverage pass. See `docs/CONTINUE_HERE.md` for current heads and precise evidence.
+
