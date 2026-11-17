@@ -163,6 +163,46 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 - No production secrets, environment variables, Firebase Rules/data, sync flags, or production deployment actions without specific owner authorization.
 - Every implementation PR must be narrowly scoped, reviewable, and based on the current main SHA. Avoid merging overlapping/legacy branches wholesale.
 
+## 4A. Immediate owner-requested local/offline tasks — 2026-11-17
+
+This is the owner's immediate execution queue. It is deliberately limited to the four existing-app tasks below and takes priority over unrelated product work. These tasks complement (but do not replace) Phases 1–5 above.
+
+| Order | Requirement | Implementation PR | Current status | Acceptance still required |
+|---:|---|---:|---|---|
+| 1 | Dashboard must surface due/overdue memorization from every active, non-paused engine plan, not only the first plan | #383 | Implemented in Draft; NOT VERIFIED | Exact-head CI, three-plan dashboard E2E, correct plan completion, offline persistence/restart |
+| 2 | Previous/next ayah controls immediately beneath Quran ayahs in reading surfaces | #384 | Implemented in Draft; NOT VERIFIED | Exact-head CI, desktop/mobile keyboard and touch E2E, cross-Surah boundaries, no Quran text changes |
+| 3 | Printed Mushaf one-page and facing two-page view | #385 | Implemented in Draft; NOT VERIFIED | Exact-head CI, 604-page coordinate coverage, RTL/right-page-first layout, responsive mobile, saved preference, audio boundaries |
+| 4 | In facing Mushaf mode, either page can display the full Tafsir al-Muyassar for the Quran ayahs on the opposite page; both Quran by default | #386 | Implemented in Draft; NOT VERIFIED | Exact-head CI, full 114-surah source validation, resumable IndexedDB download, reload/offline reading, both directions, navigation and audio behavior |
+
+### Current PR chain and release blocker
+
+- Main baseline last observed: `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. Re-fetch before merge.
+- PR #382 (`fix/main-bun-lockfile-alignment-20261117`, head `e8ca61cf86b0d49d94783670f76db1c250c7c146`) reconciles `bun.lock`. Quality Gate run #4461 installs with frozen lockfile but fails at `bun audit --audit-level=high` on picomatch@4.0.7 through Vite → tinyglobby → fdir → picomatch. Advisory GHSA-fc5q-39xc-vjpf / CVE-2026-112366 is High (CVSS 8.7); as of 2026-11-17 the advisory states affected through 4.0.7 and no patched release. Upstream PRs #237/#238 remain open/unmerged; PR #238 has a reported remaining exponential case. **Do not suppress the audit, reduce its severity threshold, or pin an incomplete unmerged patch.**
+- PR #383 head `45acc719a90049f1f71606995cb02943ac5e337d`; Quality Gate run #4460 fails at frozen install because the original main lockfile is inconsistent. Its unit/test/build/browser steps did not run.
+- PR #384 head `3f59506204e21f702749159333162e80ab2f324d`; Vercel Preview READY, but no GitHub Actions workflow run.
+- PR #385 head `10529d88e358b35a63c7b41060ffe966141d54e2`; Vercel Preview READY, but no GitHub Actions workflow run.
+- PR #386 latest observed head `1f566ed6073b9848be3660a2b8a0790100a9c62f`; Vercel Preview blocked by Free-plan `build-rate-limit`; no GitHub Actions workflow run. The CI workflow's `pull_request.branches: [main]` filter means stacked PRs targeting feature branches do not trigger the Quality Gate. Preview success is not test evidence.
+- All four feature PRs remain Draft/HOLD. No task is complete, merged, or production-published until exact-head tests pass. No Production deployment, Firebase Rules/data, Vercel settings/secrets, sync flags, or user data changed.
+
+### Task 4 source and storage constraints
+
+- Official digital source: QuranEnc Arabic Tafsir al-Muyassar, key `arabic_moyassar`, publisher King Fahd Complex, catalogue version `1.0.1` dated `2026-11-09`.
+- Use the official catalogue endpoint to confirm the version before download. The API requires no authentication and documents open CORS.
+- Store the complete original source payload unchanged, including footnotes and embedded edition metadata. Validate exact local Quran verse counts and sequential `sura`/`aya` coordinates for all 114 surahs before declaring offline-ready.
+- Download only after explicit user action; one surah at a time; resume verified surahs; reading uses IndexedDB only. Device-local only, never Firestore. The Quran text shown beside Tafsir always comes from WIRD's verified local Quran corpus.
+- Follow QuranEnc reuse terms: no edits/additions/deletions; identify source and publisher; show version; preserve embedded edition information; report corrections; update to newer source versions; no unsuitable ads.
+- Full source/reuse record: `docs/TAFSIR_OFFLINE_SOURCE.md`.
+
+### Next actions for this immediate queue
+
+1. Keep PRs #382–#386 intact; do not merge while the dependency security gate is failing.
+2. Re-check the official picomatch advisory and upstream candidate fixes; adopt only a complete reviewed remediation and retain the blocking audit.
+3. Once the dependency gate is safe, create a main-target integration validation path so all stacked changes receive the actual Quality Gate. Fix only reproduced failures, then rerun exact final SHAs.
+4. Verify a Preview built from the exact tested head when the Vercel quota permits. Production remains a separate owner-authorized release step.
+5. After the four tasks are released, reconcile offline app-shell PR #366 and unified audio PR #368 as the next local/offline work; do not merge legacy competing audio stores #358/#359.
+
+---
+
 ## 5. Evidence log and change history
 
 Append a dated entry for every meaningful implementation/checkpoint. Include exact branch, PR, head SHA, checks/run IDs, changed areas, remaining failures, deployment source SHA, and whether production was touched.
