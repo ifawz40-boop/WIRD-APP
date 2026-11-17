@@ -323,8 +323,8 @@ export class OfflineQuranAudioLibrary {
     this.lockRunner = deps.lockRunner;
     this.lockManager = deps.lockManager !== undefined
       ? deps.lockManager
-      : (typeof navigator !== 'undefined' && navigator.locks?.request
-        ? navigator.locks as unknown as OfflineAudioLockManagerLike
+      : (typeof navigator !== 'undefined'
+        ? (navigator as unknown as { locks?: OfflineAudioLockManagerLike }).locks ?? null
         : null);
     this.lockLeaseMs = Math.max(1_000, deps.lockLeaseMs ?? DEFAULT_AUDIO_LOCK_LEASE_MS);
     this.lockPollIntervalMs = Math.max(10, deps.lockPollIntervalMs ?? DEFAULT_AUDIO_LOCK_POLL_INTERVAL_MS);
