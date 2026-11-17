@@ -677,7 +677,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">حماية التخزين المحلي</span>
               <span className={offlineStorageStatus.persisted ? 'text-[#1C4E46] dark:text-[#E0A96D] font-bold' : 'text-[#9A7512] dark:text-[#E0A96D] font-bold'}>
-                {offlineStorageStatus.persisted === true ? 'حفظ دائم مفعّل' : offlineStorageStatus.supported ? 'قد يخضع التخزين للإزالة' : 'غير مدعوم في هذا المتصفح'}
+                {offlineStorageStatus.persisted === true ? 'حفظ دائم مفعّل' : offlineStorageStatus.persistenceSupported ? 'قد يحذف المتصفح الملفات عند ضغط المساحة' : 'المتصفح لا يتيح طلب حماية التخزين؛ يظل العمل دون اتصال متاحًا للملفات المحفوظة'}
               </span>
             </div>
             {offlineStorageStatus.usageBytes !== null && offlineStorageStatus.quotaBytes !== null && (
