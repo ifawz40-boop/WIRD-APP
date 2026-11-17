@@ -27,7 +27,7 @@ export function getAdjacentAyahCoordinate(
 }
 
 interface AyahNavigationControlsProps {
-  currentAyah: Ayah;
+  currentAyah: Pick<Ayah, 'surahNumber' | 'numberInSurah'>;
   onNavigate: (surahNumber: number, ayahNumber: number) => void;
   compact?: boolean;
 }
