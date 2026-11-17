@@ -269,3 +269,16 @@ This addendum supersedes older status snapshots above where they conflict. It is
 4. Reconcile #384 navigation with #385/#386 Mushaf/Tafsir changes in a single deliberate integration branch; then run all desktop/mobile and offline E2E on the exact final SHA.
 5. Continue the broader offline audit: cold restart/airplane mode, downloaded audio lifecycle, IndexedDB quota/resume/corruption, local Quran/tafsir reads, PWA cache updates, and plan archive/recovery.
 6. No merge, deployment, Firebase/Vercel settings/secrets, or sync-flag change was made in this recheck.
+
+## Offline Tafsir manifest recovery fix — 2026-11-17
+
+- A second-pass source review of PR #386 found a recoverability defect in `getOfflineTafsirDownloadStatus()`: it trusted only `manifest.downloadedSurahs`. If the browser closed after a validated surah record was committed but before its manifest update, or if the manifest was missing/stale, the UI could report zero even though valid offline tafsir records were present. Resume logic already scanned the actual records, so the status panel and resume behavior could disagree.
+- Fixed on PR #386 branch `feat/offline-tafsir-opposite-page-20261117`:
+  - Service change commit: `41e4eefcf62af8b02fd2c02eac27b2fb166579d1`.
+  - New unit-test file commit: `ed56c26bbb6aa1e262fb187db99dca7152c3aef5`.
+  - Test-runner registration commit: `ca5b3d0a13453b9c208e0ba3fcafa02201284b8f`.
+  - Current PR #386 head at this checkpoint: `ca5b3d0a13453b9c208e0ba3fcafa02201284b8f`.
+- Status is now derived from individually validated IndexedDB records; a missing/stale manifest no longer hides saved surahs. A manifest's `complete` marker cannot make an incomplete record set appear complete.
+- Added five pure regression cases: missing manifest recovery, stale manifest list recovery, invalid payload rejection, stale source-version rejection, incomplete records with a false complete marker, and empty-package behavior (the suite currently contains five grouped tests).
+- Exact-head Quality Gate run #4481 / `44173595935` was observed queued then in progress. **No pass/fail result is claimed yet**; fetch the final run result and inspect both jobs after completion.
+- This fix does not change Quran text, tafsir source/payload, Firebase, Vercel settings/secrets, sync flags, or Production. PR #386 remains Draft/HOLD until exact-head CI and integration checks pass.
