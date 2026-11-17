@@ -82,7 +82,7 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     }
   };
 
-  await test('Version-1 audio databases upgrade safely to the cross-tab lock store', async () => {
+  await test('Version-1 audio databases upgrade safely to cross-tab lock and staging stores', async () => {
     const factory = new IDBFactory();
     const databaseName = `wird-audio-upgrade-${++dbCounter}`;
     const request = factory.open(databaseName, 1);
@@ -178,19 +178,24 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     assert(!!(await cache.match(cacheKey)), 'First scan must stage an unknown key, not delete it immediately');
     const db = await (lib as any).openDatabase() as IDBDatabase;
     const update = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
-    const readRecord = await new Promise<any>((resolve, reject) => {
-      const request = update.objectStore(STORE_AUDIO_STAGING).get(cacheKey);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    assert(readRecord?.kind === 'orphan', 'Unknown cache keys must get an orphan grace record');
-    readRecord.createdAtMs = Date.now() - 10_000;
-    update.objectStore(STORE_AUDIO_STAGING).put(readRecord);
-    await new Promise<void>((resolve, reject) => {
+    const updateDone = new Promise<void>((resolve, reject) => {
       update.oncomplete = () => resolve();
       update.onerror = () => reject(update.error);
       update.onabort = () => reject(update.error || new Error('Orphan grace fixture transaction aborted'));
     });
+    const stagingStore = update.objectStore(STORE_AUDIO_STAGING);
+    const request = stagingStore.get(cacheKey);
+    request.onsuccess = () => {
+      const readRecord = request.result;
+      if (!readRecord || readRecord.kind !== 'orphan') {
+        update.abort();
+        return;
+      }
+      readRecord.createdAtMs = Date.now() - 10_000;
+      stagingStore.put(readRecord);
+    };
+    request.onerror = () => update.abort();
+    await updateDone;
 
     await lib.reconcileLibrary();
     assert(!(await cache.match(cacheKey)), 'An unreferenced key older than the grace period must be swept');
