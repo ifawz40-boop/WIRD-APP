@@ -275,3 +275,11 @@ PR #368 is a stale alternative implementation based on an older main. Its Cache 
 - Draft PR #389 extends PR #388 with durable Cache Storage staging, a v3 IndexedDB migration, conservative orphan-key grace records, BroadcastChannel pause/cancel signals, and durable job-status checks before each ayah and before commit.
 - First run #4530 (`44183047731`) completed the unit suite with 770 passed / 1 failed. All new migration/staging/orphan/lease tests passed; the sole failure was a test using nonexistent `getJob()` instead of public `listJobs()`. Corrected in commit `00313ec2b42b0f9bd0e700a8a4b2d7cc29dc222d`.
 - New exact-head run pending. #4530 did not reach TypeScript/build/Playwright. PR #389 remains Draft/HOLD; full dependency audit remains blocked by picomatch.
+
+
+### PR #389 expanded to full offline shell — 2026-11-17
+- PR #389 now targets `main` directly and is the cumulative release candidate: PR #387 reader/Dashboard/Tafsir work + PR #388 job lock + PR #389 staging/cross-tab controls + app-shell public-asset coverage.
+- Added recursive allowlisted public asset enumeration (`scripts/offlinePublicAssets.ts`) and merged it into Vite's full offline manifest, with a build-time 2,000-asset cap. This includes public static assets such as the 604 Mushaf SVG pages, not just Vite bundle chunks.
+- Added 6-second SPA navigation timeout and quota-adaptive optional audio/Mushaf runtime cache bounds to the Service Worker.
+- Added `persistenceSupported` to storage diagnostics so lack of `StorageManager.persist()` is not confused with offline capability; Settings copy now explains that already-saved files remain usable offline.
+- Current PR #389 head `6bec8fbabd260d3abcfd6e9f9ca1bbf960504057`. Quality Gate #4543 (`44184224319`): audit job failed separately on picomatch; application job was at the 604-page Mushaf coverage step when last polled. Continue polling the exact SHA through all app gates.
