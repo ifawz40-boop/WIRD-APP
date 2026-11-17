@@ -133,13 +133,13 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
                   {isSelected && <span className="rounded-md bg-[#C59B27]/15 px-2 py-1 text-[9px] font-bold text-[#8A6914] dark:text-[#E0A96D]">موضع القراءة</span>}
                 </div>
                 <p className="font-quran text-right text-base leading-[2.1] text-[#142421] dark:text-[#F5F1E8]">{ayah.text}</p>
-                <p className="mt-3 border-t border-[#1C4E46]/10 pt-3 text-sm leading-[1.9] text-[#243B35] dark:border-[#E0A96D]/15 dark:text-[#E8E1D4]">
+                <p className="mt-3 whitespace-pre-line border-t border-[#1C4E46]/10 pt-3 text-sm leading-[1.9] text-[#243B35] dark:border-[#E0A96D]/15 dark:text-[#E8E1D4]">
                   {row?.translation || 'لا تتوفر بيانات التفسير لهذه الآية في النسخة المحلية.'}
                 </p>
                 {footnotes.length > 0 && (
                   <div className="mt-2 rounded-lg bg-[#F2EDE2] px-3 py-2 dark:bg-[#172640]">
                     <p className="mb-1 text-[10px] font-bold text-[#8A6914] dark:text-[#E0A96D]">الحواشي</p>
-                    {footnotes.map((note, index) => <p key={index} className="text-[11px] leading-5 text-[#5B6F6B] dark:text-[#AAB8B4]">{note}</p>)}
+                    {footnotes.map((note, index) => <p key={index} className="whitespace-pre-line text-[11px] leading-5 text-[#5B6F6B] dark:text-[#AAB8B4]">{note}</p>)}
                   </div>
                 )}
                 <div className="mt-3">
