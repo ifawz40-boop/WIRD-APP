@@ -1,5 +1,14 @@
 # WIRD — Continuation Entry Point
 
+## Dependency-chain and CI checkpoint — 2026-11-17
+
+- PR #383 was retargeted from `main` to prerequisite PR #382 branch `fix/main-bun-lockfile-alignment-20261117` (base SHA `4332ea4cc4b2fa75e99d3e7a5dee22e2391b6f34`). This makes the dashboard feature's merge diff include the lockfile prerequisite without prematurely merging either PR.
+- PR #382 now runs the dependency audit as a separate blocking job while application tests continue independently. The audit command remains unchanged and still fails on the single GHSA-fc5q-39xc-vjpf finding; no ignore/waiver/severity reduction was introduced.
+- The same workflow now triggers on PRs targeting any branch, so the stacked chain #383 → #384 → #385 → #386 can receive exact-head Quality Gates.
+- Run #4467 on PR #382 commit `4332ea4cc4b2fa75e99d3e7a5dee22e2391b6f34`: frozen install, automated tests, API import smoke, audio source check, Firestore Rules Emulator, TypeScript, production build and server startup smoke have passed. Chromium installation / Playwright was still running at the time of this checkpoint; the separate full dependency audit failed only on picomatch@4.0.7.
+- This note is a commit to trigger a fresh Quality Gate on the newly retargeted PR #383. Re-fetch its run and head before making any release decision.
+
+
 **Last reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Primary branch:** `main`  
 **Last refreshed GitHub/Vercel checkpoint (2026-11-14):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`
