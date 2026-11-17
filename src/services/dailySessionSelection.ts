@@ -1,6 +1,6 @@
 import { ALL_SURAHS } from '../data/quranMeta';
 import type { MemorizationPlan, WirdPortion } from '../types/quran';
-import type { EngineGeneratedPlan, ScheduledTaskUnit } from './planningEngine';
+import type { EngineGeneratedPlan, ScheduledDayPlan, ScheduledTaskUnit } from './planningEngine';
 import { findNextUnmemorizedRange, getPrioritizedRevisionQueue } from './unifiedPortionService';
 
 export interface DailyMemorizationRange {
@@ -70,6 +70,39 @@ export function getDueEngineTasks(
     a.planTitle.localeCompare(b.planTitle, 'ar') ||
     a.planId.localeCompare(b.planId)
   );
+}
+
+export interface DueEnginePlanTaskMatch {
+  plan: EngineGeneratedPlan;
+  day: ScheduledDayPlan;
+  task: ScheduledTaskUnit;
+}
+
+/** Resolve a completed session to the exact due plan that launched it. */
+export function findMatchingDueEnginePlanTask(
+  plans: EngineGeneratedPlan[],
+  todayStr: string,
+  target: { surahNumber: number; startAyah: number; endAyah: number; enginePlanId?: string | null }
+): DueEnginePlanTaskMatch | null {
+  return plans.flatMap(plan => {
+    if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) return [];
+    if (target.enginePlanId && plan.id !== target.enginePlanId) return [];
+    return plan.schedule.flatMap(day => {
+      const task = day.memorizationTask;
+      if (
+        typeof day.date !== 'string' || day.date > todayStr ||
+        day.status === 'completed' || !task || task.completed ||
+        task.surahNumber !== target.surahNumber ||
+        task.startAyah !== target.startAyah ||
+        task.endAyah !== target.endAyah
+      ) return [];
+      return [{ plan, day, task }];
+    });
+  }).sort((a, b) =>
+    a.day.date.localeCompare(b.day.date) ||
+    (a.plan.input?.title || a.plan.title).localeCompare(b.plan.input?.title || b.plan.title, 'ar') ||
+    a.plan.id.localeCompare(b.plan.id)
+  )[0] ?? null;
 }
 
 export function getNextDueEngineTask(
