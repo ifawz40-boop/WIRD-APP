@@ -181,7 +181,8 @@ export async function getOfflineTafsirDownloadStatus(): Promise<OfflineTafsirDow
     return makeStatus([], 'not_downloaded');
   }
   const existingKeys = new Set(storedKeys.map(Number));
-  const verifiedKeys = manifest.downloadedSurahs.filter(surahNumber => existingKeys.has(surahNumber));
+  const downloadedList = Array.isArray(manifest.downloadedSurahs) ? manifest.downloadedSurahs : [];
+  const verifiedKeys = downloadedList.filter(surahNumber => existingKeys.has(surahNumber));
   return makeStatus(verifiedKeys, manifest.status);
 }
 
