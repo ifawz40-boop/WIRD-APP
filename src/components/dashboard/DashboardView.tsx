@@ -355,7 +355,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {dueEngineTasks.slice(1).map((item, index) => (
+            {dueEngineTasks.slice(1).map(item => (
               <div key={item.planId + ':' + item.date + ':' + item.task.surahNumber + ':' + item.task.startAyah} className="flex items-center justify-between gap-3 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-white/70 dark:bg-[#0B132B]/55 p-3">
                 <div className="min-w-0 text-right">
                   <p className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] truncate">{item.planTitle}</p>
