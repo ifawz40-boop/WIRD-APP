@@ -6,7 +6,7 @@ import { buildQuranAyahAudioUrl, FALLBACK_QURAN_RECITERS } from './ruqyahAudioSe
 import { createSecureId } from './secureId';
 
 export const OFFLINE_AUDIO_DB_NAME = 'wird-offline-audio';
-export const OFFLINE_AUDIO_DB_VERSION = 2;
+export const OFFLINE_AUDIO_DB_VERSION = 3;
 export const OFFLINE_AUDIO_CACHE_NAME = 'wird-offline-quran-audio-v1';
 export const MAX_AUDIO_FILE_BYTES = 8 * 1024 * 1024;
 export const APP_STORAGE_RESERVE_BYTES = 25 * 1024 * 1024;
@@ -16,6 +16,9 @@ export const STORE_AUDIO_JOBS = 'jobs';
 export const STORE_AUDIO_FILES = 'files';
 export const STORE_AUDIO_JOB_ITEMS = 'jobItems';
 export const STORE_AUDIO_LOCKS = 'locks';
+export const STORE_AUDIO_STAGING = 'staging';
+export const DEFAULT_AUDIO_STAGING_GRACE_MS = 5 * 60 * 1000;
+export const DEFAULT_AUDIO_ORPHAN_GRACE_MS = 24 * 60 * 60 * 1000;
 export const DEFAULT_AUDIO_LOCK_LEASE_MS = 60_000;
 export const DEFAULT_AUDIO_LOCK_POLL_INTERVAL_MS = 50;
 export const DEFAULT_AUDIO_LOCK_WAIT_TIMEOUT_MS = 120_000;
@@ -93,6 +96,18 @@ export interface CacheStorageLike {
   }>;
 }
 
+export interface OfflineAudioStagingRecord {
+  cacheKey: string;
+  kind: 'download' | 'orphan';
+  fileKey?: string;
+  reciterId?: string;
+  globalAyahNumber?: number;
+  cacheGenerationId?: string;
+  jobId?: string;
+  createdAtMs: number;
+  schemaVersion: 1;
+}
+
 export interface OfflineAudioLockRecord {
   lockName: string;
   ownerId: string;
@@ -119,6 +134,8 @@ export interface OfflineAudioLibraryDeps {
   lockLeaseMs?: number;
   lockPollIntervalMs?: number;
   lockWaitTimeoutMs?: number;
+  stagingGraceMs?: number;
+  orphanGraceMs?: number;
   concurrency?: number;
 }
 
@@ -301,6 +318,8 @@ export class OfflineQuranAudioLibrary {
   private readonly lockLeaseMs: number;
   private readonly lockPollIntervalMs: number;
   private readonly lockWaitTimeoutMs: number;
+  private readonly stagingGraceMs: number;
+  private readonly orphanGraceMs: number;
   private readonly instanceId: string;
   private readonly activeLeaseTokens = new Map<string, string>();
   private readonly broadcastChannel: BroadcastChannel | null;
@@ -332,6 +351,8 @@ export class OfflineQuranAudioLibrary {
     this.lockLeaseMs = Math.max(1_000, deps.lockLeaseMs ?? DEFAULT_AUDIO_LOCK_LEASE_MS);
     this.lockPollIntervalMs = Math.max(10, deps.lockPollIntervalMs ?? DEFAULT_AUDIO_LOCK_POLL_INTERVAL_MS);
     this.lockWaitTimeoutMs = Math.max(1_000, deps.lockWaitTimeoutMs ?? DEFAULT_AUDIO_LOCK_WAIT_TIMEOUT_MS);
+    this.stagingGraceMs = Math.max(1, deps.stagingGraceMs ?? DEFAULT_AUDIO_STAGING_GRACE_MS);
+    this.orphanGraceMs = Math.max(1, deps.orphanGraceMs ?? DEFAULT_AUDIO_ORPHAN_GRACE_MS);
     this.instanceId = createSecureId();
     let channel: BroadcastChannel | null = null;
     if (typeof BroadcastChannel !== 'undefined') {
@@ -517,6 +538,9 @@ export class OfflineQuranAudioLibrary {
         if (!db.objectStoreNames.contains(STORE_AUDIO_LOCKS)) {
           db.createObjectStore(STORE_AUDIO_LOCKS, { keyPath: 'lockName' });
         }
+        if (!db.objectStoreNames.contains(STORE_AUDIO_STAGING)) {
+          db.createObjectStore(STORE_AUDIO_STAGING, { keyPath: 'cacheKey' });
+        }
       };
 
       req.onsuccess = () => {
@@ -658,6 +682,26 @@ export class OfflineQuranAudioLibrary {
     } catch {
       return false;
     }
+  }
+
+  private async putStagingRecord(record: OfflineAudioStagingRecord): Promise<void> {
+    await this.runWithLock('wird-offline-audio-jobs', async () => {
+      const db = await this.openDatabase();
+      const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
+      const done = idbTx(tx);
+      tx.objectStore(STORE_AUDIO_STAGING).put(record);
+      await done;
+    });
+  }
+
+  private async deleteStagingRecord(cacheKey: string): Promise<void> {
+    await this.runWithLock('wird-offline-audio-jobs', async () => {
+      const db = await this.openDatabase();
+      const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
+      const done = idbTx(tx);
+      tx.objectStore(STORE_AUDIO_STAGING).delete(cacheKey);
+      await done;
+    });
   }
 
   async listJobs(): Promise<OfflineAudioJob[]> {
@@ -1087,16 +1131,35 @@ export class OfflineQuranAudioLibrary {
           if (!(await this.hasCurrentLease(workerLockName))) return;
 
           const cacheGenerationId = createSecureId();
-          await this.writeAndVerifyCacheEntry(
-            item.reciterId,
-            item.globalAyahNumber,
+          const cacheKey = buildCacheGenerationKey(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+          await this.putStagingRecord({
+            cacheKey,
+            kind: 'download',
+            fileKey: item.fileKey,
+            reciterId: item.reciterId,
+            globalAyahNumber: item.globalAyahNumber,
             cacheGenerationId,
-            bytes,
-            contentType
-          );
-          if ((await this.getPersistedJobStatus(jobId)) !== 'downloading' || !(await this.hasCurrentLease(workerLockName))) {
-            await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
-            return;
+            jobId,
+            createdAtMs: Date.now(),
+            schemaVersion: 1
+          });
+          try {
+            await this.writeAndVerifyCacheEntry(
+              item.reciterId,
+              item.globalAyahNumber,
+              cacheGenerationId,
+              bytes,
+              contentType
+            );
+            if ((await this.getPersistedJobStatus(jobId)) !== 'downloading' || !(await this.hasCurrentLease(workerLockName))) {
+              const deleted = await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+              if (deleted) await this.deleteStagingRecord(cacheKey).catch(() => undefined);
+              return;
+            }
+          } catch (cacheErr) {
+            const deleted = await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+            if (deleted) await this.deleteStagingRecord(cacheKey).catch(() => undefined);
+            throw cacheErr;
           }
 
           const verifiedRecord: OfflineAudioFileRecord = {
@@ -1119,12 +1182,15 @@ export class OfflineQuranAudioLibrary {
           try {
             const committed = await this.markJobItemVerified(jobId, item, verifiedRecord, bytes.byteLength);
             if (!committed) {
-              await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+              const deleted = await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+              if (deleted) await this.deleteStagingRecord(cacheKey).catch(() => undefined);
               return;
             }
+            await this.deleteStagingRecord(cacheKey).catch(() => undefined);
           } catch (idbErr) {
-            // Roll back only the unreferenced cache entry we just wrote
-            await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+            // Roll back only the unreferenced cache entry we just wrote; keep staging if deletion fails.
+            const deleted = await this.deleteCacheGeneration(item.reciterId, item.globalAyahNumber, cacheGenerationId);
+            if (deleted) await this.deleteStagingRecord(cacheKey).catch(() => undefined);
             throw idbErr;
           }
           this.notifyListeners();
