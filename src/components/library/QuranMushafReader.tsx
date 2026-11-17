@@ -488,14 +488,37 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     }
   };
 
+  const prepareSpreadReadingSide = (targetPageNumber: number) => {
+    if (!isSpreadModeActive) {
+      setReadingSide('right');
+      return;
+    }
+    const spreadStart = normalizeSpreadStartPage(targetPageNumber);
+    const targetSide: MushafSpreadPageSide = targetPageNumber === spreadStart + 1 ? 'left' : 'right';
+    if (targetSide === 'left' && leftPageContentMode === 'tafsir') {
+      setLeftPageContentMode('quran');
+      setRightPageContentMode('tafsir');
+    } else if (targetSide === 'right' && rightPageContentMode === 'tafsir') {
+      setRightPageContentMode('quran');
+      setLeftPageContentMode('tafsir');
+    }
+    setReadingSide(targetSide);
+  };
+
   const jumpToNavigationPoint = (point: NavigationPoint) => {
     const target = { surahNumber: point.surahNumber, ayahNumber: point.ayahNumber };
+    prepareSpreadReadingSide(point.page);
     const targetIsVisibleInCurrentSpread = point.page === page ||
-      (pageDisplayMode === 'spread' && point.page === page + 1);
+      (isSpreadModeActive && point.page === page + 1);
     if (targetIsVisibleInCurrentSpread && audioAyahs.length &&
         audioAyahs.some(ayah => ayah.surahNumber === target.surahNumber && ayah.numberInSurah === target.ayahNumber)) {
-      document.getElementById('wird-ayah-' + point.surahNumber + '-' + point.ayahNumber)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      pendingTargetRef.current = null;
+      const targetElement = document.getElementById('wird-ayah-' + point.surahNumber + '-' + point.ayahNumber);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        pendingTargetRef.current = null;
+      } else {
+        pendingTargetRef.current = target;
+      }
       return;
     }
 
@@ -544,20 +567,6 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     );
     if (!pageEntry) return;
     const targetPageNumber = Number(pageEntry[0]);
-    if (isSpreadModeActive) {
-      const spreadStart = normalizeSpreadStartPage(targetPageNumber);
-      const targetSide: MushafSpreadPageSide = targetPageNumber === spreadStart + 1 ? 'left' : 'right';
-      if (targetSide === 'left' && leftPageContentMode === 'tafsir') {
-        setLeftPageContentMode('quran');
-        setRightPageContentMode('tafsir');
-      } else if (targetSide === 'right' && rightPageContentMode === 'tafsir') {
-        setRightPageContentMode('quran');
-        setLeftPageContentMode('tafsir');
-      }
-      setReadingSide(targetSide);
-    } else {
-      setReadingSide('right');
-    }
     jumpToNavigationPoint({ surahNumber, ayahNumber, page: targetPageNumber });
     void loadSurahVerses(surahNumber)
       .then(verses => setReadingAyah(verses.find(ayah => ayah.numberInSurah === ayahNumber) || null))
@@ -628,9 +637,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     const target = pendingTargetRef.current;
     if (!target || isLoading || !audioAyahs.length) return;
     if (!audioAyahs.some(ayah => ayah.surahNumber === target.surahNumber && ayah.numberInSurah === target.ayahNumber)) return;
-    document.getElementById('wird-ayah-' + target.surahNumber + '-' + target.ayahNumber)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const targetElement = document.getElementById('wird-ayah-' + target.surahNumber + '-' + target.ayahNumber);
+    if (!targetElement) return;
+    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     pendingTargetRef.current = null;
-  }, [audioAyahs, isLoading]);
+  }, [audioAyahs, isLoading, page, readerLayout, leftPageContentMode, rightPageContentMode]);
 
   const handlePlaybackRateChange = (rate: PlaybackRate) => {
     const savedRate = savePlaybackRate(rate);
