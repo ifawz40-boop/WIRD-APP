@@ -543,6 +543,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setRightPageContentMode('quran');
       setLeftPageContentMode('tafsir');
     }
+    if (readingSide !== targetSide) setReadingAyah(null);
     setReadingSide(targetSide);
   };
 
