@@ -121,6 +121,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(spread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
     await expect(spread.locator('[aria-label="الصفحة اليسرى رقم 2"]')).toBeVisible();
     await expect(spread.locator('[aria-label="الصفحة اليمنى رقم 1"]')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('wird.quran.pageDisplayMode.v1'))).toBe('spread');
 
     await page.getByRole('button', { name: 'الصفحة التالية' }).click();
     const nextSpread = page.getByRole('main', { name: 'صفحتا المصحف 3 و4' });
@@ -168,6 +169,10 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
       await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
       await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
       await expect(page.locator('#wird-ayah-1-1')).toBeVisible({ timeout: 15_000 });
+      await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+      await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible({ timeout: 15_000 });
     } finally {
       await context.setOffline(false);
     }
