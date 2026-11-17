@@ -177,3 +177,56 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 3. Record blockers precisely (missing permission, environment limitation, failing assertion) rather than marking the task complete.
 4. If a commit changes the PR head after CI, all prior exact-SHA evidence is stale for that new head.
 5. Before context limits, update this file and `docs/CONTINUE_HERE.md`, then provide a continuation prompt naming the next exact action and latest verified SHA.
+
+
+---
+
+## 6. Phase 0 — verified PR reconciliation audit (2026-11-17)
+
+### Live repository snapshot
+- Default branch: `main`.
+- Latest commit observed on `main`: `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`.
+- Open PR inventory was refreshed. Relevant work remains open and Draft; do not merge feature branches as a bundle.
+- PR #381 (this tracker) has a Vercel Preview reported Ready by the Vercel GitHub bot for deployment `826wv9M7jQwj5NxY7jfHGgeJjDoc`, URL: https://wird-app-git-docs-advanced-hifz-830fc1-xm8eslam-9174s-projects.vercel.app . This is a documentation preview, not production verification.
+- Vercel team API deployment listing still returned 403 / authorization failure in this audit. Do not infer the Production source SHA from the PR preview.
+- Branches and old PR heads are not interchangeable with current `main`; re-fetch base/head and checks before every merge.
+
+### Relevant PR findings — exact observed heads
+
+| PR | Observed head SHA | Verified scope | Current decision |
+|---|---|---|---|
+| #366 | `cade1b630bb429d6a4106de5bf12713df18f3491` | PWA/app-shell and explicit offline public asset preparation; network navigation fallback; storage estimate/persistence reporting. Does not implement the persistent download library; EveryAyah remains stream-only. | HOLD — run 43258830250 failed with no recorded steps and logs unavailable (BlobNotFound); Vercel status blocked by Free-plan deployment limit. No browser/device airplane-mode proof. |
+| #368 | `d0ab926f37ea68a92c28e39796dd3d723e1dd7a8` | Unified IndexedDB jobs/files/jobItems metadata, Cache Storage adapter and downloader with concurrency limit, pause/cancel/resume/retry, validation and recovery tests. Still missing cross-tab ownership/locking, complete orphan-deletion orchestration, quota error UX, finished UI, reader playback integration, physical-device restart/offline evidence. | HOLD — run 43571432459 failed with no recorded steps and logs unavailable (BlobNotFound). Preview READY for this exact SHA; preview readiness is not CI or device acceptance. |
+| #371 | `260df95c620cd534337e39d6707b044eb404139a` | Pure deterministic chunk codec with SHA-256 and corruption checks; not connected to IndexedDB archive migration or real Outbox/Inbox/Firestore transport. Aggregate archive/manifest/resource bounds and memory peak limits remain unresolved. | HOLD — run 43278752980 failed with no recorded steps and logs unavailable (BlobNotFound). |
+| #367 | `fd417faaa96a11920ef3a8e4f1038f567c36a731` | Interim 800 KB Engine Plan single-document budget; not a chunked archive transport. Shared-file overlap with #369/#371 and related wizard/test aggregator files was documented. | Do not merge as the archive solution. Reconcile only after the versioned archive protocol is designed and tested. |
+| #380 | `4e3aa0067f71bfecd94feb45f1b9de035e4aeb9b` | Repository/lockfile and Playwright test-maintenance changes; no product runtime code. | HOLD — exact-head run 43684513683 passed automated tests (731), 604 Mushaf maps, native TypeScript API imports, approved audio CDN/range checks, Firestore Rules Emulator (31), TypeScript, production build, and server smoke. Desktop/mobile browser smoke failed in two plan-wizard assertions because the expected “معاينة الجدول الزمني المقترح” button was not found. Re-run after correcting the actual UI/test mismatch; no merge yet. |
+
+### Critical reconciliation decisions
+
+1. **Do not merge #358 or #359 separately.** They are superseded by #368's consolidated store contract and would recreate competing audio stores.
+2. **Do not treat #366 as the offline audio downloader.** It is the PWA/app-shell and optional cache readiness layer. #368 owns durable audio downloads and file references. A later integration PR must reconcile cache namespaces and cleanup without deleting private/user data or shared files.
+3. **Do not treat #371 as a complete archive.** It is a codec only. Phase 4 still requires the actual IndexedDB v10 (or correctly incremented current DB version) migration, scoped archive stores, startup gate, bounded manifest/chunk protocol, atomic activation, rollback and outbox/journal consistency.
+4. **Do not increase the single Firestore document limit to simulate unlimited plan storage.** #367's 800 KB is an interim envelope. Larger plan history requires a bounded multi-document protocol and an authoritative quota policy; no fictional plan tiers.
+5. **#380 is a separate repository hygiene/test gate**, not a feature implementation. Resolve the two browser failures and exact-head rerun before considering its merge. Its non-browser gates are strong evidence for that SHA only.
+6. **Cumulative memorization and missed-day recovery are not evidenced by these PRs.** They remain unimplemented/unverified until source and tests are mapped.
+7. The Google AI Studio workspace-only results recorded in Section 2 remain separate from these GitHub branch/CI results; do not copy those counts into GitHub evidence.
+
+### Updated gap matrix
+
+| Workstream | Existing evidence | Remaining work before acceptance |
+|---|---|---|
+| Cumulative Hifz studio | No relevant implementation PR confirmed in this audit. | Inspect session/studio source and current review-event transaction; design a small additive mode and tests without changing Free mode. |
+| PWA/app shell | #366 provides offline asset enumeration, app-shell resilience, adaptive optional-cache bounds and storage capability reporting. | Exact-head CI must be inspectable and green; integrate with #368 cache ownership; readiness UI, Safari/iOS install guidance, feature-by-feature offline map, browser/device cold-restart tests. |
+| Downloadable audio | #368 provides repository/downloader foundation and isolated tests (29/29 reported in branch notes). | Cross-tab lock/ownership; end-to-end orphan cleanup; quota recovery/UX; license/reciter allowlist evidence; download manager UI; local-first reader playback; restart/airplane-mode and account-isolation tests. |
+| Missed-day recovery + test modes | No relevant implementation PR confirmed in this audit. | Inspect plan scheduling engine and immutable completion events; define preview/confirm transaction and three approved recovery options; canonical missing-word test generator and weak-ayah integration. |
+| Long plan archive | #371 codec only; #367 interim payload budget. | Define strict aggregate/resource limits; implement real IndexedDB archive stores and version migration; bounded chunk IO; atomic manifest activation; startup gate; compatibility, rollback, corruption, guest/user isolation and sync consistency. |
+| Release/quality gates | #380 has strong non-browser gate evidence but 2 browser failures. #366/#368/#371 have non-inspectable failing jobs. | Fix #380 E2E mismatch; recover inspectable CI for each feature head; ensure required checks run on exact head; distinguish Preview from Production. |
+
+### Recommended implementation order after Phase 0
+1. Resolve #380's two Playwright failures and obtain a fully green exact-head run. Keep its scope separate; merge only after reviewing its complete final diff and exact SHA.
+2. Rebase/port #366 and #368 onto the verified new `main` serially. First settle PWA cache ownership contract, then integrate the durable downloader, then add the user-facing download manager and reader playback. Do not merge overlapping cache work independently.
+3. Design Phase 4 archive protocol before integrating #367/#371. Specify hard bounds (total bytes, record count, chunks, fragments, manifest bytes and peak memory) before coding. Then implement local archive migration and separately evaluate remote chunk transport; production sync remains off.
+4. Implement cumulative Hifz and missed-day recovery as separate, additive feature PRs after mapping the existing session and plan event models.
+5. Run full cross-workstream regression only after integration; exact SHA and test artifacts are mandatory.
+
+**Phase 0 status:** PARTIALLY COMPLETE — live main and open PR inventory inspected; four core PRs and one supporting PR reviewed; exact-head workflow evidence inspected. Source-level mapping of session engine, scheduler, IndexedDB schema/migration chain, sync journal/outbox and service-worker/audio integration remains to be completed before Phase 0 can be marked PASS.
