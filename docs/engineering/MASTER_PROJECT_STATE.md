@@ -1,5 +1,18 @@
 # WIRD — Master Project State
 
+## Current GitHub implementation snapshot — 2026-11-17 21:35 +02:00
+
+- Live GitHub main was re-fetched at f70bf5e0617b558dfba4663da2667fb5d6c3ce8a.
+- Current owner priority is local/offline app readiness, restricted to four requested items: (1) display due memorization tasks from all active plans, (2) Quran-verse navigation controls below ayat across reading surfaces, (3) one-page/two-page printed Mushaf layout, and (4) independent opposite-page Tafsir al-Muyassar with Quran/Quran as the default.
+- Task 1 source implementation is on PR #383, branch fix/dashboard-multiple-due-plan-tasks-20261117. Initial code commit db0caf373ca70dc0193f3f4e60bb044149803356; subsequent small cleanup and documentation commits advance the branch. Always re-fetch the live PR head.
+- Task 1 implementation collects due/overdue incomplete memorization tasks across all active, non-paused engine plans, sorts by date/title/ID, excludes future/completed tasks and days, displays additional tasks on Dashboard, and resolves completion against the matching due plan rather than the first active plan.
+- **Verification:** no local tests/build were run in this session. The initial exact code commit had no GitHub Actions workflow run returned. A Vercel status context alone does not prove the feature build, preview, or runtime behavior. Task 1 remains IN PROGRESS / NOT VERIFIED pending exact-head Quality Gate.
+- **Known repository CI issue:** main's frozen Bun lockfile consistency is still being reconciled. PR #382's last inspectable run passed install/unit/API/audio/Rules/TypeScript/build/server smoke but failed desktop/mobile Playwright (160 passed, 2 skipped, 4 failed); the 604-map step was skipped. Do not merge feature PRs while required checks are missing or failing.
+- Tasks 2–4 remain NOT STARTED and must be implemented in separate reviewable PRs with local-data-only behavior and exact-head tests.
+- No production deployment, Firebase Rules/data, Vercel secrets/settings, sync flags, or user data were changed.
+
+> The older Google AI Studio workspace snapshot below is historical context, not evidence for the live GitHub branch or deployed app. Refresh GitHub/Vercel/Firebase state before every release decision.
+
 **Current snapshot reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
