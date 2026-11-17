@@ -39,6 +39,7 @@ import { TafsirSheet } from './TafsirSheet';
 import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
 import { AyahNavigationControls } from '../shared/AyahNavigationControls';
+import { TafsirMushafPage } from './TafsirMushafPage';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
 import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
@@ -76,9 +77,13 @@ const MUSHAF_FULL_WIDTH_KEY = 'wird.quran.mushafFullWidth.v1';
 const MUSHAF_LINE_SPACING_KEY = 'wird.quran.mushafLineSpacing.v1';
 const MUSHAF_UI_SCALE_KEY = 'wird.quran.mushafUiScale.v1';
 const MUSHAF_PAGE_DISPLAY_MODE_KEY = 'wird.quran.pageDisplayMode.v1';
+const MUSHAF_SPREAD_CONTENT_MODE_KEY = 'wird.quran.spreadContentModes.v1';
+const EMPTY_MUSHAF_AYAHS: Ayah[] = [];
 
 type MushafTextScale = 'comfortable' | 'large' | 'extraLarge';
 type MushafPageDisplayMode = 'single' | 'spread';
+type MushafSpreadPageSide = 'left' | 'right';
+type MushafSpreadPageContentMode = 'quran' | 'tafsir';
 type MushafLineSpacing = 'compact' | 'normal' | 'relaxed';
 
 const MUSHAF_TEXT_SCALE_CLASSES: Record<MushafTextScale, string> = {
@@ -133,6 +138,37 @@ function normalizeSpreadStartPage(page: number): number {
   const clamped = Math.min(604, Math.max(1, page));
   return clamped % 2 === 0 ? Math.max(1, clamped - 1) : clamped;
 }
+
+function readMushafSpreadContentModes(): { left: MushafSpreadPageContentMode; right: MushafSpreadPageContentMode } {
+  try {
+    const saved = JSON.parse(localStorage.getItem(MUSHAF_SPREAD_CONTENT_MODE_KEY) || '{}') as { left?: string; right?: string };
+    const left = saved.left === 'tafsir' ? 'tafsir' : 'quran';
+    const right = saved.right === 'tafsir' ? 'tafsir' : 'quran';
+    return left === 'tafsir' && right === 'tafsir'
+      ? { left: 'quran', right: 'quran' }
+      : { left, right };
+  } catch {
+    return { left: 'quran', right: 'quran' };
+  }
+}
+
+interface MushafPageContentSelectorProps {
+  side: MushafSpreadPageSide;
+  mode: MushafSpreadPageContentMode;
+  onChange: (mode: MushafSpreadPageContentMode) => void;
+}
+
+const MushafPageContentSelector: React.FC<MushafPageContentSelectorProps> = ({ side, mode, onChange }) => (
+  <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#1C4E46]/10 bg-[#F7F3E9] px-2 py-2 dark:border-[#E0A96D]/15 dark:bg-[#172640]">
+    <span className="text-[10px] font-bold text-[#5B6F6B] dark:text-[#AAB8B4]">
+      {side === 'left' ? 'الصفحة اليسرى' : 'الصفحة اليمنى'}
+    </span>
+    <div role="group" aria-label={`محتوى الصفحة ${side === 'left' ? 'اليسرى' : 'اليمنى'}`} className="inline-flex rounded-lg bg-white p-1 dark:bg-[#0B132B]">
+      <button type="button" aria-pressed={mode === 'quran'} onClick={() => onChange('quran')} className={`min-h-10 rounded-md px-3 text-[10px] font-bold ${mode === 'quran' ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'text-[#5B6F6B] dark:text-[#AAB8B4]'}`}>القرآن</button>
+      <button type="button" aria-pressed={mode === 'tafsir'} onClick={() => onChange('tafsir')} className={`min-h-10 rounded-md px-3 text-[10px] font-bold ${mode === 'tafsir' ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'text-[#5B6F6B] dark:text-[#AAB8B4]'}`}>التفسير الميسر</button>
+    </div>
+  </div>
+);
 const PAGE_INDEX = QURAN_PAGE_INDEX as unknown as Record<string, PageSegment[]>;
 const JUZ_INDEX = QURAN_JUZ_STARTS as unknown as Record<string, NavigationPoint>;
 const HIZB_INDEX = QURAN_HIZB_QUARTER_STARTS as unknown as Record<string, NavigationPoint>;
@@ -158,6 +194,9 @@ function readBookmarks(): number[] {
 
 export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredReciter, onBack, initialPage, readingKhatma, onMarkPageRead, readingKhatmaError }) => {
   const [pageDisplayMode, setPageDisplayMode] = useState<MushafPageDisplayMode>(readMushafPageDisplayMode);
+  const [leftPageContentMode, setLeftPageContentMode] = useState<MushafSpreadPageContentMode>(() => readMushafSpreadContentModes().left);
+  const [rightPageContentMode, setRightPageContentMode] = useState<MushafSpreadPageContentMode>(() => readMushafSpreadContentModes().right);
+  const [readingSide, setReadingSide] = useState<MushafSpreadPageSide>('right');
   const [page, setPage] = useState(() => {
     const requestedPage = Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage();
     return readMushafPageDisplayMode() === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
@@ -277,6 +316,14 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   useEffect(() => {
     try { localStorage.setItem(MUSHAF_PAGE_DISPLAY_MODE_KEY, pageDisplayMode); } catch { /* Reading controls remain usable without persistence. */ }
   }, [pageDisplayMode]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(MUSHAF_SPREAD_CONTENT_MODE_KEY, JSON.stringify({
+        left: leftPageContentMode,
+        right: rightPageContentMode
+      }));
+    } catch { /* Quran/Tafsir selection remains usable without persistence. */ }
+  }, [leftPageContentMode, rightPageContentMode]);
 
   useEffect(() => {
     setSegmentStartIndex(0);
@@ -487,15 +534,50 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       )
     );
     if (!pageEntry) return;
-    jumpToNavigationPoint({ surahNumber, ayahNumber, page: Number(pageEntry[0]) });
+    const targetPageNumber = Number(pageEntry[0]);
+    if (isSpreadModeActive) {
+      const spreadStart = normalizeSpreadStartPage(targetPageNumber);
+      setReadingSide(targetPageNumber === spreadStart + 1 ? 'left' : 'right');
+    } else {
+      setReadingSide('right');
+    }
+    jumpToNavigationPoint({ surahNumber, ayahNumber, page: targetPageNumber });
     void loadSurahVerses(surahNumber)
       .then(verses => setReadingAyah(verses.find(ayah => ayah.numberInSurah === ayahNumber) || null))
       .catch(error => console.warn('[WIRD Mushaf] Could not resolve the target ayah locally:', error));
   };
 
-  const handleSelectAyah = (ayah: Ayah) => {
+  const handleSelectAyah = (ayah: Ayah, side: MushafSpreadPageSide = 'right', openTafsir = true) => {
     setReadingAyah(ayah);
-    setTafsirAyah(ayah);
+    setReadingSide(side);
+    if (openTafsir) setTafsirAyah(ayah);
+  };
+
+  const handlePageContentModeChange = (side: MushafSpreadPageSide, mode: MushafSpreadPageContentMode) => {
+    if (mode === 'tafsir') {
+      if (side === 'left') {
+        setLeftPageContentMode('tafsir');
+        setRightPageContentMode('quran');
+        if (readingSide !== 'right') setReadingAyah(null);
+        setReadingSide('right');
+      } else {
+        setRightPageContentMode('tafsir');
+        setLeftPageContentMode('quran');
+        if (readingSide !== 'left') setReadingAyah(null);
+        setReadingSide('left');
+      }
+      return;
+    }
+
+    if (side === 'left') {
+      setLeftPageContentMode('quran');
+      if (readingSide !== 'left') setReadingAyah(null);
+      setReadingSide('left');
+    } else {
+      setRightPageContentMode('quran');
+      if (readingSide !== 'right') setReadingAyah(null);
+      setReadingSide('right');
+    }
   };
 
   const jumpToSurah = (surahNumber: number) => {
@@ -985,27 +1067,51 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             <div className="grid min-w-[640px] grid-cols-2 items-start gap-3" dir="ltr" aria-label="صفحتا المصحف المتقابلتان">
               <div className="min-w-0" aria-label={`الصفحة اليسرى رقم ${page + 1}`}>
                 {page + 1 <= 604 ? (
-                  <QuranMushafFacsimilePage
-                    page={page + 1}
-                    onAyahsResolved={handlePrintedPageAyahsResolved}
-                    selectedAyah={readingAyah}
-                    onSelectAyah={handleSelectAyah}
-                    onFallback={() => selectReaderLayout('flow')}
-                    maxWidthClass="max-w-full"
-                  />
+                  <>
+                    <MushafPageContentSelector side="left" mode={leftPageContentMode} onChange={mode => handlePageContentModeChange('left', mode)} />
+                    {leftPageContentMode === 'tafsir' ? (
+                      <TafsirMushafPage
+                        pageNumber={page + 1}
+                        sourcePageNumber={page}
+                        sourceSideLabel="الصفحة اليمنى"
+                        ayahs={printedPageAyahs[page] || EMPTY_MUSHAF_AYAHS}
+                        selectedAyah={readingSide === 'right' ? readingAyah : null}
+                      />
+                    ) : (
+                      <QuranMushafFacsimilePage
+                        page={page + 1}
+                        onAyahsResolved={handlePrintedPageAyahsResolved}
+                        selectedAyah={readingAyah}
+                        onSelectAyah={ayah => handleSelectAyah(ayah, 'left', false)}
+                        onFallback={() => selectReaderLayout('flow')}
+                        maxWidthClass="max-w-full"
+                      />
+                    )}
+                  </>
                 ) : (
                   <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border border-dashed border-[#C59B27]/35 p-6 text-center text-sm text-[#5B6F6B] dark:text-[#8B9E9B]">لا توجد صفحة تالية في المصحف.</div>
                 )}
               </div>
               <div className="min-w-0" aria-label={`الصفحة اليمنى رقم ${page}`}>
-                <QuranMushafFacsimilePage
-                  page={page}
-                  onAyahsResolved={handlePrintedPageAyahsResolved}
-                  selectedAyah={readingAyah}
-                  onSelectAyah={handleSelectAyah}
-                  onFallback={() => selectReaderLayout('flow')}
-                  maxWidthClass="max-w-full"
-                />
+                <MushafPageContentSelector side="right" mode={rightPageContentMode} onChange={mode => handlePageContentModeChange('right', mode)} />
+                {rightPageContentMode === 'tafsir' ? (
+                  <TafsirMushafPage
+                    pageNumber={page}
+                    sourcePageNumber={page + 1}
+                    sourceSideLabel="الصفحة اليسرى"
+                    ayahs={printedPageAyahs[page + 1] || EMPTY_MUSHAF_AYAHS}
+                    selectedAyah={readingSide === 'left' ? readingAyah : null}
+                  />
+                ) : (
+                  <QuranMushafFacsimilePage
+                    page={page}
+                    onAyahsResolved={handlePrintedPageAyahsResolved}
+                    selectedAyah={readingAyah}
+                    onSelectAyah={ayah => handleSelectAyah(ayah, 'right', false)}
+                    onFallback={() => selectReaderLayout('flow')}
+                    maxWidthClass="max-w-full"
+                  />
+                )}
               </div>
             </div>
           ) : (
