@@ -144,7 +144,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
         sura: surahNumber,
         aya: index + 1,
         translation: `تفسير اختباري ${surahNumber}:${index + 1}`,
-        footnotes: []
+        footnotes: index === 0 ? [`حاشية اختبارية ${surahNumber}`] : []
       }));
       await route.fulfill({
         status: 200,
@@ -172,6 +172,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
     await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible({ timeout: 120_000 });
     await expect(page.locator('#wird-tafsir-ayah-1-1')).toContainText('تفسير اختباري 1:1');
+    await expect(page.locator('#wird-tafsir-ayah-1-1')).toContainText('حاشية اختبارية 1');
     expect(requestedSurahs).toHaveLength(114);
     expect(new Set(requestedSurahs).size).toBe(114);
 
