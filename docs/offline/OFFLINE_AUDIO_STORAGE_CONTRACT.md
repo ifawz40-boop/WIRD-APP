@@ -224,3 +224,42 @@ Targeted isolated Node/tsx sandbox tests now pass:
 - Total: 29/29 PASS.
 
 These are targeted isolated tests, not GitHub Actions or the full repository suite. The exact PR #368 GitHub Actions run still fails before steps/logs. Cross-tab ownership, complete orphan-deletion orchestration, Cache Storage quota UX, reader playback integration, and physical-device recovery remain outstanding.
+
+
+---
+
+## Authoritative source audit — 2026-11-17 (supersedes earlier PR #368 descriptions)
+
+The current `main` source was re-fetched and inspected on 2026-11-17. Earlier text above describing PR #368 as the current audio foundation is historical; it is not an accurate description of the present `main` implementation. The current main branch already contains a more complete, separately evolved offline audio manager and storage pipeline. Do **not** merge PR #368 as a second store or downloader without a specific missing capability and a reviewed migration.
+
+### Verified in current main source
+- Settings UI exposes a local audio download manager and job controls.
+- `offlineQuranAudioLibrary.ts` stores jobs, job items, and canonical file metadata in IndexedDB.
+- Approved reciter/range planning, deduplicated request fingerprints, quota preflight, and a maximum of two download workers are present.
+- Downloaded bytes are stored in a dedicated generation-scoped Cache Storage namespace, read back/verified, and referenced by IndexedDB metadata.
+- Deletion is reference-aware and uses a pending-deletion/finalization pattern; reconciliation verifies metadata-referenced cache entries and handles pending deletions.
+- The reader resolves a verified local audio source first and uses a local ObjectURL when available; online playback is the fallback.
+- Audio metadata and bytes remain local and are not part of Firebase sync/backup.
+
+### Remaining reliability gaps confirmed in current main
+1. **Worker ownership across tabs:** the current Web Locks helper protects individual database mutations, but the worker-running map is instance-local and the full job worker is not held under a job-scoped cross-tab lock. Two tabs can both process the same job. Browsers without Web Locks currently fall back to running the task without any cross-tab lock.
+2. **Cross-tab pause/cancel:** pause/cancel updates durable job state but abort controllers and worker flags are instance-local. A worker in another tab does not reliably stop before the next item when another tab pauses/cancels.
+3. **Crash between Cache Storage write and metadata commit:** immediate error paths attempt cleanup, but there is no durable staging record that lets startup reconciliation safely recover a tab/browser crash between writing bytes and committing the IndexedDB file record.
+4. **Unknown Cache Storage orphans:** `reconcileLibrary()` verifies metadata-referenced entries and pending deletions, but does not enumerate the owned Cache Storage namespace and discover keys that have no metadata row. Add a conservative generation-aware orphan sweep with a grace period and reference checks.
+5. **Cold restart/airplane proof:** no verified real-device evidence yet demonstrates downloaded audio playback after full browser/app termination and airplane-mode restart.
+
+### PR #388 — in-progress cross-tab fix
+- Draft PR #388: `Offline audio: cross-tab worker leases and recovery`, head branch `feat/offline-audio-complete-20261117`, base cumulative PR #387.
+- Adds a job-scoped Web Lock around the full worker, IndexedDB lease fallback for browsers without Web Locks, a database schema migration from v1 to v2, heartbeat/expiry/takeover behavior, and tests for two-tab duplicate-download prevention and expired-lock recovery.
+- Exact-head Quality Gate #4520 was running when this note was written; the security audit separately failed on the unresolved picomatch advisory. Re-fetch its final result before claiming the lock fix passes.
+- PR #388 does not yet implement durable cache staging/orphan sweep or cross-tab pause/cancel synchronization; those remain separate required changes.
+
+### PR #368 status
+PR #368 is a stale alternative implementation based on an older main. Its Cache Storage adapter/downloader should not be merged wholesale because current main already has its own library, manager, cache generation, quota, and playback implementation. Only port a narrowly identified capability if source comparison proves it is still missing; avoid duplicate database/cache namespaces.
+
+### Updated release gates
+- Job worker lock across tabs + no-Web-Locks fallback: covered by PR #388; await exact-head CI.
+- Durable staging and orphan sweep: not implemented yet.
+- Cross-tab pause/cancel and UI refresh: not implemented yet.
+- Cold restart + airplane-mode playback on desktop/mobile real devices: not verified.
+- Full audio quota exhaustion, interrupted download, resume, corruption, cache eviction and deletion/replacement generation tests: required before release.
