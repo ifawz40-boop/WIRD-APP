@@ -24,6 +24,12 @@
 - Offline-ready status now requires the exact set of surahs 1–114; invalid manifest numbers cannot falsely produce a complete package.
 - Source attribution/version/reuse requirements are recorded in `docs/TAFSIR_OFFLINE_SOURCE.md`.
 
+### Follow-up on Task 1 — duplicate ranges across plans
+
+- PR #383 has an additional code fix at `77f360a4390466863c487dd164d567a95a83a605`: dashboard start actions carry the originating engine plan ID into session state; completion updates only that exact plan. This prevents a session started from plan B from accidentally completing an identical ayah range in plan A.
+- The primary daily selection also carries the plan ID; changing the session range clears it. Deep-linked sessions without a plan ID retain coordinate-based fallback.
+- Added a regression assertion that the daily selection preserves its source plan ID. PR #383 body contains the exact details. PR #383 remains OPEN/Draft; re-fetch its live head and CI before any release decision.
+
 ### Verification rules and next actions
 
 1. No local checkout/terminal is available in this connector session; no local TypeScript/test/build result is claimed.
