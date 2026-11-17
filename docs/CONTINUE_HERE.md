@@ -319,3 +319,8 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Rechecked `main` against the last known baseline `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`: compare status **identical**, 0 ahead / 0 behind. Production branch has not moved in this work.
 - PRs #383–#386 remain open Draft/HOLD; no PR merge, Production deploy, Vercel/Firebase settings or secrets change, or sync-flag activation.
 - Next: poll #4486 until Playwright and the application job terminate; then record the final exact-head outcome. Security gate remains a separate hard blocker regardless of browser outcome.
+
+
+## Newest continuation pointer — 2026-11-17
+
+Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-browser-diagnosis.md) before continuing. It records the final #4486 Playwright failure analysis, the two corrective commits, new run #4491, current dependency security blocker, and refreshed branch ancestry. Re-fetch run #4491 and current PR heads before taking further action.
