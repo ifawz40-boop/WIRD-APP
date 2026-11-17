@@ -1,5 +1,21 @@
 # WIRD — Master Project State
 
+## Live owner execution state — 2026-11-17 22:45 +02:00
+
+- Owner narrowed the current goal to local/offline readiness and four ordered tasks: multi-plan due-work on Dashboard, navigation controls below Quran ayahs, one-/two-page printed Mushaf, and offline opposite-page Tafsir al-Muyassar.
+- PR #383 (multi-plan due queue): `45acc719a90049f1f71606995cb02943ac5e337d`, OPEN/Draft. Exact Quality Gate #4460 fails frozen Bun install because lockfile needs updates.
+- PR #384 (ayah navigation): `3f59506204e21f702749159333162e80ab2f324d`, OPEN/Draft. Vercel Preview READY on this exact SHA; no Actions run.
+- PR #385 (printed spread): `10529d88e358b35a63c7b41060ffe966141d54e2`, OPEN/Draft. Vercel Preview READY on this exact SHA; no Actions run.
+- PR #386 (offline Tafsir): `3d4bcbaac5e1830faf369125536294a8f8487e02`, OPEN/Draft. Latest Vercel status failed due `build-rate-limit`; no Actions run. It is stacked on #385. PR #383 is a separate branch off main.
+- PR #382 prerequisite: `e8ca61cf86b0d49d94783670f76db1c250c7c146`, OPEN/Draft. Quality Gate #4461 fails `bun audit` on `picomatch@4.0.7` / GHSA-fc5q-39xc-vjpf / CVE-2026-112366. GitHub advisory has no patched version as of 2026-11-17. Do not bypass audit or use an incomplete upstream patch.
+- Task 4 now has official QuranEnc catalogue version validation, resumable 114-surah IndexedDB storage, raw payload/footnotes preservation, offline-only reading, opposite-page Quran/Tafsir selectors and adjacent-ayah controls. A spread-anchor bug was fixed and covered by a new E2E assertion; offline-ready status now requires exact surah coverage 1–114.
+- No local checkout/terminal is available; no local tests, TypeScript, or build pass is claimed. Older READY Previews certify only their own exact SHA, not newer changes.
+- Next: safely resolve #382; then exact-head CI for the task branches, including desktop/mobile/offline E2E and full Mushaf coverage. Merge each task only after all required checks pass.
+- No Production deploy, Firebase Rules/data, Vercel secrets/settings, sync flags, or user data changed.
+
+> See `docs/CONTINUE_HERE.md` for the live checkpoint and detailed exact-head evidence. The older snapshots below are historical context.
+
+
 ## Current GitHub implementation snapshot — 2026-11-17 21:55 +02:00
 
 - Last verified live main SHA: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a. Re-fetch before merge/deploy.
