@@ -176,6 +176,36 @@ function validateSurahPayload(surahNumber: number, payload: unknown): QuranEncTa
   return rows;
 }
 
+async function verifyCurrentSourceVersion(signal?: AbortSignal): Promise<void> {
+  const response = await fetch('https://quranenc.com/api/v1/translations/list/ar?localization=ar', {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+    signal
+  });
+  if (!response.ok) {
+    throw new Error(`تعذر التحقق من إصدار التفسير من QuranEnc (HTTP ${response.status}).`);
+  }
+
+  const payload: unknown = await response.json();
+  const translations = Array.isArray(payload)
+    ? payload
+    : payload && typeof payload === 'object' && Array.isArray((payload as { translations?: unknown }).translations)
+      ? (payload as { translations: unknown[] }).translations
+      : [];
+  const selected = translations.find(item =>
+    item && typeof item === 'object' &&
+    (item as { key?: unknown }).key === OFFLINE_TAFSIR_SOURCE.translationKey
+  ) as { version?: unknown } | undefined;
+
+  if (!selected || typeof selected.version !== 'string') {
+    throw new Error('لم يعثر QuranEnc على إصدار موثوق لمفتاح التفسير الميسر.');
+  }
+  if (selected.version !== OFFLINE_TAFSIR_SOURCE.version) {
+    throw new Error(`أصدر QuranEnc نسخة أحدث (${selected.version}). يلزم تحديث بيانات المصدر في وِرد قبل تنزيلها حتى لا نضع رقم إصدار غير صحيح على المحتوى.`);
+  }
+}
+
 function makeStatus(downloadedSurahs: number[], status: OfflineTafsirDownloadStatus['status']): OfflineTafsirDownloadStatus {
   const count = new Set(downloadedSurahs).size;
   const isComplete = count === TOTAL_SURAHS && downloadedSurahs.length === TOTAL_SURAHS;
@@ -230,6 +260,7 @@ export async function getOfflineTafsirForAyah(surahNumber: number, ayahNumber: n
 export async function downloadOfflineTafsirMuyassar(options: DownloadOptions = {}): Promise<OfflineTafsirDownloadStatus> {
   const database = await openDatabase();
   const { signal, onProgress } = options;
+  await verifyCurrentSourceVersion(signal);
   let currentSurah: number | null = null;
   let manifest = await readManifest(database);
 
