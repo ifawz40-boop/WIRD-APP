@@ -309,3 +309,13 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Dependency security audit has conclusively failed again on `picomatch@4.0.7`. Current official GitHub Advisory still reports no known affected/patched version boundary and links the upstream tracking issue; no safe released remediation is verified. See https://github.com/advisories/GHSA-fc5q-39xc-vjpf and upstream https://github.com/micromatch/picomatch/issues/247.
 - The TypeScript issue from run #4484 was fixed by widening the stale-version test fixture parameter from the literal source-version type to `string`; run #4486 confirms TypeScript now passes.
 - PR #386 remains Draft/HOLD due the audit gate and pending browser result. No merge/deploy or production configuration changes.
+
+
+## Follow-up inspection — run #4486 audit evidence / main unchanged — 2026-11-17
+
+- Re-polled Quality Gate #4486 (`44173952341`) on PR #386 exact head `e6efc84febe2ca63319f857c567db110183d01ff`.
+- Application job `134360175934` remains in progress specifically at **Desktop and mobile browser smoke tests**. Its prior steps remain successful; do not report Playwright or the complete application job as passed yet. GitHub's job-log endpoint currently returns BlobNotFound while the job is running, so no browser result is inferred.
+- Audit job `134360175493` is conclusively failed. Its log confirms the exact chain `vite > tinyglobby > fdir > picomatch`, resolved `picomatch@4.0.7`, and one High finding: `GHSA-fc5q-39xc-vjpf` (single-branch repeated-extglob ReDoS). Frozen install succeeds; this is not a lockfile install failure.
+- Rechecked `main` against the last known baseline `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`: compare status **identical**, 0 ahead / 0 behind. Production branch has not moved in this work.
+- PRs #383–#386 remain open Draft/HOLD; no PR merge, Production deploy, Vercel/Firebase settings or secrets change, or sync-flag activation.
+- Next: poll #4486 until Playwright and the application job terminate; then record the final exact-head outcome. Security gate remains a separate hard blocker regardless of browser outcome.
