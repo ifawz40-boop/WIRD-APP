@@ -375,3 +375,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Source ancestry recheck: `main` remains at `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; PR #390 candidate is 187 commits ahead / 0 behind main. Compared with PR #387 head `2532ddb...`, the branch is still graph-diverged by one test-only commit, but that exact weak-verse selector change was ported into #390 as a normal file update. No runtime change was omitted from the one-commit gap. No merge or deployment.
 
 - Added a real-device offline acceptance gate to `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md`: iPadOS Safari + Android Chrome; three-plan due-task integrity; full app shell + 604 printed pages + 114-surah Tafsir + audio; cold close/reopen in airplane mode; quota/persistence denial; cache failure; update lifecycle; and local/cloud data isolation. CI/Playwright is not sufficient to claim cold-start offline readiness.
+
+- Full checkpoint file: docs/checkpoints/2026-11-18-PR390-4563.md (exact candidate SHA, cumulative scope, current CI, security blocker, real-device gates, and safe continuation sequence).
