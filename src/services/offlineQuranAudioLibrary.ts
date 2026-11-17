@@ -17,9 +17,6 @@ export const STORE_AUDIO_FILES = 'files';
 export const STORE_AUDIO_JOB_ITEMS = 'jobItems';
 export const STORE_AUDIO_LOCKS = 'locks';
 export const STORE_AUDIO_STAGING = 'staging';
-export const STORE_AUDIO_STAGING = 'staging';
-export const DEFAULT_AUDIO_STAGING_GRACE_MS = 5 * 60 * 1000;
-export const DEFAULT_AUDIO_ORPHAN_GRACE_MS = 24 * 60 * 60 * 1000;
 export const DEFAULT_AUDIO_LOCK_LEASE_MS = 60_000;
 export const DEFAULT_AUDIO_LOCK_POLL_INTERVAL_MS = 50;
 export const DEFAULT_AUDIO_LOCK_WAIT_TIMEOUT_MS = 120_000;
@@ -97,18 +94,6 @@ export interface CacheStorageLike {
     delete(request: Request | string): Promise<boolean>;
     keys?(request?: Request | string): Promise<readonly Request[]>;
   }>;
-}
-
-export interface OfflineAudioStagingRecord {
-  cacheKey: string;
-  kind: 'download' | 'orphan';
-  fileKey?: string;
-  reciterId?: string;
-  globalAyahNumber?: number;
-  cacheGenerationId?: string;
-  jobId?: string;
-  createdAtMs: number;
-  schemaVersion: 1;
 }
 
 export interface OfflineAudioStagingRecord {
