@@ -163,3 +163,16 @@ Future plan storage should derive chunk count from actual UTF-8 serialized bytes
 - Offline E2E must verify both page assets after device preparation and while network is disabled.
 - Tafsir al-Muyassar is not yet part of the offline package. The current small per-ayah cache is insufficient. Task 4 must add a resumable 114-surah IndexedDB package with exact source text and footnotes, edition version, attribution and per-surah integrity validation.
 
+
+
+## Tafsir al-Muyassar offline package — 2026-11-17
+
+- Source: QuranEnc Arabic al-Muyassar, key arabic_moyassar, King Fahd Complex, catalogue version 1.0.1 dated 2026-11-09.
+- A user explicitly starts a sequential download of all 114 surahs while online. The app validates each surah's expected verse count, sequential surah/ayah coordinates and non-empty translation before saving.
+- The original source payload is stored unchanged in IndexedDB, including footnotes. Version metadata and download manifest are stored separately.
+- Each completed surah is durable before progress advances. A failed request or pause leaves verified surahs intact; resume skips current-version surahs already stored and continues from the first missing one.
+- The Tafsir page is displayed only when all 114 surahs are verified. After download, the reading path uses IndexedDB only and has no QuranEnc API dependency. The package is device-local and is not synced to Firestore.
+- Opposite-page display shows all Tafsir for the ayahs on the opposite Quran page, highlights and scrolls to the selected ayah, and preserves the opposite Quran page as the reading surface.
+- Attribution, publisher, version and source links are visible. The source payload is never edited; no AI-generated Tafsir is used.
+- E2E coverage in PR #386 mocks the official endpoint and checks full download, both page directions, offline reading, footnote display, invalid payload rejection and interrupted-download resume. Exact-head CI remains blocked by the upstream picomatch advisory; no local pass is claimed.
+
