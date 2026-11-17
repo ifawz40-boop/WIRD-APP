@@ -4,7 +4,7 @@ import {
   OFFLINE_TAFSIR_SOURCE
 } from './tafsirOfflineLibrary';
 
-function makeStoredSurah(surahNumber: number, sourceVersion = OFFLINE_TAFSIR_SOURCE.version) {
+function makeStoredSurah(surahNumber: number, sourceVersion: string = OFFLINE_TAFSIR_SOURCE.version) {
   const versesCount = ALL_SURAHS[surahNumber - 1]?.versesCount || 0;
   return {
     surahNumber,
