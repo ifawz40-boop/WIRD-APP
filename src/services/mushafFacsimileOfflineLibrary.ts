@@ -1,14 +1,13 @@
 import {
   getMushafFacsimilePageUrls,
   MUSHAF_FACSIMILE_COMMIT,
-  MUSHAF_FACSIMILE_VERSION,
+  MUSHAF_OFFLINE_CACHE_NAME,
   parseMushafAyahCoordinates,
   parseMushafViewBox,
   sanitizeMushafSvgMarkup
 } from './mushafFacsimileService';
 
 export const MUSHAF_OFFLINE_PAGE_COUNT = 604;
-export const MUSHAF_OFFLINE_CACHE_NAME = `wird-mushaf-facsimile-${MUSHAF_FACSIMILE_VERSION}-${MUSHAF_FACSIMILE_COMMIT.slice(0, 8)}`;
 const STORAGE_RESERVE_BYTES = 32 * 1024 * 1024;
 const QUOTA_ESTIMATE_SAFETY_FACTOR = 1.35;
 const PREFLIGHT_SAMPLE_PAGES = [1, 300, 604] as const;
