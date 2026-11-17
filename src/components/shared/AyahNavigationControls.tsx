@@ -37,8 +37,9 @@ export const AyahNavigationControls: React.FC<AyahNavigationControlsProps> = ({
   onNavigate,
   compact = false
 }) => {
-  const previous = getAdjacentAyahCoordinate(currentAyah, 'previous');
-  const next = getAdjacentAyahCoordinate(currentAyah, 'next');
+  const coordinate = { surahNumber: currentAyah.surahNumber, ayahNumber: currentAyah.numberInSurah };
+  const previous = getAdjacentAyahCoordinate(coordinate, 'previous');
+  const next = getAdjacentAyahCoordinate(coordinate, 'next');
 
   return (
     <nav
