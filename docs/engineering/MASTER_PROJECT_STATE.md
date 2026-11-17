@@ -27,6 +27,18 @@
 
 > The older Google AI Studio workspace snapshot below is historical context only.
 
+## Current GitHub implementation snapshot — 2026-11-17 22:20 +02:00
+
+- Live main last verified: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a.
+- Owner scope: local/offline readiness only; four tasks: multiple active plan due-work, navigation beneath ayat, one-/two-page printed Mushaf, opposite-page Tafsir al-Muyassar.
+- PR #383 task 1, #384 task 2, #385 task 3, #386 task 4 are OPEN / Draft / NOT VERIFIED. They are stacked in order and require the prerequisite #382 lockfile branch.
+- Task 4 details: local IndexedDB package for QuranEnc Arabic Tafsir al-Muyassar, key arabic_moyassar, King Fahd Complex, catalogue V1.0.1 (2026-11-09). The app downloads all 114 surahs explicitly, validates complete verse counts, sequential coordinates and non-empty translations, stores the original payload including footnotes, supports pause/resume, and displays Tafsir on either spread side for the opposite Quran page. Both pages default to Quran; the other side remains Quran when Tafsir is selected. No API calls occur while reading after download; no cloud sync.
+- Quran text remains exclusively from WIRD's canonical local Quran data; Tafsir text is not AI-generated and is never used as Quran text.
+- PR #382 currently fails exact-head bun audit on GHSA-fc5q-39xc-vjpf / CVE-2026-112366 affecting picomatch through 4.0.7. Upstream candidate #237 remains open/unmerged; #238 has a documented remaining vulnerable pattern. Do not suppress audit or pin a partial/unmerged patch. This blocks all stacked merges until safely resolved.
+- No local build/test was run in this connector session. No production deploy, Firebase Rules/data, Vercel secrets/settings, sync flags or user data changed.
+
+> The older Google AI Studio workspace snapshot below is historical context only.
+
 **Current snapshot reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
