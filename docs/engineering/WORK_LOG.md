@@ -897,3 +897,6 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - PR #383 code commit `77f360a4390466863c487dd164d567a95a83a605` now passes the originating engine plan ID from both the primary daily task and additional plan cards into session state.
 - Session completion filters by that exact plan ID when present; changing the session range clears the plan identity. Deep-linked sessions without an originating ID keep the coordinate fallback.
 - Added a regression assertion that the primary daily selection retains the exact plan ID. PR #383 remains OPEN/Draft and its current exact-head Quality Gate is still blocked by the frozen lockfile/security prerequisite; no local test pass is claimed.
+
+
+- Exact-head refresh after Task 1 duplicate-plan identity fix: PR #383 head `77f360a4390466863c487dd164d567a95a83a605`; Quality Gate run #4465 fails at frozen Bun install because #383 is based on main and does not include #382's lockfile alignment. Latest Vercel status is `build-rate-limit`. PR #383 remains Draft/NOT VERIFIED.
