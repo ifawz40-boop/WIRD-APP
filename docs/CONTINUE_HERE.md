@@ -1,5 +1,41 @@
 # WIRD — Continuation Entry Point
 
+## Live execution checkpoint — 2026-11-17 22:45 +02:00
+
+**Owner priority:** local/offline readiness only. Do not expand scope beyond the requested work: (1) due memorization tasks from all active plans, (2) adjacent-ayah navigation beneath Quran reading surfaces, (3) one-page/facing two-page printed Mushaf, and (4) offline Tafsir al-Muyassar on either opposite spread side.
+
+### Current implementation branches and release evidence
+
+| Task | PR | Current exact head | State | Evidence / blocker |
+|---|---:|---|---|---|
+| Multiple active-plan due tasks | #383 | `45acc719a90049f1f71606995cb02943ac5e337d` | OPEN / Draft / NOT VERIFIED | Quality Gate run #4460 fails at `bun install --frozen-lockfile`: lockfile changes are required. Vercel Preview for this exact SHA was READY. |
+| Adjacent-ayah controls | #384 | `3f59506204e21f702749159333162e80ab2f324d` | OPEN / Draft / NOT VERIFIED | Vercel Preview for this exact SHA was READY. No GitHub Actions run returned for this stacked branch. Controls exist in Mushaf and Quran study surfaces; memorization session already has its own adjacent controls. |
+| Printed Mushaf spread | #385 | `10529d88e358b35a63c7b41060ffe966141d54e2` | OPEN / Draft / NOT VERIFIED | Vercel Preview for this exact SHA was READY. One-page remains available; facing spread displays lower-numbered page on the right and next page on the left. |
+| Offline Tafsir al-Muyassar / opposite-page mode | #386 | `3d4bcbaac5e1830faf369125536294a8f8487e02` | OPEN / Draft / NOT VERIFIED | Latest Vercel status is FAILED due to account `build-rate-limit`; no GitHub Actions run returned. Do not call this a code build failure or pass. |
+
+**Dependency prerequisite #382:** exact head `e8ca61cf86b0d49d94783670f76db1c250c7c146`; Quality Gate run #4461 fails at `bun audit --audit-level=high` on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366 (High, CVSS 8.7). As of this checkpoint the GitHub advisory states affected through 4.0.7 and no patched version. Do not suppress audit, skip the step, or pin an unmerged/partial upstream patch. #382 must be resolved safely before the exact Quality Gate can pass.
+
+### Task 4 latest refinements
+
+- QuranEnc official API docs confirm no authentication and open CORS; translation catalogue returns `translations[]` with `key`, `version`, and `last_update`; surah endpoint returns `result[]` rows with `sura`, `aya`, `arabic_text`, `translation`, and `footnotes`. Docs: https://quranenc.com/ar/home/api
+- The downloader pins and checks catalogue version `1.0.1` for `arabic_moyassar`, downloads explicitly one surah at a time, validates exact verse count and sequential coordinates, stores the untouched source payload in IndexedDB, and supports pause/resume. No network request is used during reading after download; no Firestore sync.
+- Both spread sides default to Quran. Selecting Tafsir on either side leaves the opposite side Quran and displays Tafsir for that opposite Quran page. The direction can be reversed.
+- Added navigation directly below each Tafsir ayah. A review found a spread-anchor edge case when navigating from the Tafsir side back to an ayah on that same physical page. Fixed it so the spread remains anchored and waits for the Quran side to render; added an E2E regression assertion.
+- Offline-ready status now requires the exact set of surahs 1–114; invalid manifest numbers cannot falsely produce a complete package.
+- Source attribution/version/reuse requirements are recorded in `docs/TAFSIR_OFFLINE_SOURCE.md`.
+
+### Verification rules and next actions
+
+1. No local checkout/terminal is available in this connector session; no local TypeScript/test/build result is claimed.
+2. Preview READY proves only that Vercel built the exact older PR SHA. It does not prove runtime behavior or the newer #386 head.
+3. #386 currently has no fresh Preview because Vercel rejected the build for plan build-rate-limit; wait for quota or use the existing preview only for its exact older SHA.
+4. Resolve #382 dependency/lockfile gate without weakening security; then run the complete exact-head Quality Gate on every feature head, including desktop/mobile E2E, offline navigation, 604-page map integrity and audio checks.
+5. Review and merge each task separately only after its exact-head checks pass. Do not merge drafts or deploy Production while blocked.
+6. No Production deployment, Firebase Rules/data, Vercel secrets/settings, sync flags, or user data were changed.
+
+---
+
+
 **Last reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Primary branch:** `main`  
 **Last refreshed GitHub/Vercel checkpoint (2026-11-14):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`
