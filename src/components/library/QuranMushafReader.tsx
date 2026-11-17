@@ -664,6 +664,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   };
 
   const selectReaderLayout = (layout: 'flow' | 'printed') => {
+    stopAudio();
     setReaderLayout(layout);
     if (layout === 'printed' && pageDisplayMode === 'spread') {
       setPage(normalizeSpreadStartPage(page));
