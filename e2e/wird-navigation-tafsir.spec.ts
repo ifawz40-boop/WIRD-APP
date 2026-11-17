@@ -177,7 +177,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     expect(new Set(requestedSurahs).size).toBe(114);
 
     await context.setOffline(true);
-    await page.getByRole('navigation', { name: 'التنقل بين الآيات' }).getByRole('button', { name: 'الآية التالية' }).click();
+    await page.locator('#wird-tafsir-ayah-1-1').getByRole('navigation', { name: 'التنقل بين الآيات' }).getByRole('button', { name: 'الآية التالية' }).click();
     await expect(page.locator('#wird-tafsir-ayah-1-2')).toContainText('تفسير اختباري 1:2');
 
     await rightContent.getByRole('button', { name: 'التفسير الميسر' }).click();
