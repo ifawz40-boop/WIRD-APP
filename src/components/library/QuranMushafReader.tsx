@@ -393,6 +393,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     pendingTargetRef.current = null;
     autoPlayNextPageRef.current = false;
     stopAudio();
+    setReadingAyah(null);
     setPage(nextPage);
   };
 
