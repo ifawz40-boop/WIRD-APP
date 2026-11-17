@@ -330,3 +330,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Latest integration checkpoint: [2026-11-17 latest work](./checkpoints/2026-11-17-latest-integration-work.md). Current #386 head is `e0c7d9d...`, Quality Gate #4494 is running, #4491 was cancelled by a subsequent push, and weak-verse navigation has been ported from #384.
 
 - PR #386 latest head updated after TypeScript correction: `6c62465d97e855701217ce2e3b8fe00d0574ba58`. See the latest integration checkpoint for #4494's 759 unit passes / 31 Rules passes / TS failure and the narrow prop-type correction; fetch a new exact-head run before proceeding.
+
+- Cumulative release integration is tracked in existing Draft PR #387, current head `199743fa60974ee650d51e6579bb5db87fba6487`. Exact-head Quality Gate #4504 (`44179885024`) has the security audit failed separately and the application job running. The latest checkpoint records the integration tree and workflow correction; re-poll #4504 before any status change.
