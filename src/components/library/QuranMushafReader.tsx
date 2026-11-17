@@ -860,7 +860,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
               onClick={() => changePage(page - pageStep)}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
-              <ChevronRight className="h-4 w-4" /> الصفحة السابقة
+              <ChevronRight className="h-4 w-4" /> {isSpreadModeActive ? 'الصفحتان السابقتان' : 'الصفحة السابقة'}
             </button>
             <span aria-live="polite" aria-atomic="true" className="text-xs font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] px-3 py-1.5 rounded-lg border border-[#C59B27]/30">
               {isSpreadModeActive ? `${page}–${Math.min(604, page + 1)} / 604` : `${page} / 604`}
