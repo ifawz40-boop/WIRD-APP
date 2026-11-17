@@ -552,8 +552,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     prepareSpreadReadingSide(point.page);
     const targetIsVisibleInCurrentSpread = point.page === page ||
       (isSpreadModeActive && point.page === page + 1);
-    if (targetIsVisibleInCurrentSpread && audioAyahs.length &&
-        audioAyahs.some(ayah => ayah.surahNumber === target.surahNumber && ayah.numberInSurah === target.ayahNumber)) {
+    if (targetIsVisibleInCurrentSpread) {
+      // The target may be on the page that was just switched from Tafsir to Quran.
+      // Wait for the spread's Quran/audio data to re-render before scrolling; do not
+      // change the spread anchor to the left-page number.
       const targetElement = document.getElementById('wird-ayah-' + point.surahNumber + '-' + point.ayahNumber);
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
