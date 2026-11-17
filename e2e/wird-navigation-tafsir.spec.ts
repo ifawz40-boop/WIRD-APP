@@ -138,7 +138,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(spread.locator('[aria-label="الصفحة اليمنى رقم 1"]')).toBeVisible();
     await expect.poll(() => page.evaluate(() => localStorage.getItem('wird.quran.pageDisplayMode.v1'))).toBe('spread');
 
-    await page.getByRole('button', { name: 'الصفحة التالية' }).click();
+    await page.getByRole('button', { name: 'الصفحتان التاليتان' }).click();
     const nextSpread = page.getByRole('main', { name: 'صفحتا المصحف 3 و4' });
     await expect(nextSpread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 3"]')).toBeVisible();
     await expect(nextSpread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 4"]')).toBeVisible();
