@@ -336,3 +336,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - PR #387 now also preserves the originating engine plan ID in the session URL so refresh/reopen cannot route completion to a different plan when ranges overlap. Latest head `6d7f435dd2caca3cc400783fc2a7ee152f3e1fd1`; tests added. Run #4504 is still validating the preceding head; fetch a new exact-head run after it concludes.
 
 - PR #387 route persistence now includes the nullable in-app RouteState typing correction at exact head `abe008dc1b03e1e04c6f7497bfd6138b4728cb19`. Quality Gate #4511 (`44180386559`) is running; last poll was 604-page coverage, with the audit separately failing on picomatch.
+
+- Offline readiness matrix refreshed on the documentation branch: `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md`. It distinguishes PR #387 implementation from release verification and records that pinned offline audio, cold-start airplane-mode proof, and full route acceptance remain outstanding.
