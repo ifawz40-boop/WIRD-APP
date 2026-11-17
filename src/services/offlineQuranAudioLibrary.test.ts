@@ -167,6 +167,72 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     db.close();
   });
 
+  await test('Pause and cancel from another tab stop an in-flight worker before the next ayah', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-cross-tab-control-${++dbCounter}`;
+    const mockCache = createMockCacheStorage();
+    let networkCalls = 0;
+    const makeGate = () => {
+      let release!: () => void;
+      let markStarted!: () => void;
+      const started = new Promise<void>(resolve => { markStarted = resolve; });
+      const wait = new Promise<void>(resolve => { release = resolve; });
+      const fetchFn: typeof fetch = async () => {
+        networkCalls++;
+        markStarted();
+        await wait;
+        const bytes = new Uint8Array([0xff, 0xfb, 0x90, networkCalls]);
+        return new Response(bytes.buffer, {
+          status: 200,
+          headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': String(bytes.byteLength) }
+        });
+      };
+      return { started, release, fetchFn };
+    };
+    const gateA = makeGate();
+    const gateB = makeGate();
+    const makeTab = (fetchFn: typeof fetch) => new OfflineQuranAudioLibrary({
+      indexedDBFactory: factory,
+      databaseName,
+      cacheStorageFactory: mockCache.factory,
+      fetchFn,
+      lockManager: null,
+      lockLeaseMs: 1_000,
+      lockPollIntervalMs: 5,
+      lockWaitTimeoutMs: 5_000,
+      concurrency: 1,
+      storageEstimateFn: async () => ({ usage: 0, quota: 200_000_000 })
+    });
+    const tabA = makeTab(gateA.fetchFn);
+    const tabB = makeTab(gateB.fetchFn);
+    const job = await tabA.enqueueDownloadJob({
+      scopeKind: 'range', labelAr: 'اختبار إيقاف من تبويب آخر', reciterId: 'ar.alafasy',
+      ranges: [{ surahNumber: 112, startAyah: 1, endAyah: 3 }], autoStart: false
+    });
+
+    const firstRun = tabA.startOrResumeJob(job.jobId);
+    await gateA.started;
+    await tabB.pauseJob(job.jobId);
+    gateA.release();
+    await firstRun;
+    const paused = await tabB.getJob(job.jobId);
+    assert(paused?.status === 'paused', 'A pause from another tab must remain durable after the in-flight request settles');
+    assert(networkCalls === 1, 'A paused cross-tab worker must not start the next ayah');
+
+    const secondRun = tabB.startOrResumeJob(job.jobId);
+    await gateB.started;
+    await tabA.cancelJob(job.jobId);
+    gateB.release();
+    await secondRun;
+    const cancelled = await tabB.getJob(job.jobId);
+    assert(cancelled?.status === 'cancelled', 'A cancel from another tab must remain terminal');
+    assert(networkCalls === 2, 'A cancelled cross-tab worker must not start any further ayah');
+    const stats = await tabA.getStats();
+    assert(stats.availableFilesCount === 0, 'Paused/cancelled in-flight responses must not be committed as cached files');
+    tabA.close();
+    tabB.close();
+  });
+
   await test('Bounded concurrency (<=2), redirect:error, host/mime verification, and local-first ObjectURL playback', async () => {
     const mockCache = createMockCacheStorage();
     let inFlight = 0;
