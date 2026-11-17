@@ -653,6 +653,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
   const selectReaderLayout = (layout: 'flow' | 'printed') => {
     setReaderLayout(layout);
+    if (layout === 'printed' && pageDisplayMode === 'spread') {
+      setPage(normalizeSpreadStartPage(page));
+    }
     try { localStorage.setItem('wird.quran.readerLayout.v1', layout); } catch { /* Layout preference remains available for this view. */ }
   };
 
