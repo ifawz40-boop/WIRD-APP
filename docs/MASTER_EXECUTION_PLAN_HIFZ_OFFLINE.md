@@ -439,3 +439,29 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 - Branch ancestry is not a clean linear stack: #384 head vs #385 head compares as diverged (14 commits ahead / 4 behind; merge base `3f59506204e21f702749159333162e80ab2f324d`). #386 is ahead of #385 by 92 commits with no divergence. #384 head vs #383 head is also diverged (19 ahead / 13 behind; merge base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`). Therefore do not assume #384/#385/#386 are safely sequential or merge them by number; first reconcile branch ancestry and overlapping Mushaf/AyahNavigationControls files, then run integration tests.
 - #385 and #386 both touch Mushaf reading/navigation code; #386 is based on #385. #385 has copied/shared navigation changes but is not a descendant of #384, so a later merge of #384 may conflict or overwrite behavior. Resolve this deliberately before integration.
 - No PR merge, production deploy, Firebase/Vercel configuration change, secret change, or sync-flag change.
+
+## Live GitHub reconciliation — 2026-11-17 (continued session)
+
+This addendum supersedes older status snapshots above where they conflict. It is a repository/CI checkpoint, not a Production verification.
+
+### Live repository and PR state
+- Live `main` remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`.
+- PR #382 is OPEN/DRAFT, head `4332ea4cc4b2fa75e99d3e7a5dee22e2391b6f34`, based on main. Its actual diff is **four paths**, not lockfile-only: `.github/workflows/ci.yml`, `bun.lock`, `e2e/app-shell.spec.ts`, and `e2e/memorization-audio-repeat.spec.ts`. It adds all-branch PR CI triggering and separates the security audit from application tests. Exact run #4461: frozen install PASS; complete dependency audit FAIL on picomatch.
+- PR #383 is OPEN/DRAFT, base `fix/main-bun-lockfile-alignment-20261117`, head `8c7c5cd47cf186c8da23a2cf5fe3360afb7cd341`. Exact Quality Gate #4474 / run `44171290167`: application validation job PASS (756 unit assertions, 31 Firestore Rules Emulator tests, API/audio/server smoke, TypeScript, production build, Playwright 164 passed / 0 failed); separate complete dependency audit FAILs on the high-severity picomatch advisory. No merge or deploy.
+- PR #384 head `022c1dd1cd5435f9c54a152e918e815dd601bbf5`, #385 head `10529d88e358b35a63c7b41060ffe966141d54e2`, #386 head `e3e26f26ac684fb97c0b1cffc636e1e5d5aa12db`: no GitHub Actions workflow runs associated with these exact heads at this recheck. They remain NOT VERIFIED.
+- PR #381 tracker branch head `70721397ea30c055cb443e8d9e85a2f6262237bf`; its merge-ref Quality Gate #4477 failed before tests at `bun install --frozen-lockfile`, because the main-based documentation branch does not include the manifest/lockfile override alignment from #382. This is a stale-base lockfile failure, not evidence of runtime-code failure. Keep #381 Draft; rebase/retarget only after deliberate integration planning.
+- Branch graph remains unsafe to merge by PR number: #384 vs #385 diverged 14 ahead / 4 behind (merge base `3f59506204e21f702749159333162e80ab2f324d`); #386 is 92 commits ahead of #385 and descends from it; #384 vs #383 diverged 19 ahead / 13 behind (merge base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`). Reconcile the shared Mushaf/navigation files before integration.
+
+### Security finding confirmed from the resolved lock graph
+- The actual locked chain is `vite@8.3.5 > tinyglobby@0.2.17 > fdir@6.5.0 > picomatch@4.0.7`. Vite itself also declares `picomatch: ^4.0.7`; tinyglobby declares `picomatch: ^4.0.4`.
+- GitHub Advisory `GHSA-fc5q-39xc-vjpf` / `CVE-2026-112366` still lists versions through 4.0.7 as affected and patched version as unknown. The latest audit log reports exactly one high finding on this package.
+- Do not force an older picomatch version outside upstream dependency ranges, pin an unmerged PR, suppress the advisory, or downgrade the audit threshold. No safe released fix was verified in this session.
+- Official references: https://github.com/advisories/GHSA-fc5q-39xc-vjpf and https://github.com/micromatch/picomatch/issues/247 .
+
+### Next actions
+1. Keep #382/#383 and #384–#386 Draft/HOLD; no Production changes.
+2. Re-check the upstream picomatch advisory/releases and evaluate a supported toolchain change only if its complete lock graph removes the vulnerable package without invalid overrides.
+3. Once the dependency gate is clean, rerun the full exact-head Quality Gate on #383 and its integration head.
+4. Reconcile #384 navigation with #385/#386 Mushaf/Tafsir changes in a single deliberate integration branch; then run all desktop/mobile and offline E2E on the exact final SHA.
+5. Continue the broader offline audit: cold restart/airplane mode, downloaded audio lifecycle, IndexedDB quota/resume/corruption, local Quran/tafsir reads, PWA cache updates, and plan archive/recovery.
+6. No merge, deployment, Firebase/Vercel settings/secrets, or sync-flag change was made in this recheck.
