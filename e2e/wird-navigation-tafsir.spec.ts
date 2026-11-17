@@ -183,6 +183,50 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     expect(requestedSurahs).toHaveLength(114);
   });
 
+  test('partial Muyassar download resumes from the first missing surah without redownloading verified data', async ({ page }) => {
+    const requestedSurahs: number[] = [];
+    let failSurahTwoOnce = true;
+    await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
+      const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
+      requestedSurahs.push(surahNumber);
+      if (surahNumber === 2 && failSurahTwoOnce) {
+        failSurahTwoOnce = false;
+        await route.fulfill({ status: 503, body: 'temporary test outage' });
+        return;
+      }
+      const surah = ALL_SURAHS[surahNumber - 1];
+      const payload = Array.from({ length: surah.versesCount }, (_, index) => ({
+        sura: surahNumber,
+        aya: index + 1,
+        translation: `تفسير استكمال ${surahNumber}:${index + 1}`,
+        footnotes: []
+      }));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify(payload)
+      });
+    });
+
+    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+    await page.getByRole('group', { name: 'محتوى الصفحة اليسرى' }).getByRole('button', { name: 'التفسير الميسر' }).click();
+
+    const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
+    await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
+    await expect(downloadPanel.getByRole('alert')).toContainText('HTTP 503');
+    await expect(downloadPanel).toContainText('1 / 114 سورة');
+    await downloadPanel.getByRole('button', { name: 'استكمال التنزيل' }).click();
+
+    await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible({ timeout: 120_000 });
+    expect(requestedSurahs.filter(number => number === 1)).toHaveLength(1);
+    expect(requestedSurahs.filter(number => number === 2)).toHaveLength(2);
+    expect(new Set(requestedSurahs)).toHaveProperty('size', 114);
+  });
+
   test('incomplete QuranEnc surah payload is rejected and never marked as an offline-ready Tafsir', async ({ page }) => {
     await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
       const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
