@@ -342,3 +342,16 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 - Mushaf coordinate-map step was SKIPPED due to lockfile-only scope; do not count as PASS.
 - Job log retrieval returned BlobNotFound/404; no Playwright outcome can be inferred.
 - No merge or Production/config/secret/sync-flag changes made. Phase 0 remains IN PROGRESS; all four product tracks remain PARTIAL pending their documented gaps.
+
+
+## PR #382 exact-head Quality Gate result — 2026-11-17
+
+- Re-fetched PR #382: OPEN / Draft / mergeable=true / not merged. Head `c98a31f7a1a9ee41f1489b15609d3c2ccce18e69`; base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; merge ref `cf378fb15af4e9423154c34dbaaf79b13139312d`; changed files: exactly `bun.lock`.
+- Quality Gate run #4452 (`44105033897`), job `134114950644`, completed with **FAILURE**. Frozen install, Bun audit, automated test suites, native TS API imports, audio CDN/range, Firestore Rules Emulator, TypeScript, production build and server startup smoke all succeeded.
+- Mushaf coordinate-map step was **SKIPPED**, not passed. Desktop/mobile Playwright reported **160 passed, 2 skipped, 4 failed** (two failing tests reproduced in both desktop and mobile projects):
+  1. `e2e/app-shell.spec.ts:205` — physical KeyB shortcut / mobile drawer test. The failure occurs at line 164: expected the Header button labelled `فتح الشريط الجانبي` with `aria-expanded=false`, but no matching button was found after synthetic Ctrl+KeyB dispatch.
+  2. `e2e/memorization-audio-repeat.spec.ts:137` — media load error should return audio control to idle. At line 115 the loading status `جارٍ تحميل التلاوة` remained present after the test manually invoked the mock audio `onerror` callback.
+- Source inspection: App.tsx listens for Ctrl/Cmd + physical `KeyB`; Header exposes the sidebar toggle state. MemorizationSessionView's `audio.onerror` handler does clear both `isPlaying` and `isAudioLoading` when the failed audio is still current. The E2E audio test currently does not wait for the asynchronous local/offline source resolution and mock Audio creation before invoking `onerror`; a test timing race is plausible but must be reproduced before changing assertions or production code. The sidebar failure is not yet explained; do not weaken its accessibility/behavior assertion without a root-cause test.
+- Artifact `playwright-smoke-results` uploaded successfully (artifact ID `14338856662`, SHA-256 `978ba2e18968257d614fe2451cfe919fd9eb3ec1c0c4dda0675f1daf3b491c11`). Its contents have not yet been extracted in this session; error-context files are available in that artifact.
+- **Decision:** do not merge #382. Do not attribute these failures to the lockfile without evidence; do not modify the one-file lockfile PR to hide unrelated test failures. Next: extract artifact error contexts; reproduce the two failures against unchanged `main` and the PR merge ref; fix only proven test/runtime causes on a separate narrow PR, then rerun full Quality Gate on exact SHAs. Recheck whether a clean lockfile-only run can pass after the suite is stabilized.
+- No runtime, Quran, Firebase, Vercel, production, secret, environment-variable, or sync-flag change was made.
