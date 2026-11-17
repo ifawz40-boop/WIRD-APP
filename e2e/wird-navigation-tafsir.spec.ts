@@ -152,7 +152,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     const requestedSurahs: number[] = [];
     await mockQuranEncVersion(page);
     await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
-      const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
+      const surahNumber = Number(new URL(route.request().url()).pathname.split('/').pop());
       requestedSurahs.push(surahNumber);
       const surah = ALL_SURAHS[surahNumber - 1];
       const payload = Array.from({ length: surah.versesCount }, (_, index) => ({
@@ -244,7 +244,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible({ timeout: 120_000 });
     expect(requestedSurahs.filter(number => number === 1)).toHaveLength(1);
     expect(requestedSurahs.filter(number => number === 2)).toHaveLength(2);
-    expect(new Set(requestedSurahs)).toHaveProperty('size', 114);
+    expect(new Set(requestedSurahs).size).toBe(114);
   });
 
   test('incomplete QuranEnc surah payload is rejected and never marked as an offline-ready Tafsir', async ({ page }) => {
