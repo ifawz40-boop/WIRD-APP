@@ -822,3 +822,106 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - **Next action:** Push Studio workspace changes to a dedicated GitHub feature branch/PR and execute GitHub Quality Gate CI (including Firestore Rules Emulator with Java); keep Vercel Production deployment and sync flags unchanged until explicit owner authorization.
 
 
+
+
+## 2026-11-17 — Quran ayah navigation controls
+
+- Owner request remains local/offline app readiness, with four ordered tasks: all active memorization plans on Dashboard; navigation beneath ayat; one-/two-page printed Mushaf; opposite-page Tafsir al-Muyassar.
+- Task 2 PR #384, branch feat/ayah-navigation-controls-20261117, stacked on lockfile prerequisite PR #382.
+- Added src/components/shared/AyahNavigationControls.tsx: accessible previous/next controls with Surah-boundary handling and no network dependency.
+- Integrated controls beneath each ayah card and the continuous-reading block in src/components/library/QuranLibraryView.tsx; integrated beneath the Mushaf page in src/components/library/QuranMushafReader.tsx. The session view already provides its own sticky ayah navigation and was left unchanged.
+- Added E2E coverage in e2e/wird-navigation-tafsir.spec.ts for study-card and Mushaf navigation. No local tests/build were run; task 2 remains NOT VERIFIED until exact-head CI and browser checks pass.
+- PR #382's Bun lockfile alignment fixed the frozen install issue on its branch; last known Playwright failures were caused by tests firing the shortcut before listener readiness and firing media error before the new audio instance existed. Follow-up test synchronization was committed; await rerun.
+- Task 4 data research: QuranEnc official Arabic At-Tafsir al-Muyassar page identifies source key arabic_moyassar and provides a surah API. Its displayed reuse conditions require content not to be modified/added/deleted, clear publisher/source attribution, version number, preserving edition information, reporting translation feedback, updating to new releases, and avoiding unsuitable ads. This supports a controlled offline package path but does not yet verify the exact source edition version or a complete bundled corpus.
+- No Quran text was modified; no Firebase/Vercel production configuration or user data changed.
+- Next: complete task 3 in its own PR; then verify the official Tafsir edition metadata and implement complete, resumable local Tafsir storage before task 4 UI.
+
+
+
+## 2026-11-17 — Printed Mushaf one-/two-page mode
+
+- Owner task 3 PR #385, branch feat/mushaf-facing-pages-20261117, stacked on task 2 PR #384.
+- Added local preference wird.quran.pageDisplayMode.v1 with one-page default and optional facing spread.
+- Spread order: page n (odd/lower number) on the right, page n+1 on the left; final spread is 603–604. Page jump normalizes to the odd spread start; page controls and touch navigation advance by two.
+- The two facsimile components independently load and validate their SVG hit areas against WIRD local Quran ayah records. The spread never derives Quran text from the SVG.
+- Audio combines right-page then left-page ayahs and waits for both page maps before playback/auto-continue. Switching mode stops active audio to prevent stale queue behavior.
+- Responsive spread uses a 640px minimum side-by-side canvas with horizontal scrolling on narrow screens.
+- Added E2E coverage for one/two-page switching, left/right order, two-page navigation, local preference persistence and offline opening.
+- No local build/test run is claimed. PR remains OPEN / Draft / NOT VERIFIED because the prerequisite PR #382 currently fails bun audit on high-severity picomatch ReDoS advisory GHSA-fc5q-39xc-vjpf; do not suppress the audit.
+- Task 4 source research: QuranEnc identifies Arabic Tafsir al-Muyassar as key arabic_moyassar, publisher King Fahd Complex, version V1.0.1 dated 2026-11-09. API returns surah aya/translation/footnotes. Official reuse terms require unmodified content, visible publisher and QuranEnc.com source, version number, retained edition metadata, feedback reporting, updating to source releases, and no unsuitable ads.
+- Next: resolve the dependency security blocker without weakening audit, then exact-head validate stacked PRs. Build task 4 as a complete resumable IndexedDB offline package before exposing opposite-page Tafsir.
+
+
+
+## 2026-11-17 — Offline Tafsir al-Muyassar and opposite-page mode
+
+- Owner task 4 PR #386, branch feat/offline-tafsir-opposite-page-20261117, stacked on task 3 PR #385, task 2 PR #384 and lockfile prerequisite #382.
+- Official source researched: QuranEnc Arabic Tafsir al-Muyassar, key arabic_moyassar, publisher King Fahd Complex, catalogue edition V1.0.1 dated 2026-11-09. Reuse conditions require unchanged translation content, publisher/source attribution, version and embedded edition information, reporting corrections, updating to source releases and no unsuitable ads.
+- Added src/services/tafsirOfflineLibrary.ts: user-initiated 114-surah download, complete verse count/coordinate/non-empty text validation, raw payload storage with footnotes in IndexedDB, versioned manifest, durable transaction commits, pause/resume and skip-verified-surah behavior. No Firestore sync or network reads during display.
+- Added TafsirOfflineDownloadPanel.tsx and TafsirMushafPage.tsx. Download UI shows progress, pause/resume and source attribution. Tafsir page is not shown until all 114 surahs validate; it displays source ayah text from WIRD local Quran data, untouched Tafsir translation and footnotes, with selected ayah highlight/scroll.
+- Integrated independent content selectors in facing Mushaf spread: both pages default to Quran; choosing Tafsir on one side keeps Quran on the other; the selected ayah(s) from the opposite Quran page appear in Tafsir. Direction can be reversed and content-mode preference is local.
+- Added E2E tests for full download, both spread directions, offline navigation, footnotes, invalid source payload rejection and partial download resume.
+- No local build/test run is claimed. All PRs remain Draft / NOT VERIFIED because prerequisite #382 currently fails bun audit on GHSA-fc5q-39xc-vjpf / CVE-2026-112366 (picomatch through 4.0.7). Upstream #237 is open/unmerged; #238 is narrower and has a documented remaining vulnerable pattern. Do not suppress audit or pin a partial unmerged patch.
+- Next: resolve the dependency security blocker; run exact-head CI, desktop/mobile and offline E2E for the full stack; then review each PR separately before merge/deploy.
+
+
+- Follow-up review: the Tafsir side now has previous/next controls beneath each ayah; navigation swaps the reading side back to Quran when crossing into a page currently occupied by Tafsir. Audio is limited to the Quran side when Tafsir is active and covers both pages only when both are Quran. Corrupt stored surahs are invalidated from the manifest so resume can repair them.
+- The downloader also verifies the live QuranEnc Arabic catalogue version before downloading; if the pinned edition is not the current catalogue edition, it refuses to mislabel the data.
+
+
+## 2026-11-17 — Exact-head CI reconciliation
+
+- Current task PR heads: #382 e8ca61cf86b0d49d94783670f76db1c250c7c146; #383 45acc719a90049f1f71606995cb02943ac5e337d; #384 3f59506204e21f702749159333162e80ab2f324d; #385 10529d88e358b35a63c7b41060ffe966141d54e2; #386 d386b1c32f2ea045643ffb0afc1a23594bc0a959.
+- PR #382 run #4461: frozen install succeeds; bun audit fails on picomatch@4.0.7 via vite > tinyglobby > fdir > picomatch, GHSA-fc5q-39xc-vjpf.
+- PR #383 run #4460: bun install --frozen-lockfile fails because main's package manifest/lockfile are out of sync; this is why the #382 lockfile alignment is a prerequisite.
+- PRs #384–#386 have no workflow runs yet because they are stacked on non-main feature branches. Exact-head CI must be run after the parent chain is safely resolved.
+- Advisory research refreshed 2026-11-17: GitHub advisory now reviewed/updated, High CVSS 8.7, affected through 4.0.7, no fixed version stated; npm still lists 4.0.7 as latest. Upstream PR #237 remains open/unmerged; #238 is not a complete fix for every reported pattern. Do not suppress audit or pin an unmerged patch.
+
+
+## 2026-11-17 — Opposite-page navigation integrity and exact-head checkpoint
+
+- Reviewed the current #386 implementation and official QuranEnc API schema. The API docs specify the translations catalogue as `{"translations":[...]}`, with `key/version/last_update`, and surah responses as `{"result":[...]}` with `sura/aya/arabic_text/translation/footnotes`. The downloader's catalogue wrapper and row parser match the documented shapes. Source docs: https://quranenc.com/ar/home/api.
+- Found a spread navigation defect: when the target ayah was on the physical page currently displaying Tafsir, role-swapping changed the Quran/audio source but the old guard failed because `audioAyahs` still reflected the previous render. The code then loaded a neighboring page and could shift the facing spread anchor.
+- Fixed `jumpToNavigationPoint`: when the target is already visible in the current single page/spread, it now stores a pending target and returns without changing the spread anchor; the existing effect scrolls once the Quran-side data renders.
+- Added an E2E regression to navigate from Tafsir for page 2 back to page 1 ayah 7 and assert that the 1–2 spread remains, page 1 returns to Quran, and page 2 remains Tafsir.
+- Hardened offline Tafsir completeness: the status helper now filters invalid/out-of-range surah IDs and considers the package complete only when the exact set 1–114 is present. Resume also ignores invalid stored surah numbers.
+- Updated continuation and master-state docs with exact PR heads, CI/Preview evidence, Vercel build-rate-limit status and the picomatch audit blocker.
+- Code-fix commit: `3d4bcbaac5e1830faf369125536294a8f8487e02`; subsequent commits on the branch are documentation-only. Re-fetch PR #386 for the live exact head. The last observed Vercel status remains FAILED due `build-rate-limit`; no GitHub Actions run returned. PR #386 remains OPEN/Draft. Its Vercel status is FAILED due `build-rate-limit`; no GitHub Actions run was returned for the current head.
+- #382 run #4461 fails `bun audit` on picomatch 4.0.7 / GHSA-fc5q-39xc-vjpf. #383 run #4460 fails `bun install --frozen-lockfile`. #384/#385 previews were READY on their exact older heads; neither has a GitHub Actions run.
+- No local checkout/terminal was available. No local test/build pass is claimed. Do not merge or deploy until the lockfile/security blocker is resolved and each task passes exact-head gates. No Production, Firebase, Vercel settings/secrets, sync flags or user data changed.
+
+
+## 2026-11-17 — Task 1 duplicate-plan completion identity
+
+- During follow-up review of the multi-plan Dashboard fix, identified an ambiguity: if two active plans contain the same ayah coordinates, coordinate-only completion matching could update the wrong plan when the user started the other plan's card.
+- PR #383 code commit `77f360a4390466863c487dd164d567a95a83a605` now passes the originating engine plan ID from both the primary daily task and additional plan cards into session state.
+- Session completion filters by that exact plan ID when present; changing the session range clears the plan identity. Deep-linked sessions without an originating ID keep the coordinate fallback.
+- Added a regression assertion that the primary daily selection retains the exact plan ID. PR #383 remains OPEN/Draft and its current exact-head Quality Gate is still blocked by the frozen lockfile/security prerequisite; no local test pass is claimed.
+
+
+- Exact-head refresh after Task 1 duplicate-plan identity fix: PR #383 head `77f360a4390466863c487dd164d567a95a83a605`; Quality Gate run #4465 fails at frozen Bun install because #383 is based on main and does not include #382's lockfile alignment. Latest Vercel status is `build-rate-limit`. PR #383 remains Draft/NOT VERIFIED.
+
+
+## 2026-11-17 — Upstream picomatch remediation re-check
+
+- Re-fetched upstream picomatch PR #237 and #238; both remain OPEN/unmerged and no patched npm release is stated by the current GitHub advisory.
+- Reviewed PR #238's latest review: it demonstrates residual exponential behavior for `+(*)`, `*(*)`, and `+(a*)`, including `+(*)` from the advisory itself. PR #238 is therefore not a complete fix.
+- PR #237 proposes broader collapse behavior but remains unmerged/unreleased and has no official security release to consume.
+- Updated PR #382's body with the finding. Keep audit enabled and all dependent tasks on HOLD until a complete reviewed upstream fix is published and the lockfile/audit pass.
+
+
+## 2026-11-17 — Navigation coverage extended to Revision Center
+
+- PR #384 code commit `022c1dd1cd5435f9c54a152e918e815dd601bbf5` adds adjacent-ayah controls below weak-verse cards in Revision Center. Previous/next opens a one-ayah review session for the adjacent canonical Quran coordinate.
+- Shared navigation props now accept only `surahNumber` and `numberInSurah`, avoiding a fake/incomplete Ayah object for stored weak-verse records.
+- Added E2E coverage: manually record a weak ayah, verify controls under its text, click next and confirm the one-ayah review route.
+- PR #384 latest Vercel status is FAILED due to `build-rate-limit`; no GitHub Actions run returned. Its older READY preview predates these changes. Keep Draft until latest exact-head checks pass.
+
+
+## 2026-11-17 — Offline Tafsir persisted-payload integrity follow-up
+
+- Re-review found that the IndexedDB resume path and download status originally trusted stored record keys/source version without re-validating the persisted QuranEnc payload. A malformed/corrupt record could be skipped on resume and counted toward the offline package.
+- Updated `tafsirOfflineLibrary.ts` so both package status and resume eligibility require full validation of stored surah payloads (canonical verse count, sequential surah/ayah coordinates and non-empty translation). Invalid records are treated as missing and fetched again.
+- Added an E2E test that seeds a corrupt stored surah and stale manifest, verifies 0/114 progress, and verifies a complete 114-surah re-download with correct output.
+- Commits: `2dfe56cdced650f45a004b183b1cca793edb1fe1`, `b41262195a14760faa75d4f530814ee13e56d070`. Exact current PR head must be re-fetched.
+- No local Bun/Playwright execution or CI pass is claimed; PR #386 is stacked on a feature branch and remains Draft/NOT VERIFIED. No Production, Firebase, sync flags or user data changed.

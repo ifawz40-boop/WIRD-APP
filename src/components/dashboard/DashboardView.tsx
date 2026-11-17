@@ -25,7 +25,7 @@ import { type EngineGeneratedPlan } from '../../services/planningEngine';
 import { PlanLifecycle } from '../../services/planLifecycle';
 import { loadAyahByCoordinate, getAyahDisplayText } from '../../data/quranDataLoader';
 import { getLocalDateString } from '../../services/unifiedPortionService';
-import { getDailySessionSelection } from '../../services/dailySessionSelection';
+import { getDailySessionSelection, getDueEngineTasks } from '../../services/dailySessionSelection';
 import { getPagesForAyahRange } from '../../services/pageProgressService';
 import { QuranText } from '../shared/QuranText';
 import { WirdIslamicPattern } from '../brand/WirdPattern';
@@ -39,7 +39,7 @@ interface DashboardViewProps {
   revisionItems: RevisionItem[];
   logs: DailyLog[];
   onNavigate: (tab: NavTabId) => void;
-  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
+  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review', enginePlanId?: string) => void;
   onUpdateEnginePlans?: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
@@ -85,6 +85,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     RetentionService.getPortions(),
     todayStr
   );
+  const dueEngineTasks = getDueEngineTasks(enginePlans, todayStr);
 
   const activeEnginePlan = enginePlans.find(p => p.isActive && !p.isPaused);
   const missedSummary = activeEnginePlan
@@ -338,6 +339,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </section>
       )}
 
+      {dueEngineTasks.length > 1 && (
+        <section aria-labelledby="dashboard-multi-plan-due-title" className="wird-card rounded-2xl p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 id="dashboard-multi-plan-due-title" className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">
+                مهام الحفظ المستحقة من بقية الخطط
+              </h3>
+              <p className="mt-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                تظهر مهام جميع الخطط النشطة؛ المهمة الأولى معروضة في بطاقة ورد اليوم.
+              </p>
+            </div>
+            <span className="rounded-lg bg-[#C59B27]/12 px-2.5 py-1 text-xs font-bold tabular-nums text-[#8A6914] dark:text-[#E0A96D]">
+              {dueEngineTasks.length} مهام
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {dueEngineTasks.slice(1).map(item => (
+              <div key={item.planId + ':' + item.date + ':' + item.task.surahNumber + ':' + item.task.startAyah} className="flex items-center justify-between gap-3 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-white/70 dark:bg-[#0B132B]/55 p-3">
+                <div className="min-w-0 text-right">
+                  <p className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] truncate">{item.planTitle}</p>
+                  <p className="mt-1 text-sm font-quran font-bold text-[#142421] dark:text-[#F5F1E8]">
+                    سورة {item.task.surahName} · الآيات ({item.task.startAyah}–{item.task.endAyah})
+                  </p>
+                  <p className="mt-1 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    {item.date < todayStr ? 'متأخر' : 'مستحق اليوم'} · {item.task.versesCount} آيات
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onStartSession(item.task.surahNumber, item.task.startAyah, item.task.endAyah, 'memorize', item.planId)}
+                  className="min-h-11 shrink-0 rounded-xl bg-[#1C4E46] px-3 py-2 text-xs font-bold text-white hover:bg-[#28665B] dark:bg-[#1E4A47]"
+                >
+                  ابدأ
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 2. Primary Focus: Clear Distinction Between New Memorization vs. Revision */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* NEW MEMORIZATION CARD (الحفظ الجديد) */}
@@ -399,7 +440,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               disabled={dailyTask.source === 'blocked'}
-              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode)}
+              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode, dailyTask.source === 'blocked' ? undefined : dailyTask.enginePlanId)}
               className="flex-1 w-full min-h-12 flex items-center justify-center gap-2 py-3 px-4 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white font-bold text-xs md:text-sm rounded-xl shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ring-1 ring-[#C59B27]/35"
             >
               <Play className="w-4 h-4 fill-white" />

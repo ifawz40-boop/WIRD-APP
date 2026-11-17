@@ -11,7 +11,7 @@ import { CheckCircle2, AlertTriangle, Info, X, Loader2 } from 'lucide-react';
 import { parseRoute, navigateTo, buildRouteHash } from './services/router';
 import { persistJournaledSessionCompletion } from './services/sessionPersistence';
 import { resetAllDataJournaled } from './services/backupPersistence';
-import { getDailySessionSelection } from './services/dailySessionSelection';
+import { findMatchingDueEnginePlanTask, getDailySessionSelection } from './services/dailySessionSelection';
 import { buildWeakVerseFailureTransaction } from './services/weakVerseRecording';
 import { getLocalDateString } from './services/unifiedPortionService';
 import { createSecureId } from './services/secureId';
@@ -123,6 +123,7 @@ export default function App() {
     startAyah: number;
     endAyah: number;
     mode: 'memorize' | 'review';
+    enginePlanId: string | null;
   }>(() => {
     const surahNumber = initialRoute.surahNumber || 67;
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
@@ -133,7 +134,8 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah,
       endAyah,
-      mode: initialRoute.mode || 'memorize'
+      mode: initialRoute.mode || 'memorize',
+      enginePlanId: initialRoute.enginePlanId ?? null
     };
   });
 
@@ -292,7 +294,8 @@ export default function App() {
             surahNumber: surahMeta.number,
             startAyah: nextStart,
             endAyah: nextEnd,
-            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode
+            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode,
+            enginePlanId: route.tab === 'session' ? (route.enginePlanId ?? null) : null
           }));
         }
       }
@@ -356,20 +359,22 @@ export default function App() {
     surahNumber: number = 67,
     startAyah: number = 1,
     endAyah?: number,
-    mode: 'memorize' | 'review' = 'memorize'
+    mode: 'memorize' | 'review' = 'memorize',
+    enginePlanId?: string
   ) => {
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
     const safeStart = Math.min(Math.max(1, startAyah), surahMeta.versesCount);
     const safeEnd = Math.min(Math.max(safeStart, endAyah ?? surahMeta.versesCount), surahMeta.versesCount);
     sessionRunIdRef.current = createSecureId();
     sessionCompletionAttemptRef.current = null;
-    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode });
+    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode, enginePlanId: enginePlanId || null });
     navigateTo({
       tab: 'session',
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode
+      mode,
+      enginePlanId: enginePlanId || undefined
     });
   };
 
@@ -385,7 +390,8 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode: prev.mode
+      mode: prev.mode,
+      enginePlanId: null
     }));
     navigateTo({
       tab: 'session',
@@ -407,7 +413,7 @@ export default function App() {
       showToast(selection.messageAr, 'warn');
       return;
     }
-    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode);
+    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode, selection.enginePlanId);
   };
 
   // Commit session progress, activity, streak, and matching smart-plan task together.
@@ -421,21 +427,22 @@ export default function App() {
     let updatedEnginePlans: EngineGeneratedPlan[] | undefined;
     if (mode === 'memorize' && sessionParams.surahNumber) {
       const currentEnginePlans = StorageService.getEnginePlans();
-      const activeEnginePlan = currentEnginePlans.find(plan => plan.isActive && !plan.isPaused);
-      const matchingDay = activeEnginePlan?.schedule.find(day =>
-        day.memorizationTask && !day.memorizationTask.completed &&
-        day.memorizationTask.surahNumber === sessionParams.surahNumber &&
-        day.memorizationTask.startAyah === sessionParams.startAyah &&
-        day.memorizationTask.endAyah === sessionParams.endAyah
-      );
-      if (activeEnginePlan && matchingDay?.memorizationTask) {
-        const updatedPlan = PlanLifecycle.updateTask(activeEnginePlan, matchingDay.id, {
-          status: ((matchingDay.minorRevisionTask && !matchingDay.minorRevisionTask.completed) ||
-            (matchingDay.majorRevisionTask && !matchingDay.majorRevisionTask.completed))
+      const today = getLocalDateString();
+      const matchingEntry = findMatchingDueEnginePlanTask(currentEnginePlans, today, {
+        surahNumber: sessionParams.surahNumber,
+        startAyah: sessionParams.startAyah,
+        endAyah: sessionParams.endAyah,
+        enginePlanId: sessionParams.enginePlanId
+      });
+      if (matchingEntry) {
+        const { plan, day, task } = matchingEntry;
+        const updatedPlan = PlanLifecycle.updateTask(plan, day.id, {
+          status: ((day.minorRevisionTask && !day.minorRevisionTask.completed) ||
+            (day.majorRevisionTask && !day.majorRevisionTask.completed))
             ? 'partially_completed' : 'completed',
-          memorizationTask: { ...matchingDay.memorizationTask, completed: true, completedAt: new Date().toISOString() }
+          memorizationTask: { ...task, completed: true, completedAt: new Date().toISOString() }
         });
-        updatedEnginePlans = currentEnginePlans.map(plan => plan.id === activeEnginePlan.id ? updatedPlan : plan);
+        updatedEnginePlans = currentEnginePlans.map(item => item.id === plan.id ? updatedPlan : item);
       }
     }
 

@@ -1,5 +1,7 @@
 import {
   getDailySessionSelection,
+  getDueEngineTasks,
+  findMatchingDueEnginePlanTask,
   getNextDueEngineTask,
   getNextPresetMemorizationRange,
   isPresetAutoStartSupported
@@ -81,6 +83,55 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     intervalDays: 1,
     easeFactor: 2.5,
     repetitionCount: 0
+  });
+
+  test('All active engine plans contribute every due task in deterministic date order', () => {
+    const first = makeEnginePlan([
+      makeDay('2026-11-04', makeTask(2)),
+      makeDay('2026-11-05', makeTask(3)),
+      makeDay('2026-11-08', makeTask(4))
+    ], { id: 'plan-a', title: 'الخطة الأولى', input: { title: 'الخطة الأولى' } as EngineGeneratedPlan['input'] });
+    const second = makeEnginePlan([
+      makeDay('2026-11-05', makeTask(5)),
+      makeDay('2026-11-06', makeTask(6))
+    ], { id: 'plan-b', title: 'الخطة الثانية', input: { title: 'الخطة الثانية' } as EngineGeneratedPlan['input'] });
+    const third = makeEnginePlan([
+      makeDay('2026-11-05', makeTask(7))
+    ], { id: 'plan-c', title: 'الخطة الثالثة', input: { title: 'الخطة الثالثة' } as EngineGeneratedPlan['input'] });
+    const due = getDueEngineTasks([first, second, third], '2026-11-05');
+    assert(due.length === 4, 'All overdue and today tasks from all plans should be returned');
+    assert(due[0].task.surahNumber === 2, 'Oldest overdue task should be first');
+    assert(due.some(item => item.planId === 'plan-b' && item.task.surahNumber === 5), 'Second plan task must be retained');
+    assert(due.some(item => item.planId === 'plan-c' && item.task.surahNumber === 7), 'Third plan task must be retained');
+    assert(!due.some(item => item.task.surahNumber === 4 || item.task.surahNumber === 6), 'Future tasks must remain excluded');
+    const primary = getDailySessionSelection([], [first, second, third], [], '2026-11-05');
+    assert(primary.kind === 'session' && primary.enginePlanId === 'plan-a', 'The primary dashboard session must retain the exact source plan identity');
+  });
+
+  test('Session completion resolves duplicate ayah ranges to the originating plan ID', () => {
+    const first = makeEnginePlan([makeDay('2026-11-05', makeTask(67))], {
+      id: 'plan-a', title: 'الخطة الأولى', input: { title: 'الخطة الأولى' } as EngineGeneratedPlan['input']
+    });
+    const second = makeEnginePlan([makeDay('2026-11-05', makeTask(67))], {
+      id: 'plan-b', title: 'الخطة الثانية', input: { title: 'الخطة الثانية' } as EngineGeneratedPlan['input']
+    });
+    const target = { surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'plan-b' };
+    const exact = findMatchingDueEnginePlanTask([first, second], '2026-11-05', target);
+    assert(exact?.plan.id === 'plan-b', 'A persisted originating plan ID must win when ayah ranges are duplicated');
+    const deterministic = findMatchingDueEnginePlanTask([second, first], '2026-11-05', { ...target, enginePlanId: null });
+    assert(deterministic?.plan.id === 'plan-a', 'Missing plan context falls back to deterministic title/date ordering');
+    const missing = findMatchingDueEnginePlanTask([first, second], '2026-11-05', { ...target, enginePlanId: 'plan-missing' });
+    assert(missing === null, 'An unknown originating plan ID must not update a different plan');
+  });
+
+  test('All-plan due queue excludes paused, inactive, completed tasks and completed days', () => {
+    const active = makeEnginePlan([
+      makeDay('2026-11-05', makeTask(2, true)),
+      { ...makeDay('2026-11-05', makeTask(3)), status: 'completed' }
+    ], { id: 'active' });
+    const paused = makeEnginePlan([makeDay('2026-11-05', makeTask(4))], { id: 'paused', isPaused: true });
+    const inactive = makeEnginePlan([makeDay('2026-11-05', makeTask(5))], { id: 'inactive', isActive: false });
+    assert(getDueEngineTasks([active, paused, inactive], '2026-11-05').length === 0, 'Only incomplete tasks in active non-paused days should be due');
   });
 
   test('Engine quick-start chooses the oldest overdue task before today', () => {

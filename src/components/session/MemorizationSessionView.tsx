@@ -476,26 +476,30 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     audio.onplaying = () => {
       if (audioRef.current === audio) setIsAudioLoading(false);
     };
-    audio.onerror = () => {
-      if (audioRef.current !== audio) return;
-      console.warn('Audio playback failed to load', audio.error);
+    const resetFailedPlayback = () => {
+      // Use the request sequence as the source of truth. A mobile browser can
+      // dispatch a media error after the element ref has already been detached;
+      // the current request must still clear its loading UI, while stale errors
+      // from a previous ayah must never stop a newer playback request.
+      if (requestSeq !== playbackRequestSeqRef.current) return;
+      if (audioRef.current === audio) audioRef.current = null;
       audio.onended = null;
-      audioRef.current = null;
+      audio.onerror = null;
+      audio.onplaying = null;
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
       revokeAllActiveAudioUrls();
     };
 
+    audio.onerror = () => {
+      console.warn('Audio playback failed to load', audio.error);
+      resetFailedPlayback();
+    };
+
     audio.play().catch(e => {
-      if (audioRef.current !== audio) return;
       console.warn("Audio playback error", e);
-      audio.onended = null;
-      audioRef.current = null;
-      playbackIterationRef.current = 1;
-      setIsPlaying(false);
-      setIsAudioLoading(false);
-      revokeAllActiveAudioUrls();
+      resetFailedPlayback();
     });
 
     attachAyahRepeatHandler(
