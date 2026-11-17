@@ -85,6 +85,9 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(swContent.includes("req.mode === 'navigate'"), 'SW must implement SPA navigation fallback');
     assert(swContent.includes("cache.match('/index.html')"), 'SW must fall back to /index.html offline');
     assert(swContent.includes("PRECACHE_MANIFEST_URL = '/wird-precache-manifest.json'"), 'SW must load the build-generated app-shell manifest');
+    assert(swContent.includes('OFFLINE_NAVIGATION_REQUEST_TIMEOUT_MS = 6000'), 'SPA navigation must time out quickly before falling back to the cached shell');
+    assert(swContent.includes('getAdaptiveOfflineCacheLimits'), 'Optional audio and Mushaf caches must adapt to available storage quota');
+    assert(swContent.includes('trimMushafPageCache(cache)'), 'Mushaf runtime cache must use the adaptive quota bound');
     assert(swContent.includes('precacheApplicationShell'), 'SW must precache the generated static dependency graph');
     assert(swContent.includes('cache.addAll(safeAssets)'), 'SW must cache entry JS/CSS atomically before activation');
     assert(swContent.includes('const manifestForCache = response.clone()'), 'SW must preserve the manifest response before consuming its JSON body');
@@ -101,6 +104,11 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     const viteConfig = fs.readFileSync(path.resolve('./vite.config.ts'), 'utf8');
     assert(viteConfig.includes('offlineShellManifestPlugin'), 'Vite must install the offline shell manifest plugin');
     assert(viteConfig.includes('wird-precache-manifest.json'), 'Vite must emit a generated precache manifest');
+    assert(viteConfig.includes('listOfflinePublicAssets'), 'Vite must include recursive public assets in the explicit offline package manifest');
+    assert(viteConfig.includes('allAssets.length > 2000'), 'Vite must fail safely if the offline package exceeds the service-worker asset limit');
+    const publicAssetScript = fs.readFileSync(path.resolve('./scripts/offlinePublicAssets.ts'), 'utf8');
+    assert(publicAssetScript.includes('fs.readdirSync') && publicAssetScript.includes("relativePath === 'sw.js'"), 'Public asset enumeration must recurse while excluding the service worker script');
+
     assert(viteConfig.includes('item.imports'), 'Static chunk dependencies must be traversed recursively');
     assert(viteConfig.includes('importedCss'), 'Imported CSS dependencies must be included');
     assert(!viteConfig.includes('dynamicImports'), 'Lazy routes and large Quran datasets must not be force-preloaded');
