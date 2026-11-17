@@ -48,6 +48,18 @@
 
 ---
 
+## Latest source-level audit — 2026-11-17 (main SHA f70bf5e)
+
+The four approved roadmap tracks are **not greenfield**. Source audit has identified substantial existing implementations; read Section 7 of `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md` for exact paths/SHAs and gaps.
+
+- Hifz: cumulative mode, progressive masking, cumulative audio range, and weak-ayah capture exist in `MemorizationSessionView.tsx`; durable guided-session state/resume and full staged workflow remain unproven.
+- Missed-day recovery: all three recovery transforms and UI choices/confirmation exist; no computed before/after schedule preview was found. Local-text test generator supports all/surah/weak-priority and missing-word mode.
+- Archive: actual `wird-sync-journal` IndexedDB v10 archive stores, SHA-256 manifest verification, AuthGate awaited hydration, and atomic journal/outbox commit exist. Aggregate archive bounds and chunked remote transport remain gaps.
+- Offline: audio manager UI, approved-reciter range downloads, two-worker cap, quota preflight, cache generation/read-back, reference-aware deletion, local-first playback and app-shell preparation exist. Web Locks fallback, crash-orphan sweep, and real-device offline restart proof remain gaps. EveryAyah remains stream-only.
+- Docs `OFFLINE_CAPABILITY_MATRIX_AR.md` and `OFFLINE_AUDIO_STORAGE_CONTRACT.md` are partly stale and need reconciliation after audit.
+
+**Exact source audit base:** `main` `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. This is source inspection, not test pass or Production verification.
+
 ## Immediate next actions
 
 1. **Sync & commit workspace changes to GitHub feature branch/PR:** review the workspace diff, push to a dedicated feature branch (not directly to `main`), and run the full GitHub Quality Gate workflow (which provides Java for `test:firestore-rules` alongside Bun install/audit, unit tests, build, and Playwright).
