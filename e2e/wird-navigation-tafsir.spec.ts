@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ALL_SURAHS } from '../src/data/quranMeta';
+import { getMushafFacsimilePageUrls, MUSHAF_OFFLINE_CACHE_NAME } from '../src/services/mushafFacsimileService';
 
 const quranEncVersionMockedPages = new WeakSet<Page>();
 
@@ -152,6 +153,30 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await displayMode.getByRole('button', { name: 'صفحة واحدة' }).click();
     await expect(page.getByRole('main', { name: 'صفحة المصحف 3' }).locator('svg[aria-label="صفحة المصحف المطبوعة رقم 3"]')).toBeVisible();
     await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 4"]')).toHaveCount(0);
+  });
+
+  test('printed Mushaf page opens offline from the explicitly downloaded facsimile cache', async ({ page, context }) => {
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+
+    const svgUrl = getMushafFacsimilePageUrls(1).svgUrl;
+    const offlineSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g id="ayah_markers">${Array.from({ length: 7 }, (_, index) => `<path class="ayahPolygon" ayah="${index + 1}" surah="1" d="M 1 ${index + 1} L 90 ${index + 1} L 90 99 Z"/>`).join('')}</g></svg>`;
+    await page.evaluate(async ({ cacheName, url, markup }) => {
+      const cache = await caches.open(cacheName);
+      await cache.put(url, new Response(markup, { headers: { 'content-type': 'image/svg+xml; charset=utf-8' } }));
+    }, { cacheName: MUSHAF_OFFLINE_CACHE_NAME, url: svgUrl, markup: offlineSvg });
+
+    let externalRequests = 0;
+    await page.route(svgUrl, async route => {
+      externalRequests++;
+      await route.abort('internetdisconnected');
+    });
+    await context.setOffline(true);
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+
+    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+    await expect(page.locator('#wird-ayah-1-1')).toBeVisible();
+    expect(externalRequests).toBe(0);
   });
 
   test('Muyassar can be downloaded locally and shown on either opposite Mushaf page while offline', async ({ page, context }) => {
