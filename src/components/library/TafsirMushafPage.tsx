@@ -106,7 +106,7 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
           ayahs.map(ayah => {
             const key = `${ayah.surahNumber}:${ayah.numberInSurah}`;
             const row = rowsByCoordinate.get(key);
-            const isSelected = selectedAyah?.surahNumber === ayah.surahNumber && selectedAyah.numberInSurah === ayah.numberInSurah;
+            const isSelected = selectedAyah?.surahNumber === ayah.surahNumber && selectedAyah?.numberInSurah === ayah.numberInSurah;
             const footnotes = getFootnoteLines(row?.footnotes);
             return (
               <article
