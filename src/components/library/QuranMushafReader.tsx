@@ -201,6 +201,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       ? [...(printedPageAyahs[page] || []), ...(printedPageAyahs[page + 1] || [])]
       : (printedPageAyahs[page] || [])
     : ayahs;
+  const isSpreadAudioReady = pageDisplayMode !== 'spread' || Boolean(printedPageAyahs[page + 1]);
   useEffect(() => { setPrintedPageAyahs({}); }, [page]);
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
@@ -392,6 +393,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   }, [audioAyahs, isLoading, page]);
 
   const togglePageAudio = () => {
+    if (!isSpreadAudioReady) return;
     const controller = audioQueueRef.current;
     if (controller?.getState().active) {
       if (controller.getState().paused) controller.resume();
@@ -424,6 +426,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   };
 
   const handlePageDisplayModeChange = (mode: MushafPageDisplayMode) => {
+    stopAudio();
     setPageDisplayMode(mode);
     if (mode === 'spread') setPage(normalizeSpreadStartPage(page));
   };
@@ -865,7 +868,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             <button
               type="button"
               onClick={togglePageAudio}
-              disabled={!audioAyahs.length || (readerLayout === 'flow' && isLoading)}
+              disabled={!audioAyahs.length || !isSpreadAudioReady || (readerLayout === 'flow' && isLoading)}
               className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-bold transition-all shadow-xs disabled:opacity-50 ${
                 isPlaying ? 'bg-[#C59B27] text-[#0B132B] hover:bg-[#d6ad3b]' : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
               }`}
