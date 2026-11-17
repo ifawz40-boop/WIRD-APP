@@ -207,10 +207,13 @@ async function verifyCurrentSourceVersion(signal?: AbortSignal): Promise<void> {
 }
 
 function makeStatus(downloadedSurahs: number[], status: OfflineTafsirDownloadStatus['status']): OfflineTafsirDownloadStatus {
-  const count = new Set(downloadedSurahs).size;
-  const isComplete = count === TOTAL_SURAHS && downloadedSurahs.length === TOTAL_SURAHS;
+  const verifiedNumbers = [...new Set(downloadedSurahs.filter(number =>
+    Number.isInteger(number) && number >= 1 && number <= TOTAL_SURAHS
+  ))].sort((a, b) => a - b);
+  const isComplete = verifiedNumbers.length === TOTAL_SURAHS &&
+    verifiedNumbers.every((number, index) => number === index + 1);
   return {
-    downloadedSurahs: count,
+    downloadedSurahs: verifiedNumbers.length,
     totalSurahs: TOTAL_SURAHS,
     isComplete,
     status: isComplete ? 'complete' : status,
@@ -229,7 +232,12 @@ export async function getOfflineTafsirDownloadStatus(): Promise<OfflineTafsirDow
   }
   const existingKeys = new Set(storedKeys.map(Number));
   const downloadedList = Array.isArray(manifest.downloadedSurahs) ? manifest.downloadedSurahs : [];
-  const verifiedKeys = downloadedList.filter(surahNumber => existingKeys.has(surahNumber));
+  const verifiedKeys = downloadedList.filter(surahNumber =>
+    Number.isInteger(surahNumber) &&
+    surahNumber >= 1 &&
+    surahNumber <= TOTAL_SURAHS &&
+    existingKeys.has(surahNumber)
+  );
   return makeStatus(verifiedKeys, manifest.status);
 }
 
@@ -276,7 +284,12 @@ export async function downloadOfflineTafsirMuyassar(options: DownloadOptions = {
   const existingRecords = await requestValue(transaction.objectStore(SURAH_STORE).getAll()) as StoredSurah[];
   const downloaded = new Set(
     existingRecords
-      .filter(record => record.sourceVersion === OFFLINE_TAFSIR_SOURCE.version)
+      .filter(record =>
+        record.sourceVersion === OFFLINE_TAFSIR_SOURCE.version &&
+        Number.isInteger(record.surahNumber) &&
+        record.surahNumber >= 1 &&
+        record.surahNumber <= TOTAL_SURAHS
+      )
       .map(record => record.surahNumber)
   );
 
