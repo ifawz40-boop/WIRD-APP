@@ -73,3 +73,9 @@
 - Added a regression test with two active plans containing the exact same Surah/ayah range: a persisted plan ID resolves to the originating plan; missing context falls back to deterministic date/title order; an unknown plan ID resolves to no plan (never silently mutates a different plan).
 - Commits: `7cd4c75f10e68df27dea14c70efa226d671617aa`, `9a7d1813b598dbb3191d4d9283b63f5e2d8d7082`, `be3188764505b601d7867d05b50f1a4a4c422223`.
 - PR #387 current exact head: `be3188764505b601d7867d05b50f1a4a4c422223`. Quality Gate #4517 / `44180759072` is pending. Run #4511 was still in Playwright on the preceding head at last poll; inspect both exact runs and only claim the newest one after completion.
+
+
+## Weak-verse navigation browser result — 2026-11-17
+- Quality Gate #4517 on PR #387 head `be318...`: **178 Playwright passed, 2 skipped, 2 failed** (the same new weak-verse navigation test in desktop and mobile). The captured error contexts show the navigation landmark and both buttons rendered correctly. The failure was the test's nested `.wird-card` locator, which did not contain the landmark in the locator hierarchy.
+- Corrected the test to locate the unique accessible navigation landmark directly and separately assert the Surah label. Commit `2532ddbcd985702ed2af84986c7dc3587ecf3303`.
+- Current PR #387 exact head `2532ddbcd985702ed2af84986c7dc3587ecf3303`; new exact-head CI not yet returned at the first poll. Verify the corrected browser test on both viewports. The picomatch audit remains a separate hard blocker.
