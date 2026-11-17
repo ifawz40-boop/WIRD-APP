@@ -324,3 +324,5 @@ This addendum supersedes older status snapshots above where they conflict. It is
 ## Newest continuation pointer — 2026-11-17
 
 Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-browser-diagnosis.md) before continuing. It records the final #4486 Playwright failure analysis, the two corrective commits, new run #4491, current dependency security blocker, and refreshed branch ancestry. Re-fetch run #4491 and current PR heads before taking further action.
+
+- Offline audio/app-shell integration audit: [2026-11-17 checkpoint](./checkpoints/2026-11-17-offline-audio-integration-audit.md). PR #366/#368 remain stale Draft foundations; explicit audio downloads still lack worker/UI/playback/cross-tab and real-device offline proof.
