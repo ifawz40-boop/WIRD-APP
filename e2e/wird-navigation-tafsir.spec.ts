@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { ALL_SURAHS } from '../src/data/quranMeta';
 
 async function mockQuranEncVersion(page: Page) {
-  await page.route(/https:\/\/quranenc\\.com\/api\/v1\/translations\/list\/ar\\?localization=ar/, async route => {
+  await page.route(/quranenc\.com\/api\/v1\/translations\/list\/ar/, async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
