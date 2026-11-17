@@ -8,6 +8,7 @@ import {
   type QuranEncTafsirRow
 } from '../../services/tafsirOfflineLibrary';
 import { TafsirOfflineDownloadPanel } from './TafsirOfflineDownloadPanel';
+import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 
 interface TafsirMushafPageProps {
   pageNumber: number;
@@ -15,6 +16,7 @@ interface TafsirMushafPageProps {
   sourceSideLabel: 'الصفحة اليمنى' | 'الصفحة اليسرى';
   ayahs: Ayah[];
   selectedAyah: Ayah | null;
+  onNavigate: (surahNumber: number, ayahNumber: number) => void;
 }
 
 function getFootnoteLines(value: unknown): string[] {
@@ -40,7 +42,8 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
   sourcePageNumber,
   sourceSideLabel,
   ayahs,
-  selectedAyah
+  selectedAyah,
+  onNavigate
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isOfflineReady, setIsOfflineReady] = useState(false);
@@ -136,6 +139,9 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
                     {footnotes.map((note, index) => <p key={index} className="text-[11px] leading-5 text-[#5B6F6B] dark:text-[#AAB8B4]">{note}</p>)}
                   </div>
                 )}
+                <div className="mt-3">
+                  <AyahNavigationControls currentAyah={ayah} onNavigate={onNavigate} compact />
+                </div>
               </article>
             );
           })
