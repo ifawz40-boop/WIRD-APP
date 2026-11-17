@@ -49,7 +49,7 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     });
 
     await page.getByRole('button', { name: 'الإعدادات', exact: true }).click();
-    const offlinePackage = page.getByRole('heading', { name: 'المصحف المصوّر كاملًا دون إنترنت' }).locator('..');
+    const offlinePackage = page.getByRole('heading', { name: 'المصحف المصوّر كاملًا دون إنترنت' }).locator('xpath=../..');
     await offlinePackage.getByRole('button', { name: 'تنزيل المصحف المصوّر كاملًا' }).click();
 
     await expect(offlinePackage).toContainText('5 / 604 صفحة محفوظة', { timeout: 30_000 });
