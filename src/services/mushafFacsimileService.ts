@@ -1,6 +1,7 @@
 export const MUSHAF_FACSIMILE_VERSION = 'v1.1.1';
 export const MUSHAF_FACSIMILE_COMMIT = '3ff27b46cecb0c0519d77531d9c868a579d1f623';
 export const MUSHAF_FACSIMILE_EDITION = 'hafs-kfqc';
+export const MUSHAF_OFFLINE_CACHE_NAME = `wird-mushaf-facsimile-${MUSHAF_FACSIMILE_VERSION}-${MUSHAF_FACSIMILE_COMMIT.slice(0, 8)}`;
 const MUSHAF_FACSIMILE_BASE_URL = `https://raw.githubusercontent.com/quran-ws/quran-svg/${MUSHAF_FACSIMILE_COMMIT}/mushafs/hafs/kfqc/svg`;
 
 export interface MushafViewBox {
@@ -152,17 +153,33 @@ export async function loadMushafFacsimilePage(
   signal?: AbortSignal
 ): Promise<MushafFacsimilePageData> {
   const { svgUrl } = getMushafFacsimilePageUrls(page);
+  const readPage = async (response: Response): Promise<MushafFacsimilePageData> => {
+    if (!response.ok) throw new Error('تعذر تحميل الصفحة المطبوعة؛ يمكنك متابعة القراءة بالعرض المرن.');
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('image/svg+xml')) throw new Error('نوع ملف صفحة المصحف لا يطابق صيغة SVG المتوقعة.');
+    const svgMarkup = await response.text();
+    const viewBox = parseMushafViewBox(svgMarkup);
+    const ayahAreas = parseMushafAyahCoordinates(svgMarkup);
+    const safeSvgMarkup = sanitizeMushafSvgMarkup(svgMarkup);
+    return { page, svgUrl, svgMarkup: safeSvgMarkup, viewBox, ayahAreas };
+  };
+
+  if (typeof caches !== 'undefined') {
+    try {
+      const cache = await caches.open(MUSHAF_OFFLINE_CACHE_NAME);
+      const cached = await cache.match(svgUrl);
+      if (cached) {
+        try {
+          return await readPage(cached);
+        } catch {
+          await cache.delete(svgUrl);
+        }
+      }
+    } catch {
+      // Cache Storage may be unavailable in a restricted browser context; use the network path below.
+    }
+  }
+
   const response = await fetch(svgUrl, { signal, mode: 'cors', credentials: 'omit', headers: { Accept: 'image/svg+xml' } });
-  if (!response.ok) {
-    throw new Error('تعذر تحميل الصفحة المطبوعة؛ يمكنك متابعة القراءة بالعرض المرن.');
-  }
-  const contentType = (response.headers.get('content-type') || '').toLowerCase();
-  if (!contentType.includes('image/svg+xml')) {
-    throw new Error('نوع ملف صفحة المصحف لا يطابق صيغة SVG المتوقعة.');
-  }
-  const svgMarkup = await response.text();
-  const viewBox = parseMushafViewBox(svgMarkup);
-  const ayahAreas = parseMushafAyahCoordinates(svgMarkup);
-  const safeSvgMarkup = sanitizeMushafSvgMarkup(svgMarkup);
-  return { page, svgUrl, svgMarkup: safeSvgMarkup, viewBox, ayahAreas };
+  return readPage(response);
 }
