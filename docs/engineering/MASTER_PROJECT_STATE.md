@@ -14,6 +14,19 @@
 
 > The older Google AI Studio workspace snapshot below is historical context only; it is not evidence for current GitHub or deployed state.
 
+## Current GitHub implementation snapshot — 2026-11-17 22:05 +02:00
+
+- Live main last verified: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a.
+- Owner scope: local/offline readiness only; tasks are all active plan due-work, navigation beneath ayat, one-/two-page printed Mushaf, and opposite-page Tafsir al-Muyassar.
+- PR #383: task 1 multiple-plan aggregation, OPEN / Draft / NOT VERIFIED.
+- PR #384: task 2 shared adjacent-ayah controls beneath Quran Library and Mushaf reading surfaces, OPEN / Draft / NOT VERIFIED.
+- PR #385: task 3 printed Mushaf single/facing-spread mode, OPEN / Draft / NOT VERIFIED. Single page is default; spread aligns lower-numbered page to the right, steps by two, combines both page ayahs for audio in reading order, and stores preference locally. E2E coverage includes one/two-page switching and offline opening.
+- PR #382: frozen Bun lockfile mismatch is addressed on its branch, but the exact-head Quality Gate now fails at bun audit because picomatch@4.0.7 is covered by a newly surfaced high-severity ReDoS advisory GHSA-fc5q-39xc-vjpf. No fixed version is stated; do not suppress audit or lower severity. No downstream PR may merge until this is safely resolved and all exact-head checks pass.
+- Task 4: NOT STARTED. Official QuranEnc catalogue identifies Arabic Tafsir al-Muyassar as translation key arabic_moyassar, publisher King Fahd Complex, version 1.0.1 dated 2026-11-09. QuranEnc API returns per-surah aya/translation/footnotes. Its republishing rules require no content modification/addition/deletion, clear publisher and source attribution, version number, preserving embedded edition info, reporting feedback, updating to source versions and no unsuitable ads. A complete 114-surah local IndexedDB package with validation/resume/update metadata is required.
+- No local build/tests were run in this connector session. No production deploy, Firebase Rules/data, Vercel secrets/settings, sync flags or user data changed.
+
+> The older Google AI Studio workspace snapshot below is historical context only.
+
 **Current snapshot reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
