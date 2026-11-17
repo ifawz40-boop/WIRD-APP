@@ -241,11 +241,20 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     setPrintedPageAyahs(previous => ({ ...previous, [resolvedPage]: resolvedAyahs }));
   }, []);
   const audioAyahs = readerLayout === 'printed'
-    ? pageDisplayMode === 'spread'
-      ? [...(printedPageAyahs[page] || []), ...(printedPageAyahs[page + 1] || [])]
+    ? isSpreadModeActive
+      ? leftPageContentMode === 'tafsir'
+        ? (printedPageAyahs[page] || [])
+        : rightPageContentMode === 'tafsir'
+          ? (printedPageAyahs[page + 1] || [])
+          : [...(printedPageAyahs[page] || []), ...(printedPageAyahs[page + 1] || [])]
       : (printedPageAyahs[page] || [])
     : ayahs;
-  const isSpreadAudioReady = !isSpreadModeActive || Boolean(printedPageAyahs[page + 1]);
+  const isSpreadAudioReady = !isSpreadModeActive ||
+    (leftPageContentMode === 'tafsir'
+      ? Boolean(printedPageAyahs[page])
+      : rightPageContentMode === 'tafsir'
+        ? Boolean(printedPageAyahs[page + 1])
+        : Boolean(printedPageAyahs[page] && printedPageAyahs[page + 1]));
   useEffect(() => { setPrintedPageAyahs({}); }, [page]);
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
@@ -332,7 +341,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   useEffect(() => {
     setSegmentStartIndex(0);
     setSegmentEndIndex(Math.max(0, audioAyahs.length - 1));
-  }, [page, audioAyahs.length]);
+  }, [page, audioAyahs.length, leftPageContentMode, rightPageContentMode]);
 
   useEffect(() => () => {
     audioQueueRef.current?.stop();
