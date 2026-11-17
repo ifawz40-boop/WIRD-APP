@@ -6,6 +6,20 @@
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
+## Current GitHub execution checkpoint — 2026-11-17 21:55 +02:00
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (last re-fetched; re-fetch before any merge).
+- **Owner priority:** local/offline readiness only; execute the four requested tasks in order and avoid unrelated features.
+- **Task 1 — multiple active memorization plans:** PR #383 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Branch fix/dashboard-multiple-due-plan-tasks-20261117. It collects due/overdue incomplete tasks across all active non-paused engine plans, excludes future/completed tasks/days, displays additional plan tasks, and completes against the matching due plan. Initial Quality Gate was blocked before tests because main's bun.lock did not match package.json overrides.
+- **Task 2 — navigation below ayat:** PR #384 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/384. Branch feat/ayah-navigation-controls-20261117, stacked on PR #382's lockfile-alignment branch. Shared accessible controls are beneath study ayah cards, continuous reading, and Mushaf pages; session already has its own persistent navigation. Desktop/mobile E2E cases added. Not yet CI-verified.
+- **CI prerequisite PR #382:** OPEN / Draft, branch fix/main-bun-lockfile-alignment-20261117. Lockfile alignment allows frozen install, but the last inspected Playwright run had two timing-sensitive tests fail on desktop/mobile. Follow-up E2E changes now wait for the keyboard listener and the newly created audio instance before asserting. Await exact-head rerun; do not merge until green.
+- **Task 3 — printed Mushaf:** NOT STARTED. Add a persisted one-page/facing-two-page switch; side-by-side on wide screens and safe single-page fallback on narrow screens. Preserve page coordinates, audio, bookmarks, and reading progress.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** NOT STARTED. Each side independently supports Quran or Tafsir for the selected ayah on the opposite Quran page; both Quran by default. Must be backed by a complete verified local/offline corpus, not merely the existing small cache or a live API.
+- **Offline boundary:** Quran text and reading coordinates remain from WIRD's verified local data. Tafsir corpus must preserve source text, footnotes, attribution and version metadata; no AI-generated replacement.
+- **Next:** re-fetch #382/#384 exact heads and workflows; then implement task 3 as its own PR. Task 4 requires an audited local corpus and resumable offline storage before UI completion.
+
+---
+
 ## Verified AI Studio workspace state — 2026-11-17
 
 - **Deployment & GitHub status:** Workspace edits live in Google AI Studio only. **NOT committed/pushed to GitHub** and **NOT deployed to Vercel** (explicit owner directive; Vercel Production sync flags remain unchanged).
