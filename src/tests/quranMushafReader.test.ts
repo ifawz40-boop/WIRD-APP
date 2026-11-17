@@ -85,6 +85,7 @@ export function runQuranMushafReaderTests(): { passed: number; failed: number } 
     const offlineFacsimile = fs.readFileSync(path.resolve(process.cwd(), 'src/services/mushafFacsimileOfflineLibrary.ts'), 'utf8');
     assert(offlineFacsimile.includes('MUSHAF_OFFLINE_PAGE_COUNT = 604') && offlineFacsimile.includes('PREFLIGHT_SAMPLE_PAGES'), 'The optional offline package must cover all 604 pinned pages and preflight a representative sample');
     assert(offlineFacsimile.includes('hasMushafOfflineQuota') && offlineFacsimile.includes('await cache.put(svgUrl'), 'Every verified page must be stored only after quota preflight and page validation');
+    assert(offlineFacsimile.includes('validatePageAgainstLocalQuran') && offlineFacsimile.includes('matchMushafAyahAreas') && offlineFacsimile.includes('loadSurahVerses'), 'Every cached and newly downloaded SVG must match exact WIRD-local ayah coordinates before it counts as a valid package page');
 
     const audioControl = fs.readFileSync(path.resolve(process.cwd(), 'src/components/shared/AudioPlaybackRateControl.tsx'), 'utf8');
     assert(audioControl.includes('https://everyayah.com/'), 'Audio controls must provide a visible EveryAyah source link-back');
