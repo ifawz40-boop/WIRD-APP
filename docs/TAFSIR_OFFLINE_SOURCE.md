@@ -10,8 +10,9 @@
 - **Translation key:** `arabic_moyassar`
 - **Edition:** Arabic Tafsir al-Muyassar, catalogue version **1.0.1**, dated **2026-11-09**
 - **Publisher:** King Fahd Complex for the Printing of the Holy Quran (مجمع الملك فهد لطباعة المصحف الشريف بالمدينة المنورة)
+- **Catalogue verification:** `GET https://quranenc.com/api/v1/translations/list/ar?localization=ar`; the downloader checks that the live catalogue still reports the pinned version before it begins. The official API documentation states that authentication is not required and CORS is open.
 
-The QuranEnc API provides a surah payload with ayah coordinates, translation text and footnotes. The app accepts a direct array or the documented result/data array wrapper, but stores the complete original JSON payload unchanged.
+The QuranEnc API provides a surah payload with ayah coordinates, translation text and footnotes (and may include source Arabic text/edition fields). The app accepts a direct array or the documented result/data array wrapper, validates the required coordinates and translation, but stores the complete original JSON payload unchanged. The live catalogue version check prevents silently labelling newer source content with an older version number.
 
 ## Reuse conditions
 
