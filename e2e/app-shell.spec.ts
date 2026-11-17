@@ -152,15 +152,20 @@ test('physical KeyB shortcut works with Arabic keyboard layout and mobile drawer
   await page.goto('/');
   await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
 
-  await page.evaluate(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', {
+  const desktopSidebarToggle = page.getByRole('button', { name: 'إغلاق الشريط الجانبي' }).first();
+  await expect(desktopSidebarToggle).toBeVisible();
+  const shortcutHandled = await page.evaluate(() => {
+    const event = new KeyboardEvent('keydown', {
       key: 'لا',
       code: 'KeyB',
       ctrlKey: true,
       bubbles: true,
       cancelable: true
-    }));
+    });
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
   });
+  expect(shortcutHandled, 'Ctrl+physical KeyB should be handled even with an Arabic key value').toBe(true);
   await expect(page.getByRole('button', { name: 'فتح الشريط الجانبي' })).toHaveAttribute('aria-expanded', 'false');
 
   await page.setViewportSize({ width: 390, height: 844 });
