@@ -66,3 +66,10 @@
 - Run #4508 on head `6d7f435...` passed the 759 unit assertions and 31 Firestore Rules tests but failed TypeScript because App's in-app session guard spreads `enginePlanId: string | null` into RouteState, whose new optional field was typed only as `string | undefined`.
 - Corrected the route contract to `enginePlanId?: string | null`; route serialization still emits only valid non-empty IDs and parsing still rejects malformed values. Commit: `abe008dc1b03e1e04c6f7497bfd6138b4728cb19`.
 - Current PR #387 exact head: `abe008dc1b03e1e04c6f7497bfd6138b4728cb19`. New Quality Gate #4511 / run `44180386559` is running; at last poll it was verifying all 604 Mushaf coordinate maps. Security audit remains separate and failed on picomatch.
+
+
+## Duplicate-range plan resolution helper — 2026-11-17
+- Extracted App's inline completion matcher into `findMatchingDueEnginePlanTask` in `src/services/dailySessionSelection.ts` and routed session completion through it.
+- Added a regression test with two active plans containing the exact same Surah/ayah range: a persisted plan ID resolves to the originating plan; missing context falls back to deterministic date/title order; an unknown plan ID resolves to no plan (never silently mutates a different plan).
+- Commits: `7cd4c75f10e68df27dea14c70efa226d671617aa`, `9a7d1813b598dbb3191d4d9283b63f5e2d8d7082`, `be3188764505b601d7867d05b50f1a4a4c422223`.
+- PR #387 current exact head: `be3188764505b601d7867d05b50f1a4a4c422223`. Quality Gate #4517 / `44180759072` is pending. Run #4511 was still in Playwright on the preceding head at last poll; inspect both exact runs and only claim the newest one after completion.
