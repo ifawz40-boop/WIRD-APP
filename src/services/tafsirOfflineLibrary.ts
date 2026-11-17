@@ -238,25 +238,51 @@ function makeStatus(downloadedSurahs: number[], status: OfflineTafsirDownloadSta
   };
 }
 
+/**
+ * Derive readiness from validated IndexedDB records, not only the manifest.
+ * A crash between persisting a surah and updating the manifest can leave a
+ * valid local payload missing from downloadedSurahs (or even without a
+ * manifest). The records are the source of truth for what is actually stored.
+ */
+export function deriveOfflineTafsirDownloadStatus(
+  storedRecords: unknown[],
+  manifestValue: unknown
+): OfflineTafsirDownloadStatus {
+  const validRecords = (Array.isArray(storedRecords) ? storedRecords : []).filter((record): record is StoredSurah =>
+    Boolean(record && typeof record === 'object' && isValidStoredSurah(record as StoredSurah))
+  );
+  const validStoredNumbers = new Set(validRecords.map(record => record.surahNumber));
+  const manifest = manifestValue && typeof manifestValue === 'object'
+    ? manifestValue as StoredManifest
+    : null;
+
+  let status: OfflineTafsirDownloadStatus['status'];
+  if (validStoredNumbers.size === 0) {
+    status = 'not_downloaded';
+  } else if (
+    manifest?.sourceVersion === OFFLINE_TAFSIR_SOURCE.version &&
+    manifest.status === 'downloading'
+  ) {
+    status = 'downloading';
+  } else if (
+    manifest?.sourceVersion === OFFLINE_TAFSIR_SOURCE.version &&
+    manifest.status === 'complete' &&
+    validStoredNumbers.size === TOTAL_SURAHS
+  ) {
+    status = 'complete';
+  } else {
+    status = 'paused';
+  }
+
+  return makeStatus([...validStoredNumbers], status);
+}
+
 export async function getOfflineTafsirDownloadStatus(): Promise<OfflineTafsirDownloadStatus> {
   const database = await openDatabase();
   const transaction = database.transaction(SURAH_STORE, 'readonly');
   const storedRecords = await requestValue(transaction.objectStore(SURAH_STORE).getAll()) as StoredSurah[];
   const manifest = await readManifest(database);
-  if (manifest?.sourceVersion !== OFFLINE_TAFSIR_SOURCE.version) {
-    return makeStatus([], 'not_downloaded');
-  }
-  const validStoredNumbers = new Set(
-    storedRecords.filter(isValidStoredSurah).map(record => record.surahNumber)
-  );
-  const downloadedList = Array.isArray(manifest.downloadedSurahs) ? manifest.downloadedSurahs : [];
-  const verifiedKeys = downloadedList.filter(surahNumber =>
-    Number.isInteger(surahNumber) &&
-    surahNumber >= 1 &&
-    surahNumber <= TOTAL_SURAHS &&
-    validStoredNumbers.has(surahNumber)
-  );
-  return makeStatus(verifiedKeys, manifest.status);
+  return deriveOfflineTafsirDownloadStatus(storedRecords, manifest);
 }
 
 export async function getOfflineTafsirForSurah(surahNumber: number): Promise<QuranEncTafsirRow[] | null> {
