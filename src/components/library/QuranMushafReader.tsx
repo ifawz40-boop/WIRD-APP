@@ -537,7 +537,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     const targetPageNumber = Number(pageEntry[0]);
     if (isSpreadModeActive) {
       const spreadStart = normalizeSpreadStartPage(targetPageNumber);
-      setReadingSide(targetPageNumber === spreadStart + 1 ? 'left' : 'right');
+      const targetSide: MushafSpreadPageSide = targetPageNumber === spreadStart + 1 ? 'left' : 'right';
+      if (targetSide === 'left' && leftPageContentMode === 'tafsir') {
+        setLeftPageContentMode('quran');
+        setRightPageContentMode('tafsir');
+      } else if (targetSide === 'right' && rightPageContentMode === 'tafsir') {
+        setRightPageContentMode('quran');
+        setLeftPageContentMode('tafsir');
+      }
+      setReadingSide(targetSide);
     } else {
       setReadingSide('right');
     }
@@ -635,6 +643,12 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   );
   const selectedStartAyah = audioAyahs[segmentStartIndex];
   const selectedEndAyah = audioAyahs[segmentEndIndex];
+
+  const navigationAyah = readingAyah || (
+    isSpreadModeActive
+      ? (readingSide === 'left' ? printedPageAyahs[page + 1]?.[0] : printedPageAyahs[page]?.[0])
+      : (audioAyahs[0] || ayahs[0])
+  );
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
@@ -1259,10 +1273,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         )}
       </main>
 
-      {(readingAyah || audioAyahs[0] || ayahs[0]) && (
+      {navigationAyah && (
         <div className="mx-auto mt-3 w-full max-w-4xl">
           <AyahNavigationControls
-            currentAyah={(readingAyah || audioAyahs[0] || ayahs[0]) as Ayah}
+            currentAyah={navigationAyah}
             onNavigate={handleNavigateToAyah}
           />
         </div>
