@@ -55,7 +55,7 @@ import {
 import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { ReadingKhatmaPanel } from './ReadingKhatmaPanel';
 import { QuranText } from '../shared/QuranText';
-import { AyahNavigationControls, getAdjacentAyahCoordinate } from '../shared/AyahNavigationControls';
+import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { QuranTypographyLab } from './QuranTypographyLab';
 import { WirdIslamicPattern } from '../brand/WirdPattern';
@@ -225,13 +225,6 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     setActiveTab('study');
   };
 
-  const handleNavigateAdjacentAyah = (ayah: Ayah, direction: 'previous' | 'next') => {
-    const target = getAdjacentAyahCoordinate(
-      { surahNumber: ayah.surahNumber, ayahNumber: ayah.numberInSurah },
-      direction
-    );
-    if (target) handleNavigateToAyah(target.surahNumber, target.ayahNumber);
-  };
 
   // Audio playback uses refs for event-driven repeat state; React state is UI-only.
   const handlePlayAyah = (ayahNumberInSurah: number) => {
