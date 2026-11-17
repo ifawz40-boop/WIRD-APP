@@ -386,11 +386,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   };
 
   useEffect(() => {
-    if (!isLoading && audioAyahs.length > 0 && autoPlayNextPageRef.current) {
+    if (!isLoading && audioAyahs.length > 0 && isSpreadAudioReady && autoPlayNextPageRef.current) {
       autoPlayNextPageRef.current = false;
       playAyahAt(0, audioAyahs);
     }
-  }, [audioAyahs, isLoading, page]);
+  }, [audioAyahs, isLoading, page, isSpreadAudioReady]);
 
   const togglePageAudio = () => {
     if (!isSpreadAudioReady) return;
