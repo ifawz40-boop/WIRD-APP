@@ -57,7 +57,7 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Exit criteria:** one verified baseline SHA; inventory of open PRs and conflicts; no duplicate competing implementations; explicit list of gaps and safe PR sequence.
 
 ### Phase 1 — Cumulative memorization studio
-**Status: NOT STARTED — implementation not yet audited against this plan**
+**Status: PARTIAL — cumulative mode, masking, range playback and weak-ayah capture exist; durable guided-session recovery is not established**
 
 - [ ] Preserve existing Free mode behavior and regression coverage.
 - [ ] Add a guided `cumulative_linking` session mode with explicit phases: `listen_repeat`, `masking_recall`, `cumulative_link`.
@@ -70,7 +70,7 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Acceptance:** Free mode unchanged; cumulative mode completes an end-to-end session; ayah order and boundaries are correct; weak ayah event is durable; reload/re-entry preserves progress; tests pass on exact SHA.
 
 ### Phase 2 — Offline audio repository, downloads, and PWA readiness
-**Status: IN PROGRESS (prior work exists; completion not established)**
+**Status: PARTIAL — download manager, durable library, local playback and app-shell preparation exist; cross-tab/crash/offline acceptance remains incomplete**
 
 #### 2A. Source and rights validation
 - [ ] Verify official Al Quran Cloud documentation and applicable terms for the precise reciter/audio endpoint, permitted caching and offline storage, attribution, and redistribution restrictions.
@@ -99,7 +99,7 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Acceptance:** approved reciter files download, pause/resume/cancel, deduplicate, and play after restart without network; shared references survive selective deletion; account changes cannot expose or delete another account's data; quota/cache failures recover safely; PWA shell and verified local text remain usable offline; all limitations are accurately disclosed.
 
 ### Phase 3 — Missed-day recovery and review tests
-**Status: NOT STARTED — implementation not yet audited against this plan**
+**Status: PARTIAL — missed-day detection, three recovery actions and local-text test modes exist; preview/edge-case acceptance remains incomplete**
 
 - [ ] Detect overdue incomplete tasks in active plans without mutating completed-day history.
 - [ ] Calculate and display the actual backlog (ayah count, overdue days, estimated workload, target-date impact).
@@ -114,7 +114,7 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Acceptance:** recovery options show accurate impact; no silent changes; prior completion history is byte-for-byte/semantically preserved; one confirmed choice creates one durable schedule revision; test questions match the canonical local text exactly.
 
 ### Phase 4 — Durable IndexedDB plan archive migration
-**Status: IN PROGRESS (prior codec/archive groundwork exists; integrated migration not established)**
+**Status: PARTIAL — IndexedDB v10 archive stores, scoped hydration/migration and journal/outbox transaction exist; aggregate bounds and remote chunk protocol remain open**
 
 - [ ] Inspect current DB version and migration chain before selecting the next version; do not blindly assume v10 is still the correct next version.
 - [ ] Add isolated stores equivalent to `enginePlanArchiveHeads`, `enginePlanArchiveManifests`, and `enginePlanArchiveRecords`.
@@ -181,7 +181,57 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 
 ---
 
-## 6. Phase 0 — verified PR reconciliation audit (2026-11-17)
+
+
+## 7. Source-level implementation audit — current main snapshot (2026-11-17)
+
+**Audit base:** `main` = `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. All file SHAs below were fetched from this exact ref. This is source inspection, not a fresh full test run or Production verification.
+
+### 7.1 Cumulative memorization — PARTIAL, not greenfield
+- `src/components/session/MemorizationSessionView.tsx` (`ed24b21b...`) already has `free` and `cumulative_linking` modes; progressive masking levels; last-five/from-start cumulative windows; queue playback of the selected range; a local `masteredIndices` counter; and weak-ayah capture through the supplied revision callback with a mutation ID.
+- Current implementation state (`studyMethod`, `cumulativeWindow`, `masteredIndices`, repeat/mask state) is React component state. No durable per-step/session checkpoint or resume protocol was identified in this source path. The workflow is not yet proven to enforce an explicit per-ayah phase machine with a durable transition from listen/repeat → recall → cumulative link. `masteredIndices` is session-local and resets when range changes.
+- Existing E2E files cover audio repetition/display/plan UX; no dedicated exact-head test proving the full cumulative guided workflow + reload/resume was found in this audit.
+- **Next:** inspect parent/session lifecycle and the weak-review callback transaction; define a small durable session state model before adding UI or changing Free mode.
+
+### 7.2 Missed-day recovery and test generation — PARTIAL, substantial existing implementation
+- `src/services/planLifecycle.ts` (`17ddf80f...`) implements detection of overdue non-rest incomplete days and three deterministic transformations: shift pending work forward, schedule a light recovery day, and rebalance remaining work. The split logic preserves completed task records.
+- `src/components/plans/PlanningEngineWizard.tsx` (`d0970347...`) displays backlog counts, missed memorization ayahs/revision tasks and first pending range; it presents all three choices and requires explicit confirmation. It does **not** render a computed before/after schedule preview; current confirmation text describes the selected action only.
+- `src/services/planMissedDayRecovery.test.ts` (`eed6a904...`) covers missed-day detection, paused/rest/completed exclusions, preservation of completed history, forward shifting, light recovery and rebalancing. Additional timezone/DST, repeated confirmation/idempotency, rollback/undo and schedule preview tests were not established in this review.
+- `src/services/testQuestionGenerator.ts` (`4d75cccf...`) supports scopes `all`, `surah`, `weak_priority` and `fill_blank_words`; question text is loaded through the local Quran data loader. The UI resolves the displayed missing-word verse from local data. Add exact canonical-text equality and boundary tests before marking complete.
+
+### 7.3 Long plan archive — PARTIAL, core local migration already integrated
+- `src/services/indexedDbSyncJournal.ts` (`9f43a774...`) opens `wird-sync-journal` at **IndexedDB database version 10** and creates `enginePlanArchiveHeads`, `enginePlanArchiveManifests`, and `enginePlanArchiveRecords` alongside journal/outbox stores.
+- `src/services/enginePlanArchive.ts` (`eedd84a7...`) validates guest/user scope keys, canonicalizes JSON, computes SHA-256, stages legacy data, independently reads back and verifies it, then commits the manifest/head. It retains the legacy localStorage source bytes. `src/components/auth/AuthGate.tsx` (`23a0860d...`) awaits `initializeEnginePlansArchiveForScope` during initial scope hydration and scope changes. `enginePlanArchive.test.ts` (`232726d8...`) covers lossless legacy migration, retained rollback bytes, archive export and atomic journal/outbox persistence.
+- `commitEnginePlansArchiveRevision` can commit the archive revision with the journal/outbox transaction. However, no explicit aggregate cap for archive bytes, plan count, manifest size, record count, or peak serialization memory was found in `enginePlanArchive.ts`. The journal currently defines a 450,000-byte Engine Plan mutation payload ceiling; this is not a chunked remote archive protocol. Do not describe remote long-plan sync as solved.
+- **Next:** define explicit aggregate/resource bounds, test very large plans and peak memory, inspect the exact AuthGate failure/recovery UI, then design remote chunk transport separately while keeping production sync flags untouched.
+
+### 7.4 Offline audio + PWA — PARTIAL, user-facing manager already exists
+- `src/services/offlineQuranAudioLibrary.ts` (`3467a096...`) uses separate DB `wird-offline-audio` v1, stores `jobs`/`files`/`jobItems`, cache `wird-offline-quran-audio-v1`, canonical `reciterId:globalAyahNumber` keys, generation-scoped cache keys, max concurrency 2, quota preflight with a 25 MB reserve, Cache Storage read-back validation, pause/resume/cancel/retry, reference-aware job deletion and reconciliation. The reader's `resolvePlaybackSource` uses verified local Cache Storage bytes first and falls back to network.
+- Cross-tab coordination uses Web Locks only when `navigator.locks` exists; fallback is an uncoordinated in-process task. No durable IndexedDB lease/BroadcastChannel fallback was identified. `reconcileLibrary` reconciles known metadata against cache and finalizes `deletionPending` rows, but a complete sweep for cache objects orphaned before their IndexedDB metadata commit was not established.
+- `src/components/settings/SettingsView.tsx` (`8945709d...`) already exposes the audio manager: approved reciter selection, surah/juz/plan ranges, quota preview, job list and pause/resume/cancel/delete actions; it also exposes app asset preparation, storage persistence/usage and package status. `offlinePreparationService.ts` (`...`) and `public/sw.js` (`c6849fbf...`) implement app-shell/lazy-asset preparation. Safari/iOS install instructions are present in `OfflineStatusControls.tsx`.
+- `offlineQuranAudioLibrary.test.ts` (`bb7b4823...`) includes shared-file reference deletion, orphan finalization, quota preflight, pause/resume and cancellation tests. These are service/fake-cache tests, not physical-device cold-restart/airplane-mode proof.
+- Rights boundary: `docs/engineering/AUDIO_SOURCE_ATTRIBUTION.md` (`53ec7a8b...`) keeps EveryAyah stream-only. The offline storage contract records a separate Al Quran Cloud/Islamic Network reciter terms review; re-check the exact current official terms and per-reciter restrictions before release. Do not broaden the allowlist or imply blanket redistribution rights.
+- `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md` (`b426ce99...`) and parts of `docs/offline/OFFLINE_AUDIO_STORAGE_CONTRACT.md` (`b27d49f7...`) still describe some now-present services/UI as not implemented. Reconcile these documents after completing the source audit; preserve their valid remaining release gates.
+
+### 7.5 Source map / exact fetched file SHAs
+| Area | File | SHA prefix |
+|---|---|---|
+| Session | `src/components/session/MemorizationSessionView.tsx` | `ed24b21b` |
+| Recovery | `src/services/planLifecycle.ts` | `17ddf80f` |
+| Recovery UI | `src/components/plans/PlanningEngineWizard.tsx` | `d0970347` |
+| Test generation | `src/services/testQuestionGenerator.ts` | `4d75cccf` |
+| Archive | `src/services/enginePlanArchive.ts` | `eedd84a7` |
+| IDB schema/journal | `src/services/indexedDbSyncJournal.ts` | `9f43a774` |
+| Archive startup gate | `src/components/auth/AuthGate.tsx` | `23a0860d` |
+| Audio library | `src/services/offlineQuranAudioLibrary.ts` | `3467a096` |
+| Audio manager UI | `src/components/settings/SettingsView.tsx` | `8945709d` |
+| Audio tests | `src/services/offlineQuranAudioLibrary.test.ts` | `bb7b4823` |
+| App shell | `public/sw.js` | `c6849fbf` |
+| Offline capability docs | `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md` | `b426ce99` |
+
+**Source audit conclusion:** all four roadmap tracks have meaningful existing implementation on main. None should be treated as green/complete yet. Prioritize closing the specific integration/recovery/acceptance gaps above instead of rebuilding parallel systems.
+
+## 8. Phase 0 — verified PR reconciliation audit (2026-11-17)
 
 ### Live repository snapshot
 - Default branch: `main`.
