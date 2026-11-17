@@ -478,3 +478,12 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Added five pure regression cases: missing manifest recovery, stale manifest list recovery, invalid payload rejection, stale source-version rejection, incomplete records with a false complete marker, and empty-package behavior (the suite currently contains five grouped tests).
 - Exact-head Quality Gate run #4481 / `44173595935` was observed queued then in progress. **No pass/fail result is claimed yet**; fetch the final run result and inspect both jobs after completion.
 - This fix does not change Quran text, tafsir source/payload, Firebase, Vercel settings/secrets, sync flags, or Production. PR #386 remains Draft/HOLD until exact-head CI and integration checks pass.
+
+## Tafsir reader CI regression correction — 2026-11-17
+
+- Quality Gate #4481 on the earlier #386 head `ca5b3d0a13453b9c208e0ba3fcafa02201284b8f` confirmed all five new offline-tafsir recovery tests PASS.
+- The application job failed one existing static source assertion in `src/tests/quranMushafReader.test.ts`: it expected `setPage(page + 1)`, while the facing-page implementation correctly uses `setPage(page + pageStep)` with a one-page/two-page step. This was a stale test expectation, not a runtime failure.
+- Updated the assertion to require the page-step contract and expanded the Mushaf 604-page coverage condition to run for Tafsir PRs/branches, since the opposite-page feature changes `QuranMushafReader.tsx`.
+- Commits: assertion correction `7362bd813bc55b70efe28e2f4e2ec4b32d05e39a`; CI coverage condition `d3cc59dc15160e8a367ad3189742b3d962ca9c14`.
+- New exact-head Quality Gate #4484 / `44173785987` is queued on #386 head `d3cc59dc15160e8a367ad3189742b3d962ca9c14`. Its result is pending; do not claim the regression is cleared until the new run completes.
+- #386 remains Draft/HOLD. No merge, Production deployment, Firebase/Vercel settings/secrets, or sync-flag changes.
