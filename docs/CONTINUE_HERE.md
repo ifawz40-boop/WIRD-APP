@@ -34,7 +34,7 @@
 
 ---
 
-## Current GitHub execution checkpoint — 2026-11-17 22:20 +02:00
+## Current GitHub execution checkpoint — 2026-11-17
 
 - **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (last verified; re-fetch before release).
 - **Owner scope:** local/offline app readiness only, limited to four requested tasks.
