@@ -172,3 +172,19 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - #359 overlaps #363 at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; preserve the #363 unified plan and reconcile any useful #359 detail explicitly.
 - Legacy #2 overlaps #363 at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`; do not merge #2 wholesale.
 - #373, #372, #371, #370, #369, #368, #367, #366, #365, #364 and #358 have no changed-path overlap with the current #363 changed-file list. This is a path snapshot only; re-fetch before action.
+
+
+---
+
+## Latest continuation checkpoint — 2026-11-17 14:42 UTC (PR #382 still running)
+
+- Live PR #382 remains OPEN / Draft / mergeable=true / not merged.
+- Exact head remains `c98a31f7a1a9ee41f1489b15609d3c2ccce18e69`; merge ref remains `cf378fb15af4e9423154c34dbaaf79b13139312d`; base SHA remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`.
+- Quality Gate run #4452 / ID `44105033897`, job `134114950644`, still reports `in_progress`. Desktop/mobile Playwright step #21 is still `in_progress`; diagnostics upload and post-job cleanup are pending.
+- Completed successfully on this exact run: Node/Vercel runtime, Bun setup, frozen lockfile install, dependency graph audit, automated test suites, native TypeScript API imports, approved audio CDN/range, Firestore Rules Emulator, TypeScript, production build, and server startup smoke.
+- The 604 Mushaf coordinate-map validation was `skipped`, not passed. Because PR #382 changes only `bun.lock`, this may be an intentional path filter; it must remain recorded as skipped.
+- Attempt to retrieve the running job log returned GitHub Azure `BlobNotFound` (404). Do not infer Playwright result from this.
+- Re-reviewed PR #382 patch: only `bun.lock` is changed; manifest root settings/dependencies, trustedDependencies and `@grpc/grpc-js` override are represented. No runtime/Quran/Firebase/Vercel files changed.
+- PR #381 tracker remains OPEN / Draft / mergeable=true, head `03306460b695f0e48b8def6ab018c165fb0464f0`. Its canonical files are `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md` and this file.
+- **Next:** re-fetch run #44105033897 until terminal. If Playwright succeeds and cleanup finishes, re-fetch #382 head/base/mergeability and final patch; verify all applicable checks then merge using expected head SHA `c98a31f...`. If Playwright fails, inspect diagnostics and fix only on a new narrow PR. After #382 merge, update/rebase this tracker branch against the new main and begin the first source-gap implementation PR (durable Hifz session recovery is a strong first candidate).
+- No merge, production deployment, Firebase change, secret/config change, or sync-flag change has occurred in this checkpoint.
