@@ -916,3 +916,12 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Shared navigation props now accept only `surahNumber` and `numberInSurah`, avoiding a fake/incomplete Ayah object for stored weak-verse records.
 - Added E2E coverage: manually record a weak ayah, verify controls under its text, click next and confirm the one-ayah review route.
 - PR #384 latest Vercel status is FAILED due to `build-rate-limit`; no GitHub Actions run returned. Its older READY preview predates these changes. Keep Draft until latest exact-head checks pass.
+
+
+## 2026-11-17 — Offline Tafsir persisted-payload integrity follow-up
+
+- Re-review found that the IndexedDB resume path and download status originally trusted stored record keys/source version without re-validating the persisted QuranEnc payload. A malformed/corrupt record could be skipped on resume and counted toward the offline package.
+- Updated `tafsirOfflineLibrary.ts` so both package status and resume eligibility require full validation of stored surah payloads (canonical verse count, sequential surah/ayah coordinates and non-empty translation). Invalid records are treated as missing and fetched again.
+- Added an E2E test that seeds a corrupt stored surah and stale manifest, verifies 0/114 progress, and verifies a complete 114-surah re-download with correct output.
+- Commits: `2dfe56cdced650f45a004b183b1cca793edb1fe1`, `b41262195a14760faa75d4f530814ee13e56d070`. Exact current PR head must be re-fetched.
+- No local Bun/Playwright execution or CI pass is claimed; PR #386 is stacked on a feature branch and remains Draft/NOT VERIFIED. No Production, Firebase, sync flags or user data changed.
