@@ -168,7 +168,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
     await expect(downloadPanel).toBeVisible();
     await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
-    await expect(downloadPanel.getByText('اكتمل تنزيل التفسير الميسر. أصبح متاحًا محليًا دون اتصال.')).toBeVisible({ timeout: 120_000 });
+    await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible({ timeout: 120_000 });
     await expect(page.locator('#wird-tafsir-ayah-1-1')).toContainText('تفسير اختباري 1:1');
     expect(requestedSurahs).toHaveLength(114);
     expect(new Set(requestedSurahs).size).toBe(114);
