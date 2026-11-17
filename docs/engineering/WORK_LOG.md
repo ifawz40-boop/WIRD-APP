@@ -851,3 +851,16 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Task 4 source research: QuranEnc identifies Arabic Tafsir al-Muyassar as key arabic_moyassar, publisher King Fahd Complex, version V1.0.1 dated 2026-11-09. API returns surah aya/translation/footnotes. Official reuse terms require unmodified content, visible publisher and QuranEnc.com source, version number, retained edition metadata, feedback reporting, updating to source releases, and no unsuitable ads.
 - Next: resolve the dependency security blocker without weakening audit, then exact-head validate stacked PRs. Build task 4 as a complete resumable IndexedDB offline package before exposing opposite-page Tafsir.
 
+
+
+## 2026-11-17 — Offline Tafsir al-Muyassar and opposite-page mode
+
+- Owner task 4 PR #386, branch feat/offline-tafsir-opposite-page-20261117, stacked on task 3 PR #385, task 2 PR #384 and lockfile prerequisite #382.
+- Official source researched: QuranEnc Arabic Tafsir al-Muyassar, key arabic_moyassar, publisher King Fahd Complex, catalogue edition V1.0.1 dated 2026-11-09. Reuse conditions require unchanged translation content, publisher/source attribution, version and embedded edition information, reporting corrections, updating to source releases and no unsuitable ads.
+- Added src/services/tafsirOfflineLibrary.ts: user-initiated 114-surah download, complete verse count/coordinate/non-empty text validation, raw payload storage with footnotes in IndexedDB, versioned manifest, durable transaction commits, pause/resume and skip-verified-surah behavior. No Firestore sync or network reads during display.
+- Added TafsirOfflineDownloadPanel.tsx and TafsirMushafPage.tsx. Download UI shows progress, pause/resume and source attribution. Tafsir page is not shown until all 114 surahs validate; it displays source ayah text from WIRD local Quran data, untouched Tafsir translation and footnotes, with selected ayah highlight/scroll.
+- Integrated independent content selectors in facing Mushaf spread: both pages default to Quran; choosing Tafsir on one side keeps Quran on the other; the selected ayah(s) from the opposite Quran page appear in Tafsir. Direction can be reversed and content-mode preference is local.
+- Added E2E tests for full download, both spread directions, offline navigation, footnotes, invalid source payload rejection and partial download resume.
+- No local build/test run is claimed. All PRs remain Draft / NOT VERIFIED because prerequisite #382 currently fails bun audit on GHSA-fc5q-39xc-vjpf / CVE-2026-112366 (picomatch through 4.0.7). Upstream #237 is open/unmerged; #238 is narrower and has a documented remaining vulnerable pattern. Do not suppress audit or pin a partial unmerged patch.
+- Next: resolve the dependency security blocker; run exact-head CI, desktop/mobile and offline E2E for the full stack; then review each PR separately before merge/deploy.
+
