@@ -507,9 +507,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     const spreadStart = normalizeSpreadStartPage(targetPageNumber);
     const targetSide: MushafSpreadPageSide = targetPageNumber === spreadStart + 1 ? 'left' : 'right';
     if (targetSide === 'left' && leftPageContentMode === 'tafsir') {
+      stopAudio();
       setLeftPageContentMode('quran');
       setRightPageContentMode('tafsir');
     } else if (targetSide === 'right' && rightPageContentMode === 'tafsir') {
+      stopAudio();
       setRightPageContentMode('quran');
       setLeftPageContentMode('tafsir');
     }
@@ -591,6 +593,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   };
 
   const handlePageContentModeChange = (side: MushafSpreadPageSide, mode: MushafSpreadPageContentMode) => {
+    stopAudio();
     if (mode === 'tafsir') {
       if (side === 'left') {
         setLeftPageContentMode('tafsir');
