@@ -255,3 +255,11 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 - **No PR merged.** No runtime source, Quran content, Firebase Rules/data, Vercel settings/secrets, production sync flags, or Production deployment was changed.
 
 **Next exact actions:** (1) reconcile #380 with current `main` rather than its stale base; preserve artwork and inspect all lockfile resolution changes; (2) obtain an inspectable full Quality Gate on the new exact merge/head SHA; (3) only after successful gates and final diff review, consider squash merge with `expected_head_sha`; (4) rebase #381 onto the repaired main and rerun its validation. Do not merge either PR before these steps.
+
+
+### PR graph refresh — 2026-11-17 (after documentation checkpoint commits)
+
+- PR #380 branch comparison against current `main` is now confirmed `diverged`: 13 commits ahead, 2 behind; merge base is `68dc6ea684c5bf8ef541163860ebd05e8377b468`, current main is `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. GitHub reports `mergeable=false`. This is a real rebase/reconciliation requirement, not merely stale PR text. Preserve artwork and inspect all 9 changed paths after rebase.
+- PR #381 tracker head advanced to `eb0c71ea09987e61c7a8b944866265e8ded4e5b3` after the two documentation updates. GitHub reports PR merge ref `3f0430a4fd951de8fdbaa6223d3fb5f1c3f4c914`; no workflow run or combined status was returned for that merge ref at the latest check. The earlier run #4446 remains the latest inspectable failure and is on the previous merge ref `502d3cea...`. Re-fetch after the latest head update; do not assume a new run will pass.
+- PR #380 head `99408208...` still has no GitHub Actions workflow run returned. Its Vercel status moved from pending/building in successive refreshes; this is not a substitute for the GitHub Quality Gate.
+
