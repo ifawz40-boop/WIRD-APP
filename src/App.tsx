@@ -123,6 +123,7 @@ export default function App() {
     startAyah: number;
     endAyah: number;
     mode: 'memorize' | 'review';
+    enginePlanId: string | null;
   }>(() => {
     const surahNumber = initialRoute.surahNumber || 67;
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
@@ -133,7 +134,8 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah,
       endAyah,
-      mode: initialRoute.mode || 'memorize'
+      mode: initialRoute.mode || 'memorize',
+      enginePlanId: null
     };
   });
 
@@ -292,7 +294,8 @@ export default function App() {
             surahNumber: surahMeta.number,
             startAyah: nextStart,
             endAyah: nextEnd,
-            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode
+            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode,
+            enginePlanId: null
           }));
         }
       }
@@ -356,14 +359,15 @@ export default function App() {
     surahNumber: number = 67,
     startAyah: number = 1,
     endAyah?: number,
-    mode: 'memorize' | 'review' = 'memorize'
+    mode: 'memorize' | 'review' = 'memorize',
+    enginePlanId?: string
   ) => {
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
     const safeStart = Math.min(Math.max(1, startAyah), surahMeta.versesCount);
     const safeEnd = Math.min(Math.max(safeStart, endAyah ?? surahMeta.versesCount), surahMeta.versesCount);
     sessionRunIdRef.current = createSecureId();
     sessionCompletionAttemptRef.current = null;
-    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode });
+    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode, enginePlanId: enginePlanId || null });
     navigateTo({
       tab: 'session',
       surahNumber: surahMeta.number,
@@ -385,7 +389,8 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode: prev.mode
+      mode: prev.mode,
+      enginePlanId: null
     }));
     navigateTo({
       tab: 'session',
@@ -407,7 +412,7 @@ export default function App() {
       showToast(selection.messageAr, 'warn');
       return;
     }
-    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode);
+    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode, selection.enginePlanId);
   };
 
   // Commit session progress, activity, streak, and matching smart-plan task together.
@@ -423,7 +428,7 @@ export default function App() {
       const currentEnginePlans = StorageService.getEnginePlans();
       const today = getLocalDateString();
       const matchingEntry = currentEnginePlans
-        .filter(plan => plan.isActive && !plan.isPaused)
+        .filter(plan => plan.isActive && !plan.isPaused && (!sessionParams.enginePlanId || plan.id === sessionParams.enginePlanId))
         .flatMap(plan => plan.schedule
           .filter(day =>
             day.date <= today &&
