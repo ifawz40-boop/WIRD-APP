@@ -68,7 +68,7 @@ export function runQuranMushafReaderTests(): { passed: number; failed: number } 
     assert(source.includes('MUSHAF_TEXT_SCALE_CLASSES') && source.includes('extraLarge'), 'Reader must offer adjustable Quran text sizes');
     assert(source.includes('توسيع مساحة القراءة') && source.includes('تقليل عرض الصفحة'), 'Reader must offer a wider or comfortable reading surface');
     assert(source.includes('ليس محاكاة مطابقة لأسطر المصحف المطبوع') && source.includes('بيانات تخطيط موثّقة'), 'Reader must clearly disclose the flexible non-line-matched layout');
-    assert(source.includes('autoPlayNextPageRef') && source.includes('setPage(page + 1)'), 'Page recitation must continue across page boundaries');
+    assert(source.includes('autoPlayNextPageRef') && source.includes('setPage(page + pageStep)') && source.includes('const pageStep = isSpreadModeActive ? 2 : 1'), 'Page recitation must continue across page boundaries and advance by the active one-page/two-page step');
     assert(source.includes('QuranMushafFacsimilePage') && source.includes("readerLayout === 'printed'"), 'Reader must offer an explicit printed-page mode');
     assert(source.includes("selectReaderLayout('flow')"), 'Reader must preserve a direct fallback to local flexible text');
     const facsimile = fs.readFileSync(path.resolve(process.cwd(), 'src/components/library/QuranMushafFacsimilePage.tsx'), 'utf8');
