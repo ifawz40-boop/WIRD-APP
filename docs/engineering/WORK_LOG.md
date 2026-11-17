@@ -864,3 +864,6 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - No local build/test run is claimed. All PRs remain Draft / NOT VERIFIED because prerequisite #382 currently fails bun audit on GHSA-fc5q-39xc-vjpf / CVE-2026-112366 (picomatch through 4.0.7). Upstream #237 is open/unmerged; #238 is narrower and has a documented remaining vulnerable pattern. Do not suppress audit or pin a partial unmerged patch.
 - Next: resolve the dependency security blocker; run exact-head CI, desktop/mobile and offline E2E for the full stack; then review each PR separately before merge/deploy.
 
+
+- Follow-up review: the Tafsir side now has previous/next controls beneath each ayah; navigation swaps the reading side back to Quran when crossing into a page currently occupied by Tafsir. Audio is limited to the Quran side when Tafsir is active and covers both pages only when both are Quran. Corrupt stored surahs are invalidated from the manifest so resume can repair them.
+- The downloader also verifies the live QuranEnc Arabic catalogue version before downloading; if the pinned edition is not the current catalogue edition, it refuses to mislabel the data.
