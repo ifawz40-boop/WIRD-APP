@@ -798,3 +798,27 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
   - `npm run test:firestore-rules`: **BLOCKED** in AI Studio container (`Error: Could not spawn java -version`)
 - **Unresolved risks / next action:** push Studio workspace diff to a GitHub feature branch/PR and run the full GitHub Quality Gate workflow (which includes Java for Firestore Rules Emulator), add `ais-dev-*.run.app` preview origin to Firebase Console Authorized Domains if preview Google login is needed, and await owner decision on Vercel Production sync flags before any Production deployment.
 
+
+## 2026-11-17 — Auth/Conflict/Advisor/Ruqyah/Plan UI & Service Hardening (AI Studio workspace)
+
+- **Environment:** Google AI Studio (`/app/applet`); uncommitted local changes only (**not** pushed to GitHub and **not** deployed to Vercel per owner directive).
+- **Changes implemented:**
+  - `src/services/authService.ts`: fixed Persian typo (`لا يوجد کاربر` -> `لا يوجد مستخدم`) in `resendVerificationEmail` and `reloadUserStatus` null-user errors.
+  - `src/services/advisorService.ts`: added `buildBoundedChatPayload()` to clamp chat messages to 500 chars and bound multi-turn `history` (max 6 recent entries, <= 3,600 wire bytes) so requests never hit the server's 4,096-byte `PAYLOAD_TOO_LARGE` rejection after long chats; wrapped all 3 `fetch` abort timers in `try/finally` `clearTimeout(timeoutId)`.
+  - `src/components/settings/SettingsView.tsx`: wired `containsUnsafeFullSnapshotProjection()` into the sync conflict review UI so `weakVerses`, `activityEvents`, and unsafe `syncMeta` conflicts hide `use-remote` / `keep-local` replacement buttons and display explicit fail-closed status guidance instead of throwing after a Firestore read; also prevented unsafe `preparedIntent` retry buttons.
+  - `src/components/assistant/QuranAdvisorView.tsx`: added unmount guard (`active` flag) around `AdvisorService.checkStatus()`, `maxLength={500}` on chat input, and replaced numeric `availableDailyMinutes` state with string-backed `dailyMinutesInput` + bounded derivation (`targetPages = 604` when `targetAjza === 30`) so clearing or editing the field never displays `NaN يوماً`.
+  - `src/components/ruqyah/RuqyahView.tsx`: tracked the 300ms auto-advance scroll timer in `autoAdvanceTimerRef` and cleared it on re-trigger, category change, and unmount.
+  - `src/components/plans/PlanningEngineWizard.tsx`: added `safePaceQuantity`, positive `paceQuantity` check in `generatePreviewSafely`, and `onBlur` normalization so temporarily cleared/zero number inputs do not yield `0`/`NaN` feasibility or crashes.
+  - Added regression assertions in `src/tests/geminiSecurity.test.ts` (4KB payload bound), `src/tests/firebaseAuth.test.ts` (Arabic null-user errors), and `e2e/advisor-ux.spec.ts` (calculator empty-input `NaN` guard & `604`-page full Quran target).
+  - Reconciled `docs/CONTINUE_HERE.md`, `docs/engineering/MASTER_PROJECT_STATE.md`, `docs/engineering/RELEASE_CHECKLIST.md`, `docs/agent-handoffs/LATEST-GOOGLE-STUDIO.md`, and `docs/engineering/WORK_LOG.md`.
+- **Executed verification (observed on final code state):**
+  - `npx tsc --noEmit`: **PASS**
+  - `npm test`: **PASS** (`733 PASSED | 0 FAILED`)
+  - `npm run build` (`NODE_ENV=production vite build`): **PASS** (`2.07s`; chunks < 500 kB; 9-asset shell manifest + 252 lazy assets; `/sw.js` active without `jsxDEV`)
+  - `npm run mushaf:validate-coverage`: **PASS** (`604` SVG pages / `6,236` unique local ayahs mapped once)
+  - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS** (production & dev Express servers)
+  - Desktop + Mobile Playwright across all 18 `e2e/*.spec.ts` files (`--workers=2`, run in clean batches): **PASS** (`164` passed, `2` intentionally skipped, `0` failed; Batch 0 `advisor-ux` 6/6, Batch 1 `settings-ux`/`ruqyah-ux`/`plans-ux`/`app-shell` 38/38, Batch 2 50/50, Batch 3 70/70 + 2 intentionally skipped)
+  - `npm run test:firestore-rules`: **BLOCKED** in AI Studio container (`Error: Could not spawn java -version`)
+- **Next action:** Push Studio workspace changes to a dedicated GitHub feature branch/PR and execute GitHub Quality Gate CI (including Firestore Rules Emulator with Java); keep Vercel Production deployment and sync flags unchanged until explicit owner authorization.
+
+

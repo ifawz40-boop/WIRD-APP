@@ -1,19 +1,23 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-16 (Google AI Studio workspace)  
+**Current snapshot reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
 - **AI Studio workspace verification (uncommitted local changes; NOT pushed to GitHub and NOT deployed to Vercel):**
   - **Firebase configuration verified (`firebase-applet-config.json`):** `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`.
-  - **Code & build fixes applied in workspace:** `api/advisor.ts` TypeScript narrowing fix; `server.ts` Arabic rate-limit message typo fix (`يرجى الانتظار قليلاً`); `src/components/brand/BrandDesignShowcase.tsx` clipboard timer cleanup (`copyTimerRef`); `package.json` `build` script pinned to `NODE_ENV=production vite build` (eliminating `jsxDEV` bloat and restoring `import.meta.env.PROD` Service Worker registration); `src/main.tsx` non-blocking SW registration on `DOMContentLoaded`/ready DOM; `public/sw.js` non-blocking `precacheQuranFont` so external font timeouts never stall SW install; plus E2E selector updates in `e2e/plans-ux.spec.ts`, `e2e/ruqyah-ux.spec.ts`, `e2e/memorization-audio-repeat.spec.ts`, `e2e/memorization-session-display-ux.spec.ts`, `e2e/progress-ux.spec.ts`, and `e2e/wird-navigation-tafsir.spec.ts`.
+  - **Code & build fixes applied in workspace (2026-11-16 + 2026-11-17):**
+    - `package.json` (`NODE_ENV=production vite build`), `src/main.tsx` (DOM-ready `/sw.js` registration), `public/sw.js` (non-blocking font precaching after shell precache), `api/advisor.ts` TypeScript narrowing, `server.ts` Arabic rate-limit copy fix.
+    - `src/services/authService.ts` (`کاربر` -> `مستخدم` in null-user guards); `src/services/advisorService.ts` (`buildBoundedChatPayload` clamping long chat histories under 4KB + `try/finally` `clearTimeout` on all `fetch` calls).
+    - `src/components/settings/SettingsView.tsx` (fail-closed conflict UI via `containsUnsafeFullSnapshotProjection` for `weakVerses`/`activityEvents` snapshots); `src/components/assistant/QuranAdvisorView.tsx` (calculator `NaN` fix + 604-page full-Quran calculation, `checkStatus` unmount guard, 500-char input limit); `src/components/plans/PlanningEngineWizard.tsx` (`paceQuantity` `0`/`NaN` live/preview guard); `src/components/ruqyah/RuqyahView.tsx` (`autoAdvanceTimerRef` cleanup); `src/components/brand/BrandDesignShowcase.tsx` (`copyTimerRef` cleanup).
+    - Regression & E2E tests updated/added (`src/tests/geminiSecurity.test.ts`, `src/tests/firebaseAuth.test.ts`, `e2e/advisor-ux.spec.ts`, and 6 aligned UX specs).
   - **Local workspace gates executed on final state:**
     - `npx tsc --noEmit`: **PASS**
-    - `npm test` (`runAllTests.ts` + pre-scripts): **PASS** (`731 PASSED | 0 FAILED`)
-    - `npm run build` (`NODE_ENV=production vite build`): **PASS** (zero chunks > 500 kB, 9-asset shell precache manifest + 252 lazy assets, `/sw.js` active without `jsxDEV`)
+    - `npm test` (`runAllTests.ts` + pre-scripts): **PASS** (`733 PASSED | 0 FAILED`)
+    - `npm run build` (`NODE_ENV=production vite build`): **PASS** (`2.07s`, zero chunks > 500 kB, 9-asset shell precache manifest + 252 lazy assets, `/sw.js` active without `jsxDEV`)
     - `npm run mushaf:validate-coverage`: **PASS** (all 604 SVG pages / 6,236 unique local ayahs mapped once)
     - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS**
-    - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files): **PASS** (`162` executed passed, `2` intentionally skipped, `0` failed; includes offline app-shell reload and 252-asset full offline preparation)
+    - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files): **PASS** (`164` executed passed, `2` intentionally skipped, `0` failed; includes offline app-shell reload, 252-asset full offline preparation, and calculator `NaN` regression)
     - `npm run test:firestore-rules`: **BLOCKED** (Java runtime absent in AI Studio container: `Could not spawn java -version`)
     - GitHub commit/push & exact-head CI for workspace fixes: **NOT EXECUTED** (no `.git` remote push in Studio sandbox)
     - Vercel Production deployment for workspace fixes: **NOT EXECUTED** (by explicit owner instruction; Production sync flags remain untouched)

@@ -89,6 +89,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const audioQueueIndexRef = useRef(0);
   const audioRequestIdRef = useRef(0);
   const audioBuildRequestIdRef = useRef(0);
+  const autoAdvanceTimerRef = useRef<number | null>(null);
 
   const currentItems = getRuqyahItemsByCategory(activeCategory);
 
@@ -127,6 +128,10 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       active = false;
       audioBuildRequestIdRef.current += 1;
       audioRequestIdRef.current += 1;
+      if (autoAdvanceTimerRef.current !== null) {
+        window.clearTimeout(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = null;
+      }
     };
   }, [activeCategory, quranRetryNonce]);
 
@@ -502,7 +507,11 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       const currentIndex = currentItems.findIndex(i => i.id === item.id);
       if (currentIndex !== -1 && currentIndex < currentItems.length - 1) {
         const nextId = currentItems[currentIndex + 1].id;
-        setTimeout(() => {
+        if (autoAdvanceTimerRef.current !== null) {
+          window.clearTimeout(autoAdvanceTimerRef.current);
+        }
+        autoAdvanceTimerRef.current = window.setTimeout(() => {
+          autoAdvanceTimerRef.current = null;
           const el = document.getElementById(`ruqyah-card-${nextId}`);
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });

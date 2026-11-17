@@ -18,6 +18,7 @@ import { createSecureId } from './services/secureId';
 import { persistEnginePlansSnapshot, persistJournaledTransaction, persistPlansSnapshot, persistProfileSnapshot, persistTestResultSnapshot } from './services/journaledSnapshotService';
 import { ALL_SURAHS } from './data/quranMeta';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
+import { OfflineNetworkBanner } from './components/shared/OfflineStatusControls';
 
 // Lazy loaded views for optimal chunking and initial load performance
 const QuranLibraryView = React.lazy(() => import('./components/library/QuranLibraryView').then(m => ({ default: m.QuranLibraryView })));
@@ -398,7 +399,7 @@ export default function App() {
   const handleStartDailySession = () => {
     const selection = getDailySessionSelection(
       plans,
-      StorageService.getEnginePlans(),
+      enginePlans,
       RetentionService.getPortions(),
       getLocalDateString()
     );
@@ -698,12 +699,7 @@ export default function App() {
         )}
 
         {/* Offline Network Warning Banner */}
-        {!isOnline && (
-          <div className="bg-[#142421] dark:bg-[#111F36] text-[#F5F1E8] px-4 py-1.5 flex items-center justify-center gap-2 text-xs border-b border-[#C59B27]/25 dark:border-[#E0A96D]/25">
-            <AlertTriangle className="w-3.5 h-3.5 text-[#E0A96D]" />
-            <span>أنت تعمل حالياً بدون اتصال بالإنترنت. جميع ميزات المصحف والحفظ والمراجعة والاختبارات تعمل بكفاءة من الذاكرة المحلية.</span>
-          </div>
-        )}
+        <OfflineNetworkBanner isOnline={isOnline} />
 
         {/* Content Viewport with ErrorBoundary and Code Splitting Suspense */}
         <main className={`flex-1 min-w-0 w-full p-4 sm:p-5 md:p-6 xl:p-8 ${currentTab === 'session' ? 'pb-6 md:pb-8' : 'pb-28 lg:pb-8'} ${isDesktop && !isDesktopSidebarOpen ? 'max-w-none' : 'max-w-[1440px]'} mx-auto`}>
@@ -725,10 +721,13 @@ export default function App() {
                 <DashboardView
                   profile={profile}
                   plans={plans}
+                  enginePlans={enginePlans}
                   revisionItems={revisionItems}
                   logs={logs}
                   onNavigate={handleNavigate}
                   onStartSession={handleStartSession}
+                  onUpdateEnginePlans={handleUpdateEnginePlans}
+                  onToast={showToast}
                 />
               )}
 
@@ -762,6 +761,8 @@ export default function App() {
                   onRangeChange={handleSessionRangeChange}
                   onExit={() => handleNavigate('dashboard')}
                   onProgressChange={setSessionInProgress}
+                  onAddVerseToRevision={handleAddVerseToRevision}
+                  onToast={showToast}
                 />
               )}
 
@@ -819,6 +820,10 @@ export default function App() {
                   onBackupImported={refreshJournaledSnapshots}
                   onOpenShowcase={() => handleNavigate('showcase')}
                   onToast={showToast}
+                  enginePlans={enginePlans}
+                  isStandalone={isStandalone}
+                  hasInstallPrompt={Boolean(pwaInstallPrompt)}
+                  onInstallPwa={handleTriggerPwaInstall}
                 />
               )}
 

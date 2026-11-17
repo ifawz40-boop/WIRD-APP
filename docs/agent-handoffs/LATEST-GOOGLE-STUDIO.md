@@ -1,27 +1,29 @@
-# GOOGLE AI STUDIO — Current handoff overlay — 2026-11-16
+# GOOGLE AI STUDIO — Current handoff overlay — 2026-11-17
 
 > This is the current operational overlay. It supersedes older SHA/deployment/PR status below. Workspace edits in Google AI Studio are NOT yet pushed to GitHub or deployed to Vercel.
 
-- **Date:** 2026-11-16
+- **Date:** 2026-11-17
 - **Environment:** Google AI Studio (`/app/applet`)
 - **Repository:** `xm8eslam-stack/WIRD-APP` · **Expected base branch:** `main` (last refreshed snapshot: `f264e4bdea7496090f60940e9e8db03e2fb15696` / code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`)
 - **Firebase Config Verified (`firebase-applet-config.json`):** `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`.
 - **Modified files (workspace local only):**
-  - App/API/Server/Build/PWA: `package.json`, `src/main.tsx`, `public/sw.js`, `api/advisor.ts`, `server.ts`, `src/components/brand/BrandDesignShowcase.tsx`
-  - E2E tests aligned with current UI/queue state: `e2e/plans-ux.spec.ts`, `e2e/ruqyah-ux.spec.ts`, `e2e/memorization-audio-repeat.spec.ts`, `e2e/memorization-session-display-ux.spec.ts`, `e2e/progress-ux.spec.ts`, `e2e/wird-navigation-tafsir.spec.ts`
+  - App/API/Server/Build/PWA/Services (2026-11-16 + 2026-11-17): `package.json`, `src/main.tsx`, `public/sw.js`, `api/advisor.ts`, `server.ts`, `src/services/authService.ts`, `src/services/advisorService.ts`, `src/components/brand/BrandDesignShowcase.tsx`, `src/components/settings/SettingsView.tsx`, `src/components/assistant/QuranAdvisorView.tsx`, `src/components/ruqyah/RuqyahView.tsx`, `src/components/plans/PlanningEngineWizard.tsx`
+  - Unit & E2E tests: `src/tests/geminiSecurity.test.ts`, `src/tests/firebaseAuth.test.ts`, `e2e/advisor-ux.spec.ts`, `e2e/plans-ux.spec.ts`, `e2e/ruqyah-ux.spec.ts`, `e2e/memorization-audio-repeat.spec.ts`, `e2e/memorization-session-display-ux.spec.ts`, `e2e/progress-ux.spec.ts`, `e2e/wird-navigation-tafsir.spec.ts`
   - Documentation reconciled: `docs/CONTINUE_HERE.md`, `docs/engineering/MASTER_PROJECT_STATE.md`, `docs/engineering/RELEASE_CHECKLIST.md`, `docs/OWNER_ACTIONS.md`, `docs/engineering/WORK_LOG.md`, `docs/agent-handoffs/LATEST-GOOGLE-STUDIO.md`
 - **Root causes addressed:**
   1. `NODE_ENV=development` exported by the Studio container caused `vite build` to emit `jsxDEV` transforms and set `import.meta.env.PROD=false`, suppressing Service Worker registration -> pinned `NODE_ENV=production vite build` in `package.json`.
   2. External font stylesheets stalled `window.load` and blocked `precacheQuranFont()` in SW install -> moved SW registration to ready DOM / `DOMContentLoaded` (`src/main.tsx`) and made font precaching non-blocking after shell precache (`public/sw.js`).
-  3. TypeScript narrowing failure on `userData` in `api/advisor.ts`, Arabic typo in `server.ts`, and unmount/re-trigger timer leak (`copyTimerRef`) in `BrandDesignShowcase.tsx`.
-  4. E2E selectors/mocks updated for intentional UI copy changes and `QuranAudioQueueController.prepareNext()` preloaded `Audio` instance (`__wirdPlayedUrls` + active track lookup).
+  3. TypeScript narrowing on `userData` in `api/advisor.ts`, Arabic rate-limit copy typo in `server.ts`, Persian typo (`کاربر` -> `مستخدم`) in `src/services/authService.ts` null-user guards, and uncleaned timers in `BrandDesignShowcase.tsx` (`copyTimerRef`) and `RuqyahView.tsx` (`autoAdvanceTimerRef`).
+  4. `SettingsView.tsx` exposed resolution buttons for `weakVerses`/`activityEvents` conflicts that fail closed in `syncConflictResolutionService.ts` -> wired `containsUnsafeFullSnapshotProjection()` directly into conflict UI.
+  5. `QuranAdvisorView.tsx` calculator rendered `NaN يوماً` when daily minutes input was cleared/invalid and computed 600 instead of 604 pages for full Quran (`30` ajza); also lacked unmount guard on `checkStatus()` and `maxLength={500}` matching server limit. `AdvisorService` sent unbounded chat histories exceeding the 4,096-byte server cap and didn't clean abort timeouts in `finally` blocks -> added `buildBoundedChatPayload()` and `finally { clearTimeout(timeoutId); }`.
+  6. `PlanningEngineWizard.tsx` allowed `0`/`NaN` in `paceQuantity` inputs while editing -> added `safePaceQuantity`, preview validation, and `onBlur` normalization.
 - **Tests executed & observed (final state):**
   - `npx tsc --noEmit`: **PASS**
-  - `npm test`: **PASS** (`731 PASSED | 0 FAILED`)
-  - `npm run build`: **PASS** (2.19s; chunks < 500 kB; `/sw.js` active without `jsxDEV`; 9-asset shell manifest + 252 lazy assets)
+  - `npm test`: **PASS** (`733 PASSED | 0 FAILED`)
+  - `npm run build`: **PASS** (`2.07s`; chunks < 500 kB; `/sw.js` active without `jsxDEV`; 9-asset shell manifest + 252 lazy assets)
   - `npm run mushaf:validate-coverage`: **PASS** (604 SVG pages / 6,236 unique local ayahs mapped once)
   - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS**
-  - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files): **PASS** (`162` passed, `2` intentionally skipped, `0` failed; covers offline shell reload and 252-asset full offline preparation)
+  - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files): **PASS** (`164` passed, `2` intentionally skipped, `0` failed; covers offline shell reload, 252-asset full offline preparation, and calculator `NaN` regression)
   - `npm run test:firestore-rules`: **BLOCKED** (Java runtime not installed in Studio container: `Could not spawn java -version`)
 - **Commit / Push / Deployment status:** NOT COMMITTED / NOT PUSHED / NOT DEPLOYED TO VERCEL (explicit owner directive: `"التحديث متنشرش على فيرسل"`).
 - **Status:** Partial (workspace implementation & local verification complete; GitHub PR/CI with Java Firestore Emulator and Production deployment remain external next steps).

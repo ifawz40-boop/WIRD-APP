@@ -369,6 +369,23 @@ export async function runFirebaseAuthTests(): Promise<{ passed: number; failed: 
     assert(WIRD_FIRESTORE_DATABASE_ID === '(default)', 'Canonical Firestore database must be default');
   });
 
+  await test('AuthService null-user guards return clean Arabic error messages', async () => {
+    let resendErr = '';
+    try {
+      await AuthService.resendVerificationEmail(null as any);
+    } catch (e: any) {
+      resendErr = String(e?.message || '');
+    }
+    let reloadErr = '';
+    try {
+      await AuthService.reloadUserStatus(null as any);
+    } catch (e: any) {
+      reloadErr = String(e?.message || '');
+    }
+    assert(resendErr.includes('مستخدم') && !resendErr.includes('کاربر'), 'resendVerificationEmail error must be valid Arabic');
+    assert(reloadErr.includes('مستخدم') && !reloadErr.includes('کاربر'), 'reloadUserStatus error must be valid Arabic');
+  });
+
   return { passed, failed };
 }
 

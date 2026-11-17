@@ -35,6 +35,7 @@ import { SurahPickerControl } from '../shared/SurahPickerControl';
 import { DirectOptionGroup } from '../shared/DirectOptionGroup';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 import { ExistingMemorizedPicker } from './ExistingMemorizedPicker';
+import { getLocalDateString } from '../../services/unifiedPortionService';
 
 interface PlanningEngineWizardProps {
   enginePlans: EngineGeneratedPlan[];
@@ -100,6 +101,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [previewPlan, setPreviewPlan] = useState<EngineGeneratedPlan | null>(null);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
+  const [pendingRecoveryMode, setPendingRecoveryMode] = useState<'shift' | 'light' | 'rebalance' | null>(null);
+  const [isApplyingRecovery, setIsApplyingRecovery] = useState(false);
   const recalculateDialogRef = useRef<HTMLDivElement>(null);
   const cancelRecalculateRef = useRef<HTMLButtonElement>(null);
   const deleteDialogRef = useRef<HTMLDivElement>(null);
@@ -190,9 +193,14 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
     [existingMemorizedRanges]
   );
 
+  const safePaceQuantity =
+    paceType === 'pages_per_day'
+      ? (Number.isFinite(paceQuantity) && paceQuantity > 0 ? Math.min(5, Math.max(0.5, paceQuantity)) : 0.5)
+      : (Number.isFinite(paceQuantity) && paceQuantity > 0 ? Math.min(100, Math.max(1, Math.round(paceQuantity))) : 1);
+
   const liveDailyPaceVerses =
     paceType === 'pages_per_day'
-      ? Math.max(1, Math.round(paceQuantity * 15))
+      ? Math.max(1, Math.round(safePaceQuantity * 15))
       : paceType === 'by_target_date'
       ? Math.max(
           1,
@@ -209,7 +217,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               )
           )
         )
-      : paceQuantity;
+      : safePaceQuantity;
 
   const liveFeasibility = PlanningEngine.assessFeasibility(
     liveDailyPaceVerses,
@@ -290,6 +298,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
         setWizardStep(1);
         return false;
       }
+      if (paceType !== 'by_target_date' && (!Number.isFinite(paceQuantity) || paceQuantity <= 0)) {
+        onToast?.('يرجى إدخال مقدار حفظ يومي صحيح أكبر من صفر.', 'error');
+        setWizardStep(2);
+        return false;
+      }
       if (paceType === 'by_target_date') {
         if (!targetEndDate || !targetEndDate.trim()) {
           onToast?.('يرجى تحديد تاريخ الختم المستهدف أولاً في خطوة الوتيرة والأيام.', 'error');
@@ -341,15 +354,6 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
     try {
       const updated = [planToSave, ...enginePlans.filter(plan => plan.id !== planToSave.id)];
-      const serializedSnapshot = JSON.stringify({ records: updated });
-      const snapshotBytes = new TextEncoder().encode(serializedSnapshot).length;
-      if (snapshotBytes > 450_000) {
-        onToast?.(
-          'هذه الخطة أكبر من الحد الآمن للمزامنة (450 كيلوبايت). قلّل نطاق الخطة أو زد مقدار الحفظ اليومي قبل اعتمادها؛ لم نفقد أي بيانات.',
-          'error'
-        );
-        return;
-      }
       if (!(await onUpdateEnginePlans(updated))) return;
       setSelectedPlanId(planToSave.id);
       setIsCreatingNew(false);
@@ -393,6 +397,37 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
     if (!(await onUpdateEnginePlans(enginePlans.map(p => (p.id === activePlan.id ? updated : p))))) return;
     setShowRecalculateConfirm(false);
     onToast?.('تمت إعادة جدولة المهام القادمة بنجاح مع الاحتفاظ بكامل سجلاتك المنجزة.', 'success');
+  };
+
+  const todayStr = getLocalDateString();
+  const activePlanMissedSummary = useMemo(
+    () => (activePlan ? PlanLifecycle.detectMissedDays(activePlan, todayStr) : null),
+    [activePlan, todayStr]
+  );
+
+  const handleConfirmMissedRecovery = async () => {
+    if (!activePlan || !pendingRecoveryMode || isApplyingRecovery) return;
+    setIsApplyingRecovery(true);
+    try {
+      const outcome =
+        pendingRecoveryMode === 'shift'
+          ? PlanLifecycle.shiftMissedForward(activePlan, todayStr)
+          : pendingRecoveryMode === 'light'
+          ? PlanLifecycle.scheduleLightRecoveryDay(activePlan, todayStr)
+          : PlanLifecycle.rebalanceRemainingPlan(activePlan, todayStr);
+      if (!outcome.changed) {
+        onToast?.(outcome.actionLabelAr, 'info');
+        setPendingRecoveryMode(null);
+        return;
+      }
+      const nextPlans = enginePlans.map(p => (p.id === activePlan.id ? outcome.plan : p));
+      if (await onUpdateEnginePlans(nextPlans)) {
+        onToast?.(outcome.actionLabelAr, 'success');
+        setPendingRecoveryMode(null);
+      }
+    } finally {
+      setIsApplyingRecovery(false);
+    }
   };
 
   const resetAndOpenCreator = () => {
@@ -809,8 +844,9 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             min="1"
                             max="100"
                             aria-label="عدد الآيات اليومي المخصص"
-                            value={paceQuantity}
-                            onChange={e => setPaceQuantity(Number(e.target.value))}
+                            value={Number.isFinite(paceQuantity) && paceQuantity > 0 ? paceQuantity : ''}
+                            onChange={e => setPaceQuantity(e.target.value === '' ? 0 : Number(e.target.value))}
+                            onBlur={() => setPaceQuantity(safePaceQuantity)}
                             className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
                           />
                         </div>
@@ -840,8 +876,9 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             min="0.5"
                             max="5"
                             aria-label="عدد الصفحات اليومي المخصص"
-                            value={paceQuantity}
-                            onChange={e => setPaceQuantity(Number(e.target.value))}
+                            value={Number.isFinite(paceQuantity) && paceQuantity > 0 ? paceQuantity : ''}
+                            onChange={e => setPaceQuantity(e.target.value === '' ? 0 : Number(e.target.value))}
+                            onBlur={() => setPaceQuantity(safePaceQuantity)}
                             className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
                           />
                         </div>
@@ -1294,6 +1331,97 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               </div>
             </div>
           </div>
+
+          {activePlanMissedSummary?.hasMissedDays && (
+            <section
+              aria-label="خيارات معالجة الأيام الفائتة"
+              className="wird-card p-5 border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/8 dark:bg-[#111F36] space-y-3 text-xs"
+            >
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                    رصد {activePlanMissedSummary.missedDaysCount}{' '}
+                    {activePlanMissedSummary.missedDaysCount === 1 ? 'يوم فائت' : 'أيام فائتة'} في هذه الخطة
+                  </h3>
+                  <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed tabular-nums">
+                    مجموع الآيات غير المكتملة قبل اليوم: {activePlanMissedSummary.missedMemorizationVerses} آية
+                    {activePlanMissedSummary.missedRevisionTasksCount > 0
+                      ? ` · ${activePlanMissedSummary.missedRevisionTasksCount} مهام مراجعة`
+                      : ''}.{' '}
+                    {activePlanMissedSummary.firstMissedRangeLabelAr
+                      ? `أول موضع متبقٍ: ${activePlanMissedSummary.firstMissedRangeLabelAr}.`
+                      : ''}{' '}
+                    لن يُغيّر التطبيق جدولك تلقائياً دون موافقتك؛ اختر آلية المعالجة المناسبة:
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPendingRecoveryMode('shift')}
+                  className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                    pendingRecoveryMode === 'shift'
+                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                      : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                  }`}
+                >
+                  ترحيل الورد للأمام
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPendingRecoveryMode('light')}
+                  className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                    pendingRecoveryMode === 'light'
+                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                      : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                  }`}
+                >
+                  تثبيت ومراجعة خفيفة اليوم
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPendingRecoveryMode('rebalance')}
+                  className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                    pendingRecoveryMode === 'rebalance'
+                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                      : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                  }`}
+                >
+                  إعادة توزيع المتبقي
+                </button>
+              </div>
+
+              {pendingRecoveryMode && (
+                <div className="p-3.5 rounded-xl bg-white dark:bg-[#0B132B]/85 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-[#142421] dark:text-[#F5F1E8] leading-relaxed">
+                    {pendingRecoveryMode === 'shift' && 'تأكيد ترحيل جميع المهام غير المكتملة للأمام بدءاً من اليوم مع الإبقاء التام على الأوراد المكتملة.'}
+                    {pendingRecoveryMode === 'light' && 'تأكيد تخصيص اليوم كمراجعة وتثبيت خفيف لما فات، واستئناف الحفظ الجديد من اليوم الدراسي التالي.'}
+                    {pendingRecoveryMode === 'rebalance' && 'تأكيد إعادة توزيع المتبقي بالتساوي على الأيام النشطة المتاحة مع الاحتفاظ بكامل السجلات المكتملة.'}
+                  </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      disabled={isApplyingRecovery}
+                      onClick={() => setPendingRecoveryMode(null)}
+                      className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold"
+                    >
+                      تراجع
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isApplyingRecovery}
+                      onClick={handleConfirmMissedRecovery}
+                      className="wird-btn-primary min-h-11 px-4 py-2 text-xs font-bold whitespace-nowrap"
+                    >
+                      {isApplyingRecovery ? 'جارٍ التحديث...' : 'تأكيد المعالجة'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           {/* 4. Schedule View Modes & Task List */}
           <div className="space-y-4">

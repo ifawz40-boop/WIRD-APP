@@ -1,4 +1,6 @@
+import { ALL_SURAHS } from '../data/quranMeta';
 import { ReciterId, ReciterInfo } from '../types/quran';
+import { buildQuranAyahAudioUrl } from './ruqyahAudioService';
 
 export const RECITERS: ReciterInfo[] = [
   { id: 'alafasy', name: 'الشيخ مشاري راشد العفاسي', identifier: 'Alafasy_128kbps', subfolder: 'Alafasy_128kbps' },
@@ -8,11 +10,70 @@ export const RECITERS: ReciterInfo[] = [
   { id: 'ghamdi', name: 'الشيخ سعد الغامدي', identifier: 'Ghamadi_40kbps', subfolder: 'Ghamadi_40kbps' },
 ];
 
+export const OFFLINE_RECITER_MAP: Partial<Record<ReciterId, string>> = {
+  alafasy: 'ar.alafasy',
+  husary: 'ar.husary',
+  minshawi: 'ar.minshawi',
+  abdulbasit: 'ar.abdulbasit'
+};
+
+export function resolveApprovedOfflineReciterId(reciterId: ReciterId): string | null {
+  return OFFLINE_RECITER_MAP[reciterId] ?? null;
+}
+
+export function computeGlobalAyahNumber(surahNumber: number, ayahNumberInSurah: number): number {
+  const surah = ALL_SURAHS[surahNumber - 1];
+  if (!surah || surah.number !== surahNumber ||
+      !Number.isSafeInteger(ayahNumberInSurah) || ayahNumberInSurah < 1 || ayahNumberInSurah > surah.versesCount) {
+    throw new Error('إحداثيات الآية غير صالحة لحساب الرقم العام في المصحف.');
+  }
+  let preceding = 0;
+  for (let i = 0; i < surahNumber - 1; i++) {
+    preceding += ALL_SURAHS[i].versesCount;
+  }
+  return preceding + ayahNumberInSurah;
+}
+
 export function formatAyahAudioUrl(surahNumber: number, ayahNumberInSurah: number, reciterId: ReciterId = 'alafasy'): string {
   const reciter = RECITERS.find(r => r.id === reciterId) || RECITERS[0];
   const s = String(surahNumber).padStart(3, '0');
   const a = String(ayahNumberInSurah).padStart(3, '0');
   return `https://everyayah.com/data/${reciter.subfolder}/${s}${a}.mp3`;
+}
+
+export interface LicensedAyahAudioDescriptor {
+  url: string;
+  approvedReciterId: string | null;
+  globalAyahNumber: number;
+  streamOnly: boolean;
+}
+
+/**
+ * Resolve audio URL respecting WIRD's licensing boundary:
+ * - Approved Al Quran Cloud editions return https://cdn.islamic.network/... (eligible for offline caching)
+ * - Unlicensed/stream-only reciters (e.g. ghamdi on EveryAyah) remain stream-only online
+ */
+export function getLicensedAyahAudioUrl(
+  surahNumber: number,
+  ayahNumberInSurah: number,
+  reciterId: ReciterId = 'alafasy'
+): LicensedAyahAudioDescriptor {
+  const globalAyahNumber = computeGlobalAyahNumber(surahNumber, ayahNumberInSurah);
+  const approvedReciterId = resolveApprovedOfflineReciterId(reciterId);
+  if (approvedReciterId) {
+    return {
+      url: buildQuranAyahAudioUrl(approvedReciterId, globalAyahNumber),
+      approvedReciterId,
+      globalAyahNumber,
+      streamOnly: false
+    };
+  }
+  return {
+    url: formatAyahAudioUrl(surahNumber, ayahNumberInSurah, reciterId),
+    approvedReciterId: null,
+    globalAyahNumber,
+    streamOnly: true
+  };
 }
 
 /**

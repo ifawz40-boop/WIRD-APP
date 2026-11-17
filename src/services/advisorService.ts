@@ -16,17 +16,44 @@ export interface AdvisorResponse {
   report?: PerformanceAnalysisReport;
 }
 
+const MAX_CHAT_WIRE_BYTES = 3600;
+const MAX_CHAT_HISTORY_ITEMS = 6;
+const MAX_CHAT_HISTORY_ITEM_CHARS = 220;
+
+export function buildBoundedChatPayload(
+  message: string,
+  history: Array<{ sender: 'user' | 'advisor'; text: string }>
+): { message: string; history: Array<{ sender: 'user' | 'advisor'; text: string }> } {
+  const safeMessage = message.trim().slice(0, 500);
+  const encoder = new TextEncoder();
+  const boundedHistory = (Array.isArray(history) ? history : [])
+    .filter(item => item && (item.sender === 'user' || item.sender === 'advisor') && typeof item.text === 'string' && item.text.trim().length > 0)
+    .slice(-MAX_CHAT_HISTORY_ITEMS)
+    .map(item => ({
+      sender: item.sender,
+      text: item.text.trim().slice(0, MAX_CHAT_HISTORY_ITEM_CHARS)
+    }));
+
+  while (boundedHistory.length > 0) {
+    const serialized = JSON.stringify({ message: safeMessage, history: boundedHistory });
+    if (encoder.encode(serialized).length <= MAX_CHAT_WIRE_BYTES) {
+      break;
+    }
+    boundedHistory.shift();
+  }
+
+  return { message: safeMessage, history: boundedHistory };
+}
+
 export const AdvisorService = {
   // Check AI availability from server
   async checkStatus(): Promise<AdvisorStatus> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
-
       const res = await fetch('/api/advisor/status', {
         signal: controller.signal
       });
-      clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
@@ -54,6 +81,8 @@ export const AdvisorService = {
         model: 'المحرك الذاتي الحتمي',
         message: 'يعمل في النمط الذاتي الحتمي (بدون استهلاك رصيد أو مفاتيح)'
       };
+    } finally {
+      clearTimeout(timeoutId);
     }
   },
 
@@ -98,10 +127,11 @@ ${deterministicReport.revisionPriorities.map(p => `• ${p}`).join('\n')}`;
     }
 
     // 3. Attempt server-side Gemini Free Tier call
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
       const activePlan = plans.find(p => p.isActive) || plans[0];
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const safeCustomQuery = typeof customQuery === 'string' ? customQuery.trim().slice(0, 500) : undefined;
 
       const res = await fetch('/api/advisor/analyze', {
         method: 'POST',
@@ -109,7 +139,7 @@ ${deterministicReport.revisionPriorities.map(p => `• ${p}`).join('\n')}`;
         signal: controller.signal,
         body: JSON.stringify({
           contextType,
-          query: customQuery,
+          query: safeCustomQuery,
           userData: {
             goal: profile.memorizationGoal || 'حفظ القرآن الكريم',
             activePlanTitle: activePlan?.title || 'خطة الحفظ',
@@ -120,7 +150,6 @@ ${deterministicReport.revisionPriorities.map(p => `• ${p}`).join('\n')}`;
           }
         })
       });
-      clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
@@ -145,6 +174,8 @@ ${deterministicReport.revisionPriorities.map(p => `• ${p}`).join('\n')}`;
       }
     } catch (e) {
       console.info('Using deterministic advisor fallback:', e);
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     return {
@@ -161,17 +192,17 @@ ${deterministicReport.revisionPriorities.map(p => `• ${p}`).join('\n')}`;
     message: string,
     history: Array<{ sender: 'user' | 'advisor'; text: string }>
   ): Promise<AdvisorResponse> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const payload = buildBoundedChatPayload(message, history);
 
       const res = await fetch('/api/advisor/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
-        body: JSON.stringify({ message, history })
+        body: JSON.stringify(payload)
       });
-      clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
@@ -186,6 +217,8 @@ ${deterministicReport.revisionPriorities.map(p => `• ${p}`).join('\n')}`;
       }
     } catch {
       // Fallback
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     // Deterministic answer

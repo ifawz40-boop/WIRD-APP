@@ -51,6 +51,12 @@ const memoryStorage = new Map<string, string>();
 const STORAGE_SCOPE_PREFIX = 'wird_scope_v1';
 const STORAGE_OWNER_MARKER = 'wird_storage_owner_v1';
 let activeStorageScope = 'legacy';
+let hydratedEnginePlansCache: {
+  scopeKey: string;
+  plans: EngineGeneratedPlan[];
+  revision: number;
+  fingerprint: string;
+} | null = null;
 
 function resolveStorageKey(key: string, scope = activeStorageScope): string {
   if (scope === 'legacy' || scope === 'guest') return key;
@@ -218,6 +224,7 @@ function restoreRawStorageValues(snapshot: Map<string, string | null>): boolean 
 function setStorageScope(scope: string, legacyChoice?: 'import' | 'keep-guest'): boolean {
   const normalized = scope;
   if (normalized === 'legacy' || normalized === 'guest') {
+    if (activeStorageScope !== normalized) hydratedEnginePlansCache = null;
     activeStorageScope = normalized;
     return true;
   }
@@ -290,6 +297,7 @@ function setStorageScope(scope: string, legacyChoice?: 'import' | 'keep-guest'):
     }
   }
 
+  if (activeStorageScope !== normalized) hydratedEnginePlansCache = null;
   activeStorageScope = normalized;
   return true;
 }
@@ -625,7 +633,7 @@ function isValidTestResultRecord(value: unknown): value is TestResult {
   if (!isPlainRecord(value)) return false;
   return typeof value.id === 'string' && value.id.trim().length > 0 && value.id.length <= 160 &&
     isValidDateOnly(value.date) &&
-    ['complete_verse', 'order_words', 'mutashabihat', 'surah_beginnings', 'random_recall', 'bidirectional_recall'].includes(value.type) &&
+    ['complete_verse', 'fill_blank_words', 'order_words', 'mutashabihat', 'surah_beginnings', 'random_recall', 'bidirectional_recall'].includes(value.type) &&
     typeof value.surahName === 'string' && value.surahName.trim().length > 0 && value.surahName.length <= 100 &&
     isIntegerBetween(value.totalQuestions, 1, 1000) &&
     isIntegerBetween(value.score, 0, value.totalQuestions) &&
@@ -766,14 +774,21 @@ function isValidScheduledRevisionUnit(value: unknown): boolean {
   return value.surahName == null || typeof value.surahName === 'string';
 }
 
-function isValidEngineGeneratedPlan(value: unknown): value is EngineGeneratedPlan {
-  if (value == null) return true;
+export function isValidEngineGeneratedPlan(value: unknown): value is EngineGeneratedPlan {
   if (!isPlainRecord(value)) return false;
   if (typeof value.id !== 'string' || !value.id.trim() || value.id.length > 160) return false;
   if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 200) return false;
-  if (Array.isArray(value.schedule) && value.schedule.some((day: unknown) =>
-    isPlainRecord(day) && day.dayOfWeek != null && !isIntegerBetween(day.dayOfWeek, 0, 6)
-  )) return false;
+  if (!isValidPlanGenerationInput(value.input)) return false;
+  if (value.schedule !== undefined) {
+    if (!Array.isArray(value.schedule) || value.schedule.length > 10000) return false;
+    for (const day of value.schedule) {
+      if (!isPlainRecord(day)) return false;
+      if (day.dayOfWeek != null && !isIntegerBetween(day.dayOfWeek, 0, 6)) return false;
+      if (day.memorizationTask !== undefined && !isValidScheduledTaskUnit(day.memorizationTask)) return false;
+      if (day.minorRevisionTask !== undefined && !isValidScheduledRevisionUnit(day.minorRevisionTask)) return false;
+      if (day.majorRevisionTask !== undefined && !isValidScheduledRevisionUnit(day.majorRevisionTask)) return false;
+    }
+  }
   return true;
 }
 
@@ -943,7 +958,7 @@ export function validateBackupPayload(payload: any): { valid: boolean; error?: s
     label: string;
   }> = [
     { field: 'plans', max: 500, validate: isValidMemorizationPlan, label: 'خطط الحفظ' },
-    { field: 'enginePlans', max: 100, validate: isValidEngineGeneratedPlan, label: 'الخطط الذكية' },
+    { field: 'enginePlans', max: 10000, validate: isValidEngineGeneratedPlan, label: 'الخطط الذكية' },
     { field: 'revisionItems', max: 10000, validate: isValidLegacyRevisionItem, label: 'عناصر المراجعة' },
     { field: 'logs', max: 10000, validate: isValidDailyLog, label: 'سجل النشاط اليومي' },
     { field: 'tests', max: 50, validate: isValidTestResultRecord, label: 'نتائج الاختبارات' },
@@ -1086,6 +1101,7 @@ export const StorageService = {
   /** @internal Test-only reset; never call from application UI. */
   __resetStorageForTests(): void {
     activeStorageScope = 'legacy';
+    hydratedEnginePlansCache = null;
     const keysToRemove = new Set<string>([
       ...Object.values(STORAGE_KEYS),
       STORAGE_OWNER_MARKER
@@ -1157,26 +1173,81 @@ export const StorageService = {
     return setItem(STORAGE_KEYS.PLANS, JSON.stringify(plans));
   },
 
-  // Engine Plans
+  // Engine Plans (hydrated IndexedDB archive snapshot when available; legacy compatibility localStorage fallback)
+  setHydratedEnginePlansSnapshot(
+    scopeKey: string,
+    plans: EngineGeneratedPlan[],
+    revision: number,
+    fingerprint: string
+  ): void {
+    if (scopeKey !== activeStorageScope) return;
+    hydratedEnginePlansCache = {
+      scopeKey,
+      plans: JSON.parse(JSON.stringify(plans)) as EngineGeneratedPlan[],
+      revision,
+      fingerprint
+    };
+  },
+
+  clearHydratedEnginePlansCache(): void {
+    hydratedEnginePlansCache = null;
+  },
+
+  getHydratedEnginePlansMeta(): { scopeKey: string; revision: number; fingerprint: string } | null {
+    if (!hydratedEnginePlansCache || hydratedEnginePlansCache.scopeKey !== activeStorageScope) return null;
+    return {
+      scopeKey: hydratedEnginePlansCache.scopeKey,
+      revision: hydratedEnginePlansCache.revision,
+      fingerprint: hydratedEnginePlansCache.fingerprint
+    };
+  },
+
+  readRawEnginePlansLegacyBytes(): { raw: string | null } {
+    const key = resolveStorageKey(STORAGE_KEYS.ENGINE_PLANS);
+    const value = readRawStorageValue(key);
+    if (value === undefined) {
+      throw new Error('تعذرت قراءة أرشيف الخطط الذكية المحلي بشكل موثوق؛ أوقفنا الترحيل لحماية البيانات.');
+    }
+    return { raw: value };
+  },
+
   getEnginePlans(): EngineGeneratedPlan[] {
+    if (hydratedEnginePlansCache && hydratedEnginePlansCache.scopeKey === activeStorageScope) {
+      return JSON.parse(JSON.stringify(hydratedEnginePlansCache.plans)) as EngineGeneratedPlan[];
+    }
     return readJsonArrayArchive<EngineGeneratedPlan>(STORAGE_KEYS.ENGINE_PLANS, 'Engine plans', isValidEngineGeneratedPlan);
   },
 
   saveEnginePlans(plans: EngineGeneratedPlan[]): boolean {
-    if (!Array.isArray(plans) || plans.length > 100) {
-      console.error('[WIRD Storage] saveEnginePlans rejected: invalid array or length > 100');
+    if (!Array.isArray(plans) || plans.length > 10000) {
+      console.error('[WIRD Storage] saveEnginePlans rejected: invalid array or out of safe range');
       return false;
     }
-    const invalidIndex = plans.findIndex(p => !isValidEngineGeneratedPlan(p));
+    const seenIds = new Set<string>();
+    const invalidIndex = plans.findIndex(p => {
+      if (!isValidEngineGeneratedPlan(p)) return true;
+      if (seenIds.has(p.id)) return true;
+      seenIds.add(p.id);
+      return false;
+    });
     if (invalidIndex !== -1) {
-      console.error('[WIRD Storage] saveEnginePlans rejected: record at index ' + invalidIndex + ' is invalid:', plans[invalidIndex]);
+      console.error('[WIRD Storage] saveEnginePlans rejected: record at index ' + invalidIndex + ' is invalid or duplicate:', plans[invalidIndex]);
       return false;
     }
     if (!canWriteJsonArrayArchive(STORAGE_KEYS.ENGINE_PLANS, isValidEngineGeneratedPlan)) {
       console.error('[WIRD Storage] saveEnginePlans rejected: existing engine plans archive contains malformed records.');
       return false;
     }
-    return setItem(STORAGE_KEYS.ENGINE_PLANS, JSON.stringify(plans));
+    if (plans.length <= 100) {
+      if (!setItem(STORAGE_KEYS.ENGINE_PLANS, JSON.stringify(plans))) return false;
+    }
+    if (hydratedEnginePlansCache && hydratedEnginePlansCache.scopeKey === activeStorageScope) {
+      hydratedEnginePlansCache = {
+        ...hydratedEnginePlansCache,
+        plans: JSON.parse(JSON.stringify(plans)) as EngineGeneratedPlan[]
+      };
+    }
+    return true;
   },
 
   // Revision Items
@@ -1671,9 +1742,14 @@ export const StorageService = {
         }
         case 'enginePlans': {
           if (!Array.isArray(payload.records)) return false;
+          if (hydratedEnginePlansCache && hydratedEnginePlansCache.scopeKey === activeStorageScope) {
+            return hydratedEnginePlansCache.plans.length <= 10000 &&
+              hydratedEnginePlansCache.plans.every(isValidEngineGeneratedPlan) &&
+              equals(hydratedEnginePlansCache.plans, payload.records);
+          }
           const raw = getItem(STORAGE_KEYS.ENGINE_PLANS);
           const current: unknown = raw === null ? [] : JSON.parse(raw);
-          return Array.isArray(current) && current.length <= 100 &&
+          return Array.isArray(current) && current.length <= 10000 &&
             current.every(isValidEngineGeneratedPlan) && equals(current, payload.records);
         }
         case 'portions': {
@@ -1790,7 +1866,9 @@ export const StorageService = {
       snapshot.set(key, value);
     }
 
+    const priorHydratedCache = hydratedEnginePlansCache;
     const rollback = (reason: string): false => {
+      hydratedEnginePlansCache = priorHydratedCache;
       const restored = restoreRawStorageValues(snapshot);
       console.error('[WIRD Storage] Grouped journal transaction failed; complete previous state restored: ' + restored, reason);
       return false;
@@ -2100,6 +2178,32 @@ export const StorageService = {
       throw new Error('تعذر إنشاء نسخة احتياطية مكتملة: ' + (validation.error || 'بيانات غير صالحة'));
     }
     return JSON.stringify(backup, null, 2);
+  },
+
+  /**
+   * Async verified export that reads committed Engine Plans directly from the
+   * IndexedDB v10 SHA-256 verified archive when available, refusing stale localStorage bytes.
+   */
+  async exportFullBackupVerified(options?: {
+    journal?: import('./indexedDbSyncJournal').IndexedDbSyncJournal;
+    databaseName?: string;
+    indexedDBFactory?: IDBFactory;
+  }): Promise<string> {
+    if (typeof indexedDB !== 'undefined' && (activeStorageScope === 'guest' || activeStorageScope.startsWith('user:'))) {
+      const { exportVerifiedEnginePlansSnapshot } = await import('./enginePlanArchive');
+      const verified = await exportVerifiedEnginePlansSnapshot(activeStorageScope, options);
+      if (verified !== null) {
+        const rawBackup = JSON.parse(this.exportFullBackup()) as BackupPayload;
+        rawBackup.enginePlans = verified.records;
+        rawBackup.timestamp = new Date().toISOString();
+        const validation = validateBackupPayload(rawBackup);
+        if (!validation.valid) {
+          throw new Error('تعذر إنشاء نسخة احتياطية مكتملة: ' + (validation.error || 'بيانات غير صالحة'));
+        }
+        return JSON.stringify(rawBackup, null, 2);
+      }
+    }
+    return this.exportFullBackup();
   },
 
   // Atomic Import with Pre-Validation (Never partially overwrites on failure)

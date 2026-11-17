@@ -60,6 +60,10 @@ import { runRuqyahApiServiceTests } from '../services/ruqyahApiService.test';
 import { runRuqyahViewAudioLockTests } from './ruqyahViewAudioLock.test';
 import { runReadingDisplayPreferencesTests } from './readingDisplayPreferences.test';
 import { runMemorizedRangeServiceTests } from '../services/memorizedRangeService.test';
+import { runEnginePlanArchiveTests } from '../services/enginePlanArchive.test';
+import { runOfflineQuranAudioLibraryTests } from '../services/offlineQuranAudioLibrary.test';
+import { runPlanMissedDayRecoveryTests } from '../services/planMissedDayRecovery.test';
+import { runTestQuestionGeneratorTests } from '../services/testQuestionGenerator.test';
 
 export interface SuiteResult {
   passed: number;
@@ -167,6 +171,10 @@ async function main() {
     { name: 'Ruqyah Audio Playback Safety & Source Allowlist', runner: runRuqyahViewAudioLockTests },
     { name: 'Device-local Reading Display Preferences & Range Labels', runner: runReadingDisplayPreferencesTests },
     { name: 'Hafs 30-Juz Boundaries, Range Merging & Pre-Memorized Import', runner: runMemorizedRangeServiceTests },
+    { name: 'IndexedDB v10 Engine Plans Archive, Lossless Migration & SHA-256 Integrity', runner: runEnginePlanArchiveTests },
+    { name: 'Unified Offline Audio Store, Concurrency, Quota Preflight & Local Playback', runner: runOfflineQuranAudioLibraryTests },
+    { name: 'Hybrid Missed-Day Plan Detection & Recovery Actions', runner: runPlanMissedDayRecoveryTests },
+    { name: 'Memorization Test Fill-Blank Words & Scope Filters', runner: runTestQuestionGeneratorTests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);

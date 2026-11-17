@@ -46,7 +46,14 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
   const [userQuery, setUserQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [targetAjza, setTargetAjza] = useState<number>(3);
-  const [availableDailyMinutes, setAvailableDailyMinutes] = useState<number>(30);
+  const [dailyMinutesInput, setDailyMinutesInput] = useState<string>('30');
+
+  const parsedDailyMinutes = Number(dailyMinutesInput);
+  const safeDailyMinutes = Number.isFinite(parsedDailyMinutes) && parsedDailyMinutes > 0
+    ? Math.min(180, Math.max(15, Math.round(parsedDailyMinutes)))
+    : 30;
+  const targetPages = targetAjza === 30 ? 604 : Math.max(20, targetAjza * 20);
+  const estimatedDays = Math.round(targetPages / Math.max(0.5, safeDailyMinutes / 30));
 
   const [chatMessages, setChatMessages] = useState<Array<{ 
     sender: 'user' | 'advisor'; 
@@ -63,9 +70,13 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
 
   // Check server AI status on mount
   useEffect(() => {
+    let active = true;
     AdvisorService.checkStatus().then(status => {
-      setAdvisorStatus(status);
+      if (active) setAdvisorStatus(status);
     });
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Quick Action Buttons corresponding to the 8 required AI capabilities
@@ -437,6 +448,7 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               <input
                 type="text"
                 aria-label="رسالتك إلى المستشار القرآني"
+                maxLength={500}
                 value={userQuery}
                 onChange={e => setUserQuery(e.target.value)}
                 placeholder="اسأل المستشار القرآني عن طرائق الحفظ، ضبط المتشابهات، أو تنظيم وقتك..."
@@ -550,20 +562,22 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="number"
+                    aria-label="الوقت المتاح يومياً بالدقائق"
                     min={15}
                     max={180}
-                    value={availableDailyMinutes}
-                    onChange={e => setAvailableDailyMinutes(Number(e.target.value))}
+                    value={dailyMinutesInput}
+                    onChange={e => setDailyMinutesInput(e.target.value)}
+                    onBlur={() => setDailyMinutesInput(String(safeDailyMinutes))}
                     className="w-28 min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 font-mono tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
                   />
                   {[15, 30, 45, 60, 90].map(mins => (
                     <button
                       key={mins}
                       type="button"
-                      onClick={() => setAvailableDailyMinutes(mins)}
-                      aria-pressed={availableDailyMinutes === mins}
+                      onClick={() => setDailyMinutesInput(String(mins))}
+                      aria-pressed={Number(dailyMinutesInput) === mins}
                       className={`min-h-11 px-3 py-2 rounded-xl border font-bold font-mono tabular-nums transition-colors ${
-                        availableDailyMinutes === mins
+                        Number(dailyMinutesInput) === mins
                           ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
                           : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#5B6F6B] dark:text-[#CBD5E1] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
                       }`}
@@ -585,13 +599,13 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               <div className="rounded-xl bg-white/80 dark:bg-[#0B132B]/70 px-3.5 py-2.5 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                 <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المدة التقديرية: </span>
                 <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
-                  {Math.round((targetAjza * 20) / Math.max(0.5, availableDailyMinutes / 30))} يوماً
+                  {estimatedDays} يوماً
                 </span>
               </div>
               <div className="rounded-xl bg-white/80 dark:bg-[#0B132B]/70 px-3.5 py-2.5 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
                 <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المقدار اليومي المقترح: </span>
                 <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
-                  {availableDailyMinutes >= 45 ? 'صفحة كاملة' : availableDailyMinutes >= 25 ? 'نصف صفحة' : '3-5 آيات'}
+                  {safeDailyMinutes >= 45 ? 'صفحة كاملة' : safeDailyMinutes >= 25 ? 'نصف صفحة' : '3-5 آيات'}
                 </span>
               </div>
             </div>

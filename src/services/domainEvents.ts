@@ -115,7 +115,7 @@ export function isValidDomainEvent(value: unknown, expectedId?: string): value i
             Number(payload.weakAyahNumber) <= Number(payload.endAyah)));
     case 'test.completed':
       return typeof payload.testResultId === 'string' && payload.testResultId.length > 0 &&
-        ['complete_verse', 'order_words', 'mutashabihat', 'surah_beginnings', 'random_recall', 'bidirectional_recall'].includes(String(payload.testType)) &&
+        ['complete_verse', 'order_words', 'mutashabihat', 'surah_beginnings', 'random_recall', 'bidirectional_recall', 'fill_blank_words'].includes(String(payload.testType)) &&
         isCount(payload.score) && isCount(payload.totalQuestions) &&
         Number(payload.totalQuestions) > 0 && Number(payload.score) <= Number(payload.totalQuestions) &&
         typeof payload.surahName === 'string' && payload.surahName.length > 0 && payload.surahName.length <= 100;

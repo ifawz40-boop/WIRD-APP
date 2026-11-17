@@ -9,7 +9,8 @@ import {
   BookOpen, 
   Check, 
   Compass,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   UserProfile, 
@@ -20,7 +21,8 @@ import {
 import { TOTAL_QURAN_VERSES, TOTAL_QURAN_PAGES, ALL_SURAHS } from '../../data/quranMeta';
 import { NavTabId } from '../layout/Sidebar';
 import { RetentionService } from '../../services/retentionService';
-import { StorageService } from '../../services/storageService';
+import { type EngineGeneratedPlan } from '../../services/planningEngine';
+import { PlanLifecycle } from '../../services/planLifecycle';
 import { loadAyahByCoordinate, getAyahDisplayText } from '../../data/quranDataLoader';
 import { getLocalDateString } from '../../services/unifiedPortionService';
 import { getDailySessionSelection } from '../../services/dailySessionSelection';
@@ -33,21 +35,29 @@ import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 interface DashboardViewProps {
   profile: UserProfile;
   plans: MemorizationPlan[];
+  enginePlans?: EngineGeneratedPlan[];
   revisionItems: RevisionItem[];
   logs: DailyLog[];
   onNavigate: (tab: NavTabId) => void;
   onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
+  onUpdateEnginePlans?: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
+  onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   profile,
   plans,
+  enginePlans = [],
   revisionItems,
   logs,
   onNavigate,
-  onStartSession
+  onStartSession,
+  onUpdateEnginePlans,
+  onToast
 }) => {
   const [dailyPreviewText, setDailyPreviewText] = useState('جارٍ تحميل نص الآية...');
+  const [pendingRecoveryMode, setPendingRecoveryMode] = useState<'shift' | 'light' | 'rebalance' | null>(null);
+  const [isApplyingRecovery, setIsApplyingRecovery] = useState(false);
   // Choose one truthful task from the active plan, due revisions, or next uncovered range.
   const todayStr = getLocalDateString();
   const queueDetails = RetentionService.getDailyRevisionQueueDetails(todayStr);
@@ -71,10 +81,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const selection = getDailySessionSelection(
     plans,
-    StorageService.getEnginePlans(),
+    enginePlans,
     RetentionService.getPortions(),
     todayStr
   );
+
+  const activeEnginePlan = enginePlans.find(p => p.isActive && !p.isPaused);
+  const missedSummary = activeEnginePlan
+    ? PlanLifecycle.detectMissedDays(activeEnginePlan, todayStr)
+    : null;
+
+  const handleApplyMissedRecovery = async () => {
+    if (!activeEnginePlan || !pendingRecoveryMode || !onUpdateEnginePlans || isApplyingRecovery) return;
+    setIsApplyingRecovery(true);
+    try {
+      const outcome =
+        pendingRecoveryMode === 'shift'
+          ? PlanLifecycle.shiftMissedForward(activeEnginePlan, todayStr)
+          : pendingRecoveryMode === 'light'
+          ? PlanLifecycle.scheduleLightRecoveryDay(activeEnginePlan, todayStr)
+          : PlanLifecycle.rebalanceRemainingPlan(activeEnginePlan, todayStr);
+      if (!outcome.changed) {
+        onToast?.(outcome.actionLabelAr, 'info');
+        setPendingRecoveryMode(null);
+        return;
+      }
+      const nextPlans = enginePlans.map(p => (p.id === activeEnginePlan.id ? outcome.plan : p));
+      const saved = await onUpdateEnginePlans(nextPlans);
+      if (saved) {
+        onToast?.(outcome.actionLabelAr, 'success');
+        setPendingRecoveryMode(null);
+      }
+    } finally {
+      setIsApplyingRecovery(false);
+    }
+  };
 
   const selectedPages = selection.kind === 'session'
     ? getPagesForAyahRange(selection.surahNumber, selection.startAyah, selection.endAyah)
@@ -201,6 +242,101 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* 1.5 Missed-Day Recovery Shortcut Alert (when active non-paused plan has missed days) */}
+      {activeEnginePlan && missedSummary?.hasMissedDays && onUpdateEnginePlans && (
+        <section
+          aria-label="تدارك الأيام الفائتة في الخطة"
+          className="wird-card rounded-2xl p-4 sm:p-5 border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/8 dark:bg-[#111F36] space-y-3 text-xs"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                  يوجد {missedSummary.missedDaysCount} {missedSummary.missedDaysCount === 1 ? 'يوم فائت' : 'أيام فائتة'} في خطتك ({activeEnginePlan.title})
+                </h3>
+                <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed tabular-nums">
+                  إجمالي المتبقي تداركه: {missedSummary.missedMemorizationVerses} آية
+                  {missedSummary.missedRevisionTasksCount > 0 ? ` · ${missedSummary.missedRevisionTasksCount} مهام مراجعة` : ''}.
+                  اختر طريقة الاستئناف الأنسب دون فقدان إنجازك السابق:
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('plans')}
+              className="min-h-11 px-3 py-1.5 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:border-[#C59B27] whitespace-nowrap self-start sm:self-center transition-colors"
+            >
+              تفاصيل الجدول
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPendingRecoveryMode('shift')}
+              className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                pendingRecoveryMode === 'shift'
+                  ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                  : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+              }`}
+            >
+              ترحيل الورد بدءاً من اليوم
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingRecoveryMode('light')}
+              className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                pendingRecoveryMode === 'light'
+                  ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                  : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+              }`}
+            >
+              تثبيت ومراجعة خفيفة اليوم
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingRecoveryMode('rebalance')}
+              className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                pendingRecoveryMode === 'rebalance'
+                  ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
+                  : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+              }`}
+            >
+              إعادة توزيع المتبقي
+            </button>
+          </div>
+
+          {pendingRecoveryMode && (
+            <div className="p-3 rounded-xl bg-white dark:bg-[#0B132B]/85 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-[#142421] dark:text-[#F5F1E8] leading-relaxed">
+                {pendingRecoveryMode === 'shift' && 'سيُرحّل جدول الأوراد غير المكتملة للأمام بدءاً من اليوم مع الحفاظ على سجل إنجازك السابق كاملاً.'}
+                {pendingRecoveryMode === 'light' && 'سيُخصص اليوم لتثبيت ومراجعة ما فات دون حفظ جديد، ويُستأنف الحفظ من اليوم الدراسي التالي.'}
+                {pendingRecoveryMode === 'rebalance' && 'سيُعاد توزيع الآيات المتبقية بتوازن على الأيام الدراسية المتاحة نحو تاريخ الختم المستهدف.'}
+              </p>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  disabled={isApplyingRecovery}
+                  onClick={() => setPendingRecoveryMode(null)}
+                  className="min-h-11 px-3 py-1.5 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold"
+                >
+                  تراجع
+                </button>
+                <button
+                  type="button"
+                  disabled={isApplyingRecovery}
+                  onClick={handleApplyMissedRecovery}
+                  className="wird-btn-primary min-h-11 px-4 py-1.5 text-xs font-bold whitespace-nowrap"
+                >
+                  {isApplyingRecovery ? 'جارٍ التحديث...' : 'تأكيد تطبيق الخيار'}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 2. Primary Focus: Clear Distinction Between New Memorization vs. Revision */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -143,7 +143,7 @@ export const AuthService = {
   },
 
   async resendVerificationEmail(user: User): Promise<void> {
-    if (!user) throw new Error('لا يوجد کاربر مسجل حالياً.');
+    if (!user) throw new Error('لا يوجد مستخدم مسجل حالياً.');
     if (sendVerificationStub) {
       await sendVerificationStub(user);
     } else {
@@ -152,7 +152,7 @@ export const AuthService = {
   },
 
   async reloadUserStatus(user: User): Promise<User> {
-    if (!user) throw new Error('لا يوجد کاربر مسجل.');
+    if (!user) throw new Error('لا يوجد مستخدم مسجل.');
     await user.reload();
     return (auth && auth.currentUser) || user;
   },

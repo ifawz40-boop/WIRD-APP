@@ -8,6 +8,7 @@ import { IndexedDbSyncJournal, type JournalMutationInput } from './indexedDbSync
 import { replayJournalProjection, type ProjectionLockRunner } from './journalProjectionReplayer';
 import { StorageService, type JournalProjectionOperation } from './storageService';
 import { cloudSyncCoordinator } from './cloudSyncCoordinator';
+import { commitEnginePlansArchiveRevision } from './enginePlanArchive';
 
 export interface JournaledSnapshotWriteResult {
   success: boolean;
@@ -36,6 +37,29 @@ export interface JournaledSnapshotOptions {
   runExclusive?: ProjectionLockRunner;
   /** Abort a scoped migration if the active account changes while it waits for the journal lock. */
   expectedStorageScope?: string;
+}
+
+function extractEnginePlansRecords(input: JournalMutationInput): EngineGeneratedPlan[] | null {
+  if (input.collection === 'enginePlans' && Array.isArray(input.payload?.records)) {
+    return input.payload.records as EngineGeneratedPlan[];
+  }
+  if (input.collection === 'syncMeta') {
+    const tx = input.payload?.transaction;
+    if (tx && typeof tx === 'object' && !Array.isArray(tx)) {
+      const ops = (tx as Record<string, unknown>).operations;
+      if (Array.isArray(ops)) {
+        const match = ops.find(op =>
+          op && typeof op === 'object' && !Array.isArray(op) &&
+          (op as Record<string, unknown>).collection === 'enginePlans'
+        ) as Record<string, unknown> | undefined;
+        const payload = match?.payload as Record<string, unknown> | undefined;
+        if (payload && Array.isArray(payload.records)) {
+          return payload.records as EngineGeneratedPlan[];
+        }
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -75,7 +99,37 @@ export async function persistJournaledSnapshot(
     };
   }
   if (!scope.startsWith('user:') || typeof indexedDB === 'undefined') {
+    let guestArchiveMeta: { revision: number; fingerprint: string; records: EngineGeneratedPlan[] } | null = null;
+    if (scope === 'guest' && typeof indexedDB !== 'undefined') {
+      const enginePlansRecords = extractEnginePlansRecords(input);
+      if (enginePlansRecords !== null) {
+        try {
+          guestArchiveMeta = await commitEnginePlansArchiveRevision(scope, enginePlansRecords, {
+            journal: options.journal,
+            mutationId: input.mutationId,
+            deferLocalProjection: true
+          });
+        } catch (error) {
+          return {
+            success: false,
+            mode: 'local-only',
+            queued: false,
+            recoveryBlocked: false,
+            recoveredPriorEvents: false,
+            error: error instanceof Error ? error.message : 'تعذر حفظ أرشيف الخطط الذكية محلياً.'
+          };
+        }
+      }
+    }
     const success = localOnlyWrite();
+    if (success && guestArchiveMeta && StorageService.getStorageScope() === scope) {
+      StorageService.setHydratedEnginePlansSnapshot(
+        scope,
+        guestArchiveMeta.records,
+        guestArchiveMeta.revision,
+        guestArchiveMeta.fingerprint
+      );
+    }
     return {
       success,
       mode: 'local-only',
@@ -113,11 +167,31 @@ export async function persistJournaledSnapshot(
         return 'recovered-prior-events' as const;
       }
 
-      await journal.enqueue({ ...input, mutationId: input.mutationId ?? createSecureId() });
+      const mutationId = input.mutationId ?? createSecureId();
+      const enginePlansRecords = extractEnginePlansRecords(input);
+      let archiveMeta: { revision: number; fingerprint: string; records: EngineGeneratedPlan[] } | null = null;
+      if (enginePlansRecords !== null) {
+        archiveMeta = await commitEnginePlansArchiveRevision(scope, enginePlansRecords, {
+          journal,
+          mutationId,
+          journalMutation: { ...input, mutationId },
+          deferLocalProjection: true
+        });
+      } else {
+        await journal.enqueue({ ...input, mutationId });
+      }
       queued = true;
       assertExpectedScope();
       await replayJournalProjection(journal, inlineProjectionLock);
       assertExpectedScope();
+      if (archiveMeta && StorageService.getStorageScope() === scope) {
+        StorageService.setHydratedEnginePlansSnapshot(
+          scope,
+          archiveMeta.records,
+          archiveMeta.revision,
+          archiveMeta.fingerprint
+        );
+      }
       return 'saved' as const;
     });
 

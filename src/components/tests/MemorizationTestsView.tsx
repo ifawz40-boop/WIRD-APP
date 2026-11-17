@@ -10,14 +10,21 @@ import {
   BookOpen,
   Shuffle,
   ArrowUpDown,
-  AlertTriangle
+  AlertTriangle,
+  ListFilter
 } from 'lucide-react';
 import { TestResult, WirdPortion } from '../../types/quran';
+import { ALL_SURAHS } from '../../data/quranMeta';
 import { RetentionService } from '../../services/retentionService';
 import { createSecureId } from '../../services/secureId';
 import { loadSimpleAyahText } from '../../data/quranDataLoader';
 import { generateDynamicTestQuestions } from '../../services/testQuestionGenerator';
-import type { QuestionGenerationResult } from '../../services/testQuestionGenerator';
+import type {
+  GeneratedQuestion,
+  QuestionGenerationResult,
+  TestMode,
+  TestScope
+} from '../../services/testQuestionGenerator';
 import { ReadingDisplaySettingsMenu, useReadingDisplayPreferences } from '../shared/DisplaySettingsMenu';
 import { NARROW_READING_WIDTH_CLASSES } from '../../services/readingDisplayPreferences';
 
@@ -26,7 +33,7 @@ interface MemorizationTestsViewProps {
   onAddVerseToRevision: (surahNumber: number, surahName: string, ayahNumber: number, text: string, notes: string, mutationId: string) => boolean | Promise<boolean>;
 }
 
-type TestType = 'complete_verse' | 'bidirectional_recall' | 'random_recall' | 'mutashabihat';
+type TestType = TestMode;
 
 const ARABIC_OPTION_LETTERS = ['أ', 'ب', 'ج', 'د'];
 
@@ -40,11 +47,20 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     resetPreferences: resetDisplayPreferences,
   } = useReadingDisplayPreferences('tests');
   const [selectedTestType, setSelectedTestType] = useState<TestType>('complete_verse');
+  const [scope, setScope] = useState<TestScope>('all');
+  const [scopeSurahNumber, setScopeSurahNumber] = useState<number>(() => {
+    const portions = RetentionService.getPortions();
+    return portions[0]?.surahNumber || 67;
+  });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [missedQuestions, setMissedQuestions] = useState<GeneratedQuestion[]>([]);
+  const [savedMissedKeys, setSavedMissedKeys] = useState<Set<string>>(new Set());
+  const [isSavingBatchMissed, setIsSavingBatchMissed] = useState(false);
+  const [batchMissedFeedback, setBatchMissedFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const [weakVerseFeedback, setWeakVerseFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const [testSaveError, setTestSaveError] = useState<string | null>(null);
   const [pendingTestResult, setPendingTestResult] = useState<TestResult | null>(null);
@@ -71,8 +87,16 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     setIsAnswered(false);
     setScore(0);
     setIsFinished(false);
+    setMissedQuestions([]);
+    setSavedMissedKeys(new Set());
+    setBatchMissedFeedback(null);
     const portions = RetentionService.getPortions();
-    generateDynamicTestQuestions(selectedTestType, portions as WirdPortion[])
+    const weakVerses = RetentionService.getWeakVerses();
+    generateDynamicTestQuestions(selectedTestType, portions as WirdPortion[], 5, undefined, {
+      scope,
+      surahNumber: scope === 'surah' ? scopeSurahNumber : undefined,
+      weakVerses
+    })
       .then(result => { if (active) setGenerationResult(result); })
       .catch(error => {
         console.error('[WIRD MemorizationTests] Question generation failed:', error);
@@ -85,7 +109,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
       })
       .finally(() => { if (active) setIsGenerating(false); });
     return () => { active = false; };
-  }, [selectedTestType, sessionKey]);
+  }, [selectedTestType, scope, scopeSurahNumber, sessionKey]);
 
   const currentQuestions = generationResult.questions;
   const currentQ = currentQuestions[currentQuestionIndex] || currentQuestions[0];
@@ -97,7 +121,22 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     if (!currentQ) { setDisplayPrompt(''); setDisplayOptions([]); return () => { active = false; }; }
     const resolveDisplayText = async () => {
       let prompt = currentQ.prompt;
-      if (currentQ.promptAyahNumber && currentQ.promptCanonicalText) {
+      if (currentQ.blankSpec && currentQ.targetAyahCanonicalText) {
+        const canonicalWords = currentQ.targetAyahCanonicalText.trim().split(/\s+/).filter(Boolean);
+        const simpleAyah = await loadSimpleAyahText(currentQ.surahNumber, currentQ.blankSpec.ayahNumber);
+        if (simpleAyah) {
+          const simpleWords = simpleAyah.trim().split(/\s+/).filter(Boolean);
+          if (simpleWords.length === canonicalWords.length &&
+              currentQ.blankSpec.startWord + currentQ.blankSpec.wordCount <= simpleWords.length) {
+            const blankedSimple = [
+              ...simpleWords.slice(0, currentQ.blankSpec.startWord),
+              '«......»',
+              ...simpleWords.slice(currentQ.blankSpec.startWord + currentQ.blankSpec.wordCount)
+            ].join(' ');
+            prompt = `في سورة ${currentQ.surahName} (الآية ${currentQ.blankSpec.ayahNumber}) — اختر الكلمات المفقودة لإكمال الآية: «${blankedSimple}»`;
+          }
+        }
+      } else if (currentQ.promptAyahNumber && currentQ.promptCanonicalText) {
         const simpleText = await loadSimpleAyahText(currentQ.surahNumber, currentQ.promptAyahNumber);
         if (!simpleText) throw new Error('Missing Simple prompt text');
         prompt = prompt.replace(currentQ.promptCanonicalText, simpleText);
@@ -108,6 +147,20 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
         const simpleOptions = await Promise.all(currentQ.optionAyahCoordinates.map(coordinate => loadSimpleAyahText(coordinate.surahNumber, coordinate.ayahNumber)));
         if (simpleOptions.some(option => !option)) throw new Error('Missing Simple option text');
         options = simpleOptions as string[];
+      } else if (currentQ.optionWordSpans?.length === options.length) {
+        const canonicalSimplePairs = await Promise.all(
+          currentQ.optionWordSpans.map(async (span, idx) => {
+            const simple = await loadSimpleAyahText(span.surahNumber, span.ayahNumber);
+            if (!simple) return options[idx];
+            const sWords = simple.trim().split(/\s+/).filter(Boolean);
+            const fallbackWordsCount = options[idx].trim().split(/\s+/).filter(Boolean).length;
+            if (span.wordCount === fallbackWordsCount && span.startWord + span.wordCount <= sWords.length) {
+              return sWords.slice(span.startWord, span.startWord + span.wordCount).join(' ');
+            }
+            return options[idx];
+          })
+        );
+        options = canonicalSimplePairs;
       }
       if (active) { setDisplayPrompt(prompt); setDisplayOptions(options); }
     };
@@ -125,6 +178,12 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
 
     if (index === currentQ.correctIndex) {
       setScore(s => s + 1);
+    } else {
+      setMissedQuestions(prev => {
+        const key = `${currentQ.surahNumber}:${currentQ.targetAyahNumber}`;
+        if (prev.some(item => `${item.surahNumber}:${item.targetAyahNumber}` === key)) return prev;
+        return [...prev, currentQ];
+      });
     }
   };
 
@@ -175,6 +234,9 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     setIsAnswered(false);
     setScore(0);
     setIsFinished(false);
+    setMissedQuestions([]);
+    setSavedMissedKeys(new Set());
+    setBatchMissedFeedback(null);
     setWeakVerseFeedback(null);
     setTestSaveError(null);
     setPendingTestResult(null);
@@ -196,13 +258,25 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
     resetQuizState(false);
   };
 
+  const handleSwitchScope = (nextScope: TestScope) => {
+    if (isModeSwitchLocked) return;
+    setScope(nextScope);
+    resetQuizState(false);
+  };
+
+  const getTestModeArabicLabel = (type: TestType): string => {
+    switch (type) {
+      case 'complete_verse': return 'إكمال الآية التالية';
+      case 'bidirectional_recall': return 'الآية السابقة والتالية';
+      case 'random_recall': return 'اختبار عشوائي من المحفوظ';
+      case 'fill_blank_words': return 'إكمال الكلمات المفقودة';
+      case 'mutashabihat': return 'المتشابهات اللفظية';
+    }
+  };
+
   const handleAddCurrentToWeakVerses = async () => {
     if (weakVerseSaveInFlightRef.current || isSavingWeakVerse) return;
-    const notes = `تعثر في اختبار: ${
-      selectedTestType === 'complete_verse' ? 'إكمال الآية التالية' :
-      selectedTestType === 'bidirectional_recall' ? 'الآية السابقة والتالية' :
-      selectedTestType === 'random_recall' ? 'اختبار عشوائي من المحفوظ' : 'المتشابهات اللفظية'
-    }`;
+    const notes = `تعثر في اختبار: ${getTestModeArabicLabel(selectedTestType)}`;
     const actionKey = [selectedTestType, currentQ.surahNumber, currentQ.targetAyahNumber, notes].join('|');
     const mutationId = weakVerseMutationIdsRef.current.get(actionKey) || 'weak-' + createSecureId();
     weakVerseMutationIdsRef.current.set(actionKey, mutationId);
@@ -214,7 +288,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
         currentQ.surahNumber,
         currentQ.surahName,
         currentQ.targetAyahNumber,
-        currentQ.options[currentQ.correctIndex],
+        currentQ.targetAyahCanonicalText || currentQ.options[currentQ.correctIndex],
         notes,
         mutationId
       );
@@ -224,13 +298,56 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
       weakVerseSaveInFlightRef.current = false;
       setIsSavingWeakVerse(false);
     }
-    if (saved) weakVerseMutationIdsRef.current.delete(actionKey);
+    if (saved) {
+      weakVerseMutationIdsRef.current.delete(actionKey);
+      setSavedMissedKeys(prev => new Set(prev).add(`${currentQ.surahNumber}:${currentQ.targetAyahNumber}`));
+    }
     setWeakVerseFeedback({
       message: saved
         ? `تم تسجيل الآية ${currentQ.targetAyahNumber} من سورة ${currentQ.surahName} في قائمة الالتباس والمراجعة المستعجلة.`
         : 'تعذر تأكيد حفظ الآية المتعثرة. إذا كانت العملية في سجل الاستعادة فحدّث الصفحة قبل إعادة المحاولة.',
       success: saved
     });
+  };
+
+  const handleSaveAllMissedToWeakVerses = async () => {
+    if (isSavingBatchMissed || missedQuestions.length === 0) return;
+    setIsSavingBatchMissed(true);
+    setBatchMissedFeedback(null);
+    let savedCount = 0;
+    const newlySaved = new Set(savedMissedKeys);
+    try {
+      for (const q of missedQuestions) {
+        const key = `${q.surahNumber}:${q.targetAyahNumber}`;
+        if (newlySaved.has(key)) continue;
+        const notes = `تعثر في اختبار (${getTestModeArabicLabel(selectedTestType)})`;
+        const actionKey = [selectedTestType, q.surahNumber, q.targetAyahNumber, notes].join('|');
+        const mutationId = weakVerseMutationIdsRef.current.get(actionKey) || 'weak-' + createSecureId();
+        weakVerseMutationIdsRef.current.set(actionKey, mutationId);
+        const ok = await onAddVerseToRevision(
+          q.surahNumber,
+          q.surahName,
+          q.targetAyahNumber,
+          q.targetAyahCanonicalText || q.options[q.correctIndex],
+          notes,
+          mutationId
+        );
+        if (ok) {
+          weakVerseMutationIdsRef.current.delete(actionKey);
+          newlySaved.add(key);
+          savedCount++;
+        }
+      }
+      setSavedMissedKeys(newlySaved);
+      setBatchMissedFeedback({
+        success: savedCount > 0 || newlySaved.size === missedQuestions.length,
+        message: savedCount > 0
+          ? `تمت إضافة ${savedCount} آية متعثرة إلى مركز المراجعة والتثبيت المستعجل.`
+          : 'جميع الآيات المتعثرة في هذه النتيجة مسجلة بالفعل أو تعذر تأكيد حفظها.'
+      });
+    } finally {
+      setIsSavingBatchMissed(false);
+    }
   };
 
   const questionCardPadding =
@@ -270,8 +387,8 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           </p>
         </div>
 
-        {/* Test Type 4 Tabs */}
-        <div role="group" aria-label="نوع الاختبار" className="grid grid-cols-2 md:grid-cols-4 gap-2.5 text-xs font-semibold">
+        {/* Test Type 5 Tabs */}
+        <div role="group" aria-label="نوع الاختبار" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 text-xs font-semibold">
           <button
             type="button"
             aria-pressed={selectedTestType === 'complete_verse'}
@@ -303,6 +420,23 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             <div className="font-bold text-xs">الآية السابقة والتالية</div>
             <div className={`text-[10px] font-normal ${selectedTestType === 'bidirectional_recall' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
               الاسترجاع الثنائي
+            </div>
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={selectedTestType === 'fill_blank_words'}
+            onClick={() => handleSwitchTestType('fill_blank_words')}
+            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              selectedTestType === 'fill_blank_words'
+                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
+                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+            }`}
+          >
+            <ListFilter className={`w-4 h-4 ${selectedTestType === 'fill_blank_words' ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
+            <div className="font-bold text-xs">إكمال الكلمات المفقودة</div>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'fill_blank_words' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+              تثبيت المواضع
             </div>
           </button>
 
@@ -341,6 +475,55 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           </button>
         </div>
 
+        {/* Scope Selector Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">نطاق الأسئلة:</span>
+            <div role="group" aria-label="نطاق أسئلة الاختبار" className="inline-flex flex-wrap items-center gap-1.5">
+              {[
+                { id: 'all' as const, label: 'كل المحفوظ' },
+                { id: 'surah' as const, label: 'سورة محددة' },
+                { id: 'weak_priority' as const, label: 'أولوية المتعثرة' }
+              ].map(item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-pressed={scope === item.id}
+                  onClick={() => handleSwitchScope(item.id)}
+                  className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                    scope === item.id
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {scope === 'surah' && (
+            <label className="flex items-center gap-2">
+              <span className="font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] whitespace-nowrap">السورة:</span>
+              <select
+                aria-label="اختيار سورة نطاق الاختبار"
+                value={scopeSurahNumber}
+                onChange={e => {
+                  setScopeSurahNumber(Number(e.target.value));
+                  resetQuizState(false);
+                }}
+                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+              >
+                {ALL_SURAHS.map(s => (
+                  <option key={s.number} value={s.number}>
+                    {s.number}. سورة {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+
         <ReadingDisplaySettingsMenu
           viewLabel="اختبارات الحفظ"
           preferences={displayPreferences}
@@ -374,7 +557,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             <div className="flex justify-between">
               <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">معدل الدقة الإجمالي:</span>
               <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
-                {Math.round((score / currentQuestions.length) * 100)}%
+                {Math.round((score / Math.max(1, currentQuestions.length)) * 100)}%
               </span>
             </div>
             <div className="flex justify-between">
@@ -384,6 +567,55 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
               </span>
             </div>
           </div>
+
+          {missedQuestions.length > 0 && (
+            <div className="max-w-lg mx-auto rounded-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#0B132B]/75 p-4 text-right space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+                  <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                  <span>الآيات التي تحتاج إلى مراجعة وتثبيت ({missedQuestions.length})</span>
+                </div>
+                <button
+                  type="button"
+                  disabled={isSavingBatchMissed || missedQuestions.every(q => savedMissedKeys.has(`${q.surahNumber}:${q.targetAyahNumber}`))}
+                  onClick={handleSaveAllMissedToWeakVerses}
+                  className="min-h-11 px-3.5 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] text-white dark:text-[#0B132B] text-xs font-bold disabled:opacity-50 whitespace-nowrap transition-colors"
+                >
+                  {isSavingBatchMissed
+                    ? 'جارٍ الحفظ...'
+                    : missedQuestions.every(q => savedMissedKeys.has(`${q.surahNumber}:${q.targetAyahNumber}`))
+                    ? 'تم حفظ جميع المتعثرة'
+                    : 'حفظ الآيات المتعثرة في مركز المراجعة'}
+                </button>
+              </div>
+
+              <ul className="space-y-1.5 text-xs">
+                {missedQuestions.map(q => {
+                  const key = `${q.surahNumber}:${q.targetAyahNumber}`;
+                  const isSavedMissed = savedMissedKeys.has(key);
+                  return (
+                    <li
+                      key={key}
+                      className="flex items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#111F36] px-3 py-2 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15"
+                    >
+                      <span className="font-quran font-bold text-[#142421] dark:text-[#F5F1E8]">
+                        سورة {q.surahName} · الآية {q.targetAyahNumber}
+                      </span>
+                      <span className={`text-[11px] font-semibold ${isSavedMissed ? 'text-[#1C4E46] dark:text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                        {isSavedMissed ? 'مسجلة في المراجعة المستعجلة' : 'بانتظار التثبيت'}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {batchMissedFeedback && (
+                <p role="status" aria-live="polite" className={`text-[11px] font-semibold ${batchMissedFeedback.success ? 'text-[#1C4E46] dark:text-[#E0A96D]' : 'text-rose-600 dark:text-rose-300'}`}>
+                  {batchMissedFeedback.message}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <button

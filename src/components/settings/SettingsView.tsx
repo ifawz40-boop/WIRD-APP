@@ -27,10 +27,29 @@ import {
   RefreshCw,
   Palette,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Pause,
+  Play,
+  Trash2,
+  X,
+  HardDrive,
+  CheckCircle
 } from 'lucide-react';
 import { UserProfile, ReciterId } from '../../types/quran';
-import { RECITERS } from '../../services/audioService';
+import { ALL_SURAHS } from '../../data/quranMeta';
+import { RECITERS, resolveApprovedOfflineReciterId } from '../../services/audioService';
+import { FALLBACK_QURAN_RECITERS } from '../../services/ruqyahAudioService';
+import {
+  buildJuzAudioRanges,
+  estimateAudioDownloadBytes,
+  extractEnginePlanAudioRanges,
+  offlineQuranAudioLibrary,
+  type OfflineAudioJob,
+  type OfflineAudioJobScopeKind,
+  type OfflineAudioLibraryStats,
+  type QuotaPreflightResult
+} from '../../services/offlineQuranAudioLibrary';
+import { type EngineGeneratedPlan } from '../../services/planningEngine';
 import { StorageService } from '../../services/storageService';
 import { RetentionService } from '../../services/retentionService';
 import { useAuth } from '../../context/AuthContext';
@@ -38,11 +57,13 @@ import { useCloudSync } from '../../hooks/useCloudSync';
 import { LocalSyncOutbox } from '../../services/localSyncOutbox';
 import type { ConflictResolutionIntent, RemoteProjectionConflict } from '../../services/indexedDbSyncJournal';
 import { cancelPreparedProjectionConflictResolution, resolveProjectionConflictUsingLocal, resolveProjectionConflictUsingRemote } from '../../services/syncConflictResolutionService';
+import { containsUnsafeFullSnapshotProjection } from '../../services/syncConflictSafety';
 import { getLocalDateString } from '../../services/unifiedPortionService';
 import { importBackupFile } from '../../services/backupPersistence';
 import { loadDemoDataJournaled } from '../../services/demoDataPersistence';
 import { getWirdOfflinePackageStatus, prepareWirdForOffline, type OfflinePackageStatus, type OfflinePreparationProgress } from '../../services/offlinePreparationService';
 import { getOfflineStorageStatus, requestOfflineStoragePersistence, type OfflineStorageStatus } from '../../services/offlineStorageService';
+import { PWAInstallAction } from '../shared/OfflineStatusControls';
 import { WirdAvatar } from '../brand/WirdAvatar';
 import { BrandDesignShowcase } from '../brand/BrandDesignShowcase';
 
@@ -55,8 +76,18 @@ function formatConflictSnapshotValue(value: string | null): string {
   }
 }
 
+function formatBytesLabel(bytes: number): string {
+  if (bytes <= 0) return '0 ك.ب';
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} ك.ب`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} م.ب`;
+}
+
 interface SettingsViewProps {
   profile: UserProfile;
+  enginePlans?: EngineGeneratedPlan[];
+  isStandalone?: boolean;
+  hasInstallPrompt?: boolean;
+  onInstallPwa?: () => void;
   onUpdateProfile: (profile: UserProfile) => void;
   onSaveProfile: (profile: UserProfile) => Promise<boolean>;
   onResetAllData: () => Promise<boolean>;
@@ -67,6 +98,10 @@ interface SettingsViewProps {
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   profile,
+  enginePlans = [],
+  isStandalone = false,
+  hasInstallPrompt = false,
+  onInstallPwa,
   onUpdateProfile,
   onSaveProfile,
   onResetAllData,
@@ -179,17 +214,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
-  const handleExportBackup = () => {
-    const backupJson = StorageService.exportFullBackup();
-    const blob = new Blob([backupJson], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `wird-quran-backup-${getLocalDateString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    if (onToast) {
-      onToast("تم تصدير ملف النسخة الاحتياطية بنجاح (ملف نصي JSON غير مشفر)", "success");
+  const handleExportBackup = async () => {
+    try {
+      const backupJson = await StorageService.exportFullBackupVerified();
+      const blob = new Blob([backupJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wird-quran-backup-${getLocalDateString()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      if (onToast) {
+        onToast("تم تصدير ملف النسخة الاحتياطية بنجاح (ملف نصي JSON غير مشفر)", "success");
+      }
+    } catch (error) {
+      onToast?.(
+        error instanceof Error ? error.message : 'تعذر تصدير النسخة الاحتياطية الموثقة.',
+        'error'
+      );
     }
   };
 
@@ -353,6 +395,104 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [offlinePackageStatus, setOfflinePackageStatus] = useState<OfflinePackageStatus | null>(null);
   const [isCheckingOfflineStatus, setIsCheckingOfflineStatus] = useState(false);
   const [offlineStorageStatus, setOfflineStorageStatus] = useState<OfflineStorageStatus | null>(null);
+
+  // Offline Audio Library State
+  const profileApprovedReciter = resolveApprovedOfflineReciterId(profile.preferredReciter);
+  const [audioDownloadReciter, setAudioDownloadReciter] = useState<string>(
+    () => profileApprovedReciter || FALLBACK_QURAN_RECITERS[0].id
+  );
+  const [audioScopeKind, setAudioScopeKind] = useState<OfflineAudioJobScopeKind>('surah');
+  const [audioSurahNumber, setAudioSurahNumber] = useState<number>(67);
+  const [audioJuzNumber, setAudioJuzNumber] = useState<number>(30);
+  const [audioPlanId, setAudioPlanId] = useState<string>(() => enginePlans[0]?.id || '');
+  const [audioJobs, setAudioJobs] = useState<OfflineAudioJob[]>([]);
+  const [audioLibraryStats, setAudioLibraryStats] = useState<OfflineAudioLibraryStats>({
+    jobCount: 0,
+    availableFilesCount: 0,
+    totalBytes: 0
+  });
+  const [audioQuotaPreflight, setAudioQuotaPreflight] = useState<QuotaPreflightResult | null>(null);
+  const [isEnqueuingAudioJob, setIsEnqueuingAudioJob] = useState(false);
+
+  const selectedAudioPlan = enginePlans.find(p => p.id === audioPlanId) || enginePlans[0] || null;
+  const targetAudioPayload = (() => {
+    if (audioScopeKind === 'juz') {
+      const ranges = buildJuzAudioRanges(audioJuzNumber);
+      const totalAyahs = ranges.reduce((s, r) => s + (r.endAyah - r.startAyah + 1), 0);
+      return { ranges, totalAyahs, labelAr: `الجزء ${audioJuzNumber}` };
+    }
+    if (audioScopeKind === 'plan' && selectedAudioPlan) {
+      const ranges = extractEnginePlanAudioRanges(selectedAudioPlan);
+      const totalAyahs = ranges.reduce((s, r) => s + (r.endAyah - r.startAyah + 1), 0);
+      return { ranges, totalAyahs, labelAr: `خطة: ${selectedAudioPlan.title}` };
+    }
+    const meta = ALL_SURAHS[audioSurahNumber - 1] || ALL_SURAHS[66];
+    return {
+      ranges: [{ surahNumber: meta.number, startAyah: 1, endAyah: meta.versesCount }],
+      totalAyahs: meta.versesCount,
+      labelAr: `سورة ${meta.name}`
+    };
+  })();
+
+  const refreshOfflineAudioState = async () => {
+    try {
+      const [jobs, stats] = await Promise.all([
+        offlineQuranAudioLibrary.listJobs(),
+        offlineQuranAudioLibrary.getStats()
+      ]);
+      setAudioJobs(jobs);
+      setAudioLibraryStats(stats);
+    } catch {
+      // IndexedDB may be unavailable in restricted contexts
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+    void offlineQuranAudioLibrary.reconcileLibrary()
+      .catch(() => undefined)
+      .then(() => { if (active) return refreshOfflineAudioState(); });
+    const unsubscribe = offlineQuranAudioLibrary.subscribe(() => {
+      if (active) void refreshOfflineAudioState();
+    });
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void offlineQuranAudioLibrary.preflightQuota(audioDownloadReciter, targetAudioPayload.totalAyahs)
+      .then(result => { if (active) setAudioQuotaPreflight(result); })
+      .catch(() => { if (active) setAudioQuotaPreflight(null); });
+    return () => { active = false; };
+  }, [audioDownloadReciter, targetAudioPayload.totalAyahs]);
+
+  const handleStartOfflineAudioDownload = async () => {
+    if (isEnqueuingAudioJob || targetAudioPayload.ranges.length === 0) return;
+    setIsEnqueuingAudioJob(true);
+    try {
+      const storageStatus = await requestOfflineStoragePersistence().catch(() => null);
+      if (storageStatus) setOfflineStorageStatus(storageStatus);
+      const job = await offlineQuranAudioLibrary.enqueueDownloadJob({
+        scopeKind: audioScopeKind,
+        labelAr: targetAudioPayload.labelAr,
+        reciterId: audioDownloadReciter,
+        ranges: targetAudioPayload.ranges,
+        autoStart: true
+      });
+      await refreshOfflineAudioState();
+      onToast?.(`تمت جدولة تنزيل «${job.labelAr}» (${job.totalItems} آية) للاستماع دون إنترنت.`, 'success');
+    } catch (error) {
+      onToast?.(
+        error instanceof Error ? error.message : 'تعذر بدء تحميل التلاوة للأوفلاين.',
+        'error'
+      );
+    } finally {
+      setIsEnqueuingAudioJob(false);
+    }
+  };
 
   const handlePrepareOffline = async () => {
     if (isPreparingOffline) return;
@@ -598,6 +738,263 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
         )}
+
+        {/* PWA Install Prompt Card + Capability Matrix */}
+        <PWAInstallAction
+          variant="card"
+          isStandalone={Boolean(isStandalone)}
+          hasInstallPrompt={Boolean(hasInstallPrompt)}
+          onInstall={() => onInstallPwa?.()}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div className="rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 space-y-1.5">
+            <div className="font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>يعمل دون إنترنت 100%</span>
+            </div>
+            <p className="text-[11px] text-[#5B6F6B] dark:text-[#CBD5E1] leading-5">
+              المصحف كاملاً بالنص المعتمد، جلسات الحفظ والربط التراكمي، مركز المراجعة والآيات المتعثرة، الاختبارات، خطط الحفظ، والتلاوات المحمّلة أدناه.
+            </p>
+          </div>
+          <div className="rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 space-y-1.5">
+            <div className="font-bold text-[#9A7512] dark:text-[#E0A96D] flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <span>يتطلب اتصالاً بالإنترنت</span>
+            </div>
+            <p className="text-[11px] text-[#5B6F6B] dark:text-[#CBD5E1] leading-5">
+              تنزيل تلاوات جديدة أو الاستماع لقارئ بث مباشر (مثل الغامدي)، التفاسير غير المحفوظة مسبقاً، صفحات المصحف المصوّرة الجديدة، والمزامنة السحابية.
+            </p>
+          </div>
+        </div>
+
+        {/* Bounded Offline Audio Library Manager */}
+        <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+              <HardDrive className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <span>مدير تحميل التلاوات للعمل أوفلاين</span>
+            </div>
+            <span className="text-[11px] font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+              المحفوظ: {audioLibraryStats.availableFilesCount} آية ({formatBytesLabel(audioLibraryStats.totalBytes)})
+            </span>
+          </div>
+
+          {!profileApprovedReciter && (
+            <div className="rounded-xl border border-[#C59B27]/40 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 p-3 text-[11px] text-[#142421] dark:text-[#F5F1E8]">
+              تنبيه الترخيص: قارئك المختار حالياً في الإعدادات متاح للبث المباشر أونلاين فقط؛ اختر قارئاً من القائمة المعتمدة أدناه لتنزيل التلاوات أوفلاين.
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="font-semibold text-[#142421] dark:text-[#F5F1E8]">القارئ المعتمد للتنزيل الأوفلاين:</span>
+              <select
+                aria-label="اختيار القارئ لتحميل التلاوات أوفلاين"
+                value={audioDownloadReciter}
+                onChange={e => setAudioDownloadReciter(e.target.value)}
+                className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]"
+              >
+                {FALLBACK_QURAN_RECITERS.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.name} ({r.bitrate} kbps)
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex flex-col gap-1">
+              <span className="font-semibold text-[#142421] dark:text-[#F5F1E8]">نطاق التحميل:</span>
+              <div role="group" aria-label="نطاق تحميل التلاوات أوفلاين" className="grid grid-cols-3 gap-1.5">
+                {[
+                  { id: 'surah' as const, label: 'سورة كاملة' },
+                  { id: 'juz' as const, label: 'جزء كامل' },
+                  { id: 'plan' as const, label: 'الخطة النشطة' }
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-pressed={audioScopeKind === item.id}
+                    disabled={item.id === 'plan' && enginePlans.length === 0}
+                    onClick={() => setAudioScopeKind(item.id)}
+                    className={`min-h-11 px-2 py-1.5 rounded-xl font-bold border transition-colors whitespace-nowrap disabled:opacity-45 ${
+                      audioScopeKind === item.id
+                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                        : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+            {audioScopeKind === 'surah' && (
+              <label className="flex flex-col gap-1">
+                <span className="font-semibold text-[#142421] dark:text-[#F5F1E8]">اختر السورة:</span>
+                <select
+                  aria-label="السورة المطلوب تحميل تلاوتها أوفلاين"
+                  value={audioSurahNumber}
+                  onChange={e => setAudioSurahNumber(Number(e.target.value))}
+                  className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]"
+                >
+                  {ALL_SURAHS.map(s => (
+                    <option key={s.number} value={s.number}>
+                      {s.number}. سورة {s.name} ({s.versesCount} آية)
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            {audioScopeKind === 'juz' && (
+              <label className="flex flex-col gap-1">
+                <span className="font-semibold text-[#142421] dark:text-[#F5F1E8]">اختر الجزء:</span>
+                <select
+                  aria-label="الجزء المطلوب تحميل تلاوته أوفلاين"
+                  value={audioJuzNumber}
+                  onChange={e => setAudioJuzNumber(Number(e.target.value))}
+                  className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]"
+                >
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map(j => (
+                    <option key={j} value={j}>الجزء {j}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            {audioScopeKind === 'plan' && (
+              <label className="flex flex-col gap-1">
+                <span className="font-semibold text-[#142421] dark:text-[#F5F1E8]">اختر الخطة:</span>
+                <select
+                  aria-label="الخطة المطلوب تحميل تلاواتها أوفلاين"
+                  value={selectedAudioPlan?.id || ''}
+                  onChange={e => setAudioPlanId(e.target.value)}
+                  className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]"
+                >
+                  {enginePlans.map(p => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 rounded-xl px-3 py-2">
+              <div className="text-[11px] tabular-nums">
+                <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                  {targetAudioPayload.labelAr} · {targetAudioPayload.totalAyahs} آية
+                </div>
+                <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  الحجم التقديري: ~{formatBytesLabel(estimateAudioDownloadBytes(audioDownloadReciter, targetAudioPayload.totalAyahs))}
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isEnqueuingAudioJob || !isOnline || targetAudioPayload.ranges.length === 0 || audioQuotaPreflight?.allowed === false}
+                onClick={handleStartOfflineAudioDownload}
+                className="wird-btn-primary min-h-11 px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50"
+              >
+                <Download className="w-4 h-4 shrink-0" />
+                <span>{isEnqueuingAudioJob ? 'جارٍ التجهيز...' : 'بدء التحميل للأوفلاين'}</span>
+              </button>
+            </div>
+          </div>
+
+          {audioQuotaPreflight && !audioQuotaPreflight.allowed && (
+            <p role="alert" className="text-[11px] text-rose-700 dark:text-rose-300 font-semibold">
+              {audioQuotaPreflight.messageAr}
+            </p>
+          )}
+
+          {audioJobs.length > 0 && (
+            <div className="space-y-2.5" aria-label="قائمة مهام تحميل التلاوات">
+              {audioJobs.map(job => {
+                const percent = Math.round((job.completedItems / Math.max(1, job.totalItems)) * 100);
+                const statusLabel =
+                  job.status === 'completed' ? 'مكتمل ومتاح أوفلاين' :
+                  job.status === 'downloading' ? 'جارٍ التحميل' :
+                  job.status === 'paused' ? 'متوقف مؤقتاً' :
+                  job.status === 'partial' ? 'مكتمل جزئياً' :
+                  job.status === 'failed' ? 'تعذر الاكتمال' :
+                  job.status === 'cancelled' ? 'ملغى' : 'في الانتظار';
+                const reciterName = FALLBACK_QURAN_RECITERS.find(r => r.id === job.reciterId)?.name || job.reciterId;
+
+                return (
+                  <div
+                    key={job.jobId}
+                    className="rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/75 p-3.5 space-y-2.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                          {job.labelAr} · <span className="font-normal text-[#5B6F6B] dark:text-[#8B9E9B]">{reciterName}</span>
+                        </div>
+                        <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                          {statusLabel} · {job.completedItems}/{job.totalItems} آية ({percent}%) · {formatBytesLabel(job.totalBytes)}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {job.status === 'downloading' && (
+                          <button
+                            type="button"
+                            onClick={() => void offlineQuranAudioLibrary.pauseJob(job.jobId)}
+                            className="min-h-11 px-3 py-1.5 rounded-lg border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1 text-[11px] whitespace-nowrap"
+                          >
+                            <Pause className="w-3.5 h-3.5" />
+                            <span>إيقاف مؤقت</span>
+                          </button>
+                        )}
+                        {(job.status === 'paused' || job.status === 'partial' || job.status === 'failed' || job.status === 'queued') && (
+                          <button
+                            type="button"
+                            disabled={!isOnline}
+                            onClick={() => void offlineQuranAudioLibrary.startOrResumeJob(job.jobId)}
+                            className="min-h-11 px-3 py-1.5 rounded-lg bg-[#1C4E46] dark:bg-[#1E4A47] text-white font-bold inline-flex items-center gap-1 text-[11px] whitespace-nowrap disabled:opacity-50"
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                            <span>{job.status === 'failed' ? 'إعادة المحاولة' : 'استكمال'}</span>
+                          </button>
+                        )}
+                        {(job.status === 'downloading' || job.status === 'queued' || job.status === 'paused') && (
+                          <button
+                            type="button"
+                            onClick={() => void offlineQuranAudioLibrary.cancelJob(job.jobId)}
+                            className="min-h-11 px-3 py-1.5 rounded-lg border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#5B6F6B] dark:text-[#8B9E9B] font-bold inline-flex items-center gap-1 text-[11px] whitespace-nowrap"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>إلغاء</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          aria-label={`حذف حزمة التلاوة ${job.labelAr}`}
+                          onClick={() => void offlineQuranAudioLibrary.deleteJob(job.jobId)}
+                          className="min-h-11 min-w-11 px-2.5 py-1.5 rounded-lg text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold inline-flex items-center justify-center text-[11px]"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                      role="progressbar"
+                      aria-label={`تقدم تحميل ${job.labelAr}`}
+                      aria-valuemin={0}
+                      aria-valuemax={Math.max(1, job.totalItems)}
+                      aria-valuenow={job.completedItems}
+                      className="h-1.5 rounded-full bg-[#E6DFCE] dark:bg-[#162744] overflow-hidden"
+                    >
+                      <div className="h-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-all" style={{ width: `${percent}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* 1.6 Cloud Sync & Data Protection Card */}
@@ -720,7 +1117,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <div className="space-y-2">
                     {conflictDetails.map(conflict => {
                       const localMutations = conflict.localMutations || [];
-                      const canKeepLocal = conflict.event.operation === 'upsert' &&
+                      const isUnsafeFullSnapshot = containsUnsafeFullSnapshotProjection(conflict.event);
+                      const canKeepLocal = !isUnsafeFullSnapshot &&
+                        conflict.event.operation === 'upsert' &&
                         conflict.event.collection !== 'syncMeta' &&
                         conflict.event.collection !== 'ruqyahProgress' &&
                         localMutations.length > 0 &&
@@ -787,7 +1186,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                                 يوجد قرار محفوظ لم يُعتمد بعد ({conflictIntents[conflict.event.eventId]?.decision}). لن يتجاوزه الإسقاط التلقائي.
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                {preparedIntent?.decision === 'use-remote' ? (
+                                {!isUnsafeFullSnapshot && conflict.event.operation === 'upsert' && preparedIntent?.decision === 'use-remote' ? (
                                   <button
                                     type="button"
                                     onClick={() => void handleUseRemoteConflict(conflict.event.eventId)}
@@ -796,7 +1195,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                                   >
                                     إعادة محاولة اعتماد النسخة السحابية
                                   </button>
-                                ) : preparedIntent?.decision === 'keep-local' ? (
+                                ) : !isUnsafeFullSnapshot && canKeepLocal && preparedIntent?.decision === 'keep-local' ? (
                                   <button
                                     type="button"
                                     onClick={() => void handleKeepLocalConflict(conflict.event.eventId)}
@@ -807,7 +1206,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                                   </button>
                                 ) : (
                                   <p className="text-[11px] text-[#9A7512] dark:text-[#E0A96D]">
-                                    قرار الدمج المحفوظ لا يملك منفذاً تنفيذياً بعد؛ ألغِه فقط إذا راجعت الأدلة وتأكدت من ذلك.
+                                    قرار الدمج المحفوظ لا يملك منفذاً تنفيذياً آمناً لهذا النوع من التعارض؛ ألغِه فقط إذا راجعت الأدلة وتأكدت من ذلك.
                                   </p>
                                 )}
                                 <button
@@ -823,6 +1222,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           ) : conflict.event.operation === 'tombstone' ? (
                             <p className="text-[11px] text-[#9A7512] dark:text-[#E0A96D]" role="status">
                               لا يمكن اختيار النسخة البعيدة لحدث حذف قبل اكتمال سياسة Tombstones؛ لم نفعّل هذا المسار.
+                            </p>
+                          ) : isUnsafeFullSnapshot ? (
+                            <p className="text-[11px] text-[#9A7512] dark:text-[#E0A96D] leading-5" role="status">
+                              هذا التعارض يشمل قائمة الآيات المتعثرة أو سجل النشاط اليومي المحفوظ كلقطة كاملة؛ لم نفعّل خيارات الاستبدال الكلي هنا لأن اختيار نسخة واحدة قد يفقد تغييرات جهاز آخر، وما زالت جميع الأدلة محفوظة.
                             </p>
                           ) : (
                             <div className="space-y-2">

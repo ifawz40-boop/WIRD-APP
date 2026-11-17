@@ -1,30 +1,28 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-16 (Google AI Studio workspace)  
+**Last reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Primary branch:** `main`  
 **Last refreshed GitHub/Vercel checkpoint (2026-11-14):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Verified AI Studio workspace state — 2026-11-16
+## Verified AI Studio workspace state — 2026-11-17
 
 - **Deployment & GitHub status:** Workspace edits live in Google AI Studio only. **NOT committed/pushed to GitHub** and **NOT deployed to Vercel** (explicit owner directive; Vercel Production sync flags remain unchanged).
 - **Canonical Firebase target verified (`firebase-applet-config.json`):** `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`.
-- **Workspace fixes implemented:**
-  - `package.json`: `"build": "NODE_ENV=production vite build"` (prevents container `NODE_ENV=development` from emitting `jsxDEV` and disabling `import.meta.env.PROD` Service Worker registration).
-  - `src/main.tsx`: register `/sw.js` cleanly when DOM is ready (`DOMContentLoaded` / immediate fallback) rather than stalling behind external font stylesheets on `window.load`.
-  - `public/sw.js`: move `precacheQuranFont(cache)` after shell precache as non-blocking `void precacheQuranFont(cache)` so unreachable font CDNs do not stall SW activation.
-  - `api/advisor.ts`: clean TypeScript narrowing (`userData` -> `metrics`) for `tsc --noEmit`.
-  - `server.ts`: fixed Arabic rate-limit typo (`يرجى الانتار قليلاً` -> `يرجى الانتظار قليلاً`).
-  - `src/components/brand/BrandDesignShowcase.tsx`: added `copyTimerRef` cleanup on re-trigger and unmount.
-  - Updated E2E tests (`e2e/plans-ux.spec.ts`, `e2e/ruqyah-ux.spec.ts`, `e2e/memorization-audio-repeat.spec.ts`, `e2e/memorization-session-display-ux.spec.ts`, `e2e/progress-ux.spec.ts`, `e2e/wird-navigation-tafsir.spec.ts`) to match current UI/queue state (`MockAudio` `__wirdPlayedUrls` & active-track lookup).
+- **Workspace fixes implemented (2026-11-16 + 2026-11-17):**
+  - Build & PWA: `package.json` (`NODE_ENV=production vite build`), `src/main.tsx` (DOM-ready `/sw.js` registration), `public/sw.js` (non-blocking font precaching after shell precache).
+  - Security & Backend narrowing: `api/advisor.ts` TypeScript `metrics` narrowing; `server.ts` Arabic rate-limit copy typo fix.
+  - Client Services & Auth: `src/services/authService.ts` fixed `'کاربر'` -> `'مستخدم'` in null-user guards; `src/services/advisorService.ts` added `buildBoundedChatPayload()` (clamping long multi-turn histories cleanly under the 4,096-byte server payload cap) and `try/finally` `clearTimeout` cleanup on all 3 `fetch` calls.
+  - UI & Reliability Fixes: `src/components/settings/SettingsView.tsx` wired `containsUnsafeFullSnapshotProjection()` into the sync conflict UI so `weakVerses`/`activityEvents` (and unsafe `syncMeta` transactions) fail closed with status guidance instead of exposing doomed replacement buttons; `src/components/assistant/QuranAdvisorView.tsx` added unmount guard for `checkStatus()`, `maxLength={500}` on chat input, and string-backed calculator input preventing `NaN يوماً` and using `604` pages for full Quran (`30` ajza); `src/components/plans/PlanningEngineWizard.tsx` guarded `paceQuantity` against `0`/`NaN` during typing/preview; `src/components/ruqyah/RuqyahView.tsx` tracked and cleaned up `autoAdvanceTimerRef` on re-trigger, category change, and unmount; `src/components/brand/BrandDesignShowcase.tsx` cleaned up `copyTimerRef`.
+  - Regression & E2E Tests: added `buildBoundedChatPayload` 4KB wire-size check in `src/tests/geminiSecurity.test.ts`, null-user Arabic error assertion in `src/tests/firebaseAuth.test.ts`, calculator `NaN`/604-page E2E regression in `e2e/advisor-ux.spec.ts`, and earlier E2E selector/queue alignment across 6 spec files.
 - **Executed local workspace checks (final state):**
   - `npx tsc --noEmit`: **PASS**
-  - `npm test`: **PASS** (`731 PASSED | 0 FAILED`)
-  - `npm run build`: **PASS** (`2.19s`, zero chunks > 500 kB, 9-asset shell manifest + 252 lazy assets, `/sw.js` active and non-`jsxDEV`)
+  - `npm test`: **PASS** (`733 PASSED | 0 FAILED`)
+  - `npm run build`: **PASS** (`2.07s`, zero chunks > 500 kB, 9-asset shell manifest + 252 lazy assets, `/sw.js` active and non-`jsxDEV`)
   - `npm run mushaf:validate-coverage`: **PASS** (`604` Hafs/KFGQPC SVG pages, `6236` unique local ayahs mapped once)
-  - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS**
-  - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files): **PASS** (`162` passed, `2` intentionally skipped, `0` failed; includes offline shell reload and 252-asset full offline preparation)
+  - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS** (production + dev Express servers)
+  - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files across batches): **PASS** (`164` passed, `2` intentionally skipped, `0` failed; includes offline shell reload, 252-asset offline preparation, and calculator `NaN` regression)
   - `npm run test:firestore-rules`: **BLOCKED** in AI Studio container (no Java runtime: `Could not spawn java -version`).
   - `npm run lint` + `compile_applet`: run as final build/lint verification pass.
 

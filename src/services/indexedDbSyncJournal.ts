@@ -4,7 +4,7 @@ import { isValidRuqyahProgressSnapshot, isValidRuqyahProgressSnapshotV2, mergeRu
 import type { SyncCollection, SyncOperation } from './localSyncOutbox';
 
 const DATABASE_NAME = 'wird-sync-journal';
-const DATABASE_VERSION = 9;
+const DATABASE_VERSION = 10;
 const STORE_EVENTS = 'events';
 const STORE_OUTBOX = 'outbox';
 const STORE_ACKNOWLEDGEMENTS = 'acknowledgements';
@@ -12,6 +12,9 @@ const STORE_METADATA = 'metadata';
 const STORE_REMOTE_INBOX = 'remoteInbox';
 const STORE_PROJECTION_CONFLICTS = 'projectionConflicts';
 const STORE_CONFLICT_RESOLUTION_INTENTS = 'conflictResolutionIntents';
+export const STORE_ENGINE_PLAN_ARCHIVE_HEADS = 'enginePlanArchiveHeads';
+export const STORE_ENGINE_PLAN_ARCHIVE_MANIFESTS = 'enginePlanArchiveManifests';
+export const STORE_ENGINE_PLAN_ARCHIVE_RECORDS = 'enginePlanArchiveRecords';
 const MAX_PENDING_MUTATIONS = 1000;
 const MAX_ACKNOWLEDGED_IDS = 5000;
 const MAX_REMOTE_REVISION_RECORDS = 10_000;
@@ -442,6 +445,23 @@ export class IndexedDbSyncJournal {
           metadataStore = database.createObjectStore(STORE_METADATA, { keyPath: 'uid' });
         } else {
           metadataStore = upgradeTransaction.objectStore(STORE_METADATA);
+        }
+        if (!database.objectStoreNames.contains(STORE_ENGINE_PLAN_ARCHIVE_HEADS)) {
+          database.createObjectStore(STORE_ENGINE_PLAN_ARCHIVE_HEADS, { keyPath: 'scopeKey' });
+        }
+        if (!database.objectStoreNames.contains(STORE_ENGINE_PLAN_ARCHIVE_MANIFESTS)) {
+          const archiveManifests = database.createObjectStore(
+            STORE_ENGINE_PLAN_ARCHIVE_MANIFESTS,
+            { keyPath: ['scopeKey', 'revision'] }
+          );
+          archiveManifests.createIndex('scopeKey', 'scopeKey', { unique: false });
+        }
+        if (!database.objectStoreNames.contains(STORE_ENGINE_PLAN_ARCHIVE_RECORDS)) {
+          const archiveRecords = database.createObjectStore(
+            STORE_ENGINE_PLAN_ARCHIVE_RECORDS,
+            { keyPath: ['scopeKey', 'revision', 'recordId'] }
+          );
+          archiveRecords.createIndex('scopeRevision', ['scopeKey', 'revision'], { unique: false });
         }
 
         // Version 1 events had no monotonic sequence. Backfill only for the
@@ -3334,6 +3354,258 @@ export class IndexedDbSyncJournal {
       eventCount: (events as JournalEvent[]).length,
       projectionCursor
     };
+  }
+
+  /** Expose the opened v10 IndexedDB instance for same-database archive stores. */
+  async getArchiveDatabase(): Promise<IDBDatabase> {
+    return this.openDatabase();
+  }
+
+  /**
+   * Atomically commit an Engine Plans archive revision together with an optional
+   * journal event + outbox entry in a single IndexedDB readwrite transaction.
+   */
+  async commitEnginePlanArchiveTransaction<TRecord extends { id: string }>(params: {
+    scopeKey: string;
+    expectedRevision: number | null;
+    newRevision: number;
+    manifest: Record<string, unknown>;
+    records: TRecord[];
+    head: Record<string, unknown>;
+    journalMutation?: JournalMutationInput;
+  }): Promise<{ archiveCommitted: boolean; journalResult?: JournalEnqueueResult }> {
+    const { scopeKey, expectedRevision, newRevision, manifest, records, head, journalMutation } = params;
+    const isUserScope = scopeKey.startsWith('user:');
+    const database = await this.openDatabase();
+
+    let preparedJournal: {
+      uid: string;
+      key: string;
+      mutationId: string;
+      operation: SyncOperation;
+      payload: Record<string, unknown>;
+      fingerprint: string;
+      now: number;
+    } | null = null;
+
+    if (journalMutation) {
+      if (!isUserScope) {
+        throw new Error('لا يمكن إنشاء حدث مزامنة لنطاق ضيف.');
+      }
+      const uid = activeUid();
+      if (`user:${uid}` !== scopeKey) {
+        throw new Error('نطاق الأرشيف لا يطابق الحساب النشط.');
+      }
+      if (!ALLOWED_COLLECTIONS.has(journalMutation.collection)) {
+        throw new Error('مجموعة مزامنة غير مسموح بها.');
+      }
+      if (typeof journalMutation.documentId !== 'string' || !journalMutation.documentId ||
+          byteLength(journalMutation.documentId) > 1500 || journalMutation.documentId.includes('/') ||
+          /[\u0000-\u001f]/.test(journalMutation.documentId)) {
+        throw new Error('معرّف مستند المزامنة غير صالح.');
+      }
+      const operation = journalMutation.operation ?? 'upsert';
+      if (operation !== 'upsert') {
+        throw new Error('عملية المزامنة غير مسموح بها للأرشيف.');
+      }
+      const payloadJson = JSON.stringify(journalMutation.payload);
+      if (!payloadJson || byteLength(payloadJson) > maxMutationPayloadBytes(journalMutation.collection, journalMutation.payload)) {
+        throw new Error('بيانات العملية أكبر من الحد المسموح به أو غير قابلة للتسلسل.');
+      }
+      const mutationId = journalMutation.mutationId ?? createSecureId();
+      if (!validMutationId(mutationId)) throw new Error('معرّف العملية غير صالح.');
+      const payload = JSON.parse(payloadJson) as Record<string, unknown>;
+      const now = journalMutation.nowMs ?? Date.now();
+      if (!Number.isSafeInteger(now) || now < 0) throw new Error('وقت إنشاء العملية غير صالح.');
+      preparedJournal = {
+        uid,
+        key: `${uid}:${mutationId}`,
+        mutationId,
+        operation,
+        payload,
+        fingerprint: fingerprintMutation(journalMutation.collection, journalMutation.documentId, operation, payload),
+        now
+      };
+    }
+
+    const storeNames = [
+      STORE_ENGINE_PLAN_ARCHIVE_HEADS,
+      STORE_ENGINE_PLAN_ARCHIVE_MANIFESTS,
+      STORE_ENGINE_PLAN_ARCHIVE_RECORDS,
+      ...(preparedJournal ? [STORE_EVENTS, STORE_OUTBOX, STORE_ACKNOWLEDGEMENTS, STORE_METADATA] : [])
+    ];
+
+    return new Promise((resolve, reject) => {
+      let transaction: IDBTransaction;
+      try {
+        transaction = database.transaction(storeNames, 'readwrite');
+      } catch (error) {
+        reject(normalizeError(error));
+        return;
+      }
+
+      const headsStore = transaction.objectStore(STORE_ENGINE_PLAN_ARCHIVE_HEADS);
+      const manifestsStore = transaction.objectStore(STORE_ENGINE_PLAN_ARCHIVE_MANIFESTS);
+      const recordsStore = transaction.objectStore(STORE_ENGINE_PLAN_ARCHIVE_RECORDS);
+
+      let currentHead: { scopeKey?: string; committedRevision?: number } | undefined;
+      let pendingRecord: JournalOutboxEntry | undefined;
+      let acknowledgedRecord: AcknowledgementRecord | undefined;
+      let deviceMetadata: DeviceMetadata | undefined;
+      let pendingCount = 0;
+
+      let readsRemaining = preparedJournal ? 5 : 1;
+      let failure: Error | undefined;
+      let resolvedJournalResult: JournalEnqueueResult | undefined;
+
+      const finishReads = () => {
+        readsRemaining--;
+        if (readsRemaining !== 0 || failure) return;
+
+        const actualHeadRev = currentHead ? Number(currentHead.committedRevision ?? 0) : 0;
+        if (expectedRevision !== null && actualHeadRev !== expectedRevision) {
+          // Allow idempotent journal retry if same mutation & fingerprint already pending/ack
+          if (preparedJournal && pendingRecord && pendingRecord.fingerprint === preparedJournal.fingerprint) {
+            resolvedJournalResult = { status: 'already_pending', mutation: { ...pendingRecord } };
+            return;
+          }
+          if (preparedJournal && acknowledgedRecord && acknowledgedRecord.fingerprint === preparedJournal.fingerprint) {
+            resolvedJournalResult = { status: 'already_acknowledged', mutationId: preparedJournal.mutationId };
+            return;
+          }
+          failure = new Error('تغير إصدار أرشيف الخطط أثناء التعديل؛ أعد تحميل الحالة وأعد المحاولة.');
+          transaction.abort();
+          return;
+        }
+
+        if (preparedJournal) {
+          if (pendingRecord) {
+            if (pendingRecord.fingerprint !== preparedJournal.fingerprint) {
+              failure = new Error('معرّف المزامنة مستخدم مسبقاً لبيانات مختلفة؛ أوقفنا العملية.');
+              transaction.abort();
+              return;
+            }
+            resolvedJournalResult = { status: 'already_pending', mutation: { ...pendingRecord } };
+            return;
+          }
+          if (acknowledgedRecord) {
+            if (acknowledgedRecord.fingerprint !== preparedJournal.fingerprint) {
+              failure = new Error('معرّف المزامنة أُقرّ سابقاً بمحتوى مختلف؛ أوقفنا العملية.');
+              transaction.abort();
+              return;
+            }
+            resolvedJournalResult = { status: 'already_acknowledged', mutationId: preparedJournal.mutationId };
+            return;
+          }
+          if (pendingCount >= MAX_PENDING_MUTATIONS) {
+            failure = new Error('وصل صندوق المزامنة إلى سعته الآمنة؛ لم نحذف أي عملية معلقة.');
+            transaction.abort();
+            return;
+          }
+
+          const eventsStore = transaction.objectStore(STORE_EVENTS);
+          const outboxStore = transaction.objectStore(STORE_OUTBOX);
+          const metadataStore = transaction.objectStore(STORE_METADATA);
+          const deviceId = deviceMetadata?.deviceId || createSecureId();
+          const sequence = deviceMetadata?.nextSequence ?? 1;
+          const revisionKey = journalMutation!.collection + ':' + journalMutation!.documentId;
+          const cachedRevision = deviceMetadata?.remoteRevisions?.[revisionKey];
+          const baseRevision = cachedRevision?.revision ?? 0;
+
+          const mutation: JournalOutboxEntry = {
+            key: preparedJournal.key,
+            uid: preparedJournal.uid,
+            eventId: preparedJournal.mutationId,
+            mutationId: preparedJournal.mutationId,
+            collection: journalMutation!.collection,
+            documentId: journalMutation!.documentId,
+            operation: preparedJournal.operation,
+            schemaVersion: 1,
+            clientUpdatedAtMs: preparedJournal.now,
+            deviceId,
+            payload: preparedJournal.payload,
+            queuedAtMs: preparedJournal.now,
+            attemptCount: 0,
+            nextAttemptAtMs: 0,
+            fingerprint: preparedJournal.fingerprint,
+            sequence,
+            baseRevision
+          };
+          const event: JournalEvent = {
+            key: preparedJournal.key,
+            uid: preparedJournal.uid,
+            eventId: preparedJournal.mutationId,
+            mutationId: preparedJournal.mutationId,
+            eventType: 'domain-mutation',
+            collection: journalMutation!.collection,
+            documentId: journalMutation!.documentId,
+            operation: preparedJournal.operation,
+            schemaVersion: 1,
+            clientUpdatedAtMs: preparedJournal.now,
+            createdAtMs: preparedJournal.now,
+            deviceId,
+            payload: preparedJournal.payload,
+            fingerprint: preparedJournal.fingerprint,
+            sequence,
+            baseRevision,
+            projectionRequired: true
+          };
+          eventsStore.add(event);
+          outboxStore.add(mutation);
+          metadataStore.put({
+            ...(deviceMetadata || {}),
+            uid: preparedJournal.uid,
+            deviceId,
+            schemaVersion: 1,
+            nextSequence: sequence + 1,
+            lastProjectedSequence: deviceMetadata?.lastProjectedSequence ?? 0
+          } satisfies DeviceMetadata);
+          resolvedJournalResult = { status: 'queued', mutation: { ...mutation } };
+        }
+
+        // Write immutable archive revision + records + head inside the SAME transaction
+        manifestsStore.put(manifest);
+        for (let ordinal = 0; ordinal < records.length; ordinal++) {
+          const rec = records[ordinal];
+          recordsStore.put({
+            scopeKey,
+            revision: newRevision,
+            ordinal,
+            recordId: rec.id,
+            record: rec,
+            schemaVersion: 1
+          });
+        }
+        headsStore.put(head);
+      };
+
+      const headReq = headsStore.get(scopeKey);
+      headReq.onsuccess = () => {
+        currentHead = headReq.result as { scopeKey?: string; committedRevision?: number } | undefined;
+        finishReads();
+      };
+
+      if (preparedJournal) {
+        const outboxStore = transaction.objectStore(STORE_OUTBOX);
+        const ackStore = transaction.objectStore(STORE_ACKNOWLEDGEMENTS);
+        const metadataStore = transaction.objectStore(STORE_METADATA);
+        const pReq = outboxStore.get(preparedJournal.key);
+        pReq.onsuccess = () => { pendingRecord = pReq.result as JournalOutboxEntry | undefined; finishReads(); };
+        const aReq = ackStore.get(preparedJournal.key);
+        aReq.onsuccess = () => { acknowledgedRecord = aReq.result as AcknowledgementRecord | undefined; finishReads(); };
+        const mReq = metadataStore.get(preparedJournal.uid);
+        mReq.onsuccess = () => { deviceMetadata = mReq.result as DeviceMetadata | undefined; finishReads(); };
+        const cReq = outboxStore.index('uid').count(IDBKeyRange.only(preparedJournal.uid));
+        cReq.onsuccess = () => { pendingCount = cReq.result; finishReads(); };
+      }
+
+      transaction.oncomplete = () => {
+        if (failure) reject(failure);
+        else resolve({ archiveCommitted: true, journalResult: resolvedJournalResult });
+      };
+      transaction.onabort = () => reject(failure || normalizeError(transaction.error || new Error('Engine Plan archive transaction aborted.')));
+      transaction.onerror = () => { /* handled via onabort */ };
+    });
   }
 
   close(): void {

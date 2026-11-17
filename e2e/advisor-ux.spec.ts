@@ -34,4 +34,16 @@ test.describe('WIRD Quran advisor UX', () => {
     await page.getByRole('button', { name: 'حاسبة التخطيط القرآني' }).click();
     await expect(page.getByRole('combobox')).toHaveCSS('min-height', '44px');
   });
+
+  test('planning calculator handles cleared input without NaN and uses 604 pages for full Quran', async ({ page }) => {
+    await page.getByRole('button', { name: 'حاسبة التخطيط القرآني' }).click();
+
+    const minutesInput = page.getByRole('spinbutton', { name: 'الوقت المتاح يومياً بالدقائق' });
+    await minutesInput.fill('');
+    await expect(page.getByText(/يوماً/)).not.toContainText('NaN');
+    await expect(page.getByText('60 يوماً')).toBeVisible();
+
+    await page.getByRole('combobox', { name: 'الهدف القرآني المراد حفظه' }).selectOption('30');
+    await expect(page.getByText('604 يوماً')).toBeVisible();
+  });
 });

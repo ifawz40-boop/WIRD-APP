@@ -17,13 +17,18 @@ import {
   RotateCcw,
   BookText,
   FileImage,
-  Repeat
+  Repeat,
+  AlertTriangle,
+  Link2,
+  Check
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { loadSurahVerses, getAyahWords, loadSimpleAyahText, loadSimpleAyahRange } from '../../data/quranDataLoader';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { Ayah, UserProfile } from '../../types/quran';
-import { formatAyahAudioUrl } from '../../services/audioService';
+import { computeGlobalAyahNumber, formatAyahAudioUrl, getLicensedAyahAudioUrl, resolveApprovedOfflineReciterId } from '../../services/audioService';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
+import { createSecureId } from '../../services/secureId';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
 import {
   getSavedAudioRepeatCount,
@@ -60,9 +65,11 @@ interface MemorizationSessionViewProps {
   mode?: 'memorize' | 'review';
   profile: UserProfile;
   onCompleteSession: (memorizedAyahs: number, reviewedPages: number, minutes: number, taskName: string, mode?: 'memorize' | 'review') => boolean | Promise<boolean>;
+  onAddVerseToRevision?: (surahNumber: number, surahName: string, ayahNumber: number, text: string, notes: string, mutationId: string) => boolean | Promise<boolean>;
   onRangeChange?: (surahNumber: number, startAyah: number, endAyah: number) => void;
   onExit: () => void;
   onProgressChange?: (inProgress: boolean) => void;
+  onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
 
 export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = ({
@@ -72,9 +79,11 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   mode = 'memorize',
   profile,
   onCompleteSession,
+  onAddVerseToRevision,
   onRangeChange,
   onExit,
-  onProgressChange
+  onProgressChange,
+  onToast
 }) => {
   const [surahNumber, setSurahNumber] = useState(initialSurahNumber);
   const [startAyah, setStartAyah] = useState(() => Math.max(1, initialStartAyah));
@@ -121,13 +130,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     [allSurahAyahs, startAyah, endAyah]
   );
 
-  // Pre-cache only the active session's recitation files (bounded in the Service Worker).
+  // Pre-cache only approved licensed active-session recitation files (bounded in SW).
   useEffect(() => {
     if (!sessionAyahs.length || currentAyahIndex % 10 !== 0 || !('serviceWorker' in navigator)) return;
     let cancelled = false;
-    const urls = sessionAyahs.slice(currentAyahIndex, currentAyahIndex + 20).map(ayah =>
-      formatAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter)
-    );
+    const urls = sessionAyahs.slice(currentAyahIndex, currentAyahIndex + 20)
+      .map(ayah => getLicensedAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter))
+      .filter(descriptor => !descriptor.streamOnly)
+      .map(descriptor => descriptor.url);
+    if (!urls.length) return;
     navigator.serviceWorker.ready
       .then(registration => {
         if (cancelled) return;
@@ -252,11 +263,24 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   const [segmentProgress, setSegmentProgress] = useState<{ ayahNumber: number; cycle: number; ayahIteration: number } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const segmentAudioQueueRef = useRef<QuranAudioQueueController | null>(null);
+  const activeObjectUrlRevokersRef = useRef<Set<() => void>>(new Set());
+  const playbackRequestSeqRef = useRef(0);
   const queueAdvanceRef = useRef(false);
   const currentAyahIndexRef = useRef(currentAyahIndex);
   const playbackIterationRef = useRef(1);
   const repeatTargetRef = useRef<number | null>(audioRepeatCount === -1 ? null : audioRepeatCount);
   const completionInProgressRef = useRef(false);
+
+  // Track 3: Interactive Hifz Method (free vs cumulative_linking) & Instant Weak-Verse Capture
+  const [studyMethod, setStudyMethod] = useState<'free' | 'cumulative_linking'>('free');
+  const [cumulativeWindow, setCumulativeWindow] = useState<'from_start' | 'last_5'>('from_start');
+  const [masteredIndices, setMasteredIndices] = useState<Set<number>>(new Set());
+  const [isCumulativePlaying, setIsCumulativePlaying] = useState(false);
+  const [weakMarkedAyahs, setWeakMarkedAyahs] = useState<Set<string>>(new Set());
+  const [isCapturingWeakVerse, setIsCapturingWeakVerse] = useState(false);
+  const [weakCaptureFeedback, setWeakCaptureFeedback] = useState<{ ayahKey: string; message: string; success: boolean } | null>(null);
+  const weakCaptureMutationIdsRef = useRef<Map<string, string>>(new Map());
+  const weakCaptureInFlightRef = useRef(false);
 
   const handlePlaybackRateChange = (rate: PlaybackRate) => {
     const savedRate = savePlaybackRate(rate);
@@ -324,7 +348,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     setSegmentEndIndex(Math.max(0, sessionAyahs.length - 1));
   }, [sessionAyahs.length, surahNumber, startAyah, endAyah]);
 
+  const revokeAllActiveAudioUrls = useCallback(() => {
+    for (const revoke of activeObjectUrlRevokersRef.current) {
+      try { revoke(); } catch { /* ignore */ }
+    }
+    activeObjectUrlRevokersRef.current.clear();
+  }, []);
+
   const handleStopAudio = useCallback(() => {
+    playbackRequestSeqRef.current += 1;
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
@@ -338,10 +370,12 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     segmentAudioQueueRef.current = null;
     setIsSegmentPlaying(false);
     setIsSegmentPaused(false);
+    setIsCumulativePlaying(false);
     setSegmentProgress(null);
     queueAdvanceRef.current = false;
     playbackIterationRef.current = 1;
-  }, []);
+    revokeAllActiveAudioUrls();
+  }, [revokeAllActiveAudioUrls]);
 
   const applySessionRange = useCallback((nextSurah: number, nextStart: number, nextEnd: number) => {
     const meta = ALL_SURAHS[nextSurah - 1] || ALL_SURAHS[66];
@@ -351,6 +385,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     setOutOfRangeNotice(null);
     setCurrentAyahIndex(0);
     setRevealedWordIndices(new Set());
+    setMasteredIndices(new Set());
     setRepeatCount(0);
     setSurahNumber(meta.number);
     setStartAyah(safeStart);
@@ -369,6 +404,18 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     }
   }, [displayPreferences.viewMode]);
 
+  // Progressive masking cue when cumulative_linking method is active in focused view
+  useEffect(() => {
+    if (studyMethod !== 'cumulative_linking' || displayPreferences.viewMode !== 'focused') return;
+    if (repeatCount >= targetRepeats && maskLevel < 3) {
+      setMaskLevel(3);
+    } else if (repeatCount >= Math.max(2, Math.ceil(targetRepeats * 0.7)) && maskLevel < 2) {
+      setMaskLevel(2);
+    } else if (repeatCount >= Math.max(1, Math.ceil(targetRepeats * 0.4)) && maskLevel < 1) {
+      setMaskLevel(1);
+    }
+  }, [studyMethod, displayPreferences.viewMode, repeatCount, targetRepeats, maskLevel]);
+
   useEffect(() => {
     setRepeatCount(0);
     if (queueAdvanceRef.current) {
@@ -378,13 +425,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     handleStopAudio();
   }, [currentAyahIndex, handleStopAudio]);
 
-  // Audio Playback
-  const handleToggleAudio = () => {
+  // Audio Playback (Local-First from Offline Audio Library with Network Fallback)
+  const handleToggleAudio = async () => {
     if (!currentAyah) return;
     segmentAudioQueueRef.current?.stop();
     segmentAudioQueueRef.current = null;
     setIsSegmentPlaying(false);
     setIsSegmentPaused(false);
+    setIsCumulativePlaying(false);
 
     if (isPlaying && audioRef.current) {
       audioRef.current.pause();
@@ -393,16 +441,31 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
+      revokeAllActiveAudioUrls();
       return;
     }
 
-    const url = formatAyahAudioUrl(surahNumber, currentAyah.numberInSurah, profile.preferredReciter);
+    const requestSeq = ++playbackRequestSeqRef.current;
+    const approvedReciterId = resolveApprovedOfflineReciterId(profile.preferredReciter);
+    const globalAyah = computeGlobalAyahNumber(surahNumber, currentAyah.numberInSurah);
+    const fallbackUrl = formatAyahAudioUrl(surahNumber, currentAyah.numberInSurah, profile.preferredReciter);
+    const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+      approvedReciterId,
+      globalAyah,
+      fallbackUrl
+    );
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      resolved.revoke?.();
+      return;
+    }
+    if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
+
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.pause();
     }
 
-    const audio = new Audio(url);
+    const audio = new Audio(resolved.src);
     audio.playbackRate = getSavedPlaybackRate();
     audio.preload = 'auto';
     audioRef.current = audio;
@@ -421,6 +484,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
+      revokeAllActiveAudioUrls();
     };
 
     audio.play().catch(e => {
@@ -431,6 +495,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
+      revokeAllActiveAudioUrls();
     });
 
     attachAyahRepeatHandler(
@@ -444,6 +509,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         audioRef.current = null;
         setIsPlaying(false);
         setIsAudioLoading(false);
+        revokeAllActiveAudioUrls();
       },
       () => {
         if (audioRef.current !== audio) return;
@@ -452,24 +518,40 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         playbackIterationRef.current = 1;
         setIsPlaying(false);
         setIsAudioLoading(false);
+        revokeAllActiveAudioUrls();
       }
     );
   };
 
-  const handleToggleSegmentAudio = () => {
-    const activeQueue = segmentAudioQueueRef.current;
-    if (activeQueue?.getState().active) {
-      if (activeQueue.getState().paused) { activeQueue.resume(); setIsSegmentPaused(false); }
-      else activeQueue.pause();
+  const startRangeQueuePlayback = async (
+    startIdx: number,
+    endIdx: number,
+    options: { cumulativeMode: boolean; returnToIndex?: number }
+  ) => {
+    if (!sessionAyahs.length || startIdx > endIdx) return;
+    handleStopAudio();
+    const requestSeq = ++playbackRequestSeqRef.current;
+    const approvedReciterId = resolveApprovedOfflineReciterId(profile.preferredReciter);
+
+    const tracks = await Promise.all(
+      sessionAyahs.map(async ayah => {
+        const fallbackUrl = formatAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter);
+        const globalAyah = computeGlobalAyahNumber(surahNumber, ayah.numberInSurah);
+        const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+          approvedReciterId,
+          globalAyah,
+          fallbackUrl
+        );
+        if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
+        return { id: String(ayah.number), url: resolved.src };
+      })
+    );
+
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      revokeAllActiveAudioUrls();
       return;
     }
-    if (!sessionAyahs.length || segmentStartIndex > segmentEndIndex) return;
 
-    handleStopAudio();
-    const tracks = sessionAyahs.map(ayah => ({
-      id: String(ayah.number),
-      url: formatAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter)
-    }));
     const controller = new QuranAudioQueueController({
       onTrackChange: (index, cycle, ayahIteration) => {
         if (index !== currentAyahIndexRef.current) {
@@ -483,14 +565,34 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           ayahIteration
         });
       },
-      onPlaying: () => { setIsSegmentPlaying(true); setIsSegmentPaused(false); },
-      onPaused: () => { setIsSegmentPlaying(false); setIsSegmentPaused(true); },
+      onPlaying: () => {
+        setIsSegmentPlaying(true);
+        setIsSegmentPaused(false);
+        setIsCumulativePlaying(options.cumulativeMode);
+      },
+      onPaused: () => {
+        setIsSegmentPlaying(false);
+        setIsSegmentPaused(true);
+      },
       onComplete: () => {
         if (segmentAudioQueueRef.current !== controller) return;
         segmentAudioQueueRef.current = null;
         setIsSegmentPlaying(false);
         setIsSegmentPaused(false);
+        setIsCumulativePlaying(false);
         setSegmentProgress(null);
+        revokeAllActiveAudioUrls();
+        if (options.cumulativeMode && typeof options.returnToIndex === 'number') {
+          setMasteredIndices(prev => {
+            const next = new Set(prev);
+            next.add(options.returnToIndex!);
+            return next;
+          });
+          if (options.returnToIndex < sessionAyahs.length - 1) {
+            queueAdvanceRef.current = false;
+            setCurrentAyahIndex(options.returnToIndex + 1);
+          }
+        }
       },
       onError: error => {
         console.warn('[WIRD Session] Segment audio queue failed:', error);
@@ -498,29 +600,97 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         segmentAudioQueueRef.current = null;
         setIsSegmentPlaying(false);
         setIsSegmentPaused(false);
+        setIsCumulativePlaying(false);
         setSegmentProgress(null);
+        revokeAllActiveAudioUrls();
       }
     });
     segmentAudioQueueRef.current = controller;
     try {
       controller.start({
         tracks,
-        startIndex: segmentStartIndex,
-        endIndex: segmentEndIndex,
-        ayahRepeatCount: normalizeAyahSegmentRepeatCount(audioRepeatCount),
-        repeatCount: segmentRepeatCount === -1 ? null : segmentRepeatCount,
+        startIndex: startIdx,
+        endIndex: endIdx,
+        ayahRepeatCount: options.cumulativeMode ? 1 : normalizeAyahSegmentRepeatCount(audioRepeatCount),
+        repeatCount: options.cumulativeMode ? 1 : (segmentRepeatCount === -1 ? null : segmentRepeatCount),
         playbackRate: getSavedPlaybackRate()
       });
       setIsSegmentPlaying(true);
       setIsSegmentPaused(false);
+      setIsCumulativePlaying(options.cumulativeMode);
     } catch (error) {
       controller.stop();
       segmentAudioQueueRef.current = null;
       setIsSegmentPlaying(false);
       setIsSegmentPaused(false);
+      setIsCumulativePlaying(false);
       setSegmentProgress(null);
+      revokeAllActiveAudioUrls();
       console.warn('[WIRD Session] Could not start segment audio:', error);
     }
+  };
+
+  const handleToggleSegmentAudio = () => {
+    const activeQueue = segmentAudioQueueRef.current;
+    if (activeQueue?.getState().active && !isCumulativePlaying) {
+      if (activeQueue.getState().paused) { activeQueue.resume(); setIsSegmentPaused(false); }
+      else activeQueue.pause();
+      return;
+    }
+    void startRangeQueuePlayback(segmentStartIndex, segmentEndIndex, { cumulativeMode: false });
+  };
+
+  const cumulativeStartIndex = useMemo(
+    () => (cumulativeWindow === 'last_5' ? Math.max(0, currentAyahIndex - 4) : 0),
+    [cumulativeWindow, currentAyahIndex]
+  );
+
+  const handleCumulativeLinkPlayback = () => {
+    if (isCumulativePlaying) {
+      handleStopAudio();
+      return;
+    }
+    void startRangeQueuePlayback(cumulativeStartIndex, currentAyahIndex, {
+      cumulativeMode: true,
+      returnToIndex: currentAyahIndex
+    });
+  };
+
+  const handleCaptureWeakVerse = async () => {
+    if (!currentAyah || !onAddVerseToRevision || weakCaptureInFlightRef.current || isCapturingWeakVerse) return;
+    const ayahKey = `${surahNumber}:${currentAyah.numberInSurah}`;
+    const mutationId = weakCaptureMutationIdsRef.current.get(ayahKey) || `weak-${createSecureId()}`;
+    weakCaptureMutationIdsRef.current.set(ayahKey, mutationId);
+    weakCaptureInFlightRef.current = true;
+    setIsCapturingWeakVerse(true);
+    let saved = false;
+    try {
+      saved = await onAddVerseToRevision(
+        surahNumber,
+        surahMeta.name,
+        currentAyah.numberInSurah,
+        currentAyah.text,
+        `توثيق تعثر أثناء ${mode === 'review' ? 'المراجعة' : 'جلسة الحفظ'}`,
+        mutationId
+      );
+    } catch (error) {
+      console.error('[WIRD Session] Weak verse capture failed:', error);
+    } finally {
+      weakCaptureInFlightRef.current = false;
+      setIsCapturingWeakVerse(false);
+    }
+    if (saved) {
+      weakCaptureMutationIdsRef.current.delete(ayahKey);
+      setWeakMarkedAyahs(prev => new Set(prev).add(ayahKey));
+      onToast?.(`تم توثيق الآية ${currentAyah.numberInSurah} في مركز المراجعة العاجلة دون تعطيل جلستك.`, 'success');
+    }
+    setWeakCaptureFeedback({
+      ayahKey,
+      success: saved,
+      message: saved
+        ? `تم توثيق الآية ${currentAyah.numberInSurah} في المراجعة العاجلة مع استمرار جلستك.`
+        : 'تعذر حفظ الآية المتعثرة الآن؛ أعد المحاولة بعد التأكد من التخزين.'
+    });
   };
 
   useEffect(() => () => {
@@ -531,7 +701,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     }
     segmentAudioQueueRef.current?.stop();
     segmentAudioQueueRef.current = null;
-  }, []);
+    revokeAllActiveAudioUrls();
+  }, [revokeAllActiveAudioUrls]);
 
   const handleExit = () => {
     handleStopAudio();
@@ -1553,6 +1724,171 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Study Method Strip & Instant Weak-Verse Capture */}
+        <div className="wird-card rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3 text-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">أسلوب الحفظ:</span>
+              <div role="group" aria-label="اختيار أسلوب جلسة الحفظ" className="inline-flex items-center gap-1.5">
+                <button
+                  type="button"
+                  aria-pressed={studyMethod === 'free'}
+                  onClick={() => setStudyMethod('free')}
+                  className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                    studyMethod === 'free'
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  }`}
+                >
+                  حفظ حر
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={studyMethod === 'cumulative_linking'}
+                  onClick={() => setStudyMethod('cumulative_linking')}
+                  className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${
+                    studyMethod === 'cumulative_linking'
+                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  }`}
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>الربط التراكمي والمنهجي</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {onAddVerseToRevision && (
+                <button
+                  type="button"
+                  onClick={handleCaptureWeakVerse}
+                  disabled={isCapturingWeakVerse}
+                  className={`min-h-11 px-3.5 py-2 rounded-xl border font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+                    weakMarkedAyahs.has(`${surahNumber}:${currentAyah.numberInSurah}`)
+                      ? 'bg-[#C59B27]/15 dark:bg-[#E0A96D]/20 border-[#C59B27] text-[#9A7512] dark:text-[#E0A96D]'
+                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#C59B27]/40 dark:border-[#E0A96D]/30 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                  }`}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                  <span>
+                    {isCapturingWeakVerse
+                      ? 'جارٍ التوثيق...'
+                      : weakMarkedAyahs.has(`${surahNumber}:${currentAyah.numberInSurah}`)
+                      ? 'مُوثّقة في المراجعة العاجلة'
+                      : 'توثيق تعثر في هذه الآية'}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {weakCaptureFeedback && weakCaptureFeedback.ayahKey === `${surahNumber}:${currentAyah.numberInSurah}` && (
+            <p
+              role="status"
+              aria-live="polite"
+              className={`text-[11px] font-semibold ${weakCaptureFeedback.success ? 'text-[#1C4E46] dark:text-[#E0A96D]' : 'text-rose-600 dark:text-rose-300'}`}
+            >
+              {weakCaptureFeedback.message}
+            </p>
+          )}
+
+          {studyMethod === 'cumulative_linking' && (
+            <div className="pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-[#142421] dark:text-[#F5F1E8]">
+                  <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                    مسار التثبيت والربط:
+                  </span>
+                  <span className="font-mono tabular-nums">
+                    المتقنة {masteredIndices.size}/{sessionAyahs.length}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    aria-pressed={cumulativeWindow === 'from_start'}
+                    onClick={() => setCumulativeWindow('from_start')}
+                    className={`min-h-11 px-2.5 py-1 rounded-lg border text-[11px] font-bold whitespace-nowrap ${
+                      cumulativeWindow === 'from_start'
+                        ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/50 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
+                        : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                    }`}
+                  >
+                    من أول الورد (آية {sessionAyahs[0]?.numberInSurah ?? startAyah})
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={cumulativeWindow === 'last_5'}
+                    onClick={() => setCumulativeWindow('last_5')}
+                    className={`min-h-11 px-2.5 py-1 rounded-lg border text-[11px] font-bold whitespace-nowrap ${
+                      cumulativeWindow === 'last_5'
+                        ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/50 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
+                        : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                    }`}
+                  >
+                    آخر 5 آيات
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                <div className={`p-2.5 rounded-xl border ${repeatCount < Math.ceil(targetRepeats * 0.4) ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                  1. استماع وتكرار ({repeatCount}/{Math.ceil(targetRepeats * 0.4)})
+                </div>
+                <div className={`p-2.5 rounded-xl border ${repeatCount >= Math.ceil(targetRepeats * 0.4) && maskLevel < 3 ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                  2. تسميع بالإخفاء التدرجي ({maskLevel === 0 ? 'مظهرة' : maskLevel === 1 ? '30%' : maskLevel === 2 ? '60%' : '100%'})
+                </div>
+                <div className={`p-2.5 rounded-xl border ${masteredIndices.has(currentAyahIndex) || maskLevel === 3 ? 'border-[#C59B27] bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                  3. الربط التراكمي ({sessionAyahs[cumulativeStartIndex]?.numberInSurah}–{currentAyah.numberInSurah})
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={handleCumulativeLinkPlayback}
+                  disabled={!sessionAyahs.length}
+                  className={`min-h-11 px-4 py-2 rounded-xl font-bold inline-flex items-center gap-2 whitespace-nowrap transition-colors ${
+                    isCumulativePlaying
+                      ? 'bg-[#C59B27] text-[#0B132B]'
+                      : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
+                  }`}
+                >
+                  <Link2 className="w-4 h-4 shrink-0" />
+                  <span>
+                    {isCumulativePlaying
+                      ? 'إيقاف الربط التراكمي'
+                      : `تشغيل الربط التراكمي (الآيات ${sessionAyahs[cumulativeStartIndex]?.numberInSurah ?? startAyah}–${currentAyah.numberInSurah})`}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMasteredIndices(prev => {
+                      const next = new Set(prev);
+                      next.add(currentAyahIndex);
+                      return next;
+                    });
+                    if (currentAyahIndex < sessionAyahs.length - 1) {
+                      handleStopAudio();
+                      setCurrentAyahIndex(prev => prev + 1);
+                    }
+                  }}
+                  className="min-h-11 px-4 py-2 rounded-xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30 bg-white dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D] font-bold inline-flex items-center gap-1.5 whitespace-nowrap hover:border-[#C59B27] transition-colors"
+                >
+                  <Check className="w-4 h-4 shrink-0" />
+                  <span>
+                    {currentAyahIndex < sessionAyahs.length - 1 ? 'إتقان والانتقال للتالية' : 'تسجيل إتقان الآية'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

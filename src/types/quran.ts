@@ -131,7 +131,7 @@ export interface DailyLog {
 export interface TestResult {
   id: string;
   date: string;
-  type: 'complete_verse' | 'order_words' | 'mutashabihat' | 'surah_beginnings' | 'random_recall' | 'bidirectional_recall';
+  type: 'complete_verse' | 'order_words' | 'mutashabihat' | 'surah_beginnings' | 'random_recall' | 'bidirectional_recall' | 'fill_blank_words';
   surahName: string;
   score: number;
   totalQuestions: number;

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { StorageService } from '../../services/storageService';
 import { replayJournalProjection } from '../../services/journalProjectionReplayer';
 import { migrateLegacyPortionsJournaled } from '../../services/backupPersistence';
+import { initializeEnginePlansArchiveForScope } from '../../services/enginePlanArchive';
 import { AuthScreen } from './AuthScreen';
 import { WirdAvatar } from '../brand/WirdAvatar';
 import { WirdBrandLockup } from '../brand/WirdLogo';
@@ -40,6 +41,10 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
         }
         const success = StorageService.setStorageScope(storageScope);
         if (!success) throw new Error('تعذر تثبيت نطاق التخزين الخاص بالحساب.');
+        if (typeof indexedDB !== 'undefined') {
+          await initializeEnginePlansArchiveForScope(storageScope);
+        }
+        if (cancelled || StorageService.getStorageScope() !== storageScope) return;
         if (storageScope.startsWith('user:')) {
           await replayJournalProjection();
         }
@@ -75,6 +80,10 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
     setScopeError(false);
     setScopeErrorMessage('');
     try {
+      if (typeof indexedDB !== 'undefined') {
+        await initializeEnginePlansArchiveForScope(targetScope);
+      }
+      if (StorageService.getStorageScope() !== targetScope) return;
       if (targetScope.startsWith('user:')) await replayJournalProjection();
       if (StorageService.getStorageScope() !== targetScope) return;
       const migration = await migrateLegacyPortionsJournaled();

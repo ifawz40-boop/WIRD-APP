@@ -78,7 +78,7 @@ export async function persistJournaledSessionCompletion(
     { collection: 'profile', documentId: 'main', operation: 'upsert', payload: { profile: activity.profile } }
   );
   if (input.enginePlansSnapshot !== undefined) {
-    if (!Array.isArray(input.enginePlansSnapshot) || input.enginePlansSnapshot.length > 100) {
+    if (!Array.isArray(input.enginePlansSnapshot) || input.enginePlansSnapshot.length > 10000) {
       return { success: false, messageAr: 'بيانات الخطة الذكية غير صالحة؛ لم يتم حفظ الجلسة أو تحديث الخطة.' };
     }
     operations.push({

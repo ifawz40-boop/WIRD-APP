@@ -175,25 +175,32 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
   };
 
   // Handle Export Backup
-  const handleExportBackup = () => {
-    const json = StorageService.exportFullBackup();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `wird_backup_${getLocalDateString()}.json`;
-    a.click();
-    if (revokeTimerRef.current !== null) window.clearTimeout(revokeTimerRef.current);
-    revokeTimerRef.current = window.setTimeout(() => {
-      URL.revokeObjectURL(url);
-      revokeTimerRef.current = null;
-    }, 1000);
-    if (exportSuccessTimerRef.current !== null) window.clearTimeout(exportSuccessTimerRef.current);
-    setIsExportSuccess(true);
-    exportSuccessTimerRef.current = window.setTimeout(() => {
-      setIsExportSuccess(false);
-      exportSuccessTimerRef.current = null;
-    }, 3000);
+  const handleExportBackup = async () => {
+    try {
+      const json = await StorageService.exportFullBackupVerified();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wird_backup_${getLocalDateString()}.json`;
+      a.click();
+      if (revokeTimerRef.current !== null) window.clearTimeout(revokeTimerRef.current);
+      revokeTimerRef.current = window.setTimeout(() => {
+        URL.revokeObjectURL(url);
+        revokeTimerRef.current = null;
+      }, 1000);
+      if (exportSuccessTimerRef.current !== null) window.clearTimeout(exportSuccessTimerRef.current);
+      setIsExportSuccess(true);
+      exportSuccessTimerRef.current = window.setTimeout(() => {
+        setIsExportSuccess(false);
+        exportSuccessTimerRef.current = null;
+      }, 3000);
+    } catch (error) {
+      onToast?.(
+        error instanceof Error ? error.message : 'تعذر تصدير النسخة الاحتياطية الموثقة.',
+        'error'
+      );
+    }
   };
 
   // Handle Import Backup through the same journal-first boundary as Settings.

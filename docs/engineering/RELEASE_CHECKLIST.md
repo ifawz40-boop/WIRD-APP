@@ -1,6 +1,6 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-16 (Google AI Studio workspace; prior GitHub/Vercel snapshot: 2026-11-14 20:16 +02:00)  
+**Last verified:** 2026-11-17 (Google AI Studio workspace; prior GitHub/Vercel snapshot: 2026-11-14 20:16 +02:00)  
 **Current release decision:** BLOCKED (workspace fixes verified locally in AI Studio, NOT pushed to GitHub CI, NOT deployed to Vercel; Firestore Emulator blocked by missing Java in Studio; sync/offline release gates remain open)
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
@@ -22,9 +22,9 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 ## B. CI and build
 
-- [x] PASS (AI Studio workspace 2026-11-16) — `npx tsc --noEmit`, `npm test` (`731 PASSED / 0 FAILED`), `npm run build` (`NODE_ENV=production vite build`, zero chunks > 500 kB, non-`jsxDEV` SW active), `npm run mushaf:validate-coverage` (604 pages / 6,236 ayahs), `npm run smoke:api-imports`, `npm run smoke:server`, and all 18 desktop/mobile Playwright E2E spec files (`162` passed / `2` intentionally skipped / `0` failed).
-- [ ] BLOCKED (AI Studio workspace 2026-11-16) — `npm run test:firestore-rules` cannot run inside AI Studio sandbox due to missing Java runtime (`Could not spawn java -version`); must execute in GitHub CI Quality Gate after push.
-- [ ] NOT VERIFIED — GitHub Quality Gate CI for 2026-11-16 AI Studio workspace modifications (changes are local to Studio and not yet pushed to GitHub).
+- [x] PASS (AI Studio workspace 2026-11-17) — `npx tsc --noEmit`, `npm test` (`733 PASSED / 0 FAILED`), `npm run build` (`NODE_ENV=production vite build`, zero chunks > 500 kB, non-`jsxDEV` SW active), `npm run mushaf:validate-coverage` (604 pages / 6,236 ayahs), `npm run smoke:api-imports`, `npm run smoke:server`, and all 18 desktop/mobile Playwright E2E spec files (`164` passed / `2` intentionally skipped / `0` failed).
+- [ ] BLOCKED (AI Studio workspace 2026-11-17) — `npm run test:firestore-rules` cannot run inside AI Studio sandbox due to missing Java runtime (`Could not spawn java -version`); must execute in GitHub CI Quality Gate after push.
+- [ ] NOT VERIFIED — GitHub Quality Gate CI for 2026-11-16/17 AI Studio workspace modifications (changes are local to Studio and not yet pushed to GitHub).
 - [x] PASS (Historical CI 2026-11-14) — PR #363 run `43632493503` and PR #373 run `43634212804` passed on GitHub Actions; PR #372 merged at `f264e4bdea7496090f60940e9e8db03e2fb15696`.
 - [ ] BLOCKED — several other unmerged candidate PR heads still have runner/log observability issues; assess each exact head independently.
 - [x] PASS (Historical Production 2026-11-14) — Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` reached READY on prior `main` SHA `f264e4bdea7496090f60940e9e8db03e2fb15696` (does NOT include 2026-11-16 Studio changes).
