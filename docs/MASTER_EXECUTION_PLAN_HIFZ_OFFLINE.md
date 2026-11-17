@@ -324,3 +324,12 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 - Quality Gate run 44105033897 (#4452) is active. At latest check, Node runtime verification, Bun setup, frozen install and dependency graph audit all passed; automated test suites were in progress. Remaining gates (604 Mushaf maps, API/audio checks, Firestore Rules, TypeScript, build, server smoke, desktop/mobile Playwright) pending. No merge until final exact-head gate green.
 - Correction to earlier #380 interpretation: its current diff contains one binary file under .aistudio/.../.tempmediaStorage/, not a verified HUKM logo path. Do not merge that temporary artifact. #380's test edits are stale relative to current main in several files; e2e/ruqyah-ux.spec.ts is already identical on main. PR #382 intentionally excludes all #380 test edits and the temporary binary.
 - No production changes or merges.
+
+
+### PR #382 CI live checkpoint — 2026-11-17
+
+- Quality Gate run #4452 (`44105033897`) for PR #382 exact head `c98a31f7a1a9ee41f1489b15609d3c2ccce18e69` / merge ref `cf378fb15af4e9423154c34dbaaf79b13139312d` remains `in_progress`.
+- Completed successfully: Node/Vercel runtime verification, Bun setup, frozen lockfile install, committed dependency graph audit, automated test suites, native TS API imports, approved Quran audio CDN/range checks, Java setup, Firestore Rules Emulator, TypeScript, production build, and server startup smoke.
+- 604 printed Mushaf coordinate map step was skipped by workflow for this lockfile-only change (no Quran map/source path changed); do not describe it as a fresh 604-map pass on this PR.
+- Chromium installed and Node 26 restored successfully; desktop/mobile Playwright smoke is the only remaining active step at this checkpoint. Final run conclusion not yet available. Keep PR #382 Draft/HOLD until it completes successfully.
+- Workflow job-log download returned BlobNotFound, so rely on the visible step conclusions and final job/run status; do not invent test counts.
