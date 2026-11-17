@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   Bookmark,
@@ -75,8 +75,10 @@ const MUSHAF_PAGE_WIDTH_KEY = 'wird.quran.mushafPageWidth.v1';
 const MUSHAF_FULL_WIDTH_KEY = 'wird.quran.mushafFullWidth.v1';
 const MUSHAF_LINE_SPACING_KEY = 'wird.quran.mushafLineSpacing.v1';
 const MUSHAF_UI_SCALE_KEY = 'wird.quran.mushafUiScale.v1';
+const MUSHAF_PAGE_DISPLAY_MODE_KEY = 'wird.quran.pageDisplayMode.v1';
 
 type MushafTextScale = 'comfortable' | 'large' | 'extraLarge';
+type MushafPageDisplayMode = 'single' | 'spread';
 type MushafLineSpacing = 'compact' | 'normal' | 'relaxed';
 
 const MUSHAF_TEXT_SCALE_CLASSES: Record<MushafTextScale, string> = {
@@ -121,6 +123,16 @@ function readMushafUiScale(): number {
     return raw ? clampUiScale(Number(raw), 80, 115) : 100;
   } catch { return 100; }
 }
+
+function readMushafPageDisplayMode(): MushafPageDisplayMode {
+  try { return localStorage.getItem(MUSHAF_PAGE_DISPLAY_MODE_KEY) === 'spread' ? 'spread' : 'single'; }
+  catch { return 'single'; }
+}
+
+function normalizeSpreadStartPage(page: number): number {
+  const clamped = Math.min(604, Math.max(1, page));
+  return clamped % 2 === 0 ? Math.max(1, clamped - 1) : clamped;
+}
 const PAGE_INDEX = QURAN_PAGE_INDEX as unknown as Record<string, PageSegment[]>;
 const JUZ_INDEX = QURAN_JUZ_STARTS as unknown as Record<string, NavigationPoint>;
 const HIZB_INDEX = QURAN_HIZB_QUARTER_STARTS as unknown as Record<string, NavigationPoint>;
@@ -145,7 +157,12 @@ function readBookmarks(): number[] {
 }
 
 export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredReciter, onBack, initialPage, readingKhatma, onMarkPageRead, readingKhatmaError }) => {
-  const [page, setPage] = useState(() => Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage());
+  const [pageDisplayMode, setPageDisplayMode] = useState<MushafPageDisplayMode>(readMushafPageDisplayMode);
+  const [page, setPage] = useState(() => {
+    const requestedPage = Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage();
+    return readMushafPageDisplayMode() === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
+  });
+  const pageStep = pageDisplayMode === 'spread' ? 2 : 1;
   const [pageInput, setPageInput] = useState(String(Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage()));
   const [pageJumpError, setPageJumpError] = useState('');
   const [textScale, setTextScale] = useState<MushafTextScale>(readMushafTextScale);
@@ -175,11 +192,16 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     catch { return 'flow'; }
   });
   const [showHizbPicker, setShowHizbPicker] = useState(false);
-  const [printedPageAyahs, setPrintedPageAyahs] = useState<{ page: number; ayahs: Ayah[] } | null>(null);
+  const [printedPageAyahs, setPrintedPageAyahs] = useState<Record<number, Ayah[]>>({});
+  const handlePrintedPageAyahsResolved = useCallback(({ page: resolvedPage, ayahs: resolvedAyahs }: { page: number; ayahs: Ayah[] }) => {
+    setPrintedPageAyahs(previous => ({ ...previous, [resolvedPage]: resolvedAyahs }));
+  }, []);
   const audioAyahs = readerLayout === 'printed'
-    ? (printedPageAyahs?.page === page ? printedPageAyahs.ayahs : [])
+    ? pageDisplayMode === 'spread'
+      ? [...(printedPageAyahs[page] || []), ...(printedPageAyahs[page + 1] || [])]
+      : (printedPageAyahs[page] || [])
     : ayahs;
-  useEffect(() => { setPrintedPageAyahs(null); }, [page]);
+  useEffect(() => { setPrintedPageAyahs({}); }, [page]);
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
   const autoPlayNextPageRef = useRef(false);
@@ -250,6 +272,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   useEffect(() => {
     try { localStorage.setItem(MUSHAF_UI_SCALE_KEY, String(uiScale)); } catch { /* Reading controls remain usable without storage. */ }
   }, [uiScale]);
+  useEffect(() => {
+    try { localStorage.setItem(MUSHAF_PAGE_DISPLAY_MODE_KEY, pageDisplayMode); } catch { /* Reading controls remain usable without persistence. */ }
+  }, [pageDisplayMode]);
 
   useEffect(() => {
     setSegmentStartIndex(0);
@@ -308,12 +333,12 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsAudioPaused(false);
         setPlayingIndex(null);
         setSegmentPlaybackStatus(null);
-        if (continueAcrossPages && page < 604) {
+        if (continueAcrossPages && page + pageStep <= 604) {
           autoPlayNextPageRef.current = true;
           // Keep the next-page effect from seeing the previous page's ayahs
           // before the page loader has started and replaced them.
           setIsLoading(true);
-          setPage(page + 1);
+          setPage(page + pageStep);
         }
       },
       onError: error => {
@@ -386,8 +411,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     }
   };
 
-  const changePage = (nextPage: number) => {
-    if (!Number.isInteger(nextPage) || nextPage < 1 || nextPage > 604) return;
+  const changePage = (requestedPage: number) => {
+    if (!Number.isInteger(requestedPage) || requestedPage < 1 || requestedPage > 604) return;
+    const nextPage = pageDisplayMode === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
     setPageJumpError('');
     setPageTurnDirection(nextPage > page ? 'next' : 'previous');
     pendingTargetRef.current = null;
@@ -395,6 +421,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     stopAudio();
     setReadingAyah(null);
     setPage(nextPage);
+  };
+
+  const handlePageDisplayModeChange = (mode: MushafPageDisplayMode) => {
+    setPageDisplayMode(mode);
+    if (mode === 'spread') setPage(normalizeSpreadStartPage(page));
   };
 
   const jumpToNavigationPoint = (point: NavigationPoint) => {
@@ -667,24 +698,37 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
           </div>
         </div>
 
+        {readerLayout === 'printed' && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1C4E46]/10 pt-3 dark:border-[#E0A96D]/15">
+            <div>
+              <p className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">طريقة عرض صفحات المصحف</p>
+              <p className="mt-1 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">في وضع الصفحتين تظهر الصفحة ذات الرقم الأصغر على اليمين.</p>
+            </div>
+            <div role="group" aria-label="طريقة عرض صفحات المصحف" className="inline-flex rounded-xl border border-[#1C4E46]/15 bg-[#F2EDE2] p-1 dark:border-[#E0A96D]/25 dark:bg-[#0E1A2F]">
+              <button type="button" aria-pressed={pageDisplayMode === 'single'} onClick={() => handlePageDisplayModeChange('single')} className={`min-h-11 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${pageDisplayMode === 'single' ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>صفحة واحدة</button>
+              <button type="button" aria-pressed={pageDisplayMode === 'spread'} onClick={() => handlePageDisplayModeChange('spread')} className={`min-h-11 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${pageDisplayMode === 'spread' ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>صفحتان متقابلتان</button>
+            </div>
+          </div>
+        )}
+
         {/* Navigation & Audio Controls Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
               disabled={page <= 1}
-              onClick={() => changePage(page - 1)}
+              onClick={() => changePage(page - pageStep)}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               <ChevronRight className="h-4 w-4" /> الصفحة السابقة
             </button>
             <span aria-live="polite" aria-atomic="true" className="text-xs font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] px-3 py-1.5 rounded-lg border border-[#C59B27]/30">
-              {page} / 604
+              {pageDisplayMode === 'spread' ? `${page}–${Math.min(604, page + 1)} / 604` : `${page} / 604`}
             </span>
             <button
               type="button"
-              disabled={page >= 604}
-              onClick={() => changePage(page + 1)}
+              disabled={page + pageStep > 604}
+              onClick={() => changePage(page + pageStep)}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               الصفحة التالية <ChevronLeft className="h-4 w-4" />
@@ -928,17 +972,46 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         const startX = touchStartX.current; touchStartX.current = null;
         if (startX === null || event.changedTouches.length === 0) return;
         const delta = event.changedTouches[0].clientX - startX;
-        if (Math.abs(delta) > 65) changePage(page + (delta > 0 ? -1 : 1));
-      }} aria-label={`صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
+        if (Math.abs(delta) > 65) changePage(page + (delta > 0 ? -pageStep : pageStep));
+      }} aria-label={pageDisplayMode === 'spread' ? `صفحتا المصحف ${page} و${Math.min(604, page + 1)}` : `صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${pageDisplayMode === 'spread' ? 'max-w-7xl overflow-x-auto' : isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
         {readerLayout === 'printed' ? (
-          <QuranMushafFacsimilePage
-            page={page}
-            onAyahsResolved={setPrintedPageAyahs}
-            selectedAyah={readingAyah}
-            onSelectAyah={handleSelectAyah}
-            onFallback={() => selectReaderLayout('flow')}
-            maxWidthClass={isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-5xl' : 'max-w-3xl'}
-          />
+          pageDisplayMode === 'spread' ? (
+            <div className="grid min-w-[640px] grid-cols-2 items-start gap-3" dir="ltr" aria-label="صفحتا المصحف المتقابلتان">
+              <div className="min-w-0" aria-label={`الصفحة اليسرى رقم ${page + 1}`}>
+                {page + 1 <= 604 ? (
+                  <QuranMushafFacsimilePage
+                    page={page + 1}
+                    onAyahsResolved={handlePrintedPageAyahsResolved}
+                    selectedAyah={readingAyah}
+                    onSelectAyah={handleSelectAyah}
+                    onFallback={() => selectReaderLayout('flow')}
+                    maxWidthClass="max-w-full"
+                  />
+                ) : (
+                  <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border border-dashed border-[#C59B27]/35 p-6 text-center text-sm text-[#5B6F6B] dark:text-[#8B9E9B]">لا توجد صفحة تالية في المصحف.</div>
+                )}
+              </div>
+              <div className="min-w-0" aria-label={`الصفحة اليمنى رقم ${page}`}>
+                <QuranMushafFacsimilePage
+                  page={page}
+                  onAyahsResolved={handlePrintedPageAyahsResolved}
+                  selectedAyah={readingAyah}
+                  onSelectAyah={handleSelectAyah}
+                  onFallback={() => selectReaderLayout('flow')}
+                  maxWidthClass="max-w-full"
+                />
+              </div>
+            </div>
+          ) : (
+            <QuranMushafFacsimilePage
+              page={page}
+              onAyahsResolved={handlePrintedPageAyahsResolved}
+              selectedAyah={readingAyah}
+              onSelectAyah={handleSelectAyah}
+              onFallback={() => selectReaderLayout('flow')}
+              maxWidthClass={isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-5xl' : 'max-w-3xl'}
+            />
+          )
         ) : (
           <div className="space-y-0">
         {/* Top Margins of the Sacred Page */}
