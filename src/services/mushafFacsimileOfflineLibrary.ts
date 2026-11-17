@@ -44,10 +44,13 @@ export function hasMushafOfflineQuota(
   return available - reserve >= requiredBytes;
 }
 
-function assertBrowserSupport(): void {
-  if (typeof caches === 'undefined' || typeof fetch !== 'function') {
+function assertCacheSupport(): void {
+  if (typeof caches === 'undefined') {
     throw new Error('هذا المتصفح لا يدعم حفظ صفحات المصحف المصوّر محليًا.');
   }
+}
+
+function assertQuotaEstimateSupport(): void {
   if (typeof navigator === 'undefined' || !navigator.storage ||
       typeof navigator.storage.estimate !== 'function') {
     throw new Error('لا يستطيع المتصفح تقدير مساحة التخزين بأمان؛ لن نبدأ تنزيلًا قد يملأ مساحة الجهاز.');
@@ -83,7 +86,7 @@ async function fetchValidatedPage(page: number, signal?: AbortSignal): Promise<{
 }
 
 async function openPackageCache(): Promise<Cache> {
-  assertBrowserSupport();
+  assertCacheSupport();
   return caches.open(MUSHAF_OFFLINE_CACHE_NAME);
 }
 
@@ -109,6 +112,7 @@ export async function downloadMushafOfflinePackage(
   onProgress?: (progress: MushafOfflinePackageProgress) => void,
   signal?: AbortSignal
 ): Promise<MushafOfflinePackageStatus> {
+  assertQuotaEstimateSupport();
   const cache = await openPackageCache();
   const sampleBytes: number[] = [];
 
