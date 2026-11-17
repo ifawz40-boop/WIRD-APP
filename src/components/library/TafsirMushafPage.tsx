@@ -97,7 +97,10 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
   return (
     <section aria-label={`التفسير الميسر للآيات في ${sourceSideLabel} ${sourcePageNumber}`} className="flex min-h-[50vh] w-full flex-col overflow-hidden rounded-2xl border border-[#C59B27]/35 bg-[#FBF8F0] shadow-inner dark:border-[#E0A96D]/25 dark:bg-[#0D1930]" dir="rtl">
       <header className="border-b border-[#C59B27]/25 bg-[#F3EEDF] px-4 py-3 dark:border-[#E0A96D]/20 dark:bg-[#172640]">
-        <p className="text-[10px] font-bold tracking-wide text-[#8A6914] dark:text-[#E0A96D]">التفسير الميسر</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[10px] font-bold tracking-wide text-[#8A6914] dark:text-[#E0A96D]">التفسير الميسر</p>
+          <span className="text-[10px] font-semibold text-[#5B6F6B] dark:text-[#AAB8B4]">موضع العرض: ص {pageNumber}</span>
+        </div>
         <h3 className="mt-1 text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">تفسير آيات {sourceSideLabel} {sourcePageNumber}</h3>
         <p className="mt-1 text-[10px] text-[#5B6F6B] dark:text-[#AAB8B4]">الصفحة المعروضة هنا تشرح الآيات الموجودة في الصفحة المقابلة.</p>
         {isOfflineReady && <p className="mt-2 text-[10px] font-bold text-emerald-700 dark:text-emerald-300" role="status">التفسير متاح محليًا دون اتصال.</p>}
