@@ -90,6 +90,7 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
         <p className="text-[10px] font-bold tracking-wide text-[#8A6914] dark:text-[#E0A96D]">التفسير الميسر</p>
         <h3 className="mt-1 text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">تفسير آيات {sourceSideLabel} {sourcePageNumber}</h3>
         <p className="mt-1 text-[10px] text-[#5B6F6B] dark:text-[#AAB8B4]">الصفحة المعروضة هنا تشرح الآيات الموجودة في الصفحة المقابلة.</p>
+        {isOfflineReady && <p className="mt-2 text-[10px] font-bold text-emerald-700 dark:text-emerald-300" role="status">التفسير متاح محليًا دون اتصال.</p>}
       </header>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
