@@ -11,7 +11,7 @@ import { CheckCircle2, AlertTriangle, Info, X, Loader2 } from 'lucide-react';
 import { parseRoute, navigateTo, buildRouteHash } from './services/router';
 import { persistJournaledSessionCompletion } from './services/sessionPersistence';
 import { resetAllDataJournaled } from './services/backupPersistence';
-import { getDailySessionSelection } from './services/dailySessionSelection';
+import { findMatchingDueEnginePlanTask, getDailySessionSelection } from './services/dailySessionSelection';
 import { buildWeakVerseFailureTransaction } from './services/weakVerseRecording';
 import { getLocalDateString } from './services/unifiedPortionService';
 import { createSecureId } from './services/secureId';
@@ -428,24 +428,12 @@ export default function App() {
     if (mode === 'memorize' && sessionParams.surahNumber) {
       const currentEnginePlans = StorageService.getEnginePlans();
       const today = getLocalDateString();
-      const matchingEntry = currentEnginePlans
-        .filter(plan => plan.isActive && !plan.isPaused && (!sessionParams.enginePlanId || plan.id === sessionParams.enginePlanId))
-        .flatMap(plan => plan.schedule
-          .filter(day =>
-            day.date <= today &&
-            day.status !== 'completed' &&
-            day.memorizationTask &&
-            !day.memorizationTask.completed &&
-            day.memorizationTask.surahNumber === sessionParams.surahNumber &&
-            day.memorizationTask.startAyah === sessionParams.startAyah &&
-            day.memorizationTask.endAyah === sessionParams.endAyah
-          )
-          .map(day => ({ plan, day, task: day.memorizationTask! })))
-        .sort((a, b) =>
-          a.day.date.localeCompare(b.day.date) ||
-          (a.plan.input?.title || a.plan.title).localeCompare(b.plan.input?.title || b.plan.title, 'ar') ||
-          a.plan.id.localeCompare(b.plan.id)
-        )[0];
+      const matchingEntry = findMatchingDueEnginePlanTask(currentEnginePlans, today, {
+        surahNumber: sessionParams.surahNumber,
+        startAyah: sessionParams.startAyah,
+        endAyah: sessionParams.endAyah,
+        enginePlanId: sessionParams.enginePlanId
+      });
       if (matchingEntry) {
         const { plan, day, task } = matchingEntry;
         const updatedPlan = PlanLifecycle.updateTask(plan, day.id, {
