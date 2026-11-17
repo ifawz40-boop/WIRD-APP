@@ -90,3 +90,13 @@ The feature is not yet approved as the default reader mode. Required remaining g
 - E2E coverage was added for one/two-page switching, left/right order, two-page stepping, preference persistence and offline opening. No local run is claimed; see PR #385 and exact-head CI.
 - Opposite-page Tafsir is intentionally not implemented in this change. It must be a separate task with a complete, source-attributed local corpus and independently controlled Quran/Tafsir side modes.
 
+
+
+## 2026-11-17 — Opposite-page Tafsir mode
+
+- The facing Mushaf spread has separate content selectors for the left and right pages. Both default to Quran; selecting Tafsir on one side forces Quran on the opposite side so the user always has a Quran page to read.
+- Selecting an ayah on the Quran page updates the Tafsir page on the opposite side. The Tafsir page displays all ayahs from that source page and highlights/scrolls to the focused ayah. The direction can be reversed.
+- Tafsir display is backed only by the complete local QuranEnc Arabic al-Muyassar corpus; no online request is made while reading. An incomplete corpus is not displayed.
+- Source key: arabic_moyassar; publisher: King Fahd Complex; catalogue edition V1.0.1 (2026-11-09). See docs/TAFSIR_OFFLINE_SOURCE.md for endpoint, payload, terms and validation.
+- PR #386 adds the download/storage/display path; it remains Draft / NOT VERIFIED until exact-head CI and offline E2E pass.
+
