@@ -867,3 +867,12 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 
 - Follow-up review: the Tafsir side now has previous/next controls beneath each ayah; navigation swaps the reading side back to Quran when crossing into a page currently occupied by Tafsir. Audio is limited to the Quran side when Tafsir is active and covers both pages only when both are Quran. Corrupt stored surahs are invalidated from the manifest so resume can repair them.
 - The downloader also verifies the live QuranEnc Arabic catalogue version before downloading; if the pinned edition is not the current catalogue edition, it refuses to mislabel the data.
+
+
+## 2026-11-17 — Exact-head CI reconciliation
+
+- Current task PR heads: #382 e8ca61cf86b0d49d94783670f76db1c250c7c146; #383 45acc719a90049f1f71606995cb02943ac5e337d; #384 3f59506204e21f702749159333162e80ab2f324d; #385 10529d88e358b35a63c7b41060ffe966141d54e2; #386 d386b1c32f2ea045643ffb0afc1a23594bc0a959.
+- PR #382 run #4461: frozen install succeeds; bun audit fails on picomatch@4.0.7 via vite > tinyglobby > fdir > picomatch, GHSA-fc5q-39xc-vjpf.
+- PR #383 run #4460: bun install --frozen-lockfile fails because main's package manifest/lockfile are out of sync; this is why the #382 lockfile alignment is a prerequisite.
+- PRs #384–#386 have no workflow runs yet because they are stacked on non-main feature branches. Exact-head CI must be run after the parent chain is safely resolved.
+- Advisory research refreshed 2026-11-17: GitHub advisory now reviewed/updated, High CVSS 8.7, affected through 4.0.7, no fixed version stated; npm still lists 4.0.7 as latest. Upstream PR #237 remains open/unmerged; #238 is not a complete fix for every reported pattern. Do not suppress audit or pin an unmerged patch.
