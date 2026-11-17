@@ -175,11 +175,14 @@ function makeStatus(downloadedSurahs: number[], status: OfflineTafsirDownloadSta
 export async function getOfflineTafsirDownloadStatus(): Promise<OfflineTafsirDownloadStatus> {
   const database = await openDatabase();
   const transaction = database.transaction(SURAH_STORE, 'readonly');
-  const records = await requestValue(transaction.objectStore(SURAH_STORE).getAll()) as StoredSurah[];
+  const storedKeys = await requestValue(transaction.objectStore(SURAH_STORE).getAllKeys());
   const manifest = await readManifest(database);
-  const currentVersionRecords = records.filter(record => record.sourceVersion === OFFLINE_TAFSIR_SOURCE.version);
-  const status = manifest?.sourceVersion === OFFLINE_TAFSIR_SOURCE.version ? manifest.status : 'not_downloaded';
-  return makeStatus(currentVersionRecords.map(record => record.surahNumber), status);
+  if (manifest?.sourceVersion !== OFFLINE_TAFSIR_SOURCE.version) {
+    return makeStatus([], 'not_downloaded');
+  }
+  const existingKeys = new Set(storedKeys.map(Number));
+  const verifiedKeys = manifest.downloadedSurahs.filter(surahNumber => existingKeys.has(surahNumber));
+  return makeStatus(verifiedKeys, manifest.status);
 }
 
 export async function getOfflineTafsirForSurah(surahNumber: number): Promise<QuranEncTafsirRow[] | null> {
