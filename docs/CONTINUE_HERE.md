@@ -13,6 +13,8 @@
 | Printed Mushaf spread | #385 | `10529d88e358b35a63c7b41060ffe966141d54e2` | OPEN / Draft / NOT VERIFIED | Vercel Preview for this exact SHA was READY. One-page remains available; facing spread displays lower-numbered page on the right and next page on the left. |
 | Offline Tafsir al-Muyassar / opposite-page mode | #386 | Code-fix commit `3d4bcbaac5e1830faf369125536294a8f8487e02` (later commits on this branch are documentation-only; re-fetch PR #386 for the live exact head). | OPEN / Draft / NOT VERIFIED | Latest Vercel status is FAILED due to account `build-rate-limit`; no GitHub Actions run returned. Do not call this a code build failure or pass. |
 
+**Security advisory follow-up:** re-fetched upstream picomatch PRs #237 and #238. Both remain OPEN/unmerged. PR #238's 2026-11-17 review demonstrated residual exponential cases `+(*)`, `*(*)`, and `+(a*)`; it is not a complete fix. PR #237 is broader but also unreleased/unmerged. Do not pin either as a published safe version or bypass the audit.
+
 **Dependency prerequisite #382:** exact head `e8ca61cf86b0d49d94783670f76db1c250c7c146`; Quality Gate run #4461 fails at `bun audit --audit-level=high` on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366 (High, CVSS 8.7). As of this checkpoint the GitHub advisory states affected through 4.0.7 and no patched version. Do not suppress audit, skip the step, or pin an unmerged/partial upstream patch. #382 must be resolved safely before the exact Quality Gate can pass.
 
 ### Task 4 latest refinements
