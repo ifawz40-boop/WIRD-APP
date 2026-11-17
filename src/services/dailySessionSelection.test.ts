@@ -1,6 +1,7 @@
 import {
   getDailySessionSelection,
   getDueEngineTasks,
+  findMatchingDueEnginePlanTask,
   getNextDueEngineTask,
   getNextPresetMemorizationRange,
   isPresetAutoStartSupported
@@ -105,6 +106,22 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     assert(!due.some(item => item.task.surahNumber === 4 || item.task.surahNumber === 6), 'Future tasks must remain excluded');
     const primary = getDailySessionSelection([], [first, second, third], [], '2026-11-05');
     assert(primary.kind === 'session' && primary.enginePlanId === 'plan-a', 'The primary dashboard session must retain the exact source plan identity');
+  });
+
+  test('Session completion resolves duplicate ayah ranges to the originating plan ID', () => {
+    const first = makeEnginePlan([makeDay('2026-11-05', makeTask(67))], {
+      id: 'plan-a', title: 'الخطة الأولى', input: { title: 'الخطة الأولى' } as EngineGeneratedPlan['input']
+    });
+    const second = makeEnginePlan([makeDay('2026-11-05', makeTask(67))], {
+      id: 'plan-b', title: 'الخطة الثانية', input: { title: 'الخطة الثانية' } as EngineGeneratedPlan['input']
+    });
+    const target = { surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'plan-b' };
+    const exact = findMatchingDueEnginePlanTask([first, second], '2026-11-05', target);
+    assert(exact?.plan.id === 'plan-b', 'A persisted originating plan ID must win when ayah ranges are duplicated');
+    const deterministic = findMatchingDueEnginePlanTask([second, first], '2026-11-05', { ...target, enginePlanId: null });
+    assert(deterministic?.plan.id === 'plan-a', 'Missing plan context falls back to deterministic title/date ordering');
+    const missing = findMatchingDueEnginePlanTask([first, second], '2026-11-05', { ...target, enginePlanId: 'plan-missing' });
+    assert(missing === null, 'An unknown originating plan ID must not update a different plan');
   });
 
   test('All-plan due queue excludes paused, inactive, completed tasks and completed days', () => {
