@@ -36,3 +36,10 @@
 ## Safety
 - Last verified `main` remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`.
 - No merge, Production deploy, Firebase/Vercel settings/secrets changes, or sync-flag activation.
+
+
+## TypeScript follow-up — 2026-11-17
+- Quality Gate #4494 / run `44179010898` on head `e0c7d9d...` completed application validation FAILURE at TypeScript. All 759 unit assertions passed, all 604 Mushaf coordinate maps passed, Firestore Rules Emulator passed (31), but TypeScript rejected the weak-verse navigation prop because `AyahNavigationControls` required the full `Ayah` object while this component only needs canonical coordinates.
+- Corrected the reusable component contract to `Pick<Ayah, 'surahNumber' | 'numberInSurah'>` on commit `6c62465d97e855701217ce2e3b8fe00d0574ba58`. This is the correct narrow type; no dummy Quran text/page/juz fields are fabricated.
+- Current PR #386 head is now `6c62465d97e855701217ce2e3b8fe00d0574ba58`. Re-fetch workflow runs for this exact SHA; a new run was not yet visible at the first poll after the push. Run #4494 does not validate the fix and never reached Playwright because TypeScript stopped the application job.
+- Security audit remains failed on picomatch. No merge/deploy/config changes.
