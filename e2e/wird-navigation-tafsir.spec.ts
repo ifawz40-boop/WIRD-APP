@@ -93,7 +93,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   });
 
   test('Quran study cards expose adjacent ayah controls directly below each ayah', async ({ page }) => {
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح سورة الفاتحة للدراسة' }).click();
 
     const firstAyahCard = page.locator('#study-ayah-1');
@@ -107,7 +107,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   });
 
   test('Mushaf exposes previous and next ayah controls directly below the displayed page', async ({ page }) => {
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
 
     await expect(page.locator('#wird-ayah-1-1')).toBeVisible();
@@ -122,7 +122,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   });
 
   test('printed Mushaf can switch between one page and a right-to-left facing spread', async ({ page }) => {
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
 
@@ -169,7 +169,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
       });
     });
 
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
     await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
@@ -238,7 +238,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
       });
     });
 
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
     await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
@@ -314,7 +314,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
       database.close();
     });
 
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
     await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
@@ -344,7 +344,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
       });
     });
 
-    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
     await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
@@ -391,7 +391,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
 
     try {
       await context.setOffline(true);
-      await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+      await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
       await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
       await expect(page.locator('#wird-ayah-1-1')).toBeVisible({ timeout: 15_000 });
       await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
