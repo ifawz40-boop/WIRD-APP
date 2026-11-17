@@ -55,6 +55,7 @@ import {
 import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { ReadingKhatmaPanel } from './ReadingKhatmaPanel';
 import { QuranText } from '../shared/QuranText';
+import { AyahNavigationControls, getAdjacentAyahCoordinate } from '../shared/AyahNavigationControls';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { QuranTypographyLab } from './QuranTypographyLab';
 import { WirdIslamicPattern } from '../brand/WirdPattern';
@@ -210,6 +211,26 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     setStudyLayout('continuous');
     setSelectedSurah(surah);
     setActiveTab('study');
+  };
+
+  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number) => {
+    const surah = ALL_SURAHS[surahNumber - 1];
+    if (!surah || ayahNumber < 1 || ayahNumber > surah.versesCount) return;
+    const position = { surahNumber, ayahNumber };
+    setLastReadingPosition(position);
+    setResumeTarget(position);
+    try { localStorage.setItem(LAST_READING_POSITION_KEY, JSON.stringify(position)); } catch { /* Keep navigation available without storage. */ }
+    setStudyLayout('continuous');
+    setSelectedSurah(surah);
+    setActiveTab('study');
+  };
+
+  const handleNavigateAdjacentAyah = (ayah: Ayah, direction: 'previous' | 'next') => {
+    const target = getAdjacentAyahCoordinate(
+      { surahNumber: ayah.surahNumber, ayahNumber: ayah.numberInSurah },
+      direction
+    );
+    if (target) handleNavigateToAyah(target.surahNumber, target.ayahNumber);
   };
 
   // Audio playback uses refs for event-driven repeat state; React state is UI-only.
@@ -1156,6 +1177,18 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       );
                     })}
                   </p>
+                  {(() => {
+                    const activeAyahNumber = playingAyah ?? (lastReadingPosition?.surahNumber === selectedSurah.number ? lastReadingPosition.ayahNumber : 1);
+                    const activeAyah = currentAyahs.find(ayah => ayah.numberInSurah === activeAyahNumber) || currentAyahs[0];
+                    return activeAyah ? (
+                      <div className="mt-4">
+                        <AyahNavigationControls
+                          currentAyah={activeAyah}
+                          onNavigate={handleNavigateToAyah}
+                        />
+                      </div>
+                    ) : null;
+                  })()}
                   <p className="mt-4 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">اضغط نص الآية لفتح تفسيرها، أو زر الاستماع لبدء التلاوة منها.</p>
                 </div>
               ) : (
@@ -1252,6 +1285,13 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                           {ayah.numberInSurah}
                         </span>
                       </p>
+                    </div>
+                    <div className="mt-3 border-t border-[#1C4E46]/10 pt-3 dark:border-[#E0A96D]/15">
+                      <AyahNavigationControls
+                        currentAyah={ayah}
+                        compact
+                        onNavigate={handleNavigateToAyah}
+                      />
                     </div>
                   </article>
                 );
