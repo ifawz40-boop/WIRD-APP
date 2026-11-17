@@ -1,5 +1,19 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { ALL_SURAHS } from '../src/data/quranMeta';
+
+async function mockQuranEncVersion(page: Page) {
+  await page.route(/https:\/\/quranenc\\.com\/api\/v1\/translations\/list\/ar\\?localization=ar/, async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'access-control-allow-origin': '*' },
+      body: JSON.stringify({
+        translations: [{ key: 'arabic_moyassar', version: '1.0.1', last_update: 1794182400 }]
+      })
+    });
+  });
+}
+
 
 test.describe('WIRD navigation and memorization tafsir UX', () => {
   test.beforeEach(async ({ page }) => {
@@ -136,6 +150,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
 
   test('Muyassar can be downloaded locally and shown on either opposite Mushaf page while offline', async ({ page, context }) => {
     const requestedSurahs: number[] = [];
+    await mockQuranEncVersion(page);
     await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
       const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
       requestedSurahs.push(surahNumber);
@@ -190,6 +205,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   test('partial Muyassar download resumes from the first missing surah without redownloading verified data', async ({ page }) => {
     const requestedSurahs: number[] = [];
     let failSurahTwoOnce = true;
+    await mockQuranEncVersion(page);
     await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
       const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
       requestedSurahs.push(surahNumber);
@@ -232,6 +248,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   });
 
   test('incomplete QuranEnc surah payload is rejected and never marked as an offline-ready Tafsir', async ({ page }) => {
+    await mockQuranEncVersion(page);
     await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
       const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
       const payload = [{ sura: surahNumber, aya: 1, translation: 'تفسير غير مكتمل', footnotes: [] }];
