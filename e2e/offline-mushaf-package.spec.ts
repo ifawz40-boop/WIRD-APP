@@ -10,6 +10,8 @@ function makeValidTestPageSvg(): string {
 }
 
 test.describe('WIRD full printed Mushaf offline package', () => {
+  // Keep the dedicated Cache Storage package under test; a controlling service worker would bypass Playwright route mocks.
+  test.use({ serviceWorkers: 'block' });
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
