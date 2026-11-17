@@ -100,3 +100,6 @@ The feature is not yet approved as the default reader mode. Required remaining g
 - Source key: arabic_moyassar; publisher: King Fahd Complex; catalogue edition V1.0.1 (2026-11-09). See docs/TAFSIR_OFFLINE_SOURCE.md for endpoint, payload, terms and validation.
 - PR #386 adds the download/storage/display path; it remains Draft / NOT VERIFIED until exact-head CI and offline E2E pass.
 
+
+- Follow-up refinement: previous/next controls also appear directly beneath each Tafsir ayah. Navigating from a Tafsir ayah targets the canonical Quran page; if that page was the Tafsir side, the two page roles swap so Quran remains the reading surface.
+- When one spread side is Tafsir, audio is restricted to the opposite Quran page; when both sides are Quran, audio follows the full right-to-left spread order. Changing page roles stops the previous audio queue.
