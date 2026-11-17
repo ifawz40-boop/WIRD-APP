@@ -85,6 +85,12 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
 
   useEffect(() => { void loadOfflineTafsir(); }, [loadOfflineTafsir]);
 
+  useEffect(() => {
+    if (!isOfflineReady || !selectedAyah) return;
+    document.getElementById(`wird-tafsir-ayah-${selectedAyah.surahNumber}-${selectedAyah.numberInSurah}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [isOfflineReady, selectedAyah?.surahNumber, selectedAyah?.numberInSurah]);
+
   return (
     <section aria-label={`التفسير الميسر للآيات في ${sourceSideLabel} ${sourcePageNumber}`} className="flex min-h-[50vh] w-full flex-col overflow-hidden rounded-2xl border border-[#C59B27]/35 bg-[#FBF8F0] shadow-inner dark:border-[#E0A96D]/25 dark:bg-[#0D1930]" dir="rtl">
       <header className="border-b border-[#C59B27]/25 bg-[#F3EEDF] px-4 py-3 dark:border-[#E0A96D]/20 dark:bg-[#172640]">
