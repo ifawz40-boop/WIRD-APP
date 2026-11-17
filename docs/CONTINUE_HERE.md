@@ -199,3 +199,23 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - Playwright diagnostics artifact: `playwright-smoke-results`, ID `14338856662`, SHA-256 `978ba2e18968257d614fe2451cfe919fd9eb3ec1c0c4dda0675f1daf3b491c11`. Artifact not yet extracted in this checkpoint.
 - PR #381 tracker is OPEN / Draft; update this tracker only after re-fetching its current head/blob SHAs. Canonical plan: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md`.
 - **Next action:** obtain/extract artifact `14338856662`; inspect `error-context.md` for both scenarios; compare test results on unchanged main and PR #382 merge ref; make a separate minimal fix for proven root cause(s); run exact-head Quality Gate. Keep #382 and #381 Draft/HOLD. No merge or Production/config/secret/sync-flag change.
+
+
+## Continuation checkpoint — 2026-11-17 22:40 +02:00
+
+- Re-fetched GitHub state. Repository default branch remains `main`; latest verified historical baseline in this workstream is `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. Do not assume that baseline is still the live HEAD without re-fetching it.
+- PR #382 exact head `4332ea4cc4b2fa75e99d3e7a5dee22e2391b6f34`: frozen install PASS; full dependency audit FAIL on high-severity `picomatch@4.0.7` ReDoS advisory GHSA-fc5q-39xc-vjpf. Keep the audit blocking; do not suppress, downgrade, or pin an incomplete upstream patch.
+- Quality Gate run #4467 (`44168185637`): unit suites PASS (756 passed), Firestore Rules Emulator PASS (31), native API import PASS, approved audio CDN/range check PASS, but Playwright failed one mobile audio idle-state assertion in `e2e/memorization-audio-repeat.spec.ts` (expected no audio status node after stopping; timed out). This is a real E2E failure, separate from the security audit.
+- PR #383 initial exact-head run #4468 (`44168397712`): unit suites PASS (754 passed), Firestore Rules Emulator PASS (31); TypeScript failed in `src/App.tsx` because optional `day.memorizationTask` was spread into required `ScheduledTaskUnit`, and in `DashboardView.tsx` because the blocked daily-task union has no `enginePlanId`. Build/browser stages were skipped.
+- Applied narrowly scoped source fixes on PR #383 branch `fix/dashboard-multiple-due-plan-tasks-20261117`: App.tsx now captures the already-filtered task as a non-null `task` on the match record and spreads that value; DashboardView forwards `enginePlanId` only for the non-blocked branch. Commits: `a2773fdc55e29975d16bfc0d0dbb4445cfffae4e`, `8c7c5cd47cf186c8da23a2cf5fe3360afb7cd341`.
+- Latest PR #383 head is `8c7c5cd47cf186c8da23a2cf5fe3360afb7cd341`. At checkpoint time, no GitHub Actions run was associated with this new head; Vercel Preview was blocked by Free-plan `build-rate-limit`. Therefore the TS fixes are committed but NOT VERIFIED. Re-fetch workflow runs/status before proceeding.
+- PR #384 head `022c1dd1cd5435f9c54a152e918e815dd601bbf5`, PR #385 head `10529d88e358b35a63c7b41060ffe966141d54e2`, PR #386 head `e3e26f26ac684fb97c0b1cffc636e1e5d5aa12db`; all remain Draft/unverified. PR #385 had a Vercel success context for its exact head; #384/#386 previews were blocked by build-rate-limit. PR #386 has no Actions run because it targets a feature branch and workflow evidence must be rechecked after trigger changes.
+- PR #380 remains stale Draft/HOLD; do not merge. PR #381 remains documentation-only Draft in this checkpoint; keep this tracker updated in subsequent implementation commits.
+- No merge to main, Production deployment, Firebase mutation, Vercel settings/secrets changes, or sync-flag changes were made. No production readiness is claimed.
+
+### Next exact actions
+1. Re-fetch PR #383 and workflow runs for head `8c7c5cd...`; if no run exists, inspect the PR workflow trigger and create a safe main-targeted validation path without merging unverified runtime changes.
+2. Validate the TypeScript fixes, then resolve the mobile audio E2E failure with a behavior-correct assertion/fix (do not weaken the test to hide a real state issue).
+3. Resolve the picomatch advisory only through a complete, reviewed upstream fix or safe dependency graph update; keep `bun audit --audit-level=high` blocking.
+4. Only after parent gates pass, validate #383 on exact head, then #384, #385, #386 in dependency order with full desktop/mobile/offline coverage.
+5. Update this file and `docs/CONTINUE_HERE.md` with exact SHAs, run IDs, failures, and verification results. Merge/publish only after all required gates and user-requested acceptance criteria pass.
