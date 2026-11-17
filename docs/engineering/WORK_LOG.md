@@ -822,3 +822,16 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - **Next action:** Push Studio workspace changes to a dedicated GitHub feature branch/PR and execute GitHub Quality Gate CI (including Firestore Rules Emulator with Java); keep Vercel Production deployment and sync flags unchanged until explicit owner authorization.
 
 
+
+
+## 2026-11-17 — Owner request: local-first Dashboard plans and Quran reader controls
+
+- Owner narrowed current WIRD focus to making the existing application ready for local/offline use and requested four ordered tasks: (1) all active plan due-work on Dashboard, (2) navigation controls directly below ayat across Quran interfaces, (3) one-page/facing-two-page printed Mushaf, and (4) independently selectable opposite-page Tafsir al-Muyassar with Quran/Quran as default.
+- Live main re-fetched: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a.
+- Task 1 source PR: #383, branch fix/dashboard-multiple-due-plan-tasks-20261117. Initial code commit: db0caf373ca70dc0193f3f4e60bb044149803356.
+- Source changes: src/services/dailySessionSelection.ts adds getDueEngineTasks across all active, non-paused engine plans with deterministic ordering and exclusion of future/completed work; src/services/dailySessionSelection.test.ts adds three-plan and exclusion regression cases; src/components/dashboard/DashboardView.tsx displays additional due plan tasks; src/App.tsx updates the matching due plan on session completion rather than the first active plan.
+- Verification: source diff reviewed. No local checkout/terminal was available; no local test/build pass is claimed. Initial combined status showed a Vercel SUCCESS context but no GitHub Actions workflow run. This is NOT a Quality Gate pass; task remains IN PROGRESS / NOT VERIFIED.
+- Repository blocker: current main's Bun frozen-lockfile consistency issue and PR #382's prior Playwright failures remain unresolved; re-fetch exact current workflow state before deciding whether PR #383 can be validated.
+- No Firebase Rules/data, Vercel settings/secrets, production deployment, sync flags, Quran corpus, or user data changed.
+- Next: inspect exact-head CI and diagnose only evidenced failures; after task 1 passes, proceed with verse navigation controls as a separate PR, then facing Mushaf mode and opposite-page Tafsir. Keep all behavior local-first and avoid new runtime API dependencies.
+
