@@ -1,10 +1,109 @@
 # WIRD — Continuation Entry Point
 
+## Latest integrity follow-up — 2026-11-17
+
+- Re-reviewed the offline Tafsir persistence path and found that previously stored IndexedDB rows were counted as downloaded based only on their keys/version; malformed or incomplete payloads could therefore be skipped during resume and briefly contribute to a false offline-ready count.
+- Fixed in `src/services/tafsirOfflineLibrary.ts`: both the status calculation and resume-skip set now validate every persisted surah against WIRD's canonical verse count, sequential coordinates, requested surah and non-empty translation before counting/skipping it. Invalid existing rows are treated as missing and fetched again.
+- Added E2E regression coverage that seeds a corrupt surah-1 record and stale manifest, confirms progress remains 0/114, then verifies resume fetches and validates all 114 surahs.
+- Code commits: `2dfe56cdced650f45a004b183b1cca793edb1fe1` (service fix), `b41262195a14760faa75d4f530814ee13e56d070` (E2E regression). These are on PR #386's branch; re-fetch its exact current head before any further action.
+- Verification: source and test changes are committed, but no local Bun/Playwright run is available here and PR #386 targets a feature branch, so no GitHub Actions Quality Gate has run. NOT VERIFIED; do not merge or deploy.
+- Security note: picomatch advisory remains published, while its maintainer publicly disputes exploitability for trusted glob patterns. In WIRD, Vite is dynamically imported only in the non-production development path; production serves prebuilt `dist`. This supports a production-vs-build dependency risk assessment, but does not remove the advisory or authorize suppressing it. Keep the full finding visible pending an explicit, evidence-based gate decision.
+
+
+## Live execution checkpoint — 2026-11-17 22:45 +02:00
+
+**Owner priority:** local/offline readiness only. Do not expand scope beyond the requested work: (1) due memorization tasks from all active plans, (2) adjacent-ayah navigation beneath Quran reading surfaces, (3) one-page/facing two-page printed Mushaf, and (4) offline Tafsir al-Muyassar on either opposite spread side.
+
+### Current implementation branches and release evidence
+
+| Task | PR | Current exact head | State | Evidence / blocker |
+|---|---:|---|---|---|
+| Multiple active-plan due tasks | #383 | `77f360a4390466863c487dd164d567a95a83a605` | OPEN / Draft / NOT VERIFIED | Quality Gate run #4465 fails at `bun install --frozen-lockfile`: this branch is still based on main and does not include prerequisite #382's lockfile alignment. Latest Vercel status is also FAILED due `build-rate-limit`. |
+| Adjacent-ayah controls | #384 | `022c1dd1cd5435f9c54a152e918e815dd601bbf5` | OPEN / Draft / NOT VERIFIED | Latest Vercel status is FAILED due to `build-rate-limit`; no GitHub Actions run returned. Controls now cover Quran study, Mushaf, and weak-verse cards in Revision Center; memorization session already has its own adjacent controls. The older READY preview at `3f59506204e21f702749159333162e80ab2f324d` predates Revision Center changes. |
+| Printed Mushaf spread | #385 | `10529d88e358b35a63c7b41060ffe966141d54e2` | OPEN / Draft / NOT VERIFIED | Vercel Preview for this exact SHA was READY. One-page remains available; facing spread displays lower-numbered page on the right and next page on the left. |
+| Offline Tafsir al-Muyassar / opposite-page mode | #386 | Code-fix commit `3d4bcbaac5e1830faf369125536294a8f8487e02` (later commits on this branch are documentation-only; re-fetch PR #386 for the live exact head). | OPEN / Draft / NOT VERIFIED | Latest Vercel status is FAILED due to account `build-rate-limit`; no GitHub Actions run returned. Do not call this a code build failure or pass. |
+
+**Security advisory follow-up:** re-fetched upstream picomatch PRs #237 and #238. Both remain OPEN/unmerged. PR #238's 2026-11-17 review demonstrated residual exponential cases `+(*)`, `*(*)`, and `+(a*)`; it is not a complete fix. PR #237 is broader but also unreleased/unmerged. Do not pin either as a published safe version or bypass the audit.
+
+**Dependency prerequisite #382:** exact head `e8ca61cf86b0d49d94783670f76db1c250c7c146`; Quality Gate run #4461 fails at `bun audit --audit-level=high` on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366 (High, CVSS 8.7). As of this checkpoint the GitHub advisory states affected through 4.0.7 and no patched version. Do not suppress audit, skip the step, or pin an unmerged/partial upstream patch. #382 must be resolved safely before the exact Quality Gate can pass.
+
+### Task 4 latest refinements
+
+- QuranEnc official API docs confirm no authentication and open CORS; translation catalogue returns `translations[]` with `key`, `version`, and `last_update`; surah endpoint returns `result[]` rows with `sura`, `aya`, `arabic_text`, `translation`, and `footnotes`. Docs: https://quranenc.com/ar/home/api
+- The downloader pins and checks catalogue version `1.0.1` for `arabic_moyassar`, downloads explicitly one surah at a time, validates exact verse count and sequential coordinates, stores the untouched source payload in IndexedDB, and supports pause/resume. No network request is used during reading after download; no Firestore sync.
+- Both spread sides default to Quran. Selecting Tafsir on either side leaves the opposite side Quran and displays Tafsir for that opposite Quran page. The direction can be reversed.
+- Added navigation directly below each Tafsir ayah. A review found a spread-anchor edge case when navigating from the Tafsir side back to an ayah on that same physical page. Fixed it so the spread remains anchored and waits for the Quran side to render; added an E2E regression assertion.
+- Offline-ready status now requires the exact set of surahs 1–114; invalid manifest numbers cannot falsely produce a complete package.
+- Source attribution/version/reuse requirements are recorded in `docs/TAFSIR_OFFLINE_SOURCE.md`.
+
+### Follow-up on Task 1 — duplicate ranges across plans
+
+- PR #383 has an additional code fix at `77f360a4390466863c487dd164d567a95a83a605`: dashboard start actions carry the originating engine plan ID into session state; completion updates only that exact plan. This prevents a session started from plan B from accidentally completing an identical ayah range in plan A.
+- The primary daily selection also carries the plan ID; changing the session range clears it. Deep-linked sessions without a plan ID retain coordinate-based fallback.
+- Added a regression assertion that the daily selection preserves its source plan ID. PR #383 body contains the exact details. PR #383 remains OPEN/Draft; re-fetch its live head and CI before any release decision.
+
+### Verification rules and next actions
+
+1. No local checkout/terminal is available in this connector session; no local TypeScript/test/build result is claimed.
+2. Preview READY proves only that Vercel built the exact older PR SHA. It does not prove runtime behavior or the newer #386 head.
+3. #386 currently has no fresh Preview because Vercel rejected the build for plan build-rate-limit; wait for quota or use the existing preview only for its exact older SHA.
+4. Resolve #382 dependency/lockfile gate without weakening security; then run the complete exact-head Quality Gate on every feature head, including desktop/mobile E2E, offline navigation, 604-page map integrity and audio checks.
+5. Review and merge each task separately only after its exact-head checks pass. Do not merge drafts or deploy Production while blocked.
+6. No Production deployment, Firebase Rules/data, Vercel secrets/settings, sync flags, or user data were changed.
+
+---
+
+
 **Last reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Primary branch:** `main`  
 **Last refreshed GitHub/Vercel checkpoint (2026-11-14):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
+
+## Current GitHub execution checkpoint — 2026-11-17 21:55 +02:00
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (last re-fetched; re-fetch before any merge).
+- **Owner priority:** local/offline readiness only; execute the four requested tasks in order and avoid unrelated features.
+- **Task 1 — multiple active memorization plans:** PR #383 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Branch fix/dashboard-multiple-due-plan-tasks-20261117. It collects due/overdue incomplete tasks across all active non-paused engine plans, excludes future/completed tasks/days, displays additional plan tasks, and completes against the matching due plan. Initial Quality Gate was blocked before tests because main's bun.lock did not match package.json overrides.
+- **Task 2 — navigation below ayat:** PR #384 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/384. Branch feat/ayah-navigation-controls-20261117, stacked on PR #382's lockfile-alignment branch. Shared accessible controls are beneath study ayah cards, continuous reading, and Mushaf pages; session already has its own persistent navigation. Desktop/mobile E2E cases added. Not yet CI-verified.
+- **CI prerequisite PR #382:** OPEN / Draft, branch fix/main-bun-lockfile-alignment-20261117. Lockfile alignment allows frozen install, but the last inspected Playwright run had two timing-sensitive tests fail on desktop/mobile. Follow-up E2E changes now wait for the keyboard listener and the newly created audio instance before asserting. Await exact-head rerun; do not merge until green.
+- **Task 3 — printed Mushaf:** NOT STARTED. Add a persisted one-page/facing-two-page switch; side-by-side on wide screens and safe single-page fallback on narrow screens. Preserve page coordinates, audio, bookmarks, and reading progress.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** NOT STARTED. Each side independently supports Quran or Tafsir for the selected ayah on the opposite Quran page; both Quran by default. Must be backed by a complete verified local/offline corpus, not merely the existing small cache or a live API.
+- **Offline boundary:** Quran text and reading coordinates remain from WIRD's verified local data. Tafsir corpus must preserve source text, footnotes, attribution and version metadata; no AI-generated replacement.
+- **Next:** re-fetch #382/#384 exact heads and workflows; then implement task 3 as its own PR. Task 4 requires an audited local corpus and resumable offline storage before UI completion.
+
+---
+
+## Current GitHub execution checkpoint — 2026-11-17 22:05 +02:00
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (last verified; re-fetch before release).
+- **Owner scope:** local/offline app readiness only, limited to four requested tasks.
+- **Task 1 — multiple active memorization plans:** PR #383 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Collects due/overdue incomplete tasks across all active non-paused engine plans, displays additional due tasks, and updates the matching plan. NOT VERIFIED; initial CI failed before tests due to main's bun.lock/package.json override mismatch.
+- **Task 2 — navigation below ayat:** PR #384 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/384. Shared previous/next controls under Library ayah cards, continuous reading and Mushaf page; session's existing controls remain. E2E coverage added. NOT VERIFIED.
+- **Task 3 — one-page/facing two-page printed Mushaf:** PR #385 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/385. Adds local preference (single page default / spread), right-to-left page order (lower page on right), two-page stepping and audio queue across both pages, plus offline E2E coverage. NOT VERIFIED.
+- **CI prerequisite PR #382:** bun.lock alignment is in branch fix/main-bun-lockfile-alignment-20261117. The latest exact-head Quality Gate stops at bun audit due high-severity GHSA-fc5q-39xc-vjpf affecting picomatch@4.0.7. No fixed version is stated by the advisory; do not suppress audit or downgrade the gate. This blocks validation/merging of #382–#385.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** NOT STARTED. Official QuranEnc source identified: Arabic Tafsir al-Muyassar, translation key arabic_moyassar, publisher King Fahd Complex, catalog version 1.0.1 dated 2026-11-09. Official API provides one-surah JSON with aya/translation/footnotes. Download/republication terms require unchanged content, visible publisher and QuranEnc.com attribution, version number, retention of edition info, reporting corrections, updating to source releases, and no unsuitable ads. Implement complete resumable IndexedDB offline download before opposite-page display.
+- **Offline boundary:** two-page mode uses local facsimile page assets and WIRD's local Quran ayah corpus; audio waits for both page maps. Tafsir must be locally stored in full, not dependent on the existing small per-ayah cache or live API.
+- **Next:** resolve upstream picomatch audit safely; then run exact-head CI on stacked PRs. Continue task 4 only with source content preserved byte-for-byte and full 114-surah validation.
+
+---
+
+## Current GitHub execution checkpoint — 2026-11-17
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (last verified; re-fetch before release).
+- **Owner scope:** local/offline app readiness only, limited to four requested tasks.
+- **Task 1 — multiple active memorization plans:** PR #383 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Collects due/overdue incomplete tasks across all active non-paused engine plans, displays additional due tasks, and updates the matching plan. NOT VERIFIED.
+- **Task 2 — navigation below ayat:** PR #384 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/384. Shared previous/next controls under Library ayah cards, continuous reading and Mushaf page; session's existing controls remain. NOT VERIFIED.
+- **Task 3 — one-page/facing two-page printed Mushaf:** PR #385 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/385. Adds local preference (single page default / spread), lower page number on right, two-page stepping, audio across both pages, and offline E2E coverage. NOT VERIFIED.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** PR #386 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/386. Head `e007a9cd149fa81fe74240d1a0f6bc2e41f6f308`, base #385 head `10529d88e358b35a63c7b41060ffe966141d54e2`. Adds a user-initiated, resumable 114-surah IndexedDB download of QuranEnc Arabic Muyassar V1.0.1, live-catalogue version verification, verse-count/coordinate validation, raw payload/footnote preservation, source attribution and no-network reading. In facing mode, either page can show Tafsir for all ayahs on the opposite Quran page, with the selected ayah highlighted and navigation controls beneath each Tafsir ayah; both pages default to Quran. Audio stays on the Quran page and auto-continues sequentially. NOT VERIFIED.
+- **Exact PR heads:** #382 `e8ca61cf86b0d49d94783670f76db1c250c7c146`; #383 `45acc719a90049f1f71606995cb02943ac5e337d`; #384 `3f59506204e21f702749159333162e80ab2f324d`; #385 `10529d88e358b35a63c7b41060ffe966141d54e2`; #386 `e007a9cd149fa81fe74240d1a0f6bc2e41f6f308`.
+- **CI evidence:** #382 run #4461 installs with frozen lockfile but fails `bun audit` on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch` (GHSA-fc5q-39xc-vjpf). #383 run #4460 fails earlier at `bun install --frozen-lockfile` because main's lockfile is out of sync. #384–#386 have no workflow runs yet because their PR bases are stacked feature branches; they need exact-head CI after the parent chain is safely resolved.
+- **Security blocker:** GitHub's advisory was reviewed/updated 2026-11-17 and remains High (CVSS 8.7), affecting picomatch through 4.0.7 with no fixed version stated; npm still lists 4.0.7 as latest. Upstream candidate PR #237 is open/unmerged; PR #238 is narrower and has reviewer-reported remaining vulnerable patterns. Do not suppress audit or pin an unmerged incomplete patch. This blocks validation/merging of #382–#386.
+- **Tafsir source:** QuranEnc key arabic_moyassar; publisher King Fahd Complex; catalogue version 1.0.1 dated 2026-11-09. Official terms: preserve content unchanged, publisher/source attribution, version and embedded edition info; report corrections; update to source releases; no unsuitable ads. See docs/TAFSIR_OFFLINE_SOURCE.md.
+- **Offline boundary:** Quran text remains WIRD's verified local corpus. Tafsir is downloaded explicitly once while online and stored only on this device; no Firebase sync. Incomplete corpus is not displayed.
+- **Next:** resolve upstream dependency security blocker safely, then run exact-head CI and browser/offline tests across the stacked PRs. Do not merge/deploy on a partial gate.
+
+---
 
 ## Verified AI Studio workspace state — 2026-11-17
 

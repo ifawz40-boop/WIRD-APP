@@ -20,6 +20,7 @@ export interface RouteState {
   startAyah?: number;
   endAyah?: number;
   mode?: 'memorize' | 'review';
+  enginePlanId?: string | null;
 }
 
 export const VALID_NAV_TABS: NavTabId[] = [
@@ -64,6 +65,10 @@ export function parseRoute(hashString?: string): RouteState {
   const startParam = searchParams.get('start');
   const endParam = searchParams.get('end');
   const modeParam = searchParams.get('mode');
+  const planParam = searchParams.get('plan');
+  const enginePlanId = tab === 'session' && planParam !== null && /^[A-Za-z0-9_-]{1,128}$/.test(planParam)
+    ? planParam
+    : undefined;
 
   const rawSurah = surahParam !== null ? Number(surahParam) : NaN;
   const validSurah = Number.isInteger(rawSurah) && rawSurah >= 1 && rawSurah <= 114
@@ -91,7 +96,8 @@ export function parseRoute(hashString?: string): RouteState {
     surahNumber,
     startAyah,
     endAyah,
-    mode
+    mode,
+    enginePlanId
   };
 }
 
@@ -99,13 +105,14 @@ export function parseRoute(hashString?: string): RouteState {
  * Build URL hash string from RouteState
  */
 export function buildRouteHash(state: RouteState): string {
-  const { tab, surahNumber, startAyah, endAyah, mode } = state;
+  const { tab, surahNumber, startAyah, endAyah, mode, enginePlanId } = state;
   const params = new URLSearchParams();
 
   if (surahNumber !== undefined) params.set('surah', String(surahNumber));
   if (startAyah !== undefined) params.set('start', String(startAyah));
   if (endAyah !== undefined) params.set('end', String(endAyah));
   if (mode && tab === 'session') params.set('mode', mode);
+  if (enginePlanId && tab === 'session' && /^[A-Za-z0-9_-]{1,128}$/.test(enginePlanId)) params.set('plan', enginePlanId);
 
   const query = params.toString();
   return `#/${tab}${query ? `?${query}` : ''}`;
