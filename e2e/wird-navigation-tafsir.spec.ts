@@ -199,6 +199,15 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await rightContent.getByRole('button', { name: 'التفسير الميسر' }).click();
     await expect(page.locator('#wird-tafsir-ayah-2-1')).toContainText('تفسير اختباري 2:1');
     await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+
+    // Navigating from Tafsir back to an ayah on its own page must preserve
+    // the current facing spread instead of anchoring the spread on page 1's
+    // left-hand neighbor and accidentally shifting the two-page view.
+    await page.locator('#wird-tafsir-ayah-2-1').getByRole('navigation', { name: 'التنقل بين الآيات' }).getByRole('button', { name: 'الآية السابقة' }).click();
+    await expect(page.getByRole('main', { name: 'صفحتا المصحف 1 و2' })).toBeVisible();
+    await expect(page.locator('#wird-ayah-1-7')).toBeVisible();
+    await expect(rightContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' })).toHaveAttribute('aria-pressed', 'true');
     expect(requestedSurahs).toHaveLength(114);
   });
 
