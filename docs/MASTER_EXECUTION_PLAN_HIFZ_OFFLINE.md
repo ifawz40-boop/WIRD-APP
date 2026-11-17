@@ -530,3 +530,8 @@ This addendum supersedes older status snapshots above where they conflict. It is
 ## 2026-11-18 — Printed Mushaf full-offline package candidate
 
 PR #390 adds an explicit optional full-604-page Hafs/KFGQPC facsimile download to the local/offline readiness track. It uses the pinned Quran.ws commit, samples pages 1/300/604 for a quota estimate, preserves a 32MB/15% storage reserve, validates and sanitizes each SVG before Cache Storage commit, resumes missing/corrupt pages, and supports pause/status/delete. The printed reader resolves cached artwork before network; all Quran text and ayah data continue to come from WIRD's verified local corpus. Settings no longer claims blanket “100% offline” readiness and clearly states that external content must be downloaded. PR #390 remains Draft/HOLD pending exact-head tests, the full dependency audit, and real-device cold-start/airplane-mode checks.
+
+### Follow-up verification — 2026-11-18
+- The first cumulative browser run confirmed the QuranEnc version-fixture race was fixed, but found the previously recorded weak-verse E2E locator failure on both viewport sizes. The selector correction from PR #387 was ported into PR #390.
+- Added a dedicated Playwright test for a partial 604-page facsimile download, interrupted/retried page, verified resume without redownloading page 1, and printed-page rendering after switching the browser offline.
+- Latest PR #390 exact SHA `5b953e3a47bf75ea33607abe5a62af8ca4aa6e65`; Quality Gate #4560 (`44187977275`) pending. Previous run #4558 was cancelled after the E2E follow-up. No deployment or merge.
