@@ -34,6 +34,21 @@
 
 ---
 
+## Current GitHub execution checkpoint — 2026-11-17 22:20 +02:00
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (last verified; re-fetch before release).
+- **Owner scope:** local/offline app readiness only, limited to four requested tasks.
+- **Task 1 — multiple active memorization plans:** PR #383 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Collects due/overdue incomplete tasks across all active non-paused engine plans, displays additional due tasks, and updates the matching plan. NOT VERIFIED.
+- **Task 2 — navigation below ayat:** PR #384 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/384. Shared previous/next controls under Library ayah cards, continuous reading and Mushaf page; session's existing controls remain. NOT VERIFIED.
+- **Task 3 — one-page/facing two-page printed Mushaf:** PR #385 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/385. Adds local preference (single page default / spread), lower page number on right, two-page stepping, audio across both pages, and offline E2E coverage. NOT VERIFIED.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** PR #386 OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/386. Adds a user-initiated, resumable 114-surah IndexedDB download of QuranEnc Arabic Muyassar V1.0.1, validates all ayah counts/coordinates and preserves raw source payload/footnotes. In facing mode, either page can show Tafsir for all ayahs on the opposite Quran page, with the selected ayah highlighted; both pages default to Quran. Reading after download is IndexedDB-only and does not call the API. NOT VERIFIED.
+- **CI prerequisite PR #382:** bun.lock alignment is on branch fix/main-bun-lockfile-alignment-20261117. The latest exact-head Quality Gate fails at bun audit due GHSA-fc5q-39xc-vjpf / CVE-2026-112366 affecting picomatch through 4.0.7. Upstream candidate PR #237 is open/unmerged; PR #238 is a narrower patch with reviewer-reported remaining vulnerable patterns. Do not suppress audit or pin an unmerged incomplete patch. This blocks validation/merging of #382–#386.
+- **Tafsir source:** QuranEnc key arabic_moyassar; publisher King Fahd Complex; catalogue version 1.0.1 dated 2026-11-09. Official terms: preserve content unchanged, publisher/source attribution, version and embedded edition info; report corrections; update to source releases; no unsuitable ads. See docs/TAFSIR_OFFLINE_SOURCE.md.
+- **Offline boundary:** Quran text remains WIRD's verified local corpus. Tafsir is downloaded explicitly once while online and stored only on this device; no Firebase sync. Incomplete corpus is not displayed.
+- **Next:** resolve upstream dependency security blocker safely, then run exact-head CI and browser/offline tests across the stacked PRs. Do not merge/deploy on a partial gate.
+
+---
+
 ## Verified AI Studio workspace state — 2026-11-17
 
 - **Deployment & GitHub status:** Workspace edits live in Google AI Studio only. **NOT committed/pushed to GitHub** and **NOT deployed to Vercel** (explicit owner directive; Vercel Production sync flags remain unchanged).
