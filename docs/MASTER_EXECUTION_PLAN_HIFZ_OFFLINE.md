@@ -314,3 +314,13 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 - PR #381 tracker head advanced to `eb0c71ea09987e61c7a8b944866265e8ded4e5b3` after the two documentation updates. GitHub reports PR merge ref `3f0430a4fd951de8fdbaa6223d3fb5f1c3f4c914`; no workflow run or combined status was returned for that merge ref at the latest check. The earlier run #4446 remains the latest inspectable failure and is on the previous merge ref `502d3cea...`. Re-fetch after the latest head update; do not assume a new run will pass.
 - PR #380 head `99408208...` still has no GitHub Actions workflow run returned. Its Vercel status moved from pending/building in successive refreshes; this is not a substitute for the GitHub Quality Gate.
 
+
+
+## Dependency baseline correction — 2026-11-17 (PR #382)
+
+- Current main package.json blob 2dac5867... retains workspace name react-example, @grpc/grpc-js: 1.14.6 override, and dependencies/devDependencies/trustedDependencies as inspected.
+- PR #380's bun.lock was ported onto a clean branch from current main, with only the lockfile workspace name normalized back to react-example. New PR #382: https://github.com/xm8eslam-stack/WIRD-APP/pull/382, branch fix/main-bun-lockfile-alignment-20261117, head c98a31f7a1a9ee41f1489b15609d3c2ccce18e69, merge ref cf378fb15af4e9423154c34dbaaf79b13139312d.
+- Exact pre-PR structural validation passed: workspace name, root dependencies, devDependencies, overrides and trustedDependencies all match main/package.json; branch comparison is exactly one file (bun.lock) changed, 1 ahead / 0 behind.
+- Quality Gate run 44105033897 (#4452) is active. At latest check, Node runtime verification, Bun setup, frozen install and dependency graph audit all passed; automated test suites were in progress. Remaining gates (604 Mushaf maps, API/audio checks, Firestore Rules, TypeScript, build, server smoke, desktop/mobile Playwright) pending. No merge until final exact-head gate green.
+- Correction to earlier #380 interpretation: its current diff contains one binary file under .aistudio/.../.tempmediaStorage/, not a verified HUKM logo path. Do not merge that temporary artifact. #380's test edits are stale relative to current main in several files; e2e/ruqyah-ux.spec.ts is already identical on main. PR #382 intentionally excludes all #380 test edits and the temporary binary.
+- No production changes or merges.
