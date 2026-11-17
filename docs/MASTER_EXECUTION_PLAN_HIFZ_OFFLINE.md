@@ -496,3 +496,12 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Desktop/mobile Playwright browser installation was still in progress at the last check; browser tests and overall application job are therefore **PENDING**, not yet passed.
 - Separate dependency security audit completed FAIL on `picomatch@4.0.7` / `GHSA-fc5q-39xc-vjpf`. This remains the only observed audit finding and continues to block merge/release.
 - No merge or Production deploy. Firebase/Vercel settings/secrets and sync flags remain unchanged.
+
+## Latest #386 exact-head run #4486 — 2026-11-17
+
+- Latest #386 head: `e6efc84febe2ca63319f857c567db110183d01ff`.
+- Run #4486 / `44173952341`: automated suites PASS with **759 passed / 0 failed**; all 604 printed Mushaf page coordinate maps verified; API imports and approved Quran audio CDN/range smoke PASS; Firestore Rules Emulator PASS; TypeScript PASS; production build PASS; production server startup smoke PASS.
+- At last inspection, browser smoke (desktop/mobile Playwright) was still in progress; do not claim the entire application job has passed until that job concludes.
+- Dependency security audit has conclusively failed again on `picomatch@4.0.7`. Current official GitHub Advisory still reports no known affected/patched version boundary and links the upstream tracking issue; no safe released remediation is verified. See https://github.com/advisories/GHSA-fc5q-39xc-vjpf and upstream https://github.com/micromatch/picomatch/issues/247.
+- The TypeScript issue from run #4484 was fixed by widening the stale-version test fixture parameter from the literal source-version type to `string`; run #4486 confirms TypeScript now passes.
+- PR #386 remains Draft/HOLD due the audit gate and pending browser result. No merge/deploy or production configuration changes.
