@@ -876,3 +876,16 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - PR #383 run #4460: bun install --frozen-lockfile fails because main's package manifest/lockfile are out of sync; this is why the #382 lockfile alignment is a prerequisite.
 - PRs #384–#386 have no workflow runs yet because they are stacked on non-main feature branches. Exact-head CI must be run after the parent chain is safely resolved.
 - Advisory research refreshed 2026-11-17: GitHub advisory now reviewed/updated, High CVSS 8.7, affected through 4.0.7, no fixed version stated; npm still lists 4.0.7 as latest. Upstream PR #237 remains open/unmerged; #238 is not a complete fix for every reported pattern. Do not suppress audit or pin an unmerged patch.
+
+
+## 2026-11-17 — Opposite-page navigation integrity and exact-head checkpoint
+
+- Reviewed the current #386 implementation and official QuranEnc API schema. The API docs specify the translations catalogue as `{"translations":[...]}`, with `key/version/last_update`, and surah responses as `{"result":[...]}` with `sura/aya/arabic_text/translation/footnotes`. The downloader's catalogue wrapper and row parser match the documented shapes. Source docs: https://quranenc.com/ar/home/api.
+- Found a spread navigation defect: when the target ayah was on the physical page currently displaying Tafsir, role-swapping changed the Quran/audio source but the old guard failed because `audioAyahs` still reflected the previous render. The code then loaded a neighboring page and could shift the facing spread anchor.
+- Fixed `jumpToNavigationPoint`: when the target is already visible in the current single page/spread, it now stores a pending target and returns without changing the spread anchor; the existing effect scrolls once the Quran-side data renders.
+- Added an E2E regression to navigate from Tafsir for page 2 back to page 1 ayah 7 and assert that the 1–2 spread remains, page 1 returns to Quran, and page 2 remains Tafsir.
+- Hardened offline Tafsir completeness: the status helper now filters invalid/out-of-range surah IDs and considers the package complete only when the exact set 1–114 is present. Resume also ignores invalid stored surah numbers.
+- Updated continuation and master-state docs with exact PR heads, CI/Preview evidence, Vercel build-rate-limit status and the picomatch audit blocker.
+- Current #386 head after these changes: `3d4bcbaac5e1830faf369125536294a8f8487e02`. PR #386 remains OPEN/Draft. Its Vercel status is FAILED due `build-rate-limit`; no GitHub Actions run was returned for the current head.
+- #382 run #4461 fails `bun audit` on picomatch 4.0.7 / GHSA-fc5q-39xc-vjpf. #383 run #4460 fails `bun install --frozen-lockfile`. #384/#385 previews were READY on their exact older heads; neither has a GitHub Actions run.
+- No local checkout/terminal was available. No local test/build pass is claimed. Do not merge or deploy until the lockfile/security blocker is resolved and each task passes exact-head gates. No Production, Firebase, Vercel settings/secrets, sync flags or user data changed.
