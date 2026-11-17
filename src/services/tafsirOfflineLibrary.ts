@@ -206,6 +206,22 @@ async function verifyCurrentSourceVersion(signal?: AbortSignal): Promise<void> {
   }
 }
 
+function isValidStoredSurah(record: StoredSurah): boolean {
+  if (
+    record.sourceVersion !== OFFLINE_TAFSIR_SOURCE.version ||
+    !Number.isInteger(record.surahNumber) ||
+    record.surahNumber < 1 ||
+    record.surahNumber > TOTAL_SURAHS
+  ) return false;
+
+  try {
+    validateSurahPayload(record.surahNumber, record.payload);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function makeStatus(downloadedSurahs: number[], status: OfflineTafsirDownloadStatus['status']): OfflineTafsirDownloadStatus {
   const verifiedNumbers = [...new Set(downloadedSurahs.filter(number =>
     Number.isInteger(number) && number >= 1 && number <= TOTAL_SURAHS
@@ -225,18 +241,20 @@ function makeStatus(downloadedSurahs: number[], status: OfflineTafsirDownloadSta
 export async function getOfflineTafsirDownloadStatus(): Promise<OfflineTafsirDownloadStatus> {
   const database = await openDatabase();
   const transaction = database.transaction(SURAH_STORE, 'readonly');
-  const storedKeys = await requestValue(transaction.objectStore(SURAH_STORE).getAllKeys());
+  const storedRecords = await requestValue(transaction.objectStore(SURAH_STORE).getAll()) as StoredSurah[];
   const manifest = await readManifest(database);
   if (manifest?.sourceVersion !== OFFLINE_TAFSIR_SOURCE.version) {
     return makeStatus([], 'not_downloaded');
   }
-  const existingKeys = new Set(storedKeys.map(Number));
+  const validStoredNumbers = new Set(
+    storedRecords.filter(isValidStoredSurah).map(record => record.surahNumber)
+  );
   const downloadedList = Array.isArray(manifest.downloadedSurahs) ? manifest.downloadedSurahs : [];
   const verifiedKeys = downloadedList.filter(surahNumber =>
     Number.isInteger(surahNumber) &&
     surahNumber >= 1 &&
     surahNumber <= TOTAL_SURAHS &&
-    existingKeys.has(surahNumber)
+    validStoredNumbers.has(surahNumber)
   );
   return makeStatus(verifiedKeys, manifest.status);
 }
@@ -283,14 +301,7 @@ export async function downloadOfflineTafsirMuyassar(options: DownloadOptions = {
   const transaction = database.transaction(SURAH_STORE, 'readonly');
   const existingRecords = await requestValue(transaction.objectStore(SURAH_STORE).getAll()) as StoredSurah[];
   const downloaded = new Set(
-    existingRecords
-      .filter(record =>
-        record.sourceVersion === OFFLINE_TAFSIR_SOURCE.version &&
-        Number.isInteger(record.surahNumber) &&
-        record.surahNumber >= 1 &&
-        record.surahNumber <= TOTAL_SURAHS
-      )
-      .map(record => record.surahNumber)
+    existingRecords.filter(isValidStoredSurah).map(record => record.surahNumber)
   );
 
   const publishProgress = (status: OfflineTafsirDownloadStatus['status']) => {
