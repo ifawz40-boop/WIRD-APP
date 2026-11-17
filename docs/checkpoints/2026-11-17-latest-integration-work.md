@@ -60,3 +60,9 @@
 - Added tests for route round-trip, malformed plan IDs, and no plan context on non-session routes.
 - Commits: `f73704b6f7546e9373f9bca041c09281a4bdcdc7`, `88fd617b17eb1590f041359c298820adc2fc81f1`, `6d7f435dd2caca3cc400783fc2a7ee152f3e1fd1`.
 - PR #387 current head: `6d7f435dd2caca3cc400783fc2a7ee152f3e1fd1`. Run #4504 (`44179885024`) was still in Playwright on the preceding head when last checked; it does not validate this route fix. Wait for that run to conclude/cancel, then confirm a new exact-head run is triggered.
+
+
+## Route-state TypeScript correction — 2026-11-17
+- Run #4508 on head `6d7f435...` passed the 759 unit assertions and 31 Firestore Rules tests but failed TypeScript because App's in-app session guard spreads `enginePlanId: string | null` into RouteState, whose new optional field was typed only as `string | undefined`.
+- Corrected the route contract to `enginePlanId?: string | null`; route serialization still emits only valid non-empty IDs and parsing still rejects malformed values. Commit: `abe008dc1b03e1e04c6f7497bfd6138b4728cb19`.
+- Current PR #387 exact head: `abe008dc1b03e1e04c6f7497bfd6138b4728cb19`. New Quality Gate #4511 / run `44180386559` is running; at last poll it was verifying all 604 Mushaf coordinate maps. Security audit remains separate and failed on picomatch.
