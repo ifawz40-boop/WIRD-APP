@@ -162,7 +162,6 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     const requestedPage = Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage();
     return readMushafPageDisplayMode() === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
   });
-  const pageStep = pageDisplayMode === 'spread' ? 2 : 1;
   const [pageInput, setPageInput] = useState(String(Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage()));
   const [pageJumpError, setPageJumpError] = useState('');
   const [textScale, setTextScale] = useState<MushafTextScale>(readMushafTextScale);
@@ -191,6 +190,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     try { return localStorage.getItem('wird.quran.readerLayout.v1') === 'printed' ? 'printed' : 'flow'; }
     catch { return 'flow'; }
   });
+  const isSpreadModeActive = readerLayout === 'printed' && pageDisplayMode === 'spread';
+  const pageStep = isSpreadModeActive ? 2 : 1;
   const [showHizbPicker, setShowHizbPicker] = useState(false);
   const [printedPageAyahs, setPrintedPageAyahs] = useState<Record<number, Ayah[]>>({});
   const handlePrintedPageAyahsResolved = useCallback(({ page: resolvedPage, ayahs: resolvedAyahs }: { page: number; ayahs: Ayah[] }) => {
@@ -201,7 +202,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       ? [...(printedPageAyahs[page] || []), ...(printedPageAyahs[page + 1] || [])]
       : (printedPageAyahs[page] || [])
     : ayahs;
-  const isSpreadAudioReady = pageDisplayMode !== 'spread' || Boolean(printedPageAyahs[page + 1]);
+  const isSpreadAudioReady = !isSpreadModeActive || Boolean(printedPageAyahs[page + 1]);
   useEffect(() => { setPrintedPageAyahs({}); }, [page]);
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
@@ -415,7 +416,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
   const changePage = (requestedPage: number) => {
     if (!Number.isInteger(requestedPage) || requestedPage < 1 || requestedPage > 604) return;
-    const nextPage = pageDisplayMode === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
+    const nextPage = isSpreadModeActive ? normalizeSpreadStartPage(requestedPage) : requestedPage;
     setPageJumpError('');
     setPageTurnDirection(nextPage > page ? 'next' : 'previous');
     pendingTargetRef.current = null;
@@ -728,7 +729,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
               <ChevronRight className="h-4 w-4" /> الصفحة السابقة
             </button>
             <span aria-live="polite" aria-atomic="true" className="text-xs font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] px-3 py-1.5 rounded-lg border border-[#C59B27]/30">
-              {pageDisplayMode === 'spread' ? `${page}–${Math.min(604, page + 1)} / 604` : `${page} / 604`}
+              {isSpreadModeActive ? `${page}–${Math.min(604, page + 1)} / 604` : `${page} / 604`}
             </span>
             <button
               type="button"
@@ -978,7 +979,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         if (startX === null || event.changedTouches.length === 0) return;
         const delta = event.changedTouches[0].clientX - startX;
         if (Math.abs(delta) > 65) changePage(page + (delta > 0 ? -pageStep : pageStep));
-      }} aria-label={pageDisplayMode === 'spread' ? `صفحتا المصحف ${page} و${Math.min(604, page + 1)}` : `صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${pageDisplayMode === 'spread' ? 'max-w-7xl overflow-x-auto' : isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
+      }} aria-label={isSpreadModeActive ? `صفحتا المصحف ${page} و${Math.min(604, page + 1)}` : `صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${pageDisplayMode === 'spread' ? 'max-w-7xl overflow-x-auto' : isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
         {readerLayout === 'printed' ? (
           pageDisplayMode === 'spread' ? (
             <div className="grid min-w-[640px] grid-cols-2 items-start gap-3" dir="ltr" aria-label="صفحتا المصحف المتقابلتان">
