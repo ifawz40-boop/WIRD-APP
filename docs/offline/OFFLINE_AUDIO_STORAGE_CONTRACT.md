@@ -283,3 +283,7 @@ PR #368 is a stale alternative implementation based on an older main. Its Cache 
 - Added 6-second SPA navigation timeout and quota-adaptive optional audio/Mushaf runtime cache bounds to the Service Worker.
 - Added `persistenceSupported` to storage diagnostics so lack of `StorageManager.persist()` is not confused with offline capability; Settings copy now explains that already-saved files remain usable offline.
 - Current PR #389 head `6bec8fbabd260d3abcfd6e9f9ca1bbf960504057`. Quality Gate #4543 (`44184224319`): audit job failed separately on picomatch; application job was at the 604-page Mushaf coverage step when last polled. Continue polling the exact SHA through all app gates.
+
+
+### Correction: external Mushaf SVG pages are not in publicDir — 2026-11-17
+The public-asset manifest change includes files physically under `public/`; it does **not** include the 604 printed Mushaf SVG pages. `mushafFacsimileService.ts` fetches those pages from the pinned external `raw.githubusercontent.com/quran-ws/quran-svg/<commit>/...` source. The Service Worker caches pages after viewing in a separate bounded runtime cache (adaptive cap), but the explicit offline package does not yet download all 604 pages. A separate optional full-Mushaf package with quota preflight, progress/resume, source validation and explicit storage management remains a release follow-up. WIRD's local Quran text/ayah coordinates are independent of the facsimile artwork and remain local.
