@@ -176,3 +176,6 @@ Future plan storage should derive chunk count from actual UTF-8 serialized bytes
 - Attribution, publisher, version and source links are visible. The source payload is never edited; no AI-generated Tafsir is used.
 - E2E coverage in PR #386 mocks the official endpoint and checks full download, both page directions, offline reading, footnote display, invalid payload rejection and interrupted-download resume. Exact-head CI remains blocked by the upstream picomatch advisory; no local pass is claimed.
 
+
+- Audio behavior in the facing spread: if one side is Tafsir, the audio queue includes only the Quran page on the opposite side; with both pages set to Quran, it follows both pages in right-to-left reading order. Changing a side's content mode stops the old queue before recalculating the available ayahs.
+- If a saved Tafsir record fails integrity validation, it is removed from the current manifest so the resumable downloader can fetch and repair that surah instead of treating corrupt data as complete.
