@@ -23,11 +23,14 @@ export interface MushafOfflinePackageProgress extends MushafOfflinePackageStatus
   currentPage: number | null;
 }
 
-export function estimateMushafOfflinePackageBytes(samplePageBytes: number[]): number {
+export function estimateMushafOfflinePackageBytes(samplePageBytes: number[], remainingPages = MUSHAF_OFFLINE_PAGE_COUNT): number {
   const valid = samplePageBytes.filter(value => Number.isSafeInteger(value) && value > 0);
   if (valid.length === 0) throw new Error('تعذر تقدير حجم صفحات المصحف قبل التنزيل.');
+  if (!Number.isSafeInteger(remainingPages) || remainingPages < 0 || remainingPages > MUSHAF_OFFLINE_PAGE_COUNT) {
+    throw new Error('عدد صفحات المصحف المتبقية غير صالح.');
+  }
   const average = valid.reduce((sum, value) => sum + value, 0) / valid.length;
-  return Math.ceil(average * MUSHAF_OFFLINE_PAGE_COUNT * QUOTA_ESTIMATE_SAFETY_FACTOR);
+  return Math.ceil(average * remainingPages * QUOTA_ESTIMATE_SAFETY_FACTOR);
 }
 
 export function hasMushafOfflineQuota(
@@ -109,7 +112,6 @@ export async function downloadMushafOfflinePackage(
 ): Promise<MushafOfflinePackageStatus> {
   const cache = await openPackageCache();
   const sampleBytes: number[] = [];
-  const initialKeys = new Set((await cache.keys()).map(request => request.url));
 
   for (const page of PREFLIGHT_SAMPLE_PAGES) {
     throwIfAborted(signal);
@@ -135,7 +137,8 @@ export async function downloadMushafOfflinePackage(
   const estimate = await navigator.storage.estimate();
   const quota = Number(estimate.quota);
   const usage = Number(estimate.usage);
-  const estimatedPackageBytes = estimateMushafOfflinePackageBytes(sampleBytes);
+  const packageStatus = await getMushafOfflinePackageStatus();
+  const estimatedPackageBytes = estimateMushafOfflinePackageBytes(sampleBytes, packageStatus.missing);
   if (!Number.isFinite(quota) || !Number.isFinite(usage) ||
       !hasMushafOfflineQuota(estimatedPackageBytes, usage, quota)) {
     const available = Number.isFinite(quota) && Number.isFinite(usage)
