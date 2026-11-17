@@ -64,6 +64,7 @@ import { runEnginePlanArchiveTests } from '../services/enginePlanArchive.test';
 import { runOfflineQuranAudioLibraryTests } from '../services/offlineQuranAudioLibrary.test';
 import { runPlanMissedDayRecoveryTests } from '../services/planMissedDayRecovery.test';
 import { runTestQuestionGeneratorTests } from '../services/testQuestionGenerator.test';
+import { runOfflineTafsirLibraryTests } from '../services/tafsirOfflineLibrary.test';
 
 export interface SuiteResult {
   passed: number;
@@ -173,6 +174,7 @@ async function main() {
     { name: 'Hafs 30-Juz Boundaries, Range Merging & Pre-Memorized Import', runner: runMemorizedRangeServiceTests },
     { name: 'IndexedDB v10 Engine Plans Archive, Lossless Migration & SHA-256 Integrity', runner: runEnginePlanArchiveTests },
     { name: 'Unified Offline Audio Store, Concurrency, Quota Preflight & Local Playback', runner: runOfflineQuranAudioLibraryTests },
+    { name: 'Offline Tafsir IndexedDB Manifest Recovery & Payload Integrity', runner: runOfflineTafsirLibraryTests },
     { name: 'Hybrid Missed-Day Plan Detection & Recovery Actions', runner: runPlanMissedDayRecoveryTests },
     { name: 'Memorization Test Fill-Blank Words & Scope Filters', runner: runTestQuestionGeneratorTests },
   ];
