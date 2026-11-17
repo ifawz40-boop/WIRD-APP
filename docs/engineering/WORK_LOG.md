@@ -908,3 +908,11 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Reviewed PR #238's latest review: it demonstrates residual exponential behavior for `+(*)`, `*(*)`, and `+(a*)`, including `+(*)` from the advisory itself. PR #238 is therefore not a complete fix.
 - PR #237 proposes broader collapse behavior but remains unmerged/unreleased and has no official security release to consume.
 - Updated PR #382's body with the finding. Keep audit enabled and all dependent tasks on HOLD until a complete reviewed upstream fix is published and the lockfile/audit pass.
+
+
+## 2026-11-17 — Navigation coverage extended to Revision Center
+
+- PR #384 code commit `022c1dd1cd5435f9c54a152e918e815dd601bbf5` adds adjacent-ayah controls below weak-verse cards in Revision Center. Previous/next opens a one-ayah review session for the adjacent canonical Quran coordinate.
+- Shared navigation props now accept only `surahNumber` and `numberInSurah`, avoiding a fake/incomplete Ayah object for stored weak-verse records.
+- Added E2E coverage: manually record a weak ayah, verify controls under its text, click next and confirm the one-ayah review route.
+- PR #384 latest Vercel status is FAILED due to `build-rate-limit`; no GitHub Actions run returned. Its older READY preview predates these changes. Keep Draft until latest exact-head checks pass.
