@@ -30,6 +30,21 @@ Execute only these four tasks in order; no unrelated feature expansion or new al
 
 ---
 
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+Execute only these four tasks in order; no unrelated feature expansion or always-online reading dependency.
+
+1. **Multiple active memorization plans on Dashboard:** show all due/overdue incomplete tasks across active non-paused plans, excluding future/completed work, with plan identity and direct start; completion updates the matching plan.
+2. **Verse navigation controls:** accessible previous/next controls directly beneath ayah displays in Quran reading interfaces, including Surah boundaries and local navigation.
+3. **Printed Mushaf display:** one-page default and optional facing two-page spread; lower page number on right, next page on left; odd-page alignment, two-page navigation, audio in reading order, locally persisted preference and narrow-screen horizontal scroll.
+4. **Opposite-page Tafsir al-Muyassar:** either side can show locally stored Tafsir for the opposite Quran page's ayahs; both Quran by default. QuranEnc Arabic key arabic_moyassar, King Fahd Complex, catalogue V1.0.1 (2026-11-09). User-initiated full 114-surah IndexedDB download, verse-count/coordinate validation, unchanged source payload and footnotes, attribution/version, pause/resume; reading uses local storage only.
+
+**Release rules:** one narrow PR per task; unit/integration and desktop/mobile/offline E2E; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Never suppress high-severity audit or merge with missing/failing checks. No Firebase Rules/data, Production secrets/settings, sync flags or user-data changes.
+
+**Status:** #383 task 1, #384 task 2, #385 task 3, #386 task 4 OPEN / Draft / NOT VERIFIED. #382 lockfile prerequisite currently fails bun audit on GHSA-fc5q-39xc-vjpf affecting picomatch through 4.0.7; upstream PR #237 is open/unmerged and PR #238 is incomplete for all reported patterns. See docs/CONTINUE_HERE.md and docs/TAFSIR_OFFLINE_SOURCE.md.
+
+---
+
 ---
 
 # مسار منتجي جديد — Offline-first والتطبيق المستقبلي
