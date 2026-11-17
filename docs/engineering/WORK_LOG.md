@@ -836,3 +836,18 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - No Quran text was modified; no Firebase/Vercel production configuration or user data changed.
 - Next: complete task 3 in its own PR; then verify the official Tafsir edition metadata and implement complete, resumable local Tafsir storage before task 4 UI.
 
+
+
+## 2026-11-17 — Printed Mushaf one-/two-page mode
+
+- Owner task 3 PR #385, branch feat/mushaf-facing-pages-20261117, stacked on task 2 PR #384.
+- Added local preference wird.quran.pageDisplayMode.v1 with one-page default and optional facing spread.
+- Spread order: page n (odd/lower number) on the right, page n+1 on the left; final spread is 603–604. Page jump normalizes to the odd spread start; page controls and touch navigation advance by two.
+- The two facsimile components independently load and validate their SVG hit areas against WIRD local Quran ayah records. The spread never derives Quran text from the SVG.
+- Audio combines right-page then left-page ayahs and waits for both page maps before playback/auto-continue. Switching mode stops active audio to prevent stale queue behavior.
+- Responsive spread uses a 640px minimum side-by-side canvas with horizontal scrolling on narrow screens.
+- Added E2E coverage for one/two-page switching, left/right order, two-page navigation, local preference persistence and offline opening.
+- No local build/test run is claimed. PR remains OPEN / Draft / NOT VERIFIED because the prerequisite PR #382 currently fails bun audit on high-severity picomatch ReDoS advisory GHSA-fc5q-39xc-vjpf; do not suppress the audit.
+- Task 4 source research: QuranEnc identifies Arabic Tafsir al-Muyassar as key arabic_moyassar, publisher King Fahd Complex, version V1.0.1 dated 2026-11-09. API returns surah aya/translation/footnotes. Official reuse terms require unmodified content, visible publisher and QuranEnc.com source, version number, retained edition metadata, feedback reporting, updating to source releases, and no unsuitable ads.
+- Next: resolve the dependency security blocker without weakening audit, then exact-head validate stacked PRs. Build task 4 as a complete resumable IndexedDB offline package before exposing opposite-page Tafsir.
+
