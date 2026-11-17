@@ -412,7 +412,13 @@ export class OfflineQuranAudioLibrary {
 
   private async runWithLock<T>(lockName: string, task: () => Promise<T>): Promise<T> {
     if (this.lockRunner) return this.lockRunner(lockName, task);
-    if (this.lockManager) return this.lockManager.request(lockName, { mode: 'exclusive' }, task);
+    if (this.lockManager) {
+      return this.lockManager.request(lockName, { mode: 'exclusive' }, () =>
+        lockName.startsWith('wird-offline-audio-worker:')
+          ? this.runWithIndexedDbLease(lockName, task)
+          : task()
+      );
+    }
     return this.runWithIndexedDbLease(lockName, task);
   }
 
