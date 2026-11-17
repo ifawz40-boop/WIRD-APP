@@ -1,8 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ALL_SURAHS } from '../src/data/quranMeta';
 
+const quranEncVersionMockedPages = new WeakSet<Page>();
+
 async function mockQuranEncVersion(page: Page) {
-  await page.route(/quranenc\.com\/api\/v1\/translations\/list\/ar/, async route => {
+  if (quranEncVersionMockedPages.has(page)) return;
+  quranEncVersionMockedPages.add(page);
+  await page.route(/^https:\/\/quranenc\.com\/api\/v1\/translations\/list\/ar\/?(?:\?.*)?$/, async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -17,6 +21,8 @@ async function mockQuranEncVersion(page: Page) {
 
 test.describe('WIRD navigation and memorization tafsir UX', () => {
   test.beforeEach(async ({ page }) => {
+    // Register the external metadata fixture before app startup or service-worker activity.
+    await mockQuranEncVersion(page);
     await page.goto('/');
     await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
   });
