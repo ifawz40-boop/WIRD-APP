@@ -4,7 +4,7 @@
 
 - Owner narrowed the current goal to local/offline readiness and four ordered tasks: multi-plan due-work on Dashboard, navigation controls below Quran ayahs, one-/two-page printed Mushaf, and offline opposite-page Tafsir al-Muyassar.
 - PR #383 follow-up: code commit `77f360a4390466863c487dd164d567a95a83a605` carries the originating plan ID through Dashboard start → session → completion, so duplicate ayah ranges across plans cannot update the wrong plan. Changing the session range clears the identity; deep links without it retain fallback matching.
-- PR #383 (multi-plan due queue): `45acc719a90049f1f71606995cb02943ac5e337d`, OPEN/Draft. Exact Quality Gate #4460 fails frozen Bun install because lockfile needs updates.
+- PR #383 (multi-plan due queue): `77f360a4390466863c487dd164d567a95a83a605`, OPEN/Draft. Exact Quality Gate #4465 fails frozen Bun install because this branch is still based on main and does not include prerequisite #382's lockfile alignment; latest Vercel status is also build-rate-limit.
 - PR #384 (ayah navigation): `3f59506204e21f702749159333162e80ab2f324d`, OPEN/Draft. Vercel Preview READY on this exact SHA; no Actions run.
 - PR #385 (printed spread): `10529d88e358b35a63c7b41060ffe966141d54e2`, OPEN/Draft. Vercel Preview READY on this exact SHA; no Actions run.
 - PR #386 (offline Tafsir): Code-fix commit `3d4bcbaac5e1830faf369125536294a8f8487e02`; subsequent branch commits are documentation-only. Re-fetch PR #386 for the live exact head., OPEN/Draft. Latest Vercel status failed due `build-rate-limit`; no Actions run. It is stacked on #385. PR #383 is a separate branch off main.
