@@ -50,7 +50,13 @@ test.describe('WIRD full printed Mushaf offline package', () => {
       }
     });
 
-    await page.getByRole('button', { name: 'الإعدادات', exact: true }).click();
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      const quickNavigation = page.getByRole('navigation', { name: 'التنقل السريع' });
+      await quickNavigation.getByRole('button', { name: 'المزيد من الأقسام' }).click();
+      await page.getByRole('navigation', { name: 'القائمة الرئيسية' }).getByRole('button', { name: 'الإعدادات' }).click();
+    } else {
+      await page.getByRole('button', { name: 'الإعدادات', exact: true }).click();
+    }
     const offlinePackage = page.getByRole('heading', { name: 'المصحف المصوّر كاملًا دون إنترنت' }).locator('xpath=../..');
     await offlinePackage.getByRole('button', { name: 'تنزيل المصحف المصوّر كاملًا' }).click();
 
