@@ -361,3 +361,11 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - New candidate commit sequence includes `b7e6c537...`, `1e7ef121...`, `33e5ee4b...`, `c5ec160f...`, `6e80d237...`, `3bc565c0...`, `003a4407...`, `665cd02f...`, and latest docs commit `8ee956df...`. Confirm latest branch head before test assertions.
 - PR #389 exact-head run #4550 (`44186321154`) is still running its desktop/mobile Playwright job; audit job fails on picomatch. Do not treat #4550 as validation for PR #390 because #390 adds new source and E2E tests.
 - Next: confirm #390 exact-head CI starts; inspect and fix any TypeScript/unit/Playwright issues; poll #4550 and verify the QuranEnc version fixture change. Security audit remains blocking due picomatch@4.0.7 GHSA-fc5q-39xc-vjpf. No merge/deploy.
+
+
+### PR #390 exact-head test corrections — 2026-11-18
+
+- Run #4550 (`44186321154`) confirmed the QuranEnc metadata fixture correction: the partial-download resume test passed on both desktop and mobile. The remaining Playwright failures were the weak-verse navigation test's stale `.wird-card` nested locator (desktop + mobile); ported the verified fix from PR #387 commit `2532ddbcd985702ed2af84986c7dc3587ecf3303` into #390 as `a892d5e378e9b5ec3bfa2598640c2218a28ddd3f`.
+- Added `e2e/offline-mushaf-package.spec.ts`: simulates one interruption at page 4, resumes the 604-page download, asserts page 1 is not redownloaded and page 4 is retried once, then opens the printed page after browser offline mode without a second page-1 request.
+- Tightened the offline package so every newly downloaded and cached SVG is validated/sanitized and its ayah coordinates are resolved against WIRD local Quran chunks before it is counted. Cache status remains readable even if StorageManager quota estimation is unavailable; only starting a bulk download requires quota estimation.
+- Latest PR #390 head `5b953e3a47bf75ea33607abe5a62af8ca4aa6e65`. Exact Quality Gate #4560 / run `44187977275` is pending. Earlier #4558 was cancelled when the test follow-up was pushed. Audit remains red on picomatch@4.0.7. Poll #4560 through unit, all-604 validator, Firestore, TypeScript, build, smoke and Playwright before next action.
