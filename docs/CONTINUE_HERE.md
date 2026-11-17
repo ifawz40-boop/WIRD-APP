@@ -26,6 +26,18 @@
   - `npm run test:firestore-rules`: **BLOCKED** in AI Studio container (no Java runtime: `Could not spawn java -version`).
   - `npm run lint` + `compile_applet`: run as final build/lint verification pass.
 
+## Latest continuation checkpoint — 2026-11-17 (GitHub recheck)
+
+- Current `main` SHA observed: `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`.
+- PR #380: current head `99408208b8bd4027b05ee544b908211911949c96`, base still `68dc6ea...`, `mergeable=false`; no GitHub workflow run found for this head. Vercel status context is green, but deployment source-SHA and browser smoke are not verified. Diff is non-runtime: artwork restoration, package/lockfile changes, and Playwright selector/flow updates. Reconcile with current main and rerun all gates; do not merge yet.
+- PR #381: current head `d02a38154eaf6c2c48d5e6b05f1ba2b0decf03c2`. Quality Gate run `44103216018` (run #4446) failed on merge ref `502d3cea...` during frozen Bun install because `package.json` override `@grpc/grpc-js: 1.14.6` is not represented in `bun.lock`. Later gates skipped. Main currently has that override in its manifest but no `overrides` block in lockfile; PR #380 branch contains the block but is based on stale main. Keep #381 Draft.
+- Exact latest branch file SHA for this tracker before this update: `b5e8fe83a265b2504c8719422b799d23fd5ef7cb`. This entry and the master plan are updated together after this checkpoint.
+- No merge, production change, secret/config change, or sync-flag change was made.
+
+**Next action for a new chat:** read this file and `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md` first; fetch live `main` and PR #380 metadata/diff; reconcile #380 on current main; obtain a green exact-head Quality Gate; only then rebase/revalidate #381. Never assume a historical SHA/check is current.
+
+---
+
 ## Immediate next actions
 
 1. **Sync & commit workspace changes to GitHub feature branch/PR:** review the workspace diff, push to a dedicated feature branch (not directly to `main`), and run the full GitHub Quality Gate workflow (which provides Java for `test:firestore-rules` alongside Bun install/audit, unit tests, build, and Playwright).
