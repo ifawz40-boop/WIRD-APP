@@ -196,7 +196,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [pageDisplayMode, setPageDisplayMode] = useState<MushafPageDisplayMode>(readMushafPageDisplayMode);
   const [leftPageContentMode, setLeftPageContentMode] = useState<MushafSpreadPageContentMode>(() => readMushafSpreadContentModes().left);
   const [rightPageContentMode, setRightPageContentMode] = useState<MushafSpreadPageContentMode>(() => readMushafSpreadContentModes().right);
-  const [readingSide, setReadingSide] = useState<MushafSpreadPageSide>('right');
+  const [readingSide, setReadingSide] = useState<MushafSpreadPageSide>(() =>
+    readMushafSpreadContentModes().right === 'tafsir' ? 'left' : 'right'
+  );
   const [page, setPage] = useState(() => {
     const requestedPage = Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage();
     return readMushafPageDisplayMode() === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
