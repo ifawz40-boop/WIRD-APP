@@ -1,5 +1,20 @@
 > **Roadmap scope note — 2026-11-14:** This file defines product direction and sequencing, not the live operational state. For current main/PR heads, CI, Vercel, Firebase, owner decisions and the next executable task, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). The dated implementation/status notes below are retained as history and must be revalidated before action.
 
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+**Priority:** active owner request; execute in the following order. Scope is deliberately limited to making the existing app more dependable locally/offline; do not add unrelated portal features or new network dependencies.
+
+1. **Multiple active memorization plans on Dashboard.** Collect every due or overdue incomplete memorization task from all active, non-paused engine plans. Sort deterministically by due date and plan identity; exclude future tasks, paused/inactive plans, completed tasks and completed days. Show each due task with its originating plan and a direct start action. Completing a session must update the matching due plan, not whichever plan happens to appear first in storage.
+2. **Verse navigation controls.** Provide consistent navigation/action controls immediately below displayed ayat across Quran-reading interfaces. Reuse canonical ayah coordinates and existing navigation behavior; do not alter Quran text.
+3. **Printed Mushaf page layout.** Add one-page and facing two-page display modes. Keep one-page mode available and preserve usable responsive behavior on mobile/tablet.
+4. **Opposite-page Tafsir al-Muyassar.** In two-page mode, each side independently supports Quran or locally available Tafsir al-Muyassar for the ayah/reading position on the opposite page. Both sides default to Quran. Tafsir must come from the verified local corpus/cache; no runtime API is introduced for this feature.
+
+**Release rules:** one narrow PR per task; add unit/integration and desktop/mobile E2E coverage; run the complete applicable exact-head Quality Gate; update the continuation queue, current-state snapshot, specialist documentation and append-only work log after each meaningful change. A task is not complete/merged merely because a branch or Preview exists. No Production secrets/settings, Firebase Rules/data, sync flags or user data changes.
+
+**Current status:** task 1 implementation is OPEN / Draft in PR #383 and NOT VERIFIED pending exact-head CI. Tasks 2–4 are NOT STARTED. See docs/CONTINUE_HERE.md for live GitHub evidence.
+
+---
+
 ---
 
 # مسار منتجي جديد — Offline-first والتطبيق المستقبلي
