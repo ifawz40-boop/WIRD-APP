@@ -52,3 +52,11 @@
 - Current PR #387 exact head: `199743fa60974ee650d51e6579bb5db87fba6487`. Quality Gate #4504 / run `44179885024`: separate dependency audit completed FAILURE on picomatch; application job is running independently (last poll: Node.js setup). Re-poll through Playwright and inspect artifacts.
 - Run #4503 on previous head `6dec1cbb...` used the older single-job workflow and failed within that job; it is superseded by #4504 and does not validate the split gate.
 - Current PR #387 remains Draft/HOLD. No merge or Production deploy; no Firebase/Vercel settings/secrets or sync-flag changes. Main remains unchanged at the last verified SHA.
+
+
+## Multi-plan session identity durability — 2026-11-17
+- Source review found a real recovery gap: #383 passed enginePlanId into React session state, but the route hash did not preserve it. Refreshing a session or reopening its deep link therefore lost the source plan; if two active plans contained the same ayah range, completion could update the first matching plan instead of the plan that launched the session.
+- Fixed on cumulative PR #387: RouteState.enginePlanId, validated `plan` query parsing/building only on session routes, App initial-state and hash-change restoration, and inclusion in the session deep link. Changing ayah range intentionally clears the plan association.
+- Added tests for route round-trip, malformed plan IDs, and no plan context on non-session routes.
+- Commits: `f73704b6f7546e9373f9bca041c09281a4bdcdc7`, `88fd617b17eb1590f041359c298820adc2fc81f1`, `6d7f435dd2caca3cc400783fc2a7ee152f3e1fd1`.
+- PR #387 current head: `6d7f435dd2caca3cc400783fc2a7ee152f3e1fd1`. Run #4504 (`44179885024`) was still in Playwright on the preceding head when last checked; it does not validate this route fix. Wait for that run to conclude/cancel, then confirm a new exact-head run is triggered.
