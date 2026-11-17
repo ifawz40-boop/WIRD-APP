@@ -4,8 +4,10 @@ import {
   MUSHAF_OFFLINE_CACHE_NAME,
   parseMushafAyahCoordinates,
   parseMushafViewBox,
+  matchMushafAyahAreas,
   sanitizeMushafSvgMarkup
 } from './mushafFacsimileService';
+import { loadSurahVerses } from '../data/quranDataLoader';
 
 export const MUSHAF_OFFLINE_PAGE_COUNT = 604;
 const STORAGE_RESERVE_BYTES = 32 * 1024 * 1024;
@@ -61,6 +63,24 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('تم إيقاف تنزيل صفحات المصحف.', 'AbortError');
 }
 
+async function validatePageAgainstLocalQuran(
+  page: number,
+  markup: string
+): Promise<void> {
+  const areas = parseMushafAyahCoordinates(markup);
+  const surahNumbers = [...new Set(areas.map(area => area.surahNumber))];
+  const localSurahs = new Map<number, Awaited<ReturnType<typeof loadSurahVerses>>>();
+  for (const surahNumber of surahNumbers) {
+    localSurahs.set(surahNumber, await loadSurahVerses(surahNumber));
+  }
+  const localAyahs = areas.map(area => {
+    const ayah = localSurahs.get(area.surahNumber)?.find(item => item.numberInSurah === area.ayahNumber);
+    if (!ayah) throw new Error(`إحداثيات صفحة المصحف رقم ${page} لا تطابق نص وِرد المحلي.`);
+    return ayah;
+  });
+  matchMushafAyahAreas(areas, localAyahs);
+}
+
 async function fetchValidatedPage(page: number, signal?: AbortSignal): Promise<{ response: Response; bytes: number }> {
   throwIfAborted(signal);
   const { svgUrl } = getMushafFacsimilePageUrls(page);
@@ -82,6 +102,7 @@ async function fetchValidatedPage(page: number, signal?: AbortSignal): Promise<{
   const areas = parseMushafAyahCoordinates(markup);
   if (areas.length === 0) throw new Error(`صفحة المصحف رقم ${page} لا تحتوي على مواضع آيات.`);
   sanitizeMushafSvgMarkup(markup);
+  await validatePageAgainstLocalQuran(page, markup);
   return { response, bytes: new TextEncoder().encode(markup).byteLength };
 }
 
@@ -126,6 +147,7 @@ export async function downloadMushafOfflinePackage(
         parseMushafViewBox(markup);
         parseMushafAyahCoordinates(markup);
         sanitizeMushafSvgMarkup(markup);
+        await validatePageAgainstLocalQuran(page, markup);
         sampleBytes.push(new TextEncoder().encode(markup).byteLength);
         continue;
       } catch {
