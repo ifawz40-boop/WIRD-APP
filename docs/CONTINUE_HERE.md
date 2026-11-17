@@ -60,6 +60,14 @@ The four approved roadmap tracks are **not greenfield**. Source audit has identi
 
 **Exact source audit base:** `main` `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. This is source inspection, not test pass or Production verification.
 
+## Durable continuation instructions
+
+- Canonical roadmap and audit: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md` (Section 7 is the latest source map and gap assessment).
+- Continuation branch: `docs/advanced-hifz-offline-roadmap-20261117`; PR #381: https://github.com/xm8eslam-stack/WIRD-APP/pull/381. Fetch its current head before editing; the tracker itself is updated by commits on this branch.
+- Main baseline used for the source audit: `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. This is not a claim that main is still at that SHA; refresh it live before code changes.
+- Do not rebuild existing features in parallel. Inspect the exact source gaps recorded in Section 7, then create narrow implementation PRs with exact-head CI, tests, and dated tracker updates.
+- Do not merge #380 or #381 based on Preview status alone. #380 is diverged from main and has no current-head GitHub Actions run; #381's last inspectable Quality Gate failed frozen Bun install on the older merge ref. Latest checked #381 merge ref `49dfc447...` had no workflow run/status returned yet; re-fetch.
+
 ## Immediate next actions
 
 1. **Sync & commit workspace changes to GitHub feature branch/PR:** review the workspace diff, push to a dedicated feature branch (not directly to `main`), and run the full GitHub Quality Gate workflow (which provides Java for `test:firestore-rules` alongside Bun install/audit, unit tests, build, and Playwright).
