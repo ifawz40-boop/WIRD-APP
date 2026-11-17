@@ -6,6 +6,21 @@
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
+## Current GitHub execution checkpoint — 2026-11-17 21:35 +02:00
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (re-fetched from GitHub).
+- **Current owner priority:** complete the explicitly requested local/offline usability tasks only; do not expand product scope.
+- **Task 1 — multiple active memorization plans:** implementation PR #383 is OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Branch fix/dashboard-multiple-due-plan-tasks-20261117. It aggregates all due memorization tasks from active, non-paused engine plans, excludes future/completed work, shows additional due tasks on Dashboard, and updates the matching due plan when a session is completed.
+- **Task 1 verification:** no local checkout/terminal is available in this connector session. No local tests/build are claimed. At the first exact-head check, the commit had a Vercel status context SUCCESS but no GitHub Actions workflow run was returned; Vercel status is not a substitute for Quality Gate or browser smoke.
+- **Known CI baseline blocker:** main's bun.lock frozen-install mismatch remains under investigation in PR #382; its last inspectable Quality Gate failed at Playwright (160 passed, 2 skipped, 4 failed) after earlier gates passed. Do not merge this feature PR until the exact current head has a usable full Quality Gate and the failures are diagnosed.
+- **Task 2 — Quran verse navigation controls:** NOT STARTED. Add consistent controls immediately beneath displayed ayat in each relevant Quran-reading surface.
+- **Task 3 — printed Mushaf display:** NOT STARTED. Add one-page and facing two-page modes while retaining responsive single-page behavior on narrow screens.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** NOT STARTED. In two-page mode, independently allow either page to show verified local Quran text or local Tafsir al-Muyassar for the ayah being read on the opposite page; default both pages to Quran.
+- **Offline boundary:** prioritize local Quran text, locally available tafsir and device-local preferences. Do not introduce runtime network dependencies or new APIs for these tasks.
+- **Next action:** re-fetch PR #383 head/base/diff and exact CI; fix only evidenced issues. Keep Draft/HOLD until all required gates pass. Then continue with task 2 as a separate PR.
+
+---
+
 ## Verified AI Studio workspace state — 2026-11-17
 
 - **Deployment & GitHub status:** Workspace edits live in Google AI Studio only. **NOT committed/pushed to GitHub** and **NOT deployed to Vercel** (explicit owner directive; Vercel Production sync flags remain unchanged).
