@@ -415,3 +415,19 @@ Append a dated entry for every meaningful implementation/checkpoint. Include exa
 3. Resolve the picomatch advisory only through a complete, reviewed upstream fix or safe dependency graph update; keep `bun audit --audit-level=high` blocking.
 4. Only after parent gates pass, validate #383 on exact head, then #384, #385, #386 in dependency order with full desktop/mobile/offline coverage.
 5. Update this file and `docs/CONTINUE_HERE.md` with exact SHAs, run IDs, failures, and verification results. Merge/publish only after all required gates and user-requested acceptance criteria pass.
+
+
+## CI follow-up — 2026-11-17 22:55 +02:00
+
+- PR #383 exact head `8c7c5cd47cf186c8da23a2cf5fe3360afb7cd341`, Quality Gate run #4474 (`44171290167`) completed.
+- Main validation job PASS: 756 unit assertions, 31 Firestore Rules Emulator tests, API import smoke, Quran audio CDN smoke 8/8, production and development server JSON smoke, TypeScript/lint, production build, and Playwright 164 passed / 0 failed (desktop + mobile Chromium).
+- The two earlier TypeScript failures in #383 are resolved and verified on this exact head. The prior mobile audio idle-state Playwright failure did not reproduce in this full exact-head run; 164 E2E tests passed. Do not claim that this proves a dedicated audio fix unless separately verified.
+- Overall Quality Gate remains FAIL solely because the complete dependency audit reports `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366, High severity ReDoS. The official GitHub advisory currently lists no patched version. Upstream picomatch PR #194 is an extglob parsing correctness change and explicitly says it does NOT fix the remaining repeated-extglob ReDoS shape `+(*a)`; it is not an acceptable security remediation for this advisory. Do not force an override to an unverified/nonexistent release, suppress the audit, downgrade the gate, or merge while this gate is required.
+- Exact-head PR #383 is functionally green for unit/TS/build/Playwright/Firestore but remains Draft/HOLD pending a vendor-supported security fix or a reviewed architecture change that removes the vulnerable dependency without bypassing audit coverage.
+- No merge, production deploy, Firebase data/rules change, Vercel settings/secrets change, or sync-flag change occurred.
+
+### Next actions
+1. Keep #383 Draft. Monitor the official picomatch advisory/release for a verifiably patched version and inspect its upstream regression tests before updating the lockfile.
+2. If no patch is available, evaluate a supported Vite/toolchain version that removes picomatch from the resolved graph; prove compatibility with build, preview, test and dev server before changing dependencies.
+3. Once security gate is genuinely clean, rerun the full exact-head Quality Gate and review #383's dashboard behavior with three active plans, duplicate ayah ranges across plans, overdue tasks, pause/inactive/future/completed cases, and reload persistence.
+4. Continue #384–#386 only with the same exact-SHA gates and keep the offline-readiness plan as the release criterion.
