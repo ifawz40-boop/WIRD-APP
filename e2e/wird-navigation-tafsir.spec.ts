@@ -106,6 +106,32 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(navigation).toContainText('1:2');
   });
 
+  test('printed Mushaf can switch between one page and a right-to-left facing spread', async ({ page }) => {
+    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+
+    const displayMode = page.getByRole('group', { name: 'طريقة عرض صفحات المصحف' });
+    await expect(displayMode.getByRole('button', { name: 'صفحة واحدة' })).toHaveAttribute('aria-pressed', 'true');
+    await displayMode.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+
+    const spread = page.getByRole('main', { name: 'صفحتا المصحف 1 و2' });
+    await expect(spread).toBeVisible();
+    await expect(spread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+    await expect(spread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
+    await expect(spread.locator('[aria-label="الصفحة اليسرى رقم 2"]')).toBeVisible();
+    await expect(spread.locator('[aria-label="الصفحة اليمنى رقم 1"]')).toBeVisible();
+
+    await page.getByRole('button', { name: 'الصفحة التالية' }).click();
+    const nextSpread = page.getByRole('main', { name: 'صفحتا المصحف 3 و4' });
+    await expect(nextSpread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 3"]')).toBeVisible();
+    await expect(nextSpread.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 4"]')).toBeVisible();
+
+    await displayMode.getByRole('button', { name: 'صفحة واحدة' }).click();
+    await expect(page.getByRole('main', { name: 'صفحة المصحف 3' }).locator('svg[aria-label="صفحة المصحف المطبوعة رقم 3"]')).toBeVisible();
+    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 4"]')).toHaveCount(0);
+  });
+
   test('full offline preparation caches lazy Quran assets and opens the mushaf offline', async ({ page, context }) => {
     test.skip((page.viewportSize()?.width ?? 1280) < 768, 'The full asset download is exercised once on desktop; mobile settings reachability is covered separately.');
     test.setTimeout(180_000);
