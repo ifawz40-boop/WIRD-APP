@@ -396,11 +396,38 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsAudioPaused(false);
         setPlayingIndex(null);
         setSegmentPlaybackStatus(null);
-        if (continueAcrossPages && page + pageStep <= 604) {
+        if (!continueAcrossPages) return;
+
+        if (isSpreadModeActive && leftPageContentMode === 'tafsir' && readingSide === 'right') {
+          if (page + 1 <= 604) {
+            autoPlayNextPageRef.current = true;
+            setReadingAyah(null);
+            setLeftPageContentMode('quran');
+            setRightPageContentMode('tafsir');
+            setReadingSide('left');
+          }
+          return;
+        }
+
+        if (isSpreadModeActive && rightPageContentMode === 'tafsir' && readingSide === 'left') {
+          if (page + 2 <= 604) {
+            autoPlayNextPageRef.current = true;
+            setIsLoading(true);
+            setReadingAyah(null);
+            setRightPageContentMode('quran');
+            setLeftPageContentMode('tafsir');
+            setReadingSide('right');
+            setPage(page + 2);
+          }
+          return;
+        }
+
+        if (page + pageStep <= 604) {
           autoPlayNextPageRef.current = true;
           // Keep the next-page effect from seeing the previous page's ayahs
           // before the page loader has started and replaced them.
           setIsLoading(true);
+          setReadingAyah(null);
           setPage(page + pageStep);
         }
       },
