@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Ayah } from '../../types/quran';
+import { ALL_SURAHS } from '../../data/quranMeta';
 import {
   getOfflineTafsirDownloadStatus,
   getOfflineTafsirForSurah,
@@ -116,7 +117,7 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
                 className={`rounded-xl border p-3 ${isSelected ? 'border-[#C59B27] bg-[#F6EED8] dark:bg-[#273047]' : 'border-[#1C4E46]/10 bg-white/80 dark:border-[#E0A96D]/15 dark:bg-[#111F36]'}`}
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold text-[#8A6914] dark:text-[#E0A96D]">سورة {ayah.surahName} · الآية {ayah.numberInSurah}</span>
+                  <span className="text-[10px] font-bold text-[#8A6914] dark:text-[#E0A96D]">سورة {ALL_SURAHS[ayah.surahNumber - 1]?.name || ayah.surahNumber} · الآية {ayah.numberInSurah}</span>
                   {isSelected && <span className="rounded-md bg-[#C59B27]/15 px-2 py-1 text-[9px] font-bold text-[#8A6914] dark:text-[#E0A96D]">موضع القراءة</span>}
                 </div>
                 <p className="font-quran text-right text-base leading-[2.1] text-[#142421] dark:text-[#F5F1E8]">{ayah.text}</p>
