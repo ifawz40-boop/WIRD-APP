@@ -430,7 +430,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
 
   const jumpToNavigationPoint = (point: NavigationPoint) => {
     const target = { surahNumber: point.surahNumber, ayahNumber: point.ayahNumber };
-    if (point.page === page && audioAyahs.length &&
+    const targetIsVisibleInCurrentSpread = point.page === page ||
+      (pageDisplayMode === 'spread' && point.page === page + 1);
+    if (targetIsVisibleInCurrentSpread && audioAyahs.length &&
         audioAyahs.some(ayah => ayah.surahNumber === target.surahNumber && ayah.numberInSurah === target.ayahNumber)) {
       document.getElementById('wird-ayah-' + point.surahNumber + '-' + point.ayahNumber)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       pendingTargetRef.current = null;
