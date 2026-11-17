@@ -8,7 +8,7 @@
 
 | Task | PR | Current exact head | State | Evidence / blocker |
 |---|---:|---|---|---|
-| Multiple active-plan due tasks | #383 | `45acc719a90049f1f71606995cb02943ac5e337d` | OPEN / Draft / NOT VERIFIED | Quality Gate run #4460 fails at `bun install --frozen-lockfile`: lockfile changes are required. Vercel Preview for this exact SHA was READY. |
+| Multiple active-plan due tasks | #383 | `77f360a4390466863c487dd164d567a95a83a605` | OPEN / Draft / NOT VERIFIED | Quality Gate run #4465 fails at `bun install --frozen-lockfile`: this branch is still based on main and does not include prerequisite #382's lockfile alignment. Latest Vercel status is also FAILED due `build-rate-limit`. |
 | Adjacent-ayah controls | #384 | `3f59506204e21f702749159333162e80ab2f324d` | OPEN / Draft / NOT VERIFIED | Vercel Preview for this exact SHA was READY. No GitHub Actions run returned for this stacked branch. Controls exist in Mushaf and Quran study surfaces; memorization session already has its own adjacent controls. |
 | Printed Mushaf spread | #385 | `10529d88e358b35a63c7b41060ffe966141d54e2` | OPEN / Draft / NOT VERIFIED | Vercel Preview for this exact SHA was READY. One-page remains available; facing spread displays lower-numbered page on the right and next page on the left. |
 | Offline Tafsir al-Muyassar / opposite-page mode | #386 | Code-fix commit `3d4bcbaac5e1830faf369125536294a8f8487e02` (later commits on this branch are documentation-only; re-fetch PR #386 for the live exact head). | OPEN / Draft / NOT VERIFIED | Latest Vercel status is FAILED due to account `build-rate-limit`; no GitHub Actions run returned. Do not call this a code build failure or pass. |
