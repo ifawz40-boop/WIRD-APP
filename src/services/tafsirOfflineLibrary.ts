@@ -129,6 +129,23 @@ async function writeStoredSurah(database: IDBDatabase, record: StoredSurah): Pro
   await transactionDone(transaction);
 }
 
+async function deleteStoredSurah(database: IDBDatabase, surahNumber: number): Promise<void> {
+  const transaction = database.transaction(SURAH_STORE, 'readwrite');
+  transaction.objectStore(SURAH_STORE).delete(surahNumber);
+  await transactionDone(transaction);
+}
+
+async function markSurahMissing(database: IDBDatabase, surahNumber: number): Promise<void> {
+  const manifest = await readManifest(database);
+  if (!manifest || manifest.sourceVersion !== OFFLINE_TAFSIR_SOURCE.version) return;
+  await writeManifest(database, {
+    ...manifest,
+    downloadedSurahs: manifest.downloadedSurahs.filter(number => number !== surahNumber),
+    status: 'paused',
+    updatedAt: new Date().toISOString()
+  });
+}
+
 function extractRows(payload: unknown): QuranEncTafsirRow[] {
   if (Array.isArray(payload)) return payload as QuranEncTafsirRow[];
   if (payload && typeof payload === 'object') {
@@ -191,7 +208,13 @@ export async function getOfflineTafsirForSurah(surahNumber: number): Promise<Qur
   const database = await openDatabase();
   const record = await readStoredSurah(database, surahNumber);
   if (!record || record.sourceVersion !== OFFLINE_TAFSIR_SOURCE.version) return null;
-  return validateSurahPayload(surahNumber, record.payload);
+  try {
+    return validateSurahPayload(surahNumber, record.payload);
+  } catch (error) {
+    await deleteStoredSurah(database, surahNumber);
+    await markSurahMissing(database, surahNumber);
+    throw error;
+  }
 }
 
 export async function getOfflineTafsirForAyah(surahNumber: number, ayahNumber: number): Promise<QuranEncTafsirRow | null> {
