@@ -40,3 +40,12 @@ Source diff inspected:
 
 ## Release boundary
 Neither #366 nor #368 is currently merged into main or Production. No offline audio download library, complete offline shell, or real-device offline guarantee is claimed. No production deployment, Firebase/Vercel settings/secrets, or sync flags were changed by this audit.
+
+
+## Correction after re-fetching current main — 2026-11-17
+
+The earlier audit above described PR #368 as the only audio library foundation. That was incomplete because it did not re-check the latest main implementation. Current main already contains the Settings audio manager, IndexedDB job/file metadata, approved reciter/range planning, quota preflight, bounded two-worker download, generation-scoped Cache Storage writes/read-back, reference-aware deletion/reconciliation, and local-first ObjectURL playback. PR #368 is now a stale alternate implementation and must not be merged as a duplicate store.
+
+The actual remaining current-main gaps are narrower: no job-scoped cross-tab worker ownership, no lock fallback when Web Locks is absent, pause/cancel state from another tab is not reliably observed by a running worker, no durable staging record for crash between Cache Storage write and IndexedDB commit, no scan for unknown cache keys without metadata, and no real-device cold restart/airplane playback proof. See the updated `docs/offline/OFFLINE_AUDIO_STORAGE_CONTRACT.md` and current PR #388 for the precise implementation plan.
+
+The app-shell findings remain valid: main's Vite manifest enumerates build bundle assets but not recursive public assets; PR #366's `offlinePublicAssets` and service-worker timeout/adaptive-cache changes are not in main and need a narrow port/rebase, not a wholesale merge.
