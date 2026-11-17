@@ -27,7 +27,7 @@
 
 > The older Google AI Studio workspace snapshot below is historical context only.
 
-## Current GitHub implementation snapshot — 2026-11-17 22:20 +02:00
+## Current GitHub implementation snapshot — 2026-11-17
 
 - Live main last verified: f70bf5e0617b558dfba4663da2667fb5d6c3ce8a.
 - Owner scope: local/offline readiness only; four tasks: multiple active plan due-work, navigation beneath ayat, one-/two-page printed Mushaf, opposite-page Tafsir al-Muyassar.
