@@ -103,6 +103,8 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     assert(due.some(item => item.planId === 'plan-b' && item.task.surahNumber === 5), 'Second plan task must be retained');
     assert(due.some(item => item.planId === 'plan-c' && item.task.surahNumber === 7), 'Third plan task must be retained');
     assert(!due.some(item => item.task.surahNumber === 4 || item.task.surahNumber === 6), 'Future tasks must remain excluded');
+    const primary = getDailySessionSelection([], [first, second, third], [], '2026-11-05');
+    assert(primary.kind === 'session' && primary.enginePlanId === 'plan-a', 'The primary dashboard session must retain the exact source plan identity');
   });
 
   test('All-plan due queue excludes paused, inactive, completed tasks and completed days', () => {
