@@ -377,3 +377,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Added a real-device offline acceptance gate to `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md`: iPadOS Safari + Android Chrome; three-plan due-task integrity; full app shell + 604 printed pages + 114-surah Tafsir + audio; cold close/reopen in airplane mode; quota/persistence denial; cache failure; update lifecycle; and local/cloud data isolation. CI/Playwright is not sufficient to claim cold-start offline readiness.
 
 - Full checkpoint file: docs/checkpoints/2026-11-18-PR390-4563.md (exact candidate SHA, cumulative scope, current CI, security blocker, real-device gates, and safe continuation sequence).
+
+- Security dependency detail rechecked against Vite v8.3.5 package manifest: Vite declares picomatch ^4.0.7 directly and also brings tinyglobby ^0.2.17. The current audit log reports the resolved path vite > tinyglobby > fdir > picomatch@4.0.7; this is not just an unrelated optional development package that can be removed by pruning a leaf. No safe released fix is available yet.
