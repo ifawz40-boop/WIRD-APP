@@ -490,3 +490,11 @@ Before building a substantial capability from scratch, search official standards
 For every proposed API, document official endpoint/schema, authentication, data provenance, terms/reuse rights, privacy/retention, rate limits, quotas, pricing, uptime/versioning, caching, attribution, failure modes and fallback/exit strategy. Prefer free/open options; no paid API becomes mandatory without explicit owner approval. Keep credentials server-side; validate/bound inputs and outputs; use timeouts, safe retries, idempotency and non-secret errors. Preserve offline behavior and avoid hard runtime dependence where practical.
 
 Religious-content restrictions remain absolute: verified local Quran text is authoritative; APIs may provide validated coordinates/identifiers or approved media transport only. Do not use APIs or AI as an authority for Quran, authenticated Hadith, Tafsir, Fiqh or publishable Seerah.
+
+
+### CI / security blocker reconciliation — 2026-11-17
+
+- #382 exact head e8ca61c: run #4461 passed frozen install but failed bun audit on picomatch@4.0.7 (GHSA-fc5q-39xc-vjpf).
+- #383 exact head 45acc719: run #4460 failed bun install --frozen-lockfile because main's lockfile is out of sync; #382 is the prerequisite lockfile alignment.
+- #384–#386 are stacked on feature branches and currently have no workflow runs. Do not treat absent checks as passing.
+- GitHub advisory reviewed/updated 2026-11-17, High CVSS 8.7, no fixed version stated; npm latest remains 4.0.7. Upstream candidate fixes remain open/unmerged. Keep all PRs Draft until safe remediation and exact-head CI.
