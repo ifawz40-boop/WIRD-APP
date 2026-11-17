@@ -159,7 +159,7 @@ interface MushafPageContentSelectorProps {
 }
 
 const MushafPageContentSelector: React.FC<MushafPageContentSelectorProps> = ({ side, mode, onChange }) => (
-  <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#1C4E46]/10 bg-[#F7F3E9] px-2 py-2 dark:border-[#E0A96D]/15 dark:bg-[#172640]">
+  <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#1C4E46]/10 bg-[#F7F3E9] px-2 py-2 dark:border-[#E0A96D]/15 dark:bg-[#172640]" dir="rtl">
     <span className="text-[10px] font-bold text-[#5B6F6B] dark:text-[#AAB8B4]">
       {side === 'left' ? 'الصفحة اليسرى' : 'الصفحة اليمنى'}
     </span>
