@@ -269,3 +269,9 @@ PR #368 is a stale alternative implementation based on an older main. Its Cache 
 - Run #4520 on initial PR #388 head `06b0b5f98fab89ee6509f67816ecf2c67c9edd4e`: **768 unit assertions passed**, including the new cross-tab lease and database-upgrade tests. TypeScript then failed only on TS2774 because the DOM type marks `navigator.locks.request` as always defined.
 - Corrected feature detection by structurally treating `navigator.locks` as optional at runtime; commit `271d886945a7c98a3441e6ff75543df47bb6f972`.
 - A new exact-head Quality Gate is required. Run #4520 does not validate the correction and did not reach production build/Playwright. The separate picomatch security audit remains blocked.
+
+
+### PR #389 staging/cross-tab follow-up — 2026-11-17
+- Draft PR #389 extends PR #388 with durable Cache Storage staging, a v3 IndexedDB migration, conservative orphan-key grace records, BroadcastChannel pause/cancel signals, and durable job-status checks before each ayah and before commit.
+- First run #4530 (`44183047731`) completed the unit suite with 770 passed / 1 failed. All new migration/staging/orphan/lease tests passed; the sole failure was a test using nonexistent `getJob()` instead of public `listJobs()`. Corrected in commit `00313ec2b42b0f9bd0e700a8a4b2d7cc29dc222d`.
+- New exact-head run pending. #4530 did not reach TypeScript/build/Playwright. PR #389 remains Draft/HOLD; full dependency audit remains blocked by picomatch.
