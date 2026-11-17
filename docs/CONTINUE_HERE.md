@@ -338,3 +338,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - PR #387 route persistence now includes the nullable in-app RouteState typing correction at exact head `abe008dc1b03e1e04c6f7497bfd6138b4728cb19`. Quality Gate #4511 (`44180386559`) is running; last poll was 604-page coverage, with the audit separately failing on picomatch.
 
 - Offline readiness matrix refreshed on the documentation branch: `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md`. It distinguishes PR #387 implementation from release verification and records that pinned offline audio, cold-start airplane-mode proof, and full route acceptance remain outstanding.
+
+- PR #387 exact-plan completion matching is now extracted and tested for duplicate ranges across plans. Current head `be3188764505b601d7867d05b50f1a4a4c422223`; Quality Gate #4517 is pending, while #4511 was still in Playwright on the previous head. See latest integration checkpoint.
