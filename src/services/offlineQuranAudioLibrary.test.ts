@@ -4,6 +4,7 @@ import {
   OfflineQuranAudioLibrary,
   STORE_AUDIO_FILES,
   STORE_AUDIO_JOBS,
+  STORE_AUDIO_LOCKS,
   type CacheStorageLike
 } from './offlineQuranAudioLibrary';
 import { computeGlobalAyahNumber } from './audioService';
@@ -74,6 +75,97 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
       console.error(`  ❌ ${name}: ${error?.message || error}`);
     }
   };
+
+  await test('Version-1 audio databases upgrade safely to the cross-tab lock store', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-upgrade-${++dbCounter}`;
+    const request = factory.open(databaseName, 1);
+    const oldDb = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        const jobs = db.createObjectStore('jobs', { keyPath: 'jobId' });
+        jobs.createIndex('status', 'status', { unique: false });
+        jobs.createIndex('createdAtMs', 'createdAtMs', { unique: false });
+        jobs.createIndex('requestFingerprint', 'requestFingerprint', { unique: false });
+        const files = db.createObjectStore('files', { keyPath: 'fileKey' });
+        files.createIndex('reciterId', 'reciterId', { unique: false });
+        files.createIndex('available', 'available', { unique: false });
+        files.createIndex('deletionPending', 'deletionPending', { unique: false });
+        const items = db.createObjectStore('jobItems', { keyPath: 'itemKey' });
+        items.createIndex('jobId', 'jobId', { unique: false });
+        items.createIndex('fileKey', 'fileKey', { unique: false });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    oldDb.close();
+
+    const lib = new OfflineQuranAudioLibrary({ indexedDBFactory: factory, databaseName, lockManager: null });
+    await lib.getStats();
+    const upgraded = await (lib as any).openDatabase() as IDBDatabase;
+    assert(upgraded.objectStoreNames.contains(STORE_AUDIO_LOCKS), 'Version-2 upgrade must add the cross-tab locks store');
+    upgraded.close();
+  });
+
+  await test('IndexedDB lease fallback serializes the same download across two tabs', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-cross-tab-${++dbCounter}`;
+    const mockCache = createMockCacheStorage();
+    let networkCalls = 0;
+    const fetchFn: typeof fetch = async () => {
+      networkCalls++;
+      await new Promise(resolve => setTimeout(resolve, 8));
+      const bytes = new Uint8Array([0xff, 0xfb, 0x90, networkCalls]);
+      return new Response(bytes.buffer, {
+        status: 200,
+        headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': String(bytes.byteLength) }
+      });
+    };
+    const makeTab = () => new OfflineQuranAudioLibrary({
+      indexedDBFactory: factory,
+      databaseName,
+      cacheStorageFactory: mockCache.factory,
+      fetchFn,
+      lockManager: null,
+      lockLeaseMs: 1_000,
+      lockPollIntervalMs: 5,
+      lockWaitTimeoutMs: 5_000,
+      concurrency: 2,
+      storageEstimateFn: async () => ({ usage: 0, quota: 200_000_000 })
+    });
+    const tabA = makeTab();
+    const tabB = makeTab();
+    const job = await tabA.enqueueDownloadJob({
+      scopeKind: 'range',
+      labelAr: 'اختبار تبويبين',
+      reciterId: 'ar.alafasy',
+      ranges: [{ surahNumber: 112, startAyah: 1, endAyah: 3 }],
+      autoStart: false
+    });
+
+    const [resultA, resultB] = await Promise.all([
+      tabA.startOrResumeJob(job.jobId),
+      tabB.startOrResumeJob(job.jobId)
+    ]);
+    assert(networkCalls === 3, `Two tabs must not fetch duplicate ayahs; expected 3 requests, got ${networkCalls}`);
+    assert(resultA?.status === 'completed' || resultB?.status === 'completed', 'The shared job must complete in one of the tabs');
+
+    const db = await (tabA as any).openDatabase() as IDBDatabase;
+    const tx = db.transaction([STORE_AUDIO_LOCKS], 'readwrite');
+    tx.objectStore(STORE_AUDIO_LOCKS).put({
+      lockName: 'expired-test-lock', ownerId: 'closed-tab', leaseToken: 'stale-token',
+      expiresAtMs: Date.now() - 1_000, schemaVersion: 1
+    });
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('Expired lock fixture transaction aborted'));
+    });
+    let recovered = false;
+    await (tabB as any).runWithLock('expired-test-lock', async () => { recovered = true; });
+    assert(recovered, 'A later tab must take over a lease left by a crashed/closed owner after expiry');
+    db.close();
+  });
 
   await test('Bounded concurrency (<=2), redirect:error, host/mime verification, and local-first ObjectURL playback', async () => {
     const mockCache = createMockCacheStorage();
