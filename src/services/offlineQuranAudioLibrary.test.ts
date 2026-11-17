@@ -311,7 +311,7 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     await tabB.pauseJob(job.jobId);
     gateA.release();
     await firstRun;
-    const paused = await tabB.getJob(job.jobId);
+    const paused = (await tabB.listJobs()).find(entry => entry.jobId === job.jobId);
     assert(paused?.status === 'paused', 'A pause from another tab must remain durable after the in-flight request settles');
     assert(networkCalls === 1, 'A paused cross-tab worker must not start the next ayah');
 
@@ -320,7 +320,7 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     await tabA.cancelJob(job.jobId);
     gateB.release();
     await secondRun;
-    const cancelled = await tabB.getJob(job.jobId);
+    const cancelled = (await tabB.listJobs()).find(entry => entry.jobId === job.jobId);
     assert(cancelled?.status === 'cancelled', 'A cancel from another tab must remain terminal');
     assert(networkCalls === 2, 'A cancelled cross-tab worker must not start any further ayah');
     const stats = await tabA.getStats();
