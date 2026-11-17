@@ -1,17 +1,26 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-14 20:16 +02:00  
-**Latest application-code merge on main:** `d265bdf37e9410ad6cd99273bb595526dce63b50`  
-**Verified main HEAD:** `f264e4bdea7496090f60940e9e8db03e2fb15696`.  
+**Current snapshot reconciled:** 2026-11-16 (Google AI Studio workspace)  
+**Last refreshed GitHub/Vercel snapshot (not re-fetched in AI Studio):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`, app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50` (2026-11-14)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main`
 
-- #372 executed gates passed: Bun frozen install, audit, automated tests, API imports, audio byte-range, Firestore Emulator, TypeScript, production build, server smoke, Chromium install, and desktop/mobile Playwright; optional 604 Mushaf map check was skipped.
-- #374 must not merge as-is. Port verified temporary artifact deletion and workspace rename onto current main only after lockfile regeneration and exact-head CI; discard its obsolete engineering README.
-- Live Production Ruqyah route/audio and Google AI Studio synchronization remain NOT VERIFIED.
+- **AI Studio workspace verification (uncommitted local changes; NOT pushed to GitHub and NOT deployed to Vercel):**
+  - **Firebase configuration verified (`firebase-applet-config.json`):** `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`.
+  - **Code & build fixes applied in workspace:** `api/advisor.ts` TypeScript narrowing fix; `server.ts` Arabic rate-limit message typo fix (`يرجى الانتظار قليلاً`); `src/components/brand/BrandDesignShowcase.tsx` clipboard timer cleanup (`copyTimerRef`); `package.json` `build` script pinned to `NODE_ENV=production vite build` (eliminating `jsxDEV` bloat and restoring `import.meta.env.PROD` Service Worker registration); `src/main.tsx` non-blocking SW registration on `DOMContentLoaded`/ready DOM; `public/sw.js` non-blocking `precacheQuranFont` so external font timeouts never stall SW install; plus E2E selector updates in `e2e/plans-ux.spec.ts`, `e2e/ruqyah-ux.spec.ts`, `e2e/memorization-audio-repeat.spec.ts`, `e2e/memorization-session-display-ux.spec.ts`, `e2e/progress-ux.spec.ts`, and `e2e/wird-navigation-tafsir.spec.ts`.
+  - **Local workspace gates executed on final state:**
+    - `npx tsc --noEmit`: **PASS**
+    - `npm test` (`runAllTests.ts` + pre-scripts): **PASS** (`731 PASSED | 0 FAILED`)
+    - `npm run build` (`NODE_ENV=production vite build`): **PASS** (zero chunks > 500 kB, 9-asset shell precache manifest + 252 lazy assets, `/sw.js` active without `jsxDEV`)
+    - `npm run mushaf:validate-coverage`: **PASS** (all 604 SVG pages / 6,236 unique local ayahs mapped once)
+    - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS**
+    - Desktop + Mobile Playwright (all 18 `e2e/*.spec.ts` files): **PASS** (`162` executed passed, `2` intentionally skipped, `0` failed; includes offline app-shell reload and 252-asset full offline preparation)
+    - `npm run test:firestore-rules`: **BLOCKED** (Java runtime absent in AI Studio container: `Could not spawn java -version`)
+    - GitHub commit/push & exact-head CI for workspace fixes: **NOT EXECUTED** (no `.git` remote push in Studio sandbox)
+    - Vercel Production deployment for workspace fixes: **NOT EXECUTED** (by explicit owner instruction; Production sync flags remain untouched)
 
 > This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
 
-## Repository and documentation status
+## Historical repository and documentation status — 2026-11-14 snapshot
 
 | Item | Observed value | Status |
 |---|---|---|
@@ -23,15 +32,15 @@
 | PR #363 documentation standard | Merged; canonical docs/agent bootstrap present on main | PASS |
 | PR #373 Ruqyah lazy loading | Merged at `d265bdf37e9410ad6cd99273bb595526dce63b50` | PASS |
 | PR #373 exact-head Quality Gate | Run `43634212804` on `c42286fa6a5a85bba414a45383a56bd7a00f0cc2` | PASS |
-| Automated tests | 711 passed / 0 failed | PASS |
+| Automated tests (CI 2026-11-14) | 711 passed / 0 failed | PASS |
 | Firestore Rules Emulator / TypeScript / build / server smoke | Passed in run `43634212804` | PASS |
-| Desktop + mobile Playwright | 160 passed, including Ruqyah E2E | PASS |
-| 604 Mushaf coordinate-map check | SKIPPED | NOT VERIFIED |
+| Desktop + mobile Playwright (CI 2026-11-14) | 160 passed, including Ruqyah E2E | PASS |
+| 604 Mushaf coordinate-map check (CI 2026-11-14) | SKIPPED in CI (later PASSED locally 2026-11-16) | HISTORICAL |
 | Vercel Production | READY, `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV`, source SHA `1c025e0...` (docs-only descendant containing code merge `d265bdf...`) | PASS |
 | Production Ruqyah route/audio smoke | Not directly tested | NOT VERIFIED |
-| Google AI Studio sync | Studio pull not observed | NOT VERIFIED |
+| Google AI Studio sync | Local Studio edits verified 2026-11-16; GitHub sync of Studio changes pending | PARTIAL |
 | Firebase Production Rules | Not independently verified | NOT VERIFIED |
-| Local checkout/tests | No local checkout or local execution claimed | NOT VERIFIED |
+| Local checkout/tests (pre-2026-11-16) | Historical baseline prior to 2026-11-16 AI Studio run | HISTORICAL |
 
 ## Current scope and safety
 

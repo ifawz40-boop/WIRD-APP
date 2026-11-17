@@ -773,3 +773,28 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` reached READY on exact merge SHA; production alias `wird-app.vercel.app` was assigned. This does not prove live Ruqyah route/audio behavior.
 - PR #374 remains Draft/HOLD at `6673bb149a2ffa58177c35b9f68c76423dfb2a0b`; compare against new main shows 8 commits behind and 7 ahead. Do not merge its stale lockfile or obsolete `docs/engineering/README.md`. Port only verified temporary-media deletion and workspace-name cleanup onto current main after regeneration and exact-head validation.
 - No Firebase production Rules/data, secrets, Vercel settings, sync flags, or Google AI Studio settings were changed. Google AI Studio synchronization and live Ruqyah route/audio remain NOT VERIFIED.
+
+
+## 2026-11-16 — Google AI Studio workspace hardening, PWA/build fix, and full E2E verification
+
+- **Environment:** Google AI Studio workspace (`/app/applet`, no `.git` remote push configured; changes remain local to Studio and were **not** committed/pushed to GitHub and **not** deployed to Vercel Production per owner instruction).
+- **Firebase configuration verified (`firebase-applet-config.json`):** `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`. No Production Rules, user data, secrets, or Vercel sync flags were modified.
+- **Changes implemented in workspace:**
+  - `api/advisor.ts`: fixed TypeScript object narrowing (`metrics = userData as Record<string, unknown>`) for strict `tsc --noEmit`.
+  - `server.ts`: fixed Arabic rate-limit error copy typo (`يرجى الانتار قليلاً` -> `يرجى الانتظار قليلاً`).
+  - `src/components/brand/BrandDesignShowcase.tsx`: added `copyTimerRef` cleanup on repeated clicks and unmount.
+  - `package.json`: updated `"build"` script to `"NODE_ENV=production vite build"` because the Studio shell exports `NODE_ENV=development`, which previously emitted `jsxDEV` transforms and set `import.meta.env.PROD=false` (suppressing Service Worker registration).
+  - `src/main.tsx`: switched `/sw.js` registration from `window.load` to immediate / `DOMContentLoaded` execution so slow/unreachable external font stylesheets cannot stall Service Worker registration, while keeping `pwaIntegration.test.ts` markers intact.
+  - `public/sw.js`: moved `precacheQuranFont(cache)` after shell precache as non-blocking `void precacheQuranFont(cache)` so font CDN timeouts never block SW installation.
+  - Updated E2E tests (`e2e/plans-ux.spec.ts`, `e2e/ruqyah-ux.spec.ts`, `e2e/memorization-audio-repeat.spec.ts`, `e2e/memorization-session-display-ux.spec.ts`, `e2e/progress-ux.spec.ts`, `e2e/wird-navigation-tafsir.spec.ts`) to match current UI/accessibility copy and added `__wirdPlayedUrls` + active-track (`onended !== null`) tracking on `MockAudio` because `QuranAudioQueueController.prepareNext()` preloads the next `Audio` track with `onended = null`.
+  - Documentation reconciled: `docs/CONTINUE_HERE.md`, `docs/engineering/MASTER_PROJECT_STATE.md`, `docs/engineering/RELEASE_CHECKLIST.md`, `docs/OWNER_ACTIONS.md`, `docs/agent-handoffs/LATEST-GOOGLE-STUDIO.md`, and this entry in `docs/engineering/WORK_LOG.md`.
+- **Executed verification (observed on final state):**
+  - `npx tsc --noEmit`: **PASS**
+  - `npm test` (`src/tests/runAllTests.ts` + pre-scripts): **PASS** (`731 PASSED | 0 FAILED`)
+  - `npm run build` (`NODE_ENV=production vite build`): **PASS** (`2.19s`; chunks under 500 kB; 9-asset shell precache manifest + 252 lazy assets; `/sw.js` present, no `jsxDEV`)
+  - `npm run mushaf:validate-coverage`: **PASS** (all 604 Hafs/KFGQPC SVG pages; 6,236 unique local ayahs mapped once)
+  - `npm run smoke:api-imports` & `npm run smoke:server`: **PASS**
+  - Desktop + Mobile Playwright across all 18 `e2e/*.spec.ts` files (`--workers=2`): **PASS** (`162` passed, `2` intentionally skipped, `0` failed; includes offline app-shell reload and 252-asset full offline preparation)
+  - `npm run test:firestore-rules`: **BLOCKED** in AI Studio container (`Error: Could not spawn java -version`)
+- **Unresolved risks / next action:** push Studio workspace diff to a GitHub feature branch/PR and run the full GitHub Quality Gate workflow (which includes Java for Firestore Rules Emulator), add `ais-dev-*.run.app` preview origin to Firebase Console Authorized Domains if preview Google login is needed, and await owner decision on Vercel Production sync flags before any Production deployment.
+

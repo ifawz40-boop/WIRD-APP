@@ -17,6 +17,7 @@ import { getLocalDateString } from './services/unifiedPortionService';
 import { createSecureId } from './services/secureId';
 import { persistEnginePlansSnapshot, persistJournaledTransaction, persistPlansSnapshot, persistProfileSnapshot, persistTestResultSnapshot } from './services/journaledSnapshotService';
 import { ALL_SURAHS } from './data/quranMeta';
+import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 
 // Lazy loaded views for optimal chunking and initial load performance
 const QuranLibraryView = React.lazy(() => import('./components/library/QuranLibraryView').then(m => ({ default: m.QuranLibraryView })));
@@ -49,6 +50,8 @@ export default function App() {
   const [isDesktop, setIsDesktop] = useState<boolean>(() =>
     typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
   );
+  const isDesktopRef = useRef(isDesktop);
+  isDesktopRef.current = isDesktop;
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,7 +64,7 @@ export default function App() {
   }, []);
 
   const handleToggleSidebar = () => {
-    if (isDesktop) {
+    if (isDesktopRef.current) {
       setIsDesktopSidebarOpen(prev => {
         const next = !prev;
         try {
@@ -93,7 +96,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDesktop]);
+  }, []);
 
   // Treat the mobile/tablet sidebar as a true modal drawer: lock background
   // scrolling while open. Sidebar owns Escape and focus-trap behavior.
@@ -140,6 +143,15 @@ export default function App() {
   // Track if active session has progress for exit confirmation
   const [sessionInProgress, setSessionInProgress] = useState<boolean>(false);
   const [pendingExitTab, setPendingExitTab] = useState<NavTabId | null>(null);
+  const currentTabRef = useRef(currentTab);
+  currentTabRef.current = currentTab;
+  const sessionInProgressRef = useRef(sessionInProgress);
+  sessionInProgressRef.current = sessionInProgress;
+  const sessionParamsRef = useRef(sessionParams);
+  sessionParamsRef.current = sessionParams;
+  const exitDialogRef = useRef<HTMLDivElement>(null);
+  const cancelExitRef = useRef<HTMLButtonElement>(null);
+  const exitTriggerRef = useRef<HTMLElement | null>(null);
 
   // PWA states
   const [pwaInstallPrompt, setPwaInstallPrompt] = useState<any>(null);
@@ -262,9 +274,10 @@ export default function App() {
 
     const handleHashChange = () => {
       const route = parseRoute();
-      if (currentTab === 'session' && sessionInProgress && route.tab !== 'session') {
+      if (currentTabRef.current === 'session' && sessionInProgressRef.current && route.tab !== 'session') {
+        exitTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         setPendingExitTab(route.tab);
-        window.history.pushState(null, '', buildRouteHash({ tab: 'session', ...sessionParams }));
+        window.history.pushState(null, '', buildRouteHash({ tab: 'session', ...sessionParamsRef.current }));
         return;
       }
 
@@ -286,10 +299,51 @@ export default function App() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [currentTab, sessionInProgress, sessionParams]);
+  }, []);
+
+  useEffect(() => {
+    if (!pendingExitTab) return;
+    const trigger = exitTriggerRef.current;
+    cancelExitRef.current?.focus();
+
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setPendingExitTab(null);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const dialog = exitDialogRef.current;
+      if (!dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ));
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleDialogKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleDialogKeyDown);
+      trigger?.focus();
+    };
+  }, [pendingExitTab]);
 
   const handleNavigate = (tab: NavTabId) => {
     if (currentTab === 'session' && sessionInProgress && tab !== 'session') {
+      exitTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setPendingExitTab(tab);
       return;
     }
@@ -323,6 +377,7 @@ export default function App() {
     if (!surahMeta) return;
     const safeStart = Math.min(Math.max(1, nextStartAyah), surahMeta.versesCount);
     const safeEnd = Math.min(Math.max(safeStart, nextEndAyah), surahMeta.versesCount);
+    const activeMode = sessionParamsRef.current.mode;
     sessionRunIdRef.current = createSecureId();
     sessionCompletionAttemptRef.current = null;
     setSessionParams(prev => ({
@@ -336,7 +391,7 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode: sessionParams.mode
+      mode: activeMode
     }, true);
   };
 
@@ -486,13 +541,26 @@ export default function App() {
 
   // In-app Toast Notification state
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'info' | 'warn' | 'error' } | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
 
   const showToast = (message: string, type: 'success' | 'info' | 'warn' | 'error' = 'success') => {
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
     setToastMessage({ message, type });
-    setTimeout(() => {
+    toastTimerRef.current = window.setTimeout(() => {
       setToastMessage(prev => prev?.message === message ? null : prev);
+      toastTimerRef.current = null;
     }, 4000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -637,119 +705,128 @@ export default function App() {
           </div>
         )}
 
-        {/* Content Viewport with Code Splitting Suspense */}
+        {/* Content Viewport with ErrorBoundary and Code Splitting Suspense */}
         <main className={`flex-1 min-w-0 w-full p-4 sm:p-5 md:p-6 xl:p-8 ${currentTab === 'session' ? 'pb-6 md:pb-8' : 'pb-28 lg:pb-8'} ${isDesktop && !isDesktopSidebarOpen ? 'max-w-none' : 'max-w-[1440px]'} mx-auto`}>
-          <React.Suspense fallback={
-            <div className="flex flex-col items-center justify-center py-28 space-y-3 text-[#5B6F6B] dark:text-[#8B9E9B]">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1C4E46] dark:text-[#E0A96D]" />
-              <p className="text-xs font-semibold">جارٍ فتح القسم القرآني...</p>
-            </div>
-          }>
-            {currentTab === 'dashboard' && (
-              <DashboardView
-                profile={profile}
-                plans={plans}
-                revisionItems={revisionItems}
-                logs={logs}
-                onNavigate={handleNavigate}
-                onStartSession={handleStartSession}
-              />
-            )}
+          <AppErrorBoundary
+            resetKey={currentTab}
+            onGoHome={() => {
+              setSessionInProgress(false);
+              setPendingExitTab(null);
+              navigateTo('dashboard');
+            }}
+          >
+            <React.Suspense fallback={
+              <div className="flex flex-col items-center justify-center py-28 space-y-3 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#1C4E46] dark:text-[#E0A96D]" />
+                <p className="text-xs font-semibold">جارٍ فتح القسم القرآني...</p>
+              </div>
+            }>
+              {currentTab === 'dashboard' && (
+                <DashboardView
+                  profile={profile}
+                  plans={plans}
+                  revisionItems={revisionItems}
+                  logs={logs}
+                  onNavigate={handleNavigate}
+                  onStartSession={handleStartSession}
+                />
+              )}
 
-            {currentTab === 'library' && (
-              <QuranLibraryView
-                onStartSession={handleStartSession}
-                preferredReciter={profile.preferredReciter}
-              />
-            )}
+              {currentTab === 'library' && (
+                <QuranLibraryView
+                  onStartSession={handleStartSession}
+                  preferredReciter={profile.preferredReciter}
+                />
+              )}
 
-            {currentTab === 'plans' && (
-              <MemorizationPlansView
-                plans={plans}
-                onUpdatePlans={handleUpdatePlans}
-                enginePlans={enginePlans}
-                onUpdateEnginePlans={handleUpdateEnginePlans}
-                onStartSession={handleStartSession}
-                onOpenAdvisor={() => handleNavigate('advisor')}
-                onToast={showToast}
-              />
-            )}
+              {currentTab === 'plans' && (
+                <MemorizationPlansView
+                  plans={plans}
+                  onUpdatePlans={handleUpdatePlans}
+                  enginePlans={enginePlans}
+                  onUpdateEnginePlans={handleUpdateEnginePlans}
+                  onStartSession={handleStartSession}
+                  onOpenAdvisor={() => handleNavigate('advisor')}
+                  onToast={showToast}
+                />
+              )}
 
-            {currentTab === 'session' && (
-              <MemorizationSessionView
-                initialSurahNumber={sessionParams.surahNumber}
-                initialStartAyah={sessionParams.startAyah}
-                initialEndAyah={sessionParams.endAyah}
-                mode={sessionParams.mode}
-                profile={profile}
-                onCompleteSession={handleCompleteSession}
-                onRangeChange={handleSessionRangeChange}
-                onExit={() => handleNavigate('dashboard')}
-                onProgressChange={setSessionInProgress}
-              />
-            )}
+              {currentTab === 'session' && (
+                <MemorizationSessionView
+                  initialSurahNumber={sessionParams.surahNumber}
+                  initialStartAyah={sessionParams.startAyah}
+                  initialEndAyah={sessionParams.endAyah}
+                  mode={sessionParams.mode}
+                  profile={profile}
+                  onCompleteSession={handleCompleteSession}
+                  onRangeChange={handleSessionRangeChange}
+                  onExit={() => handleNavigate('dashboard')}
+                  onProgressChange={setSessionInProgress}
+                />
+              )}
 
-            {currentTab === 'revision' && (
-              <RevisionCenterView
-                profile={profile}
-                onStartSession={handleStartSession}
-                onOpenAdvisor={() => handleNavigate('advisor')}
-              />
-            )}
+              {currentTab === 'revision' && (
+                <RevisionCenterView
+                  profile={profile}
+                  onStartSession={handleStartSession}
+                  onOpenAdvisor={() => handleNavigate('advisor')}
+                />
+              )}
 
-            {currentTab === 'tests' && (
-              <MemorizationTestsView
-                onSaveTestResult={handleSaveTestResult}
-                onAddVerseToRevision={handleAddVerseToRevision}
-              />
-            )}
+              {currentTab === 'tests' && (
+                <MemorizationTestsView
+                  onSaveTestResult={handleSaveTestResult}
+                  onAddVerseToRevision={handleAddVerseToRevision}
+                />
+              )}
 
-            {currentTab === 'progress' && (
-              <ProgressAnalyticsView
-                logs={logs}
-                profile={profile}
-                onStartSession={handleStartSession}
-                onOpenSettings={() => handleNavigate('settings')}
-                onToast={showToast}
-                onRefreshData={() => {
-                  setProfile(StorageService.getProfile());
-                  setPlans(StorageService.getPlans());
-                  setEnginePlans(StorageService.getEnginePlans());
-                  setRevisionItems(StorageService.getRevisionItems());
-                  setLogs(StorageService.getLogsForDisplay());
-                }}
-              />
-            )}
+              {currentTab === 'progress' && (
+                <ProgressAnalyticsView
+                  logs={logs}
+                  profile={profile}
+                  onStartSession={handleStartSession}
+                  onOpenSettings={() => handleNavigate('settings')}
+                  onToast={showToast}
+                  onRefreshData={() => {
+                    setProfile(StorageService.getProfile());
+                    setPlans(StorageService.getPlans());
+                    setEnginePlans(StorageService.getEnginePlans());
+                    setRevisionItems(StorageService.getRevisionItems());
+                    setLogs(StorageService.getLogsForDisplay());
+                  }}
+                />
+              )}
 
-            {currentTab === 'advisor' && (
-              <QuranAdvisorView
-                profile={profile}
-                plans={plans}
-                logs={logs}
-                onStartSessionWithSurah={handleStartSession}
-              />
-            )}
+              {currentTab === 'advisor' && (
+                <QuranAdvisorView
+                  profile={profile}
+                  plans={plans}
+                  logs={logs}
+                  onStartSessionWithSurah={handleStartSession}
+                />
+              )}
 
-            {currentTab === 'ruqyah' && (
-              <RuqyahView onToast={showToast} />
-            )}
+              {currentTab === 'ruqyah' && (
+                <RuqyahView onToast={showToast} />
+              )}
 
-            {currentTab === 'settings' && (
-              <SettingsView
-                profile={profile}
-                onUpdateProfile={setProfile}
-                onSaveProfile={handleSaveProfile}
-                onResetAllData={handleResetAllData}
-                onBackupImported={refreshJournaledSnapshots}
-                onOpenShowcase={() => handleNavigate('showcase')}
-                onToast={showToast}
-              />
-            )}
+              {currentTab === 'settings' && (
+                <SettingsView
+                  profile={profile}
+                  onUpdateProfile={setProfile}
+                  onSaveProfile={handleSaveProfile}
+                  onResetAllData={handleResetAllData}
+                  onBackupImported={refreshJournaledSnapshots}
+                  onOpenShowcase={() => handleNavigate('showcase')}
+                  onToast={showToast}
+                />
+              )}
 
-            {currentTab === 'showcase' && (
-              <BrandDesignShowcase onClose={() => handleNavigate('settings')} />
-            )}
-          </React.Suspense>
+              {currentTab === 'showcase' && (
+                <BrandDesignShowcase onClose={() => handleNavigate('settings')} />
+              )}
+            </React.Suspense>
+          </AppErrorBoundary>
         </main>
       </div>
 
@@ -796,13 +873,19 @@ export default function App() {
       {/* Session Exit Confirmation Modal */}
       {pendingExitTab && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
+          <div
+            ref={exitDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wird-session-exit-title"
+            className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
+                <h3 id="wird-session-exit-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   مغادرة جلسة الحفظ الجارية
                 </h3>
                 <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
@@ -818,6 +901,7 @@ export default function App() {
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
+                ref={cancelExitRef}
                 onClick={() => setPendingExitTab(null)}
                 className="min-h-11 px-4 py-2.5 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >

@@ -15,7 +15,7 @@ createRoot(document.getElementById('root')!).render(
 
 // Register Service Worker in production environment or browser preview
 if ('serviceWorker' in navigator && (import.meta.env.PROD || process.env.NODE_ENV === 'production')) {
-  window.addEventListener('load', () => {
+  const registerServiceWorker = () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
         console.log('[WIRD PWA] Service Worker registered successfully with scope:', registration.scope);
@@ -39,5 +39,11 @@ if ('serviceWorker' in navigator && (import.meta.env.PROD || process.env.NODE_EN
       .catch((error) => {
         console.warn('[WIRD PWA] Service Worker registration failed:', error);
       });
-  });
+  };
+
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', registerServiceWorker, { once: true });
+  } else {
+    registerServiceWorker();
+  }
 }

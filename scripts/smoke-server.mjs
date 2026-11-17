@@ -1,6 +1,34 @@
 import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
+async function killProcessTree(server) {
+  if (process.platform === 'win32') {
+    await new Promise(resolve => {
+      const killer = spawn('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' });
+      killer.on('exit', resolve);
+      killer.on('error', resolve);
+    });
+    return;
+  }
+  try {
+    process.kill(-server.pid, 'SIGTERM');
+  } catch {
+    server.kill('SIGTERM');
+  }
+}
+
+async function forceKillProcessTree(server) {
+  if (process.platform === 'win32') {
+    await killProcessTree(server);
+    return;
+  }
+  try {
+    process.kill(-server.pid, 'SIGKILL');
+  } catch {
+    server.kill('SIGKILL');
+  }
+}
+
 async function runServerSmoke(mode, port) {
   const baseUrl = `http://127.0.0.1:${port}`;
   const command = mode === 'development' ? 'dev' : 'start';
@@ -8,11 +36,13 @@ async function runServerSmoke(mode, port) {
     process.platform === 'win32' ? 'cmd.exe' : 'npm',
     process.platform === 'win32' ? ['/d', '/s', '/c', `npm.cmd run ${command}`] : ['run', command],
     {
+      detached: process.platform !== 'win32',
       env: {
         ...process.env,
         NODE_ENV: mode === 'development' ? 'development' : 'production',
         PORT: String(port),
-        GEMINI_API_KEY: ''
+        GEMINI_API_KEY: '',
+        DISABLE_HMR: 'true'
       },
       stdio: 'inherit'
     }
@@ -69,13 +99,13 @@ async function runServerSmoke(mode, port) {
 
     console.log(`${mode} server smoke test passed: advisor and tafsir API routes responded with JSON.`);
   } finally {
-    if (!exited) {
-      server.kill('SIGTERM');
+    if (!exited && server.pid) {
+      await killProcessTree(server);
       await Promise.race([
         new Promise(resolve => server.once('exit', resolve)),
         delay(3_000)
       ]);
-      if (!exited) server.kill('SIGKILL');
+      if (!exited) await forceKillProcessTree(server);
     }
   }
 }

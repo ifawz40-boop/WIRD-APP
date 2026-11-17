@@ -195,7 +195,6 @@ const STATIC_ASSETS = [
 
 async function precacheApplicationShell(cache) {
   await cache.addAll(STATIC_ASSETS);
-  await precacheQuranFont(cache);
 
   const response = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store' });
   if (!response.ok) {
@@ -221,6 +220,7 @@ async function precacheApplicationShell(cache) {
   // addAll is atomic: the new worker is not activated with a partially cached app shell.
   await cache.addAll(safeAssets);
   await cache.put(PRECACHE_MANIFEST_URL, manifestForCache);
+  void precacheQuranFont(cache);
   console.log('[WIRD SW] Cached application shell assets:', safeAssets.length);
 }
 
@@ -350,7 +350,7 @@ self.addEventListener('fetch', (event) => {
 
   // Cache public Google Fonts only; never cache authenticated or application API responses.
   // Cache only the pinned Hafs/KFQC printed-page artwork and ayah geometry.
-  // Pages are downloaded on demand; the cache is bounded to the most recent 12 pages.
+  // Pages are downloaded on demand; the cache is bounded to the most recent 24 pages.
   const mushafPagePrefix = '/quran-ws/quran-svg/3ff27b46cecb0c0519d77531d9c868a579d1f623/mushafs/hafs/kfqc/svg/';
   const mushafPageFile = url.pathname.startsWith(mushafPagePrefix)
     ? url.pathname.slice(mushafPagePrefix.length)

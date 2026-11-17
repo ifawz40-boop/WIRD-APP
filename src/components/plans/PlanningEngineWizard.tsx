@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   Calendar,
@@ -100,6 +100,62 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [previewPlan, setPreviewPlan] = useState<EngineGeneratedPlan | null>(null);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
+  const recalculateDialogRef = useRef<HTMLDivElement>(null);
+  const cancelRecalculateRef = useRef<HTMLButtonElement>(null);
+  const deleteDialogRef = useRef<HTMLDivElement>(null);
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
+  const modalTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const activeDialog = showRecalculateConfirm
+      ? recalculateDialogRef
+      : planToDelete
+      ? deleteDialogRef
+      : null;
+    if (!activeDialog) return;
+
+    const trigger = modalTriggerRef.current;
+    if (showRecalculateConfirm) {
+      cancelRecalculateRef.current?.focus();
+    } else if (planToDelete) {
+      cancelDeleteRef.current?.focus();
+    }
+
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (showRecalculateConfirm) setShowRecalculateConfirm(false);
+        if (planToDelete) setPlanToDelete(null);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const dialog = activeDialog.current;
+      if (!dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ));
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleDialogKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleDialogKeyDown);
+      trigger?.focus();
+    };
+  }, [showRecalculateConfirm, planToDelete]);
 
   const activePlan = enginePlans.find(p => p.id === selectedPlanId) || enginePlans[0];
 
@@ -1151,7 +1207,10 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setShowRecalculateConfirm(true)}
+                  onClick={(event) => {
+                    modalTriggerRef.current = event.currentTarget;
+                    setShowRecalculateConfirm(true);
+                  }}
                   className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] hover:border-[#C59B27] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-semibold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 whitespace-nowrap transition-colors"
                   title="إعادة جدولة المهام القادمة بناءً على التقدم الفعلي"
                 >
@@ -1161,7 +1220,10 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setPlanToDelete(activePlan.id)}
+                  onClick={(event) => {
+                    modalTriggerRef.current = event.currentTarget;
+                    setPlanToDelete(activePlan.id);
+                  }}
                   aria-label={`حذف الخطة الذكية ${activePlan.title}`}
                   className="flex min-h-11 min-w-11 items-center justify-center px-3 py-2 text-[#5B6F6B] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-semibold transition-colors"
                   title="حذف هذه الخطة الذكية"
@@ -1381,13 +1443,19 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
       {/* In-app Recalculate Confirmation Modal */}
       {showRecalculateConfirm && (
         <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
+          <div
+            ref={recalculateDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wird-engine-recalculate-title"
+            className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center shrink-0">
                 <RotateCcw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
+                <h3 id="wird-engine-recalculate-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   إعادة جدولة المهام القادمة
                 </h3>
                 <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
@@ -1403,6 +1471,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
+                ref={cancelRecalculateRef}
                 onClick={() => setShowRecalculateConfirm(false)}
                 className="min-h-11 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >
@@ -1423,13 +1492,19 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
       {/* In-app Plan Delete Confirmation Modal */}
       {planToDelete && (
         <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right">
+          <div
+            ref={deleteDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wird-engine-delete-title"
+            className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
+                <h3 id="wird-engine-delete-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
                   حذف الخطة الذكية
                 </h3>
                 <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
@@ -1445,6 +1520,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
+                ref={cancelDeleteRef}
                 onClick={() => setPlanToDelete(null)}
                 className="min-h-11 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
               >

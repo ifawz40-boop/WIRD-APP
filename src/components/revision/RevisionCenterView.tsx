@@ -88,6 +88,13 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
   
   // Feedback toast banner
   const [actionFeedback, setActionFeedback] = useState<{ message: string; type: 'success' | 'warn' | 'info' } | null>(null);
+  const feedbackTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current !== null) window.clearTimeout(feedbackTimerRef.current);
+    };
+  }, []);
 
   // Active review drawer / modal for rating a portion
   const [ratingPortion, setRatingPortion] = useState<PortionStatusRecord | null>(null);
@@ -385,8 +392,10 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       setWeakAyahNum('');
       refreshAll();
 
-      setTimeout(() => {
+      if (feedbackTimerRef.current !== null) window.clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = window.setTimeout(() => {
         setActionFeedback(null);
+        feedbackTimerRef.current = null;
       }, 5000);
     } catch (error) {
       setActionFeedback({

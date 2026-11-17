@@ -469,6 +469,14 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     setShowMushafReader(true);
   };
 
+  const copyTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+    };
+  }, []);
+
   const handleCopyAyah = async (ayah: Ayah) => {
     const displayText = await getAyahDisplayText(ayah);
     const text = `﴿ ${displayText} ﴾ [سورة ${selectedSurah.name}: ${ayah.numberInSurah}]`;
@@ -476,8 +484,12 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(text);
       }
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
       setCopiedAyahNumber(ayah.numberInSurah);
-      setTimeout(() => setCopiedAyahNumber(null), 2000);
+      copyTimerRef.current = window.setTimeout(() => {
+        setCopiedAyahNumber(null);
+        copyTimerRef.current = null;
+      }, 2000);
     } catch {
       // Ignore clipboard fallback
     }

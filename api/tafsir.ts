@@ -56,6 +56,7 @@ export const SUPPORTED_TAFSIR_BOOKS: Record<number, SupportedTafsirBook> = {
 const DEFAULT_BOOK_ID = 27809;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 30;
+const MAX_RATE_LIMIT_BUCKETS = 1000;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
 function send(res: any, statusCode: number, payload: unknown) {
@@ -78,16 +79,27 @@ function parseUpstreamJson(raw: string): unknown | null {
 }
 
 function getClientIp(req: any): string {
+  const realIp = req.headers?.['x-real-ip'];
+  const realCandidate = Array.isArray(realIp) ? realIp[0] : realIp;
+  if (typeof realCandidate === 'string' && realCandidate.trim()) return realCandidate.trim();
+  if (typeof req.ip === 'string' && req.ip.trim()) return req.ip.trim();
+  const remoteAddress = req.socket?.remoteAddress;
+  if (typeof remoteAddress === 'string' && remoteAddress.trim()) return remoteAddress.trim();
   const forwarded = req.headers?.['x-forwarded-for'];
   const raw = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-  return String(raw || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+  return typeof raw === 'string' && raw.trim() ? raw.split(',')[0].trim() : 'unknown';
 }
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
-  if (rateLimits.size > 1000) {
+  if (rateLimits.size > MAX_RATE_LIMIT_BUCKETS) {
     for (const [key, record] of rateLimits.entries()) {
       if (now >= record.resetAt) rateLimits.delete(key);
+    }
+    while (rateLimits.size > MAX_RATE_LIMIT_BUCKETS) {
+      const oldestKey = rateLimits.keys().next().value;
+      if (typeof oldestKey !== 'string') break;
+      rateLimits.delete(oldestKey);
     }
   }
   const current = rateLimits.get(ip);
@@ -224,7 +236,7 @@ export default async function handler(req: any, res: any) {
     res.setHeader('Cache-Control', 'no-store');
     return send(res, 502, {
       error: 'TAFSIR_SOURCE_ERROR',
-      message: error?.message || 'UNEXPECTED_SERVER_ERROR'
+      message: error?.name === 'TimeoutError' ? 'SOURCE_TIMEOUT' : 'SOURCE_ERROR'
     });
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   BookOpen, 
   Mail, 
@@ -47,13 +47,26 @@ export const AuthScreen: React.FC = () => {
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isCopiedDomain, setIsCopiedDomain] = useState(false);
+  const copyDomainTimerRef = useRef<number | null>(null);
+  const resendIntervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyDomainTimerRef.current !== null) window.clearTimeout(copyDomainTimerRef.current);
+      if (resendIntervalRef.current !== null) window.clearInterval(resendIntervalRef.current);
+    };
+  }, []);
 
   const handleCopyDomain = () => {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
-      navigator.clipboard.writeText(hostname);
+      navigator.clipboard?.writeText(hostname);
+      if (copyDomainTimerRef.current !== null) window.clearTimeout(copyDomainTimerRef.current);
       setIsCopiedDomain(true);
-      setTimeout(() => setIsCopiedDomain(false), 2500);
+      copyDomainTimerRef.current = window.setTimeout(() => {
+        setIsCopiedDomain(false);
+        copyDomainTimerRef.current = null;
+      }, 2500);
     }
   };
 
@@ -111,10 +124,14 @@ export const AuthScreen: React.FC = () => {
       await resendVerificationEmail();
       setSuccessMessage('تم إرسال رابط التفعيل مجدداً إلى بريدك الإلكتروني.');
       setResendCooldown(60);
-      const timer = setInterval(() => {
+      if (resendIntervalRef.current !== null) window.clearInterval(resendIntervalRef.current);
+      resendIntervalRef.current = window.setInterval(() => {
         setResendCooldown((prev) => {
           if (prev <= 1) {
-            clearInterval(timer);
+            if (resendIntervalRef.current !== null) {
+              window.clearInterval(resendIntervalRef.current);
+              resendIntervalRef.current = null;
+            }
             return 0;
           }
           return prev - 1;

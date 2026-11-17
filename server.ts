@@ -44,13 +44,54 @@ interface RateLimitRecord {
   count: number;
   resetAt: number;
 }
+const MAX_RATE_LIMIT_BUCKETS = 1000;
+const ALLOWED_ADVISOR_KEYS = new Set(['contextType', 'userData', 'query', 'message', 'history']);
 const rateLimitMap = new Map<string, RateLimitRecord>();
+
+function getClientIp(req: Request): string {
+  const realIp = req.headers?.['x-real-ip'];
+  const candidate = Array.isArray(realIp) ? realIp[0] : realIp;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  if (typeof req.ip === 'string' && req.ip.trim()) return req.ip.trim();
+  const remoteAddress = req.socket?.remoteAddress;
+  return typeof remoteAddress === 'string' && remoteAddress.trim() ? remoteAddress.trim() : 'global';
+}
+
+function validateAdvisorBody(rawBody: unknown): { ok: true; body: Record<string, unknown> } | { ok: false; code: string; message: string } {
+  const candidate = rawBody ?? {};
+  if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) {
+    return { ok: false, code: 'INVALID_PAYLOAD', message: 'الطلب يجب أن يكون كائن JSON صالحاً.' };
+  }
+  const body = candidate as Record<string, unknown>;
+  let bodyStr = '';
+  try {
+    bodyStr = JSON.stringify(body);
+  } catch {
+    return { ok: false, code: 'INVALID_PAYLOAD', message: 'تعذر قراءة بيانات الطلب.' };
+  }
+  if (Buffer.byteLength(bodyStr, 'utf8') > 4096) {
+    return { ok: false, code: 'PAYLOAD_TOO_LARGE', message: 'حجم الطلب يتجاوز الحد المسموح به (الحد الأقصى 4 كيلوبايت).' };
+  }
+  if (Object.keys(body).some(key => !ALLOWED_ADVISOR_KEYS.has(key))) {
+    return { ok: false, code: 'INVALID_PAYLOAD', message: 'الطلب يتضمن حقولاً غير مسموح بها.' };
+  }
+  const promptText = String(body.message || body.query || '').trim();
+  if (promptText.length > 500) {
+    return { ok: false, code: 'INPUT_TOO_LONG', message: 'النص المدخل طويل جداً (الحد الأقصى 500 حرف).' };
+  }
+  return { ok: true, body };
+}
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   if (rateLimitMap.size > 1000) {
     for (const [key, entry] of rateLimitMap.entries()) {
       if (now >= entry.resetAt) rateLimitMap.delete(key);
+    }
+    while (rateLimitMap.size > MAX_RATE_LIMIT_BUCKETS) {
+      const oldestKey = rateLimitMap.keys().next().value;
+      if (typeof oldestKey !== 'string') break;
+      rateLimitMap.delete(oldestKey);
     }
   }
   const record = rateLimitMap.get(ip);
@@ -96,6 +137,7 @@ const SYSTEM_INSTRUCTION = `أنت "المستشار القرآني" لمنصة 
 
 // 1. Health and AI Availability Endpoint
 app.get('/api/advisor/status', (_req: Request, res: Response) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   const apiKey = process.env.GEMINI_API_KEY;
   const isKeyConfigured = Boolean(apiKey && apiKey !== 'MY_GEMINI_API_KEY');
 
@@ -111,7 +153,8 @@ app.get('/api/advisor/status', (_req: Request, res: Response) => {
 
 // 2. Analyze User Progress & Workload
 app.post('/api/advisor/analyze', async (req: Request, res: Response): Promise<void> => {
-  const clientIp = req.ip || 'global';
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  const clientIp = getClientIp(req);
   if (!checkRateLimit(clientIp)) {
     res.status(429).json({
       success: false,
@@ -121,7 +164,16 @@ app.post('/api/advisor/analyze', async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  const { contextType, userData, query } = req.body;
+  const validation = validateAdvisorBody(req.body);
+  if (validation.ok === false) {
+    res.status(400).json({ success: false, code: validation.code, message: validation.message });
+    return;
+  }
+  const { contextType, userData, query } = validation.body as {
+    contextType?: unknown;
+    userData?: Record<string, unknown>;
+    query?: unknown;
+  };
 
   const ai = getGeminiClient();
   if (!ai) {
@@ -192,7 +244,8 @@ ${userContextSummary}
 
 // 3. Interactive Chat Endpoint
 app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void> => {
-  const clientIp = req.ip || 'global';
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  const clientIp = getClientIp(req);
   if (!checkRateLimit(clientIp)) {
     res.status(429).json({
       success: false,
@@ -202,9 +255,14 @@ app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void>
     return;
   }
 
-  const { message, history } = req.body;
-  if (!message || typeof message !== 'string') {
-    res.status(400).json({ success: false, message: 'الرسالة مطلوبة' });
+  const validation = validateAdvisorBody(req.body);
+  if (validation.ok === false) {
+    res.status(400).json({ success: false, code: validation.code, message: validation.message });
+    return;
+  }
+  const { message } = validation.body;
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    res.status(400).json({ success: false, code: 'INVALID_PAYLOAD', message: 'الرسالة مطلوبة' });
     return;
   }
 

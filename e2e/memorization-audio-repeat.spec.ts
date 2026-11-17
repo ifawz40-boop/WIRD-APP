@@ -6,6 +6,7 @@ test.describe('Memorization session audio repetition', () => {
       localStorage.setItem('wird.audio.repeatCount.v1', '2');
       const audios: Array<{ onended: ((event: Event) => void) | null; onplaying: (() => void) | null }> = [];
       (window as any).__wirdMockAudios = audios;
+      (window as any).__wirdPlayedUrls = [];
       (window as any).__wirdAudioPlayCalls = 0;
       (window as any).__wirdRejectAudioPlay = false;
       (window as any).__wirdMarkAudioPlaying = () => audios.at(-1)?.onplaying?.();
@@ -21,6 +22,7 @@ test.describe('Memorization session audio repetition', () => {
         constructor(url: string) { this.url = url; audios.push(this); }
         play() {
           (window as any).__wirdAudioPlayCalls++;
+          (window as any).__wirdPlayedUrls.push(this.url);
           if ((window as any).__wirdRejectAudioPlay) {
             (window as any).__wirdRejectAudioPlay = false;
             return Promise.reject(new Error('blocked'));
@@ -93,7 +95,7 @@ test.describe('Memorization session audio repetition', () => {
     await page.getByRole('button', { name: 'استماع للآية' }).click();
     await expect.poll(() => page.evaluate(() => (window as any).__wirdAudioPlayCalls)).toBe(1);
     await page.getByRole('button', { name: 'الآية التالية' }).click();
-    await expect(page.getByText(/الآية 2 من 3/)).toBeVisible();
+    await expect(page.getByText(/الآية 2 \(نطاق 1–3\)/)).toBeVisible();
     await expect.poll(() => page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onended)).toBeNull();
   });
 
@@ -141,7 +143,7 @@ test.describe('Memorization session audio repetition', () => {
     await expect.poll(() => navigation.evaluate(element => getComputedStyle(element).position)).toBe('sticky');
     await expect(navigation.getByRole('button', { name: 'السابقة' })).toBeDisabled();
     await navigation.getByRole('button', { name: 'الآية التالية' }).click();
-    await expect(page.getByText(/الآية 2 من 3/)).toBeVisible();
+    await expect(page.getByText(/الآية 2 \(نطاق 1–3\)/)).toBeVisible();
     await expect(navigation.getByRole('button', { name: 'السابقة' })).toBeEnabled();
   });
 
@@ -236,10 +238,14 @@ test('segment playback supports independent per-ayah and full-segment repeat cou
 
   for (let i = 0; i < 8; i++) {
     await expect.poll(() => page.evaluate(() => (window as any).__wirdAudioPlayCalls)).toBe(i + 1);
-    await page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onended?.(new Event('ended')));
+    await page.evaluate(() => {
+      const audios = (window as any).__wirdMockAudios as Array<{ onended: ((event: Event) => void) | null }>;
+      const activeAudio = [...audios].reverse().find(audio => typeof audio.onended === 'function');
+      activeAudio?.onended?.(new Event('ended'));
+    });
   }
 
-  const urls = await page.evaluate(() => (window as any).__wirdMockAudios.map((audio: { url: string }) => audio.url.split('/').pop()));
+  const urls = await page.evaluate(() => (window as any).__wirdPlayedUrls.map((url: string) => url.split('/').pop()));
   expect(urls).toEqual([
     '067002.mp3',
     '067002.mp3',

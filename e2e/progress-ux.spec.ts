@@ -62,6 +62,6 @@ test.describe('WIRD progress map UX', () => {
 
     await trigger.click();
     await dialog.getByRole('button', { name: 'فتح الصفحة في جلسة التسميع' }).click();
-    await expect(page.getByText(/الآية 1 من 7/)).toBeVisible();
+    await expect(page.getByText(/الآية 1 \(نطاق 1–7\)/)).toBeVisible();
   });
 });

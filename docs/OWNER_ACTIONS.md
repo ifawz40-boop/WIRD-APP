@@ -1,18 +1,18 @@
 # WIRD — Owner Actions and External Decisions
 
-**Current owner-action snapshot:** 2026-11-14  
+**Current owner-action snapshot:** 2026-11-16 (AI Studio workspace)  
 **Live technical state:** [CONTINUE_HERE.md](./CONTINUE_HERE.md) · [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
 
 > This page lists actions that genuinely require owner approval, external access, or physical-device testing. Dated material below the snapshot is historical unless explicitly revalidated.
 
 ## Current observed items
 
-1. **Production sync flags — owner decision required:** Vercel currently reports `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` in Production. Neither value was changed. Decide separately whether to authorize disabling them while release gates are completed. Do not perform sync-related Production actions or toggle either value without explicit approval.
-2. **Vercel access protection:** password protection is OFF; SSO protection is ON for all non-custom domains. The production custom domain is `wird-app.vercel.app`, which is excluded from the non-custom SSO rule. This configuration does not by itself prove anonymous user access; a read-only public smoke is still NOT VERIFIED. Do not change protection settings without approval.
-3. **GitHub branch protection:** the latest branch-protection API read returned 403 `Resource not accessible by integration`. A 2026-11-13 snapshot recorded main protection/required-check enforcement as disabled, but current settings are NOT VERIFIED in this session. Do not change branch protection or rulesets without an authorized read and owner decision.
-4. **Firebase:** repository code and applet config expect project `wird-quran-app` and the default Firestore database. The Vercel `VITE_FIREBASE_PROJECT_ID` entry is encrypted and was not decrypted; the deployed Production Firestore Rules release is NOT VERIFIED. No Firebase configuration, Rules, or data was changed.
-5. **API credentials:** Vercel has sensitive `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` entries for Preview and Production. Values were not read and upstream validity was not tested. Do not paste secrets into chat or prompts.
-6. **Google AI Studio synchronization:** GitHub does not prove that AI Studio has pulled the latest main. The canonical docs merge is complete at main SHA `fb8e57640db78545fc93ce3f482b7ab3a9f59ded`. Verify the connected repository/branch and pull this main state into Google AI Studio; GitHub does not prove Studio has synchronized.
+1. **GitHub export/PR & CI verification of 2026-11-16 AI Studio workspace fixes:** the 2026-11-16 TypeScript, server typo, React timer cleanup, `NODE_ENV=production` Vite build, non-blocking Service Worker registration, and E2E selector updates exist in the Google AI Studio workspace only and were **not** committed/pushed to GitHub or deployed to Vercel (per explicit owner directive). Push to a feature branch/PR and run the GitHub Quality Gate (which executes `npm run test:firestore-rules` with Java) before promoting to `main`/Vercel.
+2. **Production sync flags — owner decision required:** Vercel Production previously reported `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` (2026-11-14). Neither value was changed. Decide separately whether to authorize disabling them while release gates are completed. Do not perform sync-related Production actions or toggle either value without explicit approval.
+3. **Firebase (`wird-quran-app`) & AI Studio Preview Authorized Domains:** owner confirmed and workspace `firebase-applet-config.json` matches `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`. If testing Google Sign-In directly inside Google AI Studio Preview, add the preview `ais-dev-*.run.app` origin in Firebase Console -> Authentication -> Settings -> Authorized domains. Deployed Production Firestore Rules release remains NOT VERIFIED.
+4. **Vercel access protection:** password protection is OFF; SSO protection is ON for all non-custom domains (`wird-app.vercel.app` is excluded). This does not by itself prove anonymous user access; read-only public smoke remains NOT VERIFIED. Do not change protection settings without approval.
+5. **GitHub branch protection:** the 2026-11-14 branch-protection API read returned 403 `Resource not accessible by integration`. Current settings are NOT VERIFIED. Do not change branch protection or rulesets without an authorized read and owner decision.
+6. **API credentials:** Vercel has sensitive `ISLAMICAPI_API_KEY` and `GEMINI_API_KEY` entries for Preview and Production. Values were not read and upstream validity was not tested. Do not paste secrets into chat or prompts.
 7. **Real-device validation:** physical Android/iOS restart, airplane-mode, audio-download and cross-device sync scenarios remain NOT VERIFIED. Prefer automated multi-client/emulator coverage; request owner device testing only when no automated substitute exists.
 
 ## Approval boundaries

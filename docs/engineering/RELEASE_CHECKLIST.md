@@ -1,7 +1,7 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-14 20:16 +02:00  
-**Current release decision:** BLOCKED (PR #363 and Ruqyah #373 are merged; other application release gates remain open)
+**Last verified:** 2026-11-16 (Google AI Studio workspace; prior GitHub/Vercel snapshot: 2026-11-14 20:16 +02:00)  
+**Current release decision:** BLOCKED (workspace fixes verified locally in AI Studio, NOT pushed to GitHub CI, NOT deployed to Vercel; Firestore Emulator blocked by missing Java in Studio; sync/offline release gates remain open)
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
 
@@ -22,17 +22,12 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 ## B. CI and build
 
-- [x] PASS — PR #363 run `43632493503`, job `132562026967`, recorded complete successful steps on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
-- [ ] BLOCKED — several other PR heads still have runner/log observability issues; assess each exact head independently.
-- [ ] NOT VERIFIED — full test suite on a local complete checkout.
-- [ ] NOT VERIFIED — TypeScript/lint exact-head run.
-- [ ] NOT VERIFIED — Firestore Rules Emulator exact-head run.
-- [x] PASS — PR #363 desktop/mobile Playwright smoke completed on exact PR head `26c9deb5872868f1f74e119391a0b6f9ad74af3d`.
-- [x] PASS — PR #373 Ruqyah desktop/mobile E2E passed in both projects; 160 total Playwright tests.
-- [ ] NOT VERIFIED — implementation PR Playwright checks remain independent.
-- [x] PASS — PR #373 exact-head Vercel Preview build completed on `d93ede79b9f8ca093bd5a8a702a00b31d415c9ca`.
-- [x] PASS — PR #364 exact-head Vercel Preview build completed on `ad33875b0304020f930c7b606ef8782d36148707`.
-- [x] PASS — Vercel Production deployment `dpl_6KvNeEcmRV53ERHisLNwQgNTcojV` is READY on docs-only main commit `1c025e0e476ebdaa1250fffce2e154848ca52eee`, which includes application-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+- [x] PASS (AI Studio workspace 2026-11-16) — `npx tsc --noEmit`, `npm test` (`731 PASSED / 0 FAILED`), `npm run build` (`NODE_ENV=production vite build`, zero chunks > 500 kB, non-`jsxDEV` SW active), `npm run mushaf:validate-coverage` (604 pages / 6,236 ayahs), `npm run smoke:api-imports`, `npm run smoke:server`, and all 18 desktop/mobile Playwright E2E spec files (`162` passed / `2` intentionally skipped / `0` failed).
+- [ ] BLOCKED (AI Studio workspace 2026-11-16) — `npm run test:firestore-rules` cannot run inside AI Studio sandbox due to missing Java runtime (`Could not spawn java -version`); must execute in GitHub CI Quality Gate after push.
+- [ ] NOT VERIFIED — GitHub Quality Gate CI for 2026-11-16 AI Studio workspace modifications (changes are local to Studio and not yet pushed to GitHub).
+- [x] PASS (Historical CI 2026-11-14) — PR #363 run `43632493503` and PR #373 run `43634212804` passed on GitHub Actions; PR #372 merged at `f264e4bdea7496090f60940e9e8db03e2fb15696`.
+- [ ] BLOCKED — several other unmerged candidate PR heads still have runner/log observability issues; assess each exact head independently.
+- [x] PASS (Historical Production 2026-11-14) — Vercel Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` reached READY on prior `main` SHA `f264e4bdea7496090f60940e9e8db03e2fb15696` (does NOT include 2026-11-16 Studio changes).
 
 ## C. Quran and Ruqyah
 
@@ -61,6 +56,7 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 ## E. Offline and PWA
 
+- [x] PASS (AI Studio workspace 2026-11-16) — `NODE_ENV=production vite build` + non-blocking `/sw.js` registration (`src/main.tsx`) + non-blocking `precacheQuranFont` (`public/sw.js`) verified in desktop/mobile Playwright: installed SW serves full app shell after offline reload and full offline preparation caches all 252 lazy Quran assets and opens Mushaf offline.
 - [x] PASS — isolated offline audio tests: library 18/18, downloader 6/6, cache adapter 5/5 (29/29 total).
 - [ ] BLOCKED — cross-tab job ownership/locking for concurrent downloads.
 - [ ] BLOCKED — complete Cache Storage orphan cleanup lifecycle.
@@ -91,13 +87,14 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 ## H. Firebase and sync safety
 
-- [x] PASS — inspected client configuration identifies `wird-quran-app`.
+- [x] PASS (2026-11-16) — `firebase-applet-config.json` confirmed by owner and verified as `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`.
 - [x] PASS — repository Firestore rules inspected; no rules/database/user data changed.
-- [ ] FAIL — Vercel Production flags `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` are both currently `true`.
+- [ ] FAIL — Vercel Production flags `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED` were observed `true` on 2026-11-14 (not modified).
 - [ ] BLOCKED — explicit owner authorization required before disabling the two Production flags; no settings changed.
 - [ ] BLOCKED — sync must not be treated as release-safe until server-owned revisions, base-revision capture, transactional compare-and-swap, validated bootstrap, durable cursors, atomic imports, duplicate handling, UID guards, conflict deferral, and multi-client emulator tests are all evidenced.
 - [ ] NOT VERIFIED — deployed Firestore rules match repository rules at the current production project/version.
 
 ## I. Production verification
 
-- [x] PASS — Production deployment is READY on the exact main SHA.
+- [ ] NOT VERIFIED (2026-11-16 Studio changes) — 2026-11-16 AI Studio fixes are NOT pushed to GitHub and NOT deployed to Vercel Production per explicit owner directive (`"التحديث متنشرش على فيرسل"`).
+- [x] PASS (Historical 2026-11-14) — Production deployment `dpl_7UMxgj7wPatYfKKXVhTCgijomcfe` was READY on prior `main` SHA `f264e4bdea7496090f60940e9e8db03e2fb15696`.

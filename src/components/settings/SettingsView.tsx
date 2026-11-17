@@ -93,6 +93,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const resetTriggerRef = useRef<HTMLButtonElement | null>(null);
   const demoTriggerRef = useRef<HTMLButtonElement | null>(null);
   const isResettingRef = useRef(false);
+  const savedTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current !== null) window.clearTimeout(savedTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const activeDialog = showResetConfirm ? 'reset' : showDemoConfirm ? 'demo' : null;
@@ -142,11 +149,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!await onSaveProfile(formData)) return;
+    if (savedTimerRef.current !== null) window.clearTimeout(savedTimerRef.current);
     setIsSaved(true);
     if (onToast) {
       onToast("تم حفظ التعديلات وإعدادات الملف الشخصي بنجاح", "success");
     }
-    setTimeout(() => setIsSaved(false), 2500);
+    savedTimerRef.current = window.setTimeout(() => {
+      setIsSaved(false);
+      savedTimerRef.current = null;
+    }, 2500);
   };
 
   const handleConfirmReset = async () => {

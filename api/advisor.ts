@@ -5,13 +5,33 @@ interface RateLimitRecord {
   count: number;
   resetAt: number;
 }
+const MAX_RATE_LIMIT_BUCKETS = 1000;
 const rateLimitMap = new Map<string, RateLimitRecord>();
+
+function getClientIp(req: any): string {
+  const realIp = req.headers?.['x-real-ip'];
+  const candidate = Array.isArray(realIp) ? realIp[0] : realIp;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  if (typeof req.ip === 'string' && req.ip.trim()) return req.ip.trim();
+  const remoteAddress = req.socket?.remoteAddress;
+  if (typeof remoteAddress === 'string' && remoteAddress.trim()) return remoteAddress.trim();
+  const forwarded = req.headers?.['x-forwarded-for'];
+  const forwardedFirst = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  return typeof forwardedFirst === 'string' && forwardedFirst.trim()
+    ? forwardedFirst.split(',')[0].trim()
+    : 'global';
+}
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   if (rateLimitMap.size > 1000) {
     for (const [key, entry] of rateLimitMap.entries()) {
       if (now >= entry.resetAt) rateLimitMap.delete(key);
+    }
+    while (rateLimitMap.size > MAX_RATE_LIMIT_BUCKETS) {
+      const oldestKey = rateLimitMap.keys().next().value;
+      if (typeof oldestKey !== 'string') break;
+      rateLimitMap.delete(oldestKey);
     }
   }
   const record = rateLimitMap.get(ip);
@@ -56,10 +76,11 @@ function getGeminiClient(): GoogleGenAI | null {
 const ALLOWED_PAYLOAD_KEYS = new Set(['contextType', 'userData', 'query', 'message', 'history']);
 
 export default async function handler(req: any, res: any) {
-  // CORS headers
+  // CORS & Security headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -67,9 +88,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const path = req.url || '';
-  const clientIp = req.headers?.['x-forwarded-for']?.split(',')?.[0]?.trim() || 
-                   req.socket?.remoteAddress || 
-                   'global';
+  const clientIp = getClientIp(req);
 
   // 1. GET /api/advisor/status
   if (req.method === 'GET' || path.includes('/status')) {
@@ -100,9 +119,26 @@ export default async function handler(req: any, res: any) {
     }
 
     // Input Size Limits & Whitelist Validation
-    const body = req.body || {};
-    const bodyStr = JSON.stringify(body);
-    if (bodyStr.length > 4096) {
+    const rawBody = req.body ?? {};
+    if (typeof rawBody !== 'object' || rawBody === null || Array.isArray(rawBody)) {
+      return res.status(400).json({
+        success: false,
+        code: 'INVALID_PAYLOAD',
+        message: 'الطلب يجب أن يكون كائن JSON صالحاً.'
+      });
+    }
+    const body = rawBody as Record<string, unknown>;
+    let bodyStr = '';
+    try {
+      bodyStr = JSON.stringify(body);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        code: 'INVALID_PAYLOAD',
+        message: 'تعذر قراءة بيانات الطلب.'
+      });
+    }
+    if (Buffer.byteLength(bodyStr, 'utf8') > 4096) {
       return res.status(400).json({
         success: false,
         code: 'PAYLOAD_TOO_LARGE',
@@ -142,13 +178,14 @@ export default async function handler(req: any, res: any) {
 
     // Sanitize userData: Strictly reject PII (name, email) and format anonymous learning metrics
     let userContextSummary = '';
-    if (userData && typeof userData === 'object') {
-      const memorizedCount = Number(userData.memorizedAyahsCount) || 0;
-      const weakCount = Number(userData.weakVersesCount) || 0;
-      const retentionScore = Number(userData.retentionScore) || 0;
-      const dueCount = Number(userData.dueRevisionsCount) || 0;
-      const safeGoal = typeof userData.goal === 'string' ? userData.goal.slice(0, 80) : 'حفظ وإتقان القرآن';
-      const safePlan = typeof userData.activePlanTitle === 'string' ? userData.activePlanTitle.slice(0, 50) : 'خطة الحفظ الحالية';
+    if (userData && typeof userData === 'object' && !Array.isArray(userData)) {
+      const metrics = userData as Record<string, unknown>;
+      const memorizedCount = Number(metrics.memorizedAyahsCount) || 0;
+      const weakCount = Number(metrics.weakVersesCount) || 0;
+      const retentionScore = Number(metrics.retentionScore) || 0;
+      const dueCount = Number(metrics.dueRevisionsCount) || 0;
+      const safeGoal = typeof metrics.goal === 'string' ? metrics.goal.slice(0, 80) : 'حفظ وإتقان القرآن';
+      const safePlan = typeof metrics.activePlanTitle === 'string' ? metrics.activePlanTitle.slice(0, 50) : 'خطة الحفظ الحالية';
 
       userContextSummary = `
 [المؤشرات الرقمية لتقدم الحافظ]:

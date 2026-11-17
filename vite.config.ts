@@ -67,6 +67,29 @@ export default defineConfig(() => {
     },
     build: {
       chunkSizeWarningLimit: 650,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return undefined;
+            if (id.includes('/node_modules/firebase/firestore') || id.includes('/node_modules/@firebase/firestore')) {
+              return 'vendor-firestore';
+            }
+            if (id.includes('/node_modules/firebase/') || id.includes('/node_modules/@firebase/')) {
+              return 'vendor-firebase';
+            }
+            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/') || id.includes('/node_modules/scheduler/')) {
+              return 'vendor-react';
+            }
+            if (id.includes('/node_modules/lucide-react/')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('/node_modules/motion/') || id.includes('/node_modules/framer-motion/')) {
+              return 'vendor-motion';
+            }
+            return undefined;
+          }
+        }
+      }
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

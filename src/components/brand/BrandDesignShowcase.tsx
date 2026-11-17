@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
   Home,
@@ -31,17 +31,32 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
   const [viewMode, setViewMode] = useState<'split' | 'day' | 'night'>('split');
   const [sliderPosition, setSliderPosition] = useState<number>(50); // percentage for split
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
+  const copyTimerRef = useRef<number | null>(null);
   const [dayActiveBtn, setDayActiveBtn] = useState<'primary' | 'secondary' | 'accent'>('primary');
   const [nightActiveBtn, setNightActiveBtn] = useState<'primary' | 'secondary' | 'accent'>('primary');
   const [daySearchText, setDaySearchText] = useState('سورة الملك');
   const [nightSearchText, setNightSearchText] = useState('سورة الكهف');
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'mushaf' | 'bookmark' | 'profile'>('home');
 
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) {
+        window.clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
+
   const copyHex = (hex: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(hex);
       setCopiedHex(hex);
-      setTimeout(() => setCopiedHex(null), 2000);
+      if (copyTimerRef.current !== null) {
+        window.clearTimeout(copyTimerRef.current);
+      }
+      copyTimerRef.current = window.setTimeout(() => {
+        setCopiedHex(null);
+        copyTimerRef.current = null;
+      }, 2000);
     }
   };
 

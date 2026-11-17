@@ -34,10 +34,24 @@ async function parseLimitedJson(response: Response, maxBytes = 200_000): Promise
     return JSON.parse(new TextDecoder().decode(joined)) as unknown;
   } catch { return null; }
 }
-function getClientIp(req: any): string { return String(req.ip || req.socket?.remoteAddress || 'unknown'); }
+const MAX_RATE_LIMIT_BUCKETS = 1000;
+function getClientIp(req: any): string {
+  const realIp = req.headers?.['x-real-ip'];
+  const candidate = Array.isArray(realIp) ? realIp[0] : realIp;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  if (typeof req.ip === 'string' && req.ip.trim()) return req.ip.trim();
+  return String(req.socket?.remoteAddress || 'unknown');
+}
 function isLimited(ip: string): boolean {
   const now = Date.now();
-  for (const [key, entry] of rateLimits) if (now >= entry.resetAt) rateLimits.delete(key);
+  if (rateLimits.size > MAX_RATE_LIMIT_BUCKETS) {
+    for (const [key, entry] of rateLimits) if (now >= entry.resetAt) rateLimits.delete(key);
+    while (rateLimits.size > MAX_RATE_LIMIT_BUCKETS) {
+      const oldestKey = rateLimits.keys().next().value;
+      if (typeof oldestKey !== 'string') break;
+      rateLimits.delete(oldestKey);
+    }
+  }
   const entry = rateLimits.get(ip);
   if (!entry || now >= entry.resetAt) { rateLimits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS }); return false; }
   entry.count += 1; return entry.count > RATE_LIMIT_MAX;

@@ -69,6 +69,15 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
   const [isExportSuccess, setIsExportSuccess] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [portions, setPortions] = useState<PortionStatusRecord[]>(() => RetentionService.getPortions());
+  const exportSuccessTimerRef = useRef<number | null>(null);
+  const revokeTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (exportSuccessTimerRef.current !== null) window.clearTimeout(exportSuccessTimerRef.current);
+      if (revokeTimerRef.current !== null) window.clearTimeout(revokeTimerRef.current);
+    };
+  }, []);
 
   // Page inspection / edit modal
   const [inspectedPage, setInspectedPage] = useState<{
@@ -174,9 +183,17 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
     a.href = url;
     a.download = `wird_backup_${getLocalDateString()}.json`;
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (revokeTimerRef.current !== null) window.clearTimeout(revokeTimerRef.current);
+    revokeTimerRef.current = window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+      revokeTimerRef.current = null;
+    }, 1000);
+    if (exportSuccessTimerRef.current !== null) window.clearTimeout(exportSuccessTimerRef.current);
     setIsExportSuccess(true);
-    setTimeout(() => setIsExportSuccess(false), 3000);
+    exportSuccessTimerRef.current = window.setTimeout(() => {
+      setIsExportSuccess(false);
+      exportSuccessTimerRef.current = null;
+    }, 3000);
   };
 
   // Handle Import Backup through the same journal-first boundary as Settings.
