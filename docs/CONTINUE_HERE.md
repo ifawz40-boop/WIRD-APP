@@ -1,10 +1,34 @@
 # WIRD — Continuation Entry Point
 
+## Dependency-chain and CI checkpoint — 2026-11-17
+
+- PR #383 was retargeted from `main` to prerequisite PR #382 branch `fix/main-bun-lockfile-alignment-20261117` (base SHA `4332ea4cc4b2fa75e99d3e7a5dee22e2391b6f34`). This makes the dashboard feature's merge diff include the lockfile prerequisite without prematurely merging either PR.
+- PR #382 now runs the dependency audit as a separate blocking job while application tests continue independently. The audit command remains unchanged and still fails on the single GHSA-fc5q-39xc-vjpf finding; no ignore/waiver/severity reduction was introduced.
+- The same workflow now triggers on PRs targeting any branch, so the stacked chain #383 → #384 → #385 → #386 can receive exact-head Quality Gates.
+- Run #4467 on PR #382 commit `4332ea4cc4b2fa75e99d3e7a5dee22e2391b6f34`: frozen install, automated tests, API import smoke, audio source check, Firestore Rules Emulator, TypeScript, production build and server startup smoke have passed. Chromium installation / Playwright was still running at the time of this checkpoint; the separate full dependency audit failed only on picomatch@4.0.7.
+- This note is a commit to trigger a fresh Quality Gate on the newly retargeted PR #383. Re-fetch its run and head before making any release decision.
+
+
 **Last reconciled:** 2026-11-17 (Google AI Studio workspace)  
 **Repository:** `xm8eslam-stack/WIRD-APP` · **Primary branch:** `main`  
 **Last refreshed GitHub/Vercel checkpoint (2026-11-14):** `main` HEAD `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
+
+## Current GitHub execution checkpoint — 2026-11-17 21:35 +02:00
+
+- **Live main:** f70bf5e0617b558dfba4663da2667fb5d6c3ce8a (re-fetched from GitHub).
+- **Current owner priority:** complete the explicitly requested local/offline usability tasks only; do not expand product scope.
+- **Task 1 — multiple active memorization plans:** implementation PR #383 is OPEN / Draft: https://github.com/xm8eslam-stack/WIRD-APP/pull/383. Branch fix/dashboard-multiple-due-plan-tasks-20261117. It aggregates all due memorization tasks from active, non-paused engine plans, excludes future/completed work, shows additional due tasks on Dashboard, and updates the matching due plan when a session is completed.
+- **Task 1 verification:** no local checkout/terminal is available in this connector session. No local tests/build are claimed. At the first exact-head check, the commit had a Vercel status context SUCCESS but no GitHub Actions workflow run was returned; Vercel status is not a substitute for Quality Gate or browser smoke.
+- **Known CI baseline blocker:** main's bun.lock frozen-install mismatch remains under investigation in PR #382; its last inspectable Quality Gate failed at Playwright (160 passed, 2 skipped, 4 failed) after earlier gates passed. Do not merge this feature PR until the exact current head has a usable full Quality Gate and the failures are diagnosed.
+- **Task 2 — Quran verse navigation controls:** NOT STARTED. Add consistent controls immediately beneath displayed ayat in each relevant Quran-reading surface.
+- **Task 3 — printed Mushaf display:** NOT STARTED. Add one-page and facing two-page modes while retaining responsive single-page behavior on narrow screens.
+- **Task 4 — opposite-page Tafsir al-Muyassar:** NOT STARTED. In two-page mode, independently allow either page to show verified local Quran text or local Tafsir al-Muyassar for the ayah being read on the opposite page; default both pages to Quran.
+- **Offline boundary:** prioritize local Quran text, locally available tafsir and device-local preferences. Do not introduce runtime network dependencies or new APIs for these tasks.
+- **Next action:** re-fetch PR #383 head/base/diff and exact CI; fix only evidenced issues. Keep Draft/HOLD until all required gates pass. Then continue with task 2 as a separate PR.
+
+---
 
 ## Verified AI Studio workspace state — 2026-11-17
 
