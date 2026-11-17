@@ -20,7 +20,7 @@ export interface RouteState {
   startAyah?: number;
   endAyah?: number;
   mode?: 'memorize' | 'review';
-  enginePlanId?: string;
+  enginePlanId?: string | null;
 }
 
 export const VALID_NAV_TABS: NavTabId[] = [
