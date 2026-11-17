@@ -515,3 +515,13 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Rechecked `main` against the last known baseline `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`: compare status **identical**, 0 ahead / 0 behind. Production branch has not moved in this work.
 - PRs #383–#386 remain open Draft/HOLD; no PR merge, Production deploy, Vercel/Firebase settings or secrets change, or sync-flag activation.
 - Next: poll #4486 until Playwright and the application job terminate; then record the final exact-head outcome. Security gate remains a separate hard blocker regardless of browser outcome.
+
+
+## Integration follow-up — 2026-11-17 (latest head e0c7d9d)
+
+- PR #386 current exact head: `e0c7d9d63c00c86ed3010ef340bcc7ce34536b1e`. Browser selector fixes and correct two-page navigation label are committed; the remaining weak-verse navigation portion from #384 has been ported into #386 with E2E coverage.
+- #4486 final Playwright result: 170 passed, 2 skipped, 8 failed. Seven mobile failures were outdated selectors using the desktop sidebar label; one desktop spread test expected a label not used by the actual next-page button. Fixes: `e92f86d1f4e9c9e5b8472b5dab689a6545cf2944`, `db1c5468ba43e5d3c16dce17f724c8a235e14849`.
+- #4491 (`44178530734`) was cancelled by later branch commits. #4494 (`44179010898`) is the current exact-head Quality Gate; at last poll application validation was still running and the security audit failed again on picomatch. Re-poll before claiming browser success.
+- Offline audio audit: #366 app-shell/storage improvements and #368 IndexedDB/cache/downloader foundation are still stale Draft branches based on old main. #368 lacks worker protocol, UI, local-first playback, cross-tab lock and real-device offline playback proof. See `docs/checkpoints/2026-11-17-offline-audio-integration-audit.md`.
+- Vite 8.3.8 and supported Vite 7.3/6.4 branches still declare picomatch 4.x in the vulnerable range. Vite 5 is unsupported and incompatible with the current plugin-react v6 peer requirement; do not downgrade as a production workaround.
+- No merge, deployment, Firebase/Vercel settings/secrets change, or sync-flag activation. `main` remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a` at last verification.
