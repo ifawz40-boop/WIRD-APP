@@ -158,6 +158,8 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
     await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
 
     const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
     const rightContent = page.getByRole('group', { name: 'محتوى الصفحة اليمنى' });
