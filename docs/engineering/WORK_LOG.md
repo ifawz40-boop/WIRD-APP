@@ -900,3 +900,11 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 
 
 - Exact-head refresh after Task 1 duplicate-plan identity fix: PR #383 head `77f360a4390466863c487dd164d567a95a83a605`; Quality Gate run #4465 fails at frozen Bun install because #383 is based on main and does not include #382's lockfile alignment. Latest Vercel status is `build-rate-limit`. PR #383 remains Draft/NOT VERIFIED.
+
+
+## 2026-11-17 — Upstream picomatch remediation re-check
+
+- Re-fetched upstream picomatch PR #237 and #238; both remain OPEN/unmerged and no patched npm release is stated by the current GitHub advisory.
+- Reviewed PR #238's latest review: it demonstrates residual exponential behavior for `+(*)`, `*(*)`, and `+(a*)`, including `+(*)` from the advisory itself. PR #238 is therefore not a complete fix.
+- PR #237 proposes broader collapse behavior but remains unmerged/unreleased and has no official security release to consume.
+- Updated PR #382's body with the finding. Keep audit enabled and all dependent tasks on HOLD until a complete reviewed upstream fix is published and the lockfile/audit pass.
