@@ -134,6 +134,11 @@ function readMushafPageDisplayMode(): MushafPageDisplayMode {
   catch { return 'single'; }
 }
 
+function readMushafReaderLayout(): 'flow' | 'printed' {
+  try { return localStorage.getItem('wird.quran.readerLayout.v1') === 'printed' ? 'printed' : 'flow'; }
+  catch { return 'flow'; }
+}
+
 function normalizeSpreadStartPage(page: number): number {
   const clamped = Math.min(604, Math.max(1, page));
   return clamped % 2 === 0 ? Math.max(1, clamped - 1) : clamped;
@@ -201,7 +206,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   );
   const [page, setPage] = useState(() => {
     const requestedPage = Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage();
-    return readMushafPageDisplayMode() === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
+    return readMushafReaderLayout() === 'printed' && readMushafPageDisplayMode() === 'spread' ? normalizeSpreadStartPage(requestedPage) : requestedPage;
   });
   const [pageInput, setPageInput] = useState(String(Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage()));
   const [pageJumpError, setPageJumpError] = useState('');
@@ -227,10 +232,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [retry, setRetry] = useState(0);
   const [tafsirAyah, setTafsirAyah] = useState<Ayah | null>(null);
   const [readingAyah, setReadingAyah] = useState<Ayah | null>(null);
-  const [readerLayout, setReaderLayout] = useState<'flow' | 'printed'>(() => {
-    try { return localStorage.getItem('wird.quran.readerLayout.v1') === 'printed' ? 'printed' : 'flow'; }
-    catch { return 'flow'; }
-  });
+  const [readerLayout, setReaderLayout] = useState<'flow' | 'printed'>(readMushafReaderLayout);
   const isSpreadModeActive = readerLayout === 'printed' && pageDisplayMode === 'spread';
   const pageStep = isSpreadModeActive ? 2 : 1;
   const [showHizbPicker, setShowHizbPicker] = useState(false);
