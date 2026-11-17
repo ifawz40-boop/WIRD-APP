@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { ALL_SURAHS } from '../src/data/quranMeta';
 
 test.describe('WIRD navigation and memorization tafsir UX', () => {
   test.beforeEach(async ({ page }) => {
@@ -131,6 +132,81 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await displayMode.getByRole('button', { name: 'صفحة واحدة' }).click();
     await expect(page.getByRole('main', { name: 'صفحة المصحف 3' }).locator('svg[aria-label="صفحة المصحف المطبوعة رقم 3"]')).toBeVisible();
     await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 4"]')).toHaveCount(0);
+  });
+
+  test('Muyassar can be downloaded locally and shown on either opposite Mushaf page while offline', async ({ page, context }) => {
+    const requestedSurahs: number[] = [];
+    await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
+      const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
+      requestedSurahs.push(surahNumber);
+      const surah = ALL_SURAHS[surahNumber - 1];
+      const payload = Array.from({ length: surah.versesCount }, (_, index) => ({
+        sura: surahNumber,
+        aya: index + 1,
+        translation: `تفسير اختباري ${surahNumber}:${index + 1}`,
+        footnotes: []
+      }));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify(payload)
+      });
+    });
+
+    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+
+    const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
+    const rightContent = page.getByRole('group', { name: 'محتوى الصفحة اليمنى' });
+    await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(rightContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+
+    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+    const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
+    await expect(downloadPanel).toBeVisible();
+    await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
+    await expect(downloadPanel.getByText('اكتمل تنزيل التفسير الميسر. أصبح متاحًا محليًا دون اتصال.')).toBeVisible({ timeout: 120_000 });
+    await expect(page.locator('#wird-tafsir-ayah-1-1')).toContainText('تفسير اختباري 1:1');
+    expect(requestedSurahs).toHaveLength(114);
+    expect(new Set(requestedSurahs).size).toBe(114);
+
+    await context.setOffline(true);
+    await page.getByRole('navigation', { name: 'التنقل بين الآيات' }).getByRole('button', { name: 'الآية التالية' }).click();
+    await expect(page.locator('#wird-tafsir-ayah-1-2')).toContainText('تفسير اختباري 1:2');
+
+    await rightContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+    await expect(page.locator('#wird-tafsir-ayah-2-1')).toContainText('تفسير اختباري 2:1');
+    await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+    expect(requestedSurahs).toHaveLength(114);
+  });
+
+  test('incomplete QuranEnc surah payload is rejected and never marked as an offline-ready Tafsir', async ({ page }) => {
+    await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
+      const surahNumber = Number(new URL(route.request().url()).pathname.split('/').at(-1));
+      const payload = [{ sura: surahNumber, aya: 1, translation: 'تفسير غير مكتمل', footnotes: [] }];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify(payload)
+      });
+    });
+
+    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+    const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
+    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+
+    const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
+    await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
+    await expect(downloadPanel.getByRole('alert')).toContainText('عدد آيات تفسير سورة 1 غير مكتمل');
+    await expect(downloadPanel).toContainText('0 / 114 سورة');
+    await expect(downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' })).toBeVisible();
   });
 
   test('full offline preparation caches lazy Quran assets and opens the mushaf offline', async ({ page, context }) => {
