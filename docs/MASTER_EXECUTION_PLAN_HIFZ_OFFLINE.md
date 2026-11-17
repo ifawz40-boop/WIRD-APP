@@ -487,3 +487,12 @@ This addendum supersedes older status snapshots above where they conflict. It is
 - Commits: assertion correction `7362bd813bc55b70efe28e2f4e2ec4b32d05e39a`; CI coverage condition `d3cc59dc15160e8a367ad3189742b3d962ca9c14`.
 - New exact-head Quality Gate #4484 / `44173785987` is queued on #386 head `d3cc59dc15160e8a367ad3189742b3d962ca9c14`. Its result is pending; do not claim the regression is cleared until the new run completes.
 - #386 remains Draft/HOLD. No merge, Production deployment, Firebase/Vercel settings/secrets, or sync-flag changes.
+
+## Latest PR #386 exact-head run — 2026-11-17
+
+- Fixed the TypeScript fixture error in `src/services/tafsirOfflineLibrary.test.ts`: explicitly typed the source-version fixture parameter as `string` so the stale-version test value `0.9.0` is accepted. Commit `e6efc84febe2ca63319f857c567db110183d01ff`.
+- Current PR #386 head: `e6efc84febe2ca63319f857c567db110183d01ff`.
+- Quality Gate #4486 / `44173952341`: application checks observed PASS so far — frozen install, full unit suite (**759 passed / 0 failed**), 604 Mushaf page/ayah coverage, API import smoke, Quran audio CDN/range smoke, Firestore Rules Emulator, TypeScript, production build, and production server startup smoke.
+- Desktop/mobile Playwright browser installation was still in progress at the last check; browser tests and overall application job are therefore **PENDING**, not yet passed.
+- Separate dependency security audit completed FAIL on `picomatch@4.0.7` / `GHSA-fc5q-39xc-vjpf`. This remains the only observed audit finding and continues to block merge/release.
+- No merge or Production deploy. Firebase/Vercel settings/secrets and sync flags remain unchanged.
