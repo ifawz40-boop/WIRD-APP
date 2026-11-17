@@ -17,6 +17,7 @@ export type DailySessionSelection =
       surahNumber: number;
       startAyah: number;
       endAyah: number;
+      enginePlanId?: string;
       label: string;
     }
   | {
@@ -122,6 +123,7 @@ export function getDailySessionSelection(
       kind: 'session',
       mode: 'memorize',
       source: 'engine_plan',
+      enginePlanId: nextDueEngineTask.planId,
       surahNumber: task.surahNumber,
       startAyah: task.startAyah,
       endAyah: task.endAyah,
