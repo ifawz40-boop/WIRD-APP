@@ -135,7 +135,7 @@ export default function App() {
       startAyah,
       endAyah,
       mode: initialRoute.mode || 'memorize',
-      enginePlanId: null
+      enginePlanId: initialRoute.enginePlanId ?? null
     };
   });
 
@@ -295,7 +295,7 @@ export default function App() {
             startAyah: nextStart,
             endAyah: nextEnd,
             mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode,
-            enginePlanId: null
+            enginePlanId: route.tab === 'session' ? (route.enginePlanId ?? null) : null
           }));
         }
       }
@@ -373,7 +373,8 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode
+      mode,
+      enginePlanId: enginePlanId || undefined
     });
   };
 
