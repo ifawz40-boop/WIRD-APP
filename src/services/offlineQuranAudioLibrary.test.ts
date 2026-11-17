@@ -5,6 +5,9 @@ import {
   STORE_AUDIO_FILES,
   STORE_AUDIO_JOBS,
   STORE_AUDIO_LOCKS,
+  STORE_AUDIO_STAGING,
+  OFFLINE_AUDIO_CACHE_NAME,
+  buildCacheGenerationKey,
   type CacheStorageLike
 } from './offlineQuranAudioLibrary';
 import { computeGlobalAyahNumber } from './audioService';
@@ -48,6 +51,9 @@ function createMockCacheStorage(options: { rejectWrites?: boolean } = {}) {
         async delete(req: Request | string) {
           const key = typeof req === 'string' ? req : req.url;
           return store.delete(key);
+        },
+        async keys() {
+          return Array.from(store.keys()).map(key => new Request(key));
         }
       };
     }
@@ -103,8 +109,93 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     const lib = new OfflineQuranAudioLibrary({ indexedDBFactory: factory, databaseName, lockManager: null });
     await lib.getStats();
     const upgraded = await (lib as any).openDatabase() as IDBDatabase;
-    assert(upgraded.objectStoreNames.contains(STORE_AUDIO_LOCKS), 'Version-2 upgrade must add the cross-tab locks store');
+    assert(upgraded.objectStoreNames.contains(STORE_AUDIO_LOCKS), 'Upgrade must add the cross-tab locks store');
+    assert(upgraded.objectStoreNames.contains(STORE_AUDIO_STAGING), 'Upgrade must add the crash-recovery staging store');
     upgraded.close();
+  });
+
+  await test('Staged cache generation is removed after a simulated crash before metadata commit', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-staging-crash-${++dbCounter}`;
+    const mockCache = createMockCacheStorage();
+    const lib = new OfflineQuranAudioLibrary({
+      indexedDBFactory: factory, databaseName, cacheStorageFactory: mockCache.factory,
+      lockManager: null, stagingGraceMs: 1, orphanGraceMs: 1
+    });
+    const cache = await mockCache.factory.open(OFFLINE_AUDIO_CACHE_NAME);
+    const generationId = 'crashed-generation';
+    const cacheKey = buildCacheGenerationKey('ar.alafasy', 1, generationId);
+    await cache.put(cacheKey, new Response(new Uint8Array([0xff, 0xfb, 0x90]).buffer, {
+      status: 200, headers: { 'Content-Type': 'audio/mpeg' }
+    }));
+    const db = await (lib as any).openDatabase() as IDBDatabase;
+    const tx = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
+    const done = new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('Staging fixture transaction aborted'));
+    });
+    tx.objectStore(STORE_AUDIO_STAGING).put({
+      cacheKey, kind: 'download', fileKey: 'ar.alafasy:1', reciterId: 'ar.alafasy',
+      globalAyahNumber: 1, cacheGenerationId: generationId, jobId: 'closed-tab-job',
+      createdAtMs: Date.now() - 10_000, schemaVersion: 1
+    });
+    await done;
+
+    await lib.reconcileLibrary();
+    assert(!(await cache.match(cacheKey)), 'A stale staged generation without metadata must be removed');
+    const read = db.transaction([STORE_AUDIO_STAGING], 'readonly');
+    const readDone = new Promise<void>((resolve, reject) => {
+      read.oncomplete = () => resolve();
+      read.onerror = () => reject(read.error);
+    });
+    const remaining = await new Promise<unknown>((resolve, reject) => {
+      const request = read.objectStore(STORE_AUDIO_STAGING).get(cacheKey);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await readDone;
+    assert(remaining === undefined, 'Staging metadata must be removed after cache cleanup succeeds');
+    db.close();
+    lib.close();
+  });
+
+  await test('Unknown Cache Storage keys receive a grace record before orphan deletion', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-orphan-scan-${++dbCounter}`;
+    const mockCache = createMockCacheStorage();
+    const lib = new OfflineQuranAudioLibrary({
+      indexedDBFactory: factory, databaseName, cacheStorageFactory: mockCache.factory,
+      lockManager: null, stagingGraceMs: 1, orphanGraceMs: 1
+    });
+    const cache = await mockCache.factory.open(OFFLINE_AUDIO_CACHE_NAME);
+    const cacheKey = buildCacheGenerationKey('ar.alafasy', 2, 'legacy-untracked-generation');
+    await cache.put(cacheKey, new Response(new Uint8Array([0xff, 0xfb, 0x91]).buffer, {
+      status: 200, headers: { 'Content-Type': 'audio/mpeg' }
+    }));
+
+    await lib.reconcileLibrary();
+    assert(!!(await cache.match(cacheKey)), 'First scan must stage an unknown key, not delete it immediately');
+    const db = await (lib as any).openDatabase() as IDBDatabase;
+    const update = db.transaction([STORE_AUDIO_STAGING], 'readwrite');
+    const readRecord = await new Promise<any>((resolve, reject) => {
+      const request = update.objectStore(STORE_AUDIO_STAGING).get(cacheKey);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    assert(readRecord?.kind === 'orphan', 'Unknown cache keys must get an orphan grace record');
+    readRecord.createdAtMs = Date.now() - 10_000;
+    update.objectStore(STORE_AUDIO_STAGING).put(readRecord);
+    await new Promise<void>((resolve, reject) => {
+      update.oncomplete = () => resolve();
+      update.onerror = () => reject(update.error);
+      update.onabort = () => reject(update.error || new Error('Orphan grace fixture transaction aborted'));
+    });
+
+    await lib.reconcileLibrary();
+    assert(!(await cache.match(cacheKey)), 'An unreferenced key older than the grace period must be swept');
+    db.close();
+    lib.close();
   });
 
   await test('IndexedDB lease fallback serializes the same download across two tabs', async () => {
