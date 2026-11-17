@@ -77,6 +77,20 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(navigation.getByRole('button', { name: 'الآية التالية' })).toHaveCSS('min-height', '56px');
   });
 
+  test('Quran study cards expose adjacent ayah controls directly below each ayah', async ({ page }) => {
+    await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
+    await page.getByRole('button', { name: 'فتح سورة الفاتحة للدراسة' }).click();
+
+    const firstAyahCard = page.locator('#study-ayah-1');
+    await expect(firstAyahCard).toBeVisible();
+    const navigation = firstAyahCard.getByRole('navigation', { name: 'التنقل بين الآيات' });
+    await expect(navigation).toBeVisible();
+    await expect(navigation.getByRole('button', { name: 'الآية السابقة' })).toBeDisabled();
+
+    await navigation.getByRole('button', { name: 'الآية التالية' }).click();
+    await expect(page.locator('#continuous-ayah-2')).toBeVisible();
+  });
+
   test('Mushaf exposes previous and next ayah controls directly below the displayed page', async ({ page }) => {
     await page.getByRole('button', { name: 'القرآن والمصحف', exact: true }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
