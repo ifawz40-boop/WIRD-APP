@@ -188,3 +188,14 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - PR #381 tracker remains OPEN / Draft / mergeable=true, head `03306460b695f0e48b8def6ab018c165fb0464f0`. Its canonical files are `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md` and this file.
 - **Next:** re-fetch run #44105033897 until terminal. If Playwright succeeds and cleanup finishes, re-fetch #382 head/base/mergeability and final patch; verify all applicable checks then merge using expected head SHA `c98a31f...`. If Playwright fails, inspect diagnostics and fix only on a new narrow PR. After #382 merge, update/rebase this tracker branch against the new main and begin the first source-gap implementation PR (durable Hifz session recovery is a strong first candidate).
 - No merge, production deployment, Firebase change, secret/config change, or sync-flag change has occurred in this checkpoint.
+
+
+## Latest continuation checkpoint — 2026-11-17 (PR #382 gate failed)
+
+- PR #382 is still OPEN / Draft / mergeable=true / not merged. Exact head `c98a31f7a1a9ee41f1489b15609d3c2ccce18e69`; merge ref `cf378fb15af4e9423154c34dbaaf79b13139312d`; base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; only changed path is `bun.lock`.
+- Quality Gate run #4452 / `44105033897`, job `134114950644`, terminal conclusion **failure**. Passed: frozen Bun install, dependency audit, automated suites, native API imports, audio CDN/range, Firestore Rules Emulator, TypeScript, build, server smoke. Mushaf 604-map check was **skipped**. Playwright: **160 passed, 2 skipped, 4 failed**.
+- The four Playwright failures are two scenarios failing on both desktop and mobile: (1) synthetic Ctrl+KeyB shortcut test cannot find the collapsed sidebar toggle at `e2e/app-shell.spec.ts:164`; (2) audio load-error test sees stale `جارٍ تحميل التلاوة` status after manually calling mock `onerror` at `e2e/memorization-audio-repeat.spec.ts:115`.
+- Source review shows the audio `onerror` handler does clear `isAudioLoading`; test does not await async offline source resolution/mock creation before invoking `onerror`, so a race is plausible but unproven. Sidebar failure root cause is still unknown. Do not weaken tests or alter app code without reproducing and reading artifact error contexts.
+- Playwright diagnostics artifact: `playwright-smoke-results`, ID `14338856662`, SHA-256 `978ba2e18968257d614fe2451cfe919fd9eb3ec1c0c4dda0675f1daf3b491c11`. Artifact not yet extracted in this checkpoint.
+- PR #381 tracker is OPEN / Draft; update this tracker only after re-fetching its current head/blob SHAs. Canonical plan: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md`.
+- **Next action:** obtain/extract artifact `14338856662`; inspect `error-context.md` for both scenarios; compare test results on unchanged main and PR #382 merge ref; make a separate minimal fix for proven root cause(s); run exact-head Quality Gate. Keep #382 and #381 Draft/HOLD. No merge or Production/config/secret/sync-flag change.
