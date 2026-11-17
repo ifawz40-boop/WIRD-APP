@@ -112,6 +112,7 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(viteConfig.includes('allAssets.length > 2000'), 'Vite must fail safely if the offline package exceeds the service-worker asset limit');
     const publicAssetScript = fs.readFileSync(path.resolve('./scripts/offlinePublicAssets.ts'), 'utf8');
     assert(publicAssetScript.includes('fs.readdirSync') && publicAssetScript.includes("relativePath === 'sw.js'"), 'Public asset enumeration must recurse while excluding the service worker script');
+    assert(publicAssetScript.includes('js|mjs|wasm'), 'Public JavaScript and WebAssembly assets must be included in the explicit offline package');
 
     assert(viteConfig.includes('item.imports'), 'Static chunk dependencies must be traversed recursively');
     assert(viteConfig.includes('importedCss'), 'Imported CSS dependencies must be included');
