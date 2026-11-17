@@ -79,6 +79,10 @@ Immediately before this note update, PR #381 was Draft/open, branch head `ecfe66
 - Quality Gate run #4452 / 44105033897: frozen install and Bun dependency audit passed; automated tests in progress at last check. Recheck every remaining gate on exact merge ref before any merge.
 - PR #380 remains Draft/HOLD: branch diverged from main, and its added binary is in .aistudio/.../.tempmediaStorage/, not a verified brand asset. Its test patches are partly stale against current main. PR #382 excludes both the temp artifact and old tests.
 
+## PR #382 latest CI state — 2026-11-17
+
+Run #4452 (`44105033897`) on head `c98a31f7a1a9ee41f1489b15609d3c2ccce18e69` / merge ref `cf378fb15af4e9423154c34dbaaf79b13139312d` is still running. Frozen install, dependency audit, automated tests, native API imports, audio CDN/range, Firestore Rules, TypeScript, build and server smoke all passed. 604 Mushaf coordinate step was skipped due lockfile-only diff, not run. Desktop/mobile Playwright is in progress; Chromium and Node 26 setup succeeded. Keep Draft until the final run concludes green.
+
 ## Immediate next actions
 
 1. **Sync & commit workspace changes to GitHub feature branch/PR:** review the workspace diff, push to a dedicated feature branch (not directly to `main`), and run the full GitHub Quality Gate workflow (which provides Java for `test:firestore-rules` alongside Bun install/audit, unit tests, build, and Playwright).
