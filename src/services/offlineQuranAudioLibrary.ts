@@ -523,7 +523,7 @@ export class OfflineQuranAudioLibrary {
         return;
       }
 
-      req.onupgradeneeded = () => {
+      req.onupgradeneeded = (event) => {
         const db = req.result;
         if (!db.objectStoreNames.contains(STORE_AUDIO_JOBS)) {
           const jobs = db.createObjectStore(STORE_AUDIO_JOBS, { keyPath: 'jobId' });
@@ -552,7 +552,7 @@ export class OfflineQuranAudioLibrary {
         // Migrate legacy count/endpoint fingerprints to the exact ordered ayah sequence.
         // Keep this inside the version-change transaction so active/paused jobs cannot
         // be mistaken for a different disjoint range after an app upgrade.
-        if (req.oldVersion < 4 && req.transaction) {
+        if (event.oldVersion < 4 && req.transaction) {
           const jobsStore = req.transaction.objectStore(STORE_AUDIO_JOBS);
           const itemsStore = req.transaction.objectStore(STORE_AUDIO_JOB_ITEMS);
           const jobsRequest = jobsStore.getAll();
