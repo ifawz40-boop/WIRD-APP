@@ -143,3 +143,19 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Dependency manifests differ: candidate moves Vite + Vite plugins to devDependencies while main keeps them in dependencies. Keep main dependency classification unless a production/runtime audit proves otherwise; reconcile lockfile intentionally, never copy blindly.
 - Current main contains tracked Playwright artifacts in `test-results/`; review repository hygiene, but do not delete unrelated history as part of this merge without checking provenance.
 - No application source has been modified in this execution branch yet. The branch currently contains the persistent plan/checkpoint only. The next concrete implementation task is to create a file-level reconciliation patch set for the overlapping runtime files and candidate-only offline services/components.
+
+
+### Phase 1 integration progress — 2026-11-18
+
+- Created an integration branch directly from current main; branch remains based on main and is not behind it.
+- Transplanted all candidate-only offline/PWA/audio/Tafsir services, API relay, settings controls, service worker changes, supporting tests, and E2E coverage. Main's package manifest and lockfile were intentionally retained; candidate's Vite dependency reclassification was not copied.
+- Surgically reconciled overlapping App/Dashboard/daily-session selection changes. Daily hub now collects every due/overdue task from all active non-paused plans, excludes completed/future work, and preserves `enginePlanId` + scheduled date through quick start, route deep links, and exact completion writes.
+- Added deterministic regression tests for multiple due tasks, duplicate ayah ranges across plans, repeated schedule dates, and paused/inactive/completed exclusions.
+- Preserved current main UX in Mushaf spread, Tafsir pane, profile-synced audio preferences, and session view; merged candidate's audio failure recovery guard instead of replacing the newer session UI.
+- Integrated local-first audio resolution into Quran Library, Mushaf page/spread playback, and memorization sessions. Playback now resolves verified downloaded audio from the local audio library before network fallback and releases object URLs on stop/completion/error; study segment downloads resolve only the selected range.
+- Integrated the optional pinned Tafsir Muyassar package into Settings and added an explicitly labelled local fallback for edition 16 when online retrieval fails. Other Tafsir editions are not silently substituted.
+- Integrated 604-page Mushaf offline package controls while preserving the newer main PrintedMushafSpread layout; the page service checks the validated offline cache before network.
+- Added an offline reader integration test suite and registered offline Tafsir/audio proxy suites in the aggregate runner.
+- Current execution branch is 60+ commits ahead of main and 0 behind at last compare. No merge or production deployment has occurred.
+- Full tests have intentionally NOT been run yet, per the agreed batch workflow; implementation/reconciliation continues first.
+- Remaining Phase 1 review items: inspect all changed-file imports and dependency assumptions; ensure no unused or disconnected offline UI paths; confirm exact current PR security advisory status; review PWA and data recovery boundaries. Then proceed through the remaining planned implementation phases before the full test matrix.
