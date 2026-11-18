@@ -585,3 +585,8 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Feature PR #390 current head at this checkpoint: `a728f1aae7d25a73c6f26c7f00ba989b5e4f8b22`.
 - Quality Gate run #4664 (`44248132284`) is running against that exact head. The security audit remains expected to fail on the full dependency graph unless upstream changes; production audit is separately expected to pass. Do not report tests as passed until this exact run completes.
 - The prior exact run #4652 (`44246969500`, SHA `74c6552...`) verified 190 Playwright passed / 2 skipped, 31 Firestore Rules passed, 604/604 Mushaf maps, and build/type checks. The new run adds the completed-Tafsir source-version recheck regression test and reruns the full matrix.
+
+
+### Tafsir compact-panel regression follow-up — 2026-11-18
+- Run #4667 (`44249374284`, SHA `6201304...`) confirmed the compact panel was rendered and the same-version catalogue check made exactly one metadata request and zero surah downloads. The test then failed only because it still expected the long-form success sentence, while compact mode intentionally displays `التفسير محفوظ محليًا دون اتصال.`.
+- Updated the assertion to compact-mode copy and started run #4668 (`44250448085`, SHA `9860528...`). This exact-head run includes the compact panel in the completed reader and the two-stage source version test (same version: no redownload; newer version: preserve the existing local copy and report that the WIRD source metadata needs updating).
