@@ -344,9 +344,18 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
     await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
-    await page.getByRole('group', { name: 'محتوى الصفحة اليسرى' }).getByRole('button', { name: 'التفسير الميسر' }).click();
+    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
+
+    const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
+    await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+    await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('main', { name: 'صفحتا المصحف 1 و2' })).toBeVisible();
 
     const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
+    await expect(downloadPanel).toBeVisible();
+    await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible();
     await expect(downloadPanel).toContainText('114 / 114 سورة');
     const recheckButton = downloadPanel.getByRole('button', { name: 'التحقق من تحديث المصدر' });
     await recheckButton.click();
