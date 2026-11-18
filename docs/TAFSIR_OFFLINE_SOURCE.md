@@ -1,7 +1,7 @@
 # Offline Tafsir al-Muyassar — Source, Reuse and Storage Specification
 
 **Last reviewed:** 2026-11-17  
-**Feature PR:** #386 (Draft / not yet verified)
+**Integration:** `release/wird-completion-20261118` (integrated; exact-head verification pending)
 
 ## Canonical source
 
@@ -43,14 +43,14 @@ WIRD stores the raw payload without editing translation or footnote fields, disp
 - Data is stored on the current device only and is not copied to Firestore or account sync.
 - If the app's source-version constant changes, the previous version is not treated as the current complete package; the user must complete the current-version download before Tafsir display is enabled.
 
-## Opposite-page reading behavior
+## Current Mushaf and offline behavior
 
-- In facing-page Mushaf mode, both sides default to Quran.
-- The user can select Tafsir on the left or right. Only one Tafsir side is active at a time; the opposite side remains Quran.
-- The Tafsir side displays all ayahs from the opposite Quran page using the local Quran text plus the matching untouched source translation/footnotes.
-- The ayah selected on the Quran side is highlighted and scrolled into view on the Tafsir side.
-- The user can reverse direction at any time. Content-mode preference is device-local.
-- If the full 114-surah package is not ready, Tafsir text is not displayed; the UI offers the resumable download instead.
+- In facing-page Mushaf mode, both sides remain Quran by default; the existing Tafsir pane opens for the selected ayah.
+- Page overview lists the ayahs on the page. Selecting one opens its Tafsir in the pane; the source translation itself is not rewritten.
+- The offline fallback is enabled only for the explicitly selected Tafsir Muyassar edition (edition ID 16) and only after the complete 114-surah package passes its manifest/source-version validation.
+- If the package is partial, stale, corrupt or unavailable, it is not presented as a complete offline edition. The settings panel offers resume/verification; the reader continues with normal online/cache behavior and reports an error if neither source is available.
+- Local fallback visibly identifies QuranEnc.com, the publisher and pinned version. The stored source payload and footnotes remain unchanged; WIRD's canonical Quran text remains the sole source for ayah text and coordinates.
+- A separate full-page Tafsir layout is not yet mounted in the main Mushaf spread UI; `TafsirMushafPage.tsx` remains an optional component pending a later UX decision.
 
 ## Implementation locations
 
