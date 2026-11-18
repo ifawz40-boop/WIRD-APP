@@ -605,3 +605,10 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Overall workflow remains FAIL only on full dependency audit; production-only audit PASS. Full graph: `vite > tinyglobby > fdir > picomatch@4.0.7`, with Vite in devDependencies. Keep GHSA visible; no suppression/override.
 - Added a dashboard E2E regression in PR #390 that seeds three active engine plans with different due dates (two overdue, one today), reloads the dashboard, and verifies all three tasks appear: oldest task in the primary daily card, other two in the multi-plan list, with overdue/today labels. Exact-head run #4670 (`44255318631`, SHA `e2688c92843c3d5b55f716dccfce32a0356e03b4`) is queued. Await its result before considering multi-plan dashboard coverage complete.
 - Main remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; PR #390 remains Draft/HOLD. No merge/deploy or Vercel production-setting changes.
+
+
+### Multi-plan dashboard E2E fixture correction — 2026-11-18
+- Run #4670 (`44255318631`, SHA `e2688c92843c3d5b55f716dccfce32a0356e03b4`) confirmed the new dashboard test was the only failure (once each on desktop and mobile); the other 192 Playwright tests passed. The missing dashboard multi-plan card was a fixture issue, not evidence of a production regression.
+- Root cause: AuthGate had already initialized an empty guest Engine Plan archive head in IndexedDB. The test then wrote only the legacy `wird_engine_plans` localStorage key; on reload, the verified archive head correctly took precedence over the legacy bytes, so the test's fixture was never imported.
+- Corrected the E2E setup to clear only the three Engine Plan archive stores in the isolated test browser context, seed the legacy localStorage archive, and reload through AuthGate's actual copy/verify migration path. No production application code changed for this fixture correction.
+- Exact-head run for SHA `029495d3cd76ce8396b5957fe340259a7219d126` is running (run #4671 expected). Verify the dashboard now displays all three tasks before marking this regression covered.
