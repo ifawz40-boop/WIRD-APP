@@ -144,7 +144,6 @@ export async function downloadMushafOfflinePackage(
   onProgress?: (progress: MushafOfflinePackageProgress) => void,
   signal?: AbortSignal
 ): Promise<MushafOfflinePackageStatus> {
-  assertQuotaEstimateSupport();
   const cache = await openPackageCache();
   const sampleBytes: number[] = [];
 
@@ -171,17 +170,20 @@ export async function downloadMushafOfflinePackage(
     sampleBytes.push(downloaded.bytes);
   }
 
-  const estimate = await navigator.storage.estimate();
-  const quota = Number(estimate.quota);
-  const usage = Number(estimate.usage);
   const packageStatus = await getMushafOfflinePackageStatus();
-  const estimatedPackageBytes = estimateMushafOfflinePackageBytes(sampleBytes, packageStatus.missing);
-  if (!Number.isFinite(quota) || !Number.isFinite(usage) ||
-      !hasMushafOfflineQuota(estimatedPackageBytes, usage, quota)) {
-    const available = Number.isFinite(quota) && Number.isFinite(usage)
-      ? Math.max(0, quota - usage - Math.max(STORAGE_RESERVE_BYTES, quota * 0.15))
-      : 0;
-    throw new Error(`المساحة المتاحة لا تكفي لتنزيل المصحف المصوّر كاملًا بأمان. الحجم التقديري نحو ${Math.ceil(estimatedPackageBytes / (1024 * 1024))} MB، والمتاح بعد الاحتياطي نحو ${Math.floor(available / (1024 * 1024))} MB. الصفحات التي حُفظت بالفعل ستبقى ويمكنك الاستكمال بعد توفير مساحة.`);
+  if (packageStatus.missing > 0) {
+    assertQuotaEstimateSupport();
+    const estimate = await navigator.storage.estimate();
+    const quota = Number(estimate.quota);
+    const usage = Number(estimate.usage);
+    const estimatedPackageBytes = estimateMushafOfflinePackageBytes(sampleBytes, packageStatus.missing);
+    if (!Number.isFinite(quota) || !Number.isFinite(usage) ||
+        !hasMushafOfflineQuota(estimatedPackageBytes, usage, quota)) {
+      const available = Number.isFinite(quota) && Number.isFinite(usage)
+        ? Math.max(0, quota - usage - Math.max(STORAGE_RESERVE_BYTES, quota * 0.15))
+        : 0;
+      throw new Error(`المساحة المتاحة لا تكفي لتنزيل المصحف المصوّر كاملًا بأمان. الحجم التقديري نحو ${Math.ceil(estimatedPackageBytes / (1024 * 1024))} MB، والمتاح بعد الاحتياطي نحو ${Math.floor(available / (1024 * 1024))} MB. الصفحات التي حُفظت بالفعل ستبقى ويمكنك الاستكمال بعد توفير مساحة.`);
+    }
   }
 
   let cached = (await getMushafOfflinePackageStatus()).cached;
