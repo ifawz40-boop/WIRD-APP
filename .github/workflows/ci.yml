@@ -62,7 +62,7 @@ jobs:
       - name: Run automated test suites
         run: bun run test
       - name: Verify all 604 printed Mushaf coordinate maps against WIRD local Quran data
-        if: ${{ inputs.validate_mushaf || contains(github.event.pull_request.title, 'Mushaf') || contains(github.head_ref, 'mushaf') || contains(github.event.pull_request.title, 'Tafsir') || contains(github.head_ref, 'tafsir') || contains(github.head_ref, 'offline-tasks-integration') || contains(github.head_ref, 'offline-audio') }}
+        if: ${{ inputs.validate_mushaf || contains(github.event.pull_request.title, 'Mushaf') || contains(github.head_ref, 'mushaf') || contains(github.event.pull_request.title, 'Tafsir') || contains(github.head_ref, 'tafsir') || contains(github.head_ref, 'offline-tasks-integration') || contains(github.head_ref, 'offline-audio') || contains(github.head_ref, 'wird-completion') }}
         run: bun run mushaf:validate-coverage
       - name: Verify native TypeScript API module imports
         run: bun run smoke:api-imports
