@@ -38,7 +38,7 @@ test('installed service worker serves the complete app shell after an offline re
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
 
   const cachedShell = await page.evaluate(async () => {
-    const cache = await caches.open('wird-app-v3');
+    const cache = await caches.open('wird-app-v4');
     const keys = await cache.keys();
     return keys.map(request => new URL(request.url).pathname);
   });
