@@ -103,3 +103,13 @@ The feature is not yet approved as the default reader mode. Required remaining g
 
 - Follow-up refinement: previous/next controls also appear directly beneath each Tafsir ayah. Navigating from a Tafsir ayah targets the canonical Quran page; if that page was the Tafsir side, the two page roles swap so Quran remains the reading surface.
 - When one spread side is Tafsir, audio is restricted to the opposite Quran page; when both sides are Quran, audio follows the full right-to-left spread order. Changing page roles stops the previous audio queue.
+
+
+## 2026-11-18 — Release integration correction
+
+- The integrated main reader currently uses `PrintedMushafSpread` with the existing selected-ayah `TafsirContentPane`. Its page overview is an ayah selector; it is **not** the full opposite-page Tafsir layout described in the earlier 2026-11-17 draft section.
+- Full opposite-page Tafsir mode is deferred. Do not describe it as shipped until its left/right content selectors, complete-page local translation rendering, focus mapping, and desktop/mobile E2E are integrated and verified.
+- Offline Tafsir fallback in the current integration is limited to the selected Tafsir Muyassar edition and requires the full 114-surah package to pass source-version/manifest validation. A partial package is resumable but is not advertised as complete or used as a full offline edition.
+- The selected printed-page source is pinned to `quran-ws/quran-svg` commit `3ff27b46cecb0c0519d77531d9c868a579d1f623`, edition `hafs-kfqc`. The upstream project states CC BY 4.0 for the ayah geometry/metadata (with product-use attribution waiver) and identifies the page artwork as King Fahd Complex material whose stated rights permit digital/software/web use; physical commercial Mushaf printing is outside this app's scope. See `docs/THIRD_PARTY_QURAN_FACSIMILE.md` and upstream licensing documentation.
+- The verification snapshot above is historical evidence for its own earlier SHA only. It is not evidence for the current integration branch. The current release must pass all exact-head checks and 604-page coverage validation before merge.
+- The latest integration preserves the flexible WIRD-local Quran text renderer as the fallback. Printed SVGs supply only page artwork and ayah hit regions; WIRD's canonical local Quran dataset remains the only Quran text source.
