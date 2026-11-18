@@ -188,6 +188,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   });
   const [showHizbPicker, setShowHizbPicker] = useState(false);
   const [printedAyahsByPage, setPrintedAyahsByPage] = useState<Record<number, Ayah[]>>({});
+  const isTwoPageSpreadActive = readerLayout === 'printed' &&
+    typeof window !== 'undefined' &&
+    resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
+    window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+
   const audioAyahs = readerLayout === 'printed'
     ? isTwoPageSpreadActive
       ? [...(printedAyahsByPage[page] || []), ...(printedAyahsByPage[page + 1] || [])]
@@ -576,11 +581,6 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   );
   const selectedStartAyah = audioAyahs[segmentStartIndex];
   const selectedEndAyah = audioAyahs[segmentEndIndex];
-
-  const isTwoPageSpreadActive = readerLayout === 'printed' &&
-    typeof window !== 'undefined' &&
-    resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
-    window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
