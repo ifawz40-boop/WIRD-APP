@@ -21,7 +21,7 @@ import { QURAN_PAGE_INDEX } from '../../data/quranPageIndex.generated';
 import { QURAN_JUZ_STARTS, QURAN_HIZB_QUARTER_STARTS } from '../../data/quranNavigationIndex.generated';
 import { loadSurahVerses } from '../../data/quranDataLoader';
 import { findSurahStartPage } from '../../data/quranNavigation';
-import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
+import { RECITERS, getLicensedAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
@@ -370,7 +370,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     stopAudio();
     const tracks = queue.map(ayah => ({
       id: String(ayah.number),
-      url: formatAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter)
+      url: getLicensedAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter).url
     }));
     const cacheUpcoming = (index: number) => {
       requestOfflineAudioCache(tracks.slice(index, Math.min(endIndex + 1, index + 20)).map(track => track.url));
