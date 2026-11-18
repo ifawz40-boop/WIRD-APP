@@ -260,6 +260,10 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
       enginePlanId: 'repeat-plan', enginePlanDate: '2026-11-05'
     });
     assert(exact?.day.date === '2026-11-05', 'Completion must update the selected date, not an older identical task');
+    const ambiguousDate = findMatchingDueEnginePlanTask([repeated], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'repeat-plan'
+    });
+    assert(ambiguousDate === null, 'Plan ID without the scheduled date must not guess between repeated tasks');
   });
 
 
