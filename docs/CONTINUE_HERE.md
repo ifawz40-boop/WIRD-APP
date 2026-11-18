@@ -446,3 +446,8 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Security audit job still FAILS only on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch` (GHSA-fc5q-39xc-vjpf); no patched upstream release; no overrides/suppressions.
 - Added a new dashboard E2E regression to `e2e/app-shell.spec.ts`: seeds three active plans, checks all due tasks appear with two additional quick-start actions, and verifies selected `plan` ID survives into the session route. Latest PR #390 head is now `c69f6dc15b7067bcd7d40f266d5ab7dbe35e36fe`; #4599 predates this test, so new exact-head CI required.
 - PR #390 remains Draft/HOLD, main SHA remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; no merge/deployment.
+
+
+## Latest Quality Gate #4604 — in progress
+- Exact PR #390 head `c69f6dc15b7067bcd7d40f266d5ab7dbe35e36fe`; run `44236188421` / #4604. Automated unit suite, 604 Mushaf map validation, API import/audio smoke, Firestore Rules, TypeScript, production build, and production server smoke have completed successfully. Chromium installation is in progress before Desktop/Mobile Playwright.
+- The run includes a new UI-level three-plan dashboard regression and selected-plan deep-link assertion. Security audit has already failed on the unresolved picomatch@4.0.7 advisory.
