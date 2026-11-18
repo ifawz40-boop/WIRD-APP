@@ -66,7 +66,7 @@ import { runPlanMissedDayRecoveryTests } from '../services/planMissedDayRecovery
 import { runTestQuestionGeneratorTests } from '../services/testQuestionGenerator.test';
 import { runMushafSpreadServiceTests } from '../services/mushafSpreadService.test';
 import { runCumulativeLinkingServiceTests } from '../services/cumulativeLinkingService.test';
-import { runTafsirOfflineLibraryTests } from '../services/tafsirOfflineLibrary.test';
+import { runOfflineTafsirLibraryTests } from '../services/tafsirOfflineLibrary.test';
 import { runQuranAudioDownloadProxyTests } from './quranAudioDownloadProxy.test';
 
 export interface SuiteResult {
@@ -181,7 +181,7 @@ async function main() {
     { name: 'Memorization Test Fill-Blank Words & Scope Filters', runner: runTestQuestionGeneratorTests },
     { name: 'Two-Page Printed Mushaf Spread Math & Surface Preferences', runner: runMushafSpreadServiceTests },
     { name: '5-Stage Cumulative Linking Memorization Engine & Recall Gate', runner: runCumulativeLinkingServiceTests },
-    { name: 'Offline Tafsir Package Integrity and Resume', runner: runTafsirOfflineLibraryTests },
+    { name: 'Offline Tafsir Package Integrity and Resume', runner: runOfflineTafsirLibraryTests },
     { name: 'Quran Audio Download Relay Allowlist and Binary Safety', runner: runQuranAudioDownloadProxyTests },
   ];
 
