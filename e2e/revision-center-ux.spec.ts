@@ -29,6 +29,22 @@ test.describe('WIRD revision center UX', () => {
     await expect(trigger).toBeFocused();
   });
 
+  test('weak-verse cards expose adjacent-ayah navigation beneath the Quran text', async ({ page }) => {
+    await page.getByRole('button', { name: 'تسجيل آية ملتبسة' }).click();
+    const dialog = page.getByRole('dialog', { name: 'تسجيل آية ملتبسة أو متعثرة يدوياً' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'تسجيل الآية الملتبسة' }).click();
+    await expect(page.getByText(/تمت إضافة الآية 1 من سورة الملك/)).toBeVisible({ timeout: 15_000 });
+
+    await page.getByRole('button', { name: 'الآيات الملتبسة والصعبة' }).click();
+    await expect(page.getByText('سورة الملك', { exact: false }).first()).toBeVisible();
+    const navigation = page.getByRole('navigation', { name: 'التنقل بين الآيات' });
+    await expect(navigation).toBeVisible();
+    await expect(navigation.getByRole('button', { name: 'الآية السابقة' })).toBeEnabled();
+    await navigation.getByRole('button', { name: 'الآية التالية' }).click();
+    await expect(page).toHaveURL(/start=2.*end=2.*mode=review/);
+  });
+
   test('weekly revision overview adapts its columns to tablet and desktop widths', async ({ page }) => {
     const weeklyTab = page.getByRole('button', { name: 'نظرة أسبوعية للمراجعات' });
     await expect(weeklyTab).toHaveAttribute('aria-pressed', 'false');

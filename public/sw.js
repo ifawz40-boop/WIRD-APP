@@ -1,11 +1,16 @@
-const CACHE_NAME = 'wird-app-v3';
+// Bump the shell cache on SW install changes so a failed install never overwrites the active worker's cache.
+const CACHE_NAME = 'wird-app-v4';
 const AUDIO_CACHE_NAME = 'wird-app-audio-v1';
+const OFFLINE_AUDIO_LIBRARY_CACHE_NAME = 'wird-offline-quran-audio-v1';
+const OFFLINE_AUDIO_LIBRARY_DB_NAME = 'wird-offline-audio';
+const OFFLINE_AUDIO_LIBRARY_FILE_STORE = 'files';
 const CONTENT_CACHE_NAME = 'wird-app-content-v1';
 const MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-v1';
 const MAX_MUSHAF_PAGE_CACHE_ENTRIES = 24;
 const MAX_OFFLINE_PACKAGE_ASSETS = 2000;
 const OFFLINE_MANIFEST_REQUEST_TIMEOUT_MS = 15000;
 const OFFLINE_ASSET_REQUEST_TIMEOUT_MS = 30000;
+const OFFLINE_NAVIGATION_REQUEST_TIMEOUT_MS = 6000;
 let offlinePackagePreparationInProgress = false;
 const MAX_SESSION_AUDIO_PRELOAD = 20;
 const MAX_AUDIO_CACHE_ENTRIES = 40;
@@ -14,6 +19,8 @@ const QURAN_FONT_URL = 'https://verses.quran.foundation/fonts/quran/hafs/uthmani
 
 const OFFLINE_ASSET_CONTENT_TYPES = {
   '.js': ['application/javascript', 'text/javascript', 'application/ecmascript', 'text/ecmascript'],
+  '.mjs': ['application/javascript', 'text/javascript', 'application/ecmascript', 'text/ecmascript'],
+  '.wasm': ['application/wasm'],
   '.css': ['text/css'],
   '.svg': ['image/svg+xml'],
   '.png': ['image/png'],
@@ -46,9 +53,44 @@ function isValidOfflineAssetResponse(pathname, response) {
 }
 
 
+/**
+ * Adapt optional caches to the storage currently available to this origin.
+ * Keep a reserve for app/user data; if quota cannot be measured, retain defaults.
+ */
+async function getAdaptiveOfflineCacheLimits() {
+  try {
+    const storage = self.navigator && self.navigator.storage;
+    if (!storage || typeof storage.estimate !== 'function') {
+      return { audioEntries: MAX_AUDIO_CACHE_ENTRIES, mushafEntries: MAX_MUSHAF_PAGE_CACHE_ENTRIES };
+    }
+    const estimate = await storage.estimate();
+    const quota = Number(estimate && estimate.quota);
+    const usage = Number(estimate && estimate.usage);
+    if (!Number.isFinite(quota) || quota <= 0 || !Number.isFinite(usage) || usage < 0) {
+      return { audioEntries: MAX_AUDIO_CACHE_ENTRIES, mushafEntries: MAX_MUSHAF_PAGE_CACHE_ENTRIES };
+    }
+    const available = Math.max(0, quota - usage);
+    const reserve = Math.max(32 * 1024 * 1024, quota * 0.15);
+    const cacheable = Math.max(0, available - reserve);
+    const audioEntries = Math.min(MAX_AUDIO_CACHE_ENTRIES, Math.floor(cacheable * 0.20 / (5 * 1024 * 1024)));
+    const mushafEntries = Math.min(96, Math.floor(cacheable * 0.08 / (256 * 1024)));
+    return { audioEntries: Math.max(0, audioEntries), mushafEntries: Math.max(0, mushafEntries) };
+  } catch {
+    return { audioEntries: MAX_AUDIO_CACHE_ENTRIES, mushafEntries: MAX_MUSHAF_PAGE_CACHE_ENTRIES };
+  }
+}
+
 async function trimAudioCache(cache) {
+  const limits = await getAdaptiveOfflineCacheLimits();
   const keys = await cache.keys();
-  const overflow = keys.length - MAX_AUDIO_CACHE_ENTRIES;
+  const overflow = keys.length - limits.audioEntries;
+  for (let i = 0; i < overflow; i++) await cache.delete(keys[i]);
+}
+
+async function trimMushafPageCache(cache) {
+  const limits = await getAdaptiveOfflineCacheLimits();
+  const keys = await cache.keys();
+  const overflow = keys.length - limits.mushafEntries;
   for (let i = 0; i < overflow; i++) await cache.delete(keys[i]);
 }
 
@@ -258,6 +300,101 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+let offlineAudioLibraryDbPromise = null;
+
+function openOfflineAudioLibraryDatabase() {
+  if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+  if (offlineAudioLibraryDbPromise) return offlineAudioLibraryDbPromise;
+
+  offlineAudioLibraryDbPromise = (async () => {
+    if (typeof indexedDB.databases === 'function') {
+      try {
+        const databases = await indexedDB.databases();
+        if (!databases.some(database => database.name === OFFLINE_AUDIO_LIBRARY_DB_NAME)) return null;
+      } catch {
+        // Fall through to open(); some browsers do not expose database enumeration reliably.
+      }
+    }
+
+    return await new Promise((resolve, reject) => {
+      const request = indexedDB.open(OFFLINE_AUDIO_LIBRARY_DB_NAME);
+      request.onsuccess = () => {
+        const database = request.result;
+        database.onversionchange = () => {
+          database.close();
+          offlineAudioLibraryDbPromise = null;
+        };
+        resolve(database);
+      };
+      request.onerror = () => reject(request.error || new Error('Offline audio database could not be opened.'));
+      request.onblocked = () => reject(new Error('Offline audio database is blocked by an upgrade.'));
+    });
+  })().then(database => {
+    if (!database) offlineAudioLibraryDbPromise = null;
+    return database;
+  }).catch(error => {
+    offlineAudioLibraryDbPromise = null;
+    throw error;
+  });
+
+  return offlineAudioLibraryDbPromise;
+}
+
+async function resolveOfflineLibraryAudioResponse(requestUrl) {
+  const url = new URL(requestUrl);
+  const pathSegments = url.pathname.split('/');
+  if (pathSegments.length !== 6 || pathSegments[1] !== 'quran' || pathSegments[2] !== 'audio' ||
+      !['64', '128', '192'].includes(pathSegments[3])) return null;
+  const edition = pathSegments[4];
+  const ayahFile = pathSegments[5] || '';
+  const ayahDigits = ayahFile.endsWith('.mp3') ? ayahFile.slice(0, -4) : '';
+  if (!/^[1-6][0-9]{0,3}$/.test(ayahDigits)) return null;
+
+  const reciterIdByEdition = {
+    'ar.husary': 'ar.husary',
+    'ar.minshawi': 'ar.minshawi',
+    'ar.abdulbasitmurattal': 'ar.abdulbasit',
+    'ar.abdurrahmaansudais': 'ar.sudais',
+    'ar.saoodshuraym': 'ar.shuraim',
+    'ar.ahmedajamy': 'ar.ajamy',
+    'ar.alafasy': 'ar.alafasy'
+  };
+  const reciterId = reciterIdByEdition[edition];
+  const globalAyahNumber = Number(ayahDigits);
+  if (!reciterId || !Number.isSafeInteger(globalAyahNumber) || globalAyahNumber < 1 || globalAyahNumber > 6236) return null;
+
+  let database;
+  try {
+    database = await openOfflineAudioLibraryDatabase();
+    if (!database || !database.objectStoreNames.contains(OFFLINE_AUDIO_LIBRARY_FILE_STORE)) return null;
+
+    const file = await new Promise((resolve, reject) => {
+      const transaction = database.transaction([OFFLINE_AUDIO_LIBRARY_FILE_STORE], 'readonly');
+      const request = transaction.objectStore(OFFLINE_AUDIO_LIBRARY_FILE_STORE).get(reciterId + ':' + globalAyahNumber);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error || new Error('Offline audio metadata lookup failed.'));
+      transaction.onerror = () => reject(transaction.error || new Error('Offline audio metadata transaction failed.'));
+    });
+
+    if (!file || file.schemaVersion !== 1 || file.available !== true || file.deletionPending === true ||
+        file.reciterId !== reciterId || file.globalAyahNumber !== globalAyahNumber ||
+        file.url !== requestUrl || typeof file.cacheGenerationId !== 'string' || !file.cacheGenerationId ||
+        !Number.isSafeInteger(file.byteLength) || file.byteLength <= 0 || file.byteLength > 8 * 1024 * 1024) {
+      return null;
+    }
+
+    const cache = await caches.open(OFFLINE_AUDIO_LIBRARY_CACHE_NAME);
+    const cacheKey = 'https://wird.local/offline-audio/' + encodeURIComponent(reciterId) + '/' + globalAyahNumber + '/' + encodeURIComponent(file.cacheGenerationId) + '.mp3';
+    const response = await cache.match(cacheKey);
+    if (!response || response.status !== 200 || response.type === 'opaque') return null;
+    const contentType = (response.headers.get('content-type') || file.contentType || '').toLowerCase();
+    if (!contentType.startsWith('audio/')) return null;
+    return response;
+  } catch {
+    return null;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -267,7 +404,7 @@ self.addEventListener('fetch', (event) => {
   // SPA navigations remain network-first, with a complete cached HTML fallback.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req).then((networkResponse) => {
+      fetchWithTimeout(req, {}, OFFLINE_NAVIGATION_REQUEST_TIMEOUT_MS).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const copy1 = networkResponse.clone();
           const copy2 = networkResponse.clone();
@@ -339,6 +476,8 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open(AUDIO_CACHE_NAME);
       const cached = await cache.match(req);
       if (cached) return cached;
+      const durableOfflineAudio = await resolveOfflineLibraryAudioResponse(req.url);
+      if (durableOfflineAudio) return durableOfflineAudio;
       try { return await fetch(req); }
       catch (error) {
         console.warn('[WIRD SW] Approved Quran CDN audio unavailable offline:', req.url, error);
@@ -376,9 +515,7 @@ self.addEventListener('fetch', (event) => {
         const validType = contentType.includes('image/svg+xml');
         if (response.status === 200 && response.type === 'cors' && validType) {
           await cache.put(req, response.clone());
-          const keys = await cache.keys();
-          const overflow = keys.length - MAX_MUSHAF_PAGE_CACHE_ENTRIES;
-          for (let i = 0; i < overflow; i++) await cache.delete(keys[i]);
+          await trimMushafPageCache(cache);
         }
         return response;
       } catch (error) {

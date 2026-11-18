@@ -17,7 +17,21 @@ export async function runOfflineStorageServiceTests(): Promise<{ passed: number;
     Object.defineProperty(globalThis, 'navigator', { configurable: true, value: {} });
     try {
       const status = await getOfflineStorageStatus();
-      assert(!status.supported && status.persisted === null, 'Unsupported storage must be reported explicitly.');
+      assert(!status.supported && !status.persistenceSupported && status.persisted === null, 'Missing StorageManager must be reported explicitly.');
+    } finally {
+      if (previous) Object.defineProperty(globalThis, 'navigator', previous);
+      else Reflect.deleteProperty(globalThis, 'navigator');
+    }
+  });
+
+  await test('distinguishes unavailable persistence requests from offline storage support', async () => {
+    const previous = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    const storage = { estimate: async () => ({ usage: 10, quota: 1000 }) };
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { storage } });
+    try {
+      const status = await getOfflineStorageStatus();
+      assert(status.supported, 'StorageManager quota reporting is available.');
+      assert(!status.persistenceSupported && status.persisted === null, 'A missing persist() method must not be confused with offline storage being unsupported.');
     } finally {
       if (previous) Object.defineProperty(globalThis, 'navigator', previous);
       else Reflect.deleteProperty(globalThis, 'navigator');
@@ -36,7 +50,7 @@ export async function runOfflineStorageServiceTests(): Promise<{ passed: number;
     try {
       const status = await requestOfflineStoragePersistence();
       assert(requested, 'The browser persistence request must be made from the explicit setup action.');
-      assert(status.supported && status.persisted === true, 'Persistent storage state must be reported.');
+      assert(status.supported && status.persistenceSupported && status.persisted === true, 'Persistent storage state must be reported.');
       assert(status.usageBytes === 1024 && status.quotaBytes === 4096, 'Storage usage and quota must be preserved.');
     } finally {
       if (previous) Object.defineProperty(globalThis, 'navigator', previous);
