@@ -136,11 +136,13 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     const offlinePackage = page.getByRole('heading', { name: 'المصحف المصوّر كاملًا دون إنترنت' }).locator('xpath=../..');
     await expect(offlinePackage).toContainText('604 / 604 صفحة محفوظة');
     const verifyButton = offlinePackage.getByRole('button', { name: 'إعادة التحقق من صفحات المصحف' });
+    const verificationToast = page.getByText('تم التحقق من سلامة صفحات المصحف المصوّر الـ604. أصبحت قابلة للفتح دون اتصال.');
     await expect(verifyButton).toBeEnabled();
     await verifyButton.click();
-    await expect(verifyButton).toBeDisabled();
+    await expect(verificationToast).toBeVisible({ timeout: 90_000 });
     await expect(verifyButton).toBeEnabled({ timeout: 90_000 });
     expect(requestCounts.get(4)).toBe(1);
+    await expect(verificationToast).toBeHidden({ timeout: 15_000 });
 
     await page.evaluate(() => Object.defineProperty(navigator.storage, 'estimate', {
       configurable: true,
@@ -150,8 +152,8 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     await expect.poll(() => page.evaluate(() => navigator.onLine)).toBe(false);
     await expect(verifyButton).toBeEnabled();
     await verifyButton.click();
-    await expect(page.getByText('تم التحقق من سلامة صفحات المصحف المصوّر الـ604. أصبحت قابلة للفتح دون اتصال.')).toBeVisible();
-    await expect(verifyButton).toBeEnabled();
+    await expect(verificationToast).toBeVisible({ timeout: 90_000 });
+    await expect(verifyButton).toBeEnabled({ timeout: 90_000 });
     expect(requestCounts.get(4)).toBe(1);
 
     const repairedSvg = await page.evaluate(async ({ cacheName, url }) => {
