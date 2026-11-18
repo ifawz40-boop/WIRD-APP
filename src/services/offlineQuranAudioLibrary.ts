@@ -6,7 +6,7 @@ import { buildQuranAyahAudioUrl, FALLBACK_QURAN_RECITERS } from './ruqyahAudioSe
 import { createSecureId } from './secureId';
 
 export const OFFLINE_AUDIO_DB_NAME = 'wird-offline-audio';
-export const OFFLINE_AUDIO_DB_VERSION = 3;
+export const OFFLINE_AUDIO_DB_VERSION = 4;
 export const OFFLINE_AUDIO_CACHE_NAME = 'wird-offline-quran-audio-v1';
 export const MAX_AUDIO_FILE_BYTES = 8 * 1024 * 1024;
 export const APP_STORAGE_RESERVE_BYTES = 25 * 1024 * 1024;
@@ -548,8 +548,34 @@ export class OfflineQuranAudioLibrary {
         if (!db.objectStoreNames.contains(STORE_AUDIO_STAGING)) {
           db.createObjectStore(STORE_AUDIO_STAGING, { keyPath: 'cacheKey' });
         }
-        if (!db.objectStoreNames.contains(STORE_AUDIO_STAGING)) {
-          db.createObjectStore(STORE_AUDIO_STAGING, { keyPath: 'cacheKey' });
+
+        // Migrate legacy count/endpoint fingerprints to the exact ordered ayah sequence.
+        // Keep this inside the version-change transaction so active/paused jobs cannot
+        // be mistaken for a different disjoint range after an app upgrade.
+        if (req.oldVersion < 4 && req.transaction) {
+          const jobsStore = req.transaction.objectStore(STORE_AUDIO_JOBS);
+          const itemsStore = req.transaction.objectStore(STORE_AUDIO_JOB_ITEMS);
+          const jobsRequest = jobsStore.getAll();
+          jobsRequest.onsuccess = () => {
+            const itemsRequest = itemsStore.getAll();
+            itemsRequest.onsuccess = () => {
+              const itemsByJob = new Map<string, OfflineAudioJobItem[]>();
+              for (const item of itemsRequest.result as OfflineAudioJobItem[]) {
+                const group = itemsByJob.get(item.jobId) || [];
+                group.push(item);
+                itemsByJob.set(item.jobId, group);
+              }
+              for (const job of jobsRequest.result as OfflineAudioJob[]) {
+                const items = (itemsByJob.get(job.jobId) || []).sort((a, b) => a.ordinal - b.ordinal);
+                if (items.length > 0) {
+                  jobsStore.put({
+                    ...job,
+                    requestFingerprint: buildRequestFingerprint(job.scopeKind, job.reciterId, items)
+                  });
+                }
+              }
+            };
+          };
         }
       };
 
