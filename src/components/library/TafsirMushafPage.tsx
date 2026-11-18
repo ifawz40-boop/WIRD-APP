@@ -107,6 +107,7 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
       </header>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
+        {isOfflineReady && <TafsirOfflineDownloadPanel compact onComplete={loadOfflineTafsir} />}
         {isLoading ? (
           <p className="py-8 text-center text-xs text-[#5B6F6B] dark:text-[#AAB8B4]" role="status">جارٍ تجهيز التفسير المحلي…</p>
         ) : !isOfflineReady ? (
