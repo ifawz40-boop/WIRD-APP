@@ -39,7 +39,7 @@ interface DashboardViewProps {
   revisionItems: RevisionItem[];
   logs: DailyLog[];
   onNavigate: (tab: NavTabId) => void;
-  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review', enginePlanId?: string) => void;
+  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review', enginePlanId?: string, enginePlanDate?: string) => void;
   onUpdateEnginePlans?: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
@@ -368,7 +368,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => onStartSession(item.task.surahNumber, item.task.startAyah, item.task.endAyah, 'memorize', item.planId)}
+                  onClick={() => onStartSession(item.task.surahNumber, item.task.startAyah, item.task.endAyah, 'memorize', item.planId, item.date)}
                   className="min-h-11 shrink-0 rounded-xl bg-[#1C4E46] px-3 py-2 text-xs font-bold text-white hover:bg-[#28665B] dark:bg-[#1E4A47]"
                 >
                   ابدأ
@@ -440,7 +440,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               disabled={dailyTask.source === 'blocked'}
-              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode, dailyTask.source === 'blocked' ? undefined : dailyTask.enginePlanId)}
+              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode, dailyTask.source === 'blocked' ? undefined : dailyTask.enginePlanId, dailyTask.source === 'engine_plan' ? dailyTask.enginePlanDate : undefined)}
               className="flex-1 w-full min-h-12 flex items-center justify-center gap-2 py-3 px-4 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white font-bold text-xs md:text-sm rounded-xl shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ring-1 ring-[#C59B27]/35"
             >
               <Play className="w-4 h-4 fill-white" />
