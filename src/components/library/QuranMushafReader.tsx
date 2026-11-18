@@ -25,13 +25,23 @@ import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../se
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
+  getSavedPreferredReciter,
   getSavedSegmentRepeatCount,
   normalizeAyahSegmentRepeatCount,
   saveAudioRepeatCount,
   savePlaybackRate,
-  saveSegmentRepeatCount
+  savePreferredReciter,
+  saveSegmentRepeatCount,
+  subscribeAudioPreferences
 } from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
+import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
+import {
+  DESKTOP_SPREAD_BREAKPOINT_PX,
+  getSavedMushafSpreadMode,
+  resolveEffectiveSpreadMode,
+  stepSpreadPage
+} from '../../services/mushafSpreadService';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
 import type { Ayah, ReciterId } from '../../types/quran';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
@@ -40,7 +50,7 @@ import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
-import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
+import { PrintedMushafSpread } from './PrintedMushafSpread';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 import { SurahPickerControl } from '../shared/SurahPickerControl';
 import { DisplaySettingsCollapsibleCard } from '../shared/DisplaySettingsMenu';
@@ -154,7 +164,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [uiScale, setUiScale] = useState<number>(readMushafUiScale);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [bookmarks, setBookmarks] = useState<number[]>(readBookmarks);
-  const [activeReciter, setActiveReciter] = useState<ReciterId>(preferredReciter || 'alafasy');
+  const [activeReciter, setActiveReciter] = useState<ReciterId>(() =>
+    getSavedPreferredReciter(preferredReciter || 'alafasy')
+  );
   const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(getSavedPlaybackRate);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -173,11 +185,13 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     catch { return 'flow'; }
   });
   const [showHizbPicker, setShowHizbPicker] = useState(false);
-  const [printedPageAyahs, setPrintedPageAyahs] = useState<{ page: number; ayahs: Ayah[] } | null>(null);
+  const [printedAyahsByPage, setPrintedAyahsByPage] = useState<Record<number, Ayah[]>>({});
   const audioAyahs = readerLayout === 'printed'
-    ? (printedPageAyahs?.page === page ? printedPageAyahs.ayahs : [])
+    ? (printedAyahsByPage[page] || [])
     : ayahs;
-  useEffect(() => { setPrintedPageAyahs(null); }, [page]);
+  const handlePrintedPageResolved = useRef((resolved: { page: number; ayahs: Ayah[] }) => {
+    setPrintedAyahsByPage(prev => ({ ...prev, [resolved.page]: resolved.ayahs }));
+  }).current;
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
   const autoPlayNextPageRef = useRef(false);
@@ -254,19 +268,32 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     setSegmentEndIndex(Math.max(0, audioAyahs.length - 1));
   }, [page, audioAyahs.length]);
 
-  useEffect(() => () => {
-    audioQueueRef.current?.stop();
-    audioQueueRef.current = null;
-  }, []);
-
   const stopAudio = () => {
     audioQueueRef.current?.stop();
     audioQueueRef.current = null;
+    globalAudioCoordinator.releaseFocus('mushaf');
     setIsPlaying(false);
     setIsAudioPaused(false);
     setPlayingIndex(null);
     setSegmentPlaybackStatus(null);
   };
+
+  useEffect(() => {
+    const unsubAudioPrefs = subscribeAudioPreferences(prefs => {
+      setActiveReciter(prefs.preferredReciter);
+      setPlaybackRate(prefs.playbackRate);
+      setPerAyahRepeatCount(prefs.repeatCount);
+      setSegmentRepeatCount(prefs.segmentRepeatCount);
+      audioQueueRef.current?.setPlaybackRate(prefs.playbackRate);
+    });
+    const unregCoordinator = globalAudioCoordinator.register('mushaf', stopAudio);
+    return () => {
+      unsubAudioPrefs();
+      unregCoordinator();
+      audioQueueRef.current?.stop();
+      audioQueueRef.current = null;
+    };
+  }, []);
 
   const startAudioQueue = (
     queue: Ayah[],
@@ -278,6 +305,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   ) => {
     if (!queue.length || startIndex < 0 || endIndex < startIndex || endIndex >= queue.length) return;
     stopAudio();
+    globalAudioCoordinator.claimFocus('mushaf');
     const tracks = queue.map(ayah => ({
       id: String(ayah.number),
       url: formatAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter)
@@ -494,6 +522,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const selectedStartAyah = audioAyahs[segmentStartIndex];
   const selectedEndAyah = audioAyahs[segmentEndIndex];
 
+  const isTwoPageSpreadActive = readerLayout === 'printed' &&
+    typeof window !== 'undefined' &&
+    resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
+    window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
       {/* Top Control Bar */}
@@ -650,7 +683,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             <button
               type="button"
               disabled={page <= 1}
-              onClick={() => changePage(page - 1)}
+              onClick={() => changePage(stepSpreadPage(page, 'prev', isTwoPageSpreadActive))}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               <ChevronRight className="h-4 w-4" /> الصفحة السابقة
@@ -661,7 +694,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             <button
               type="button"
               disabled={page >= 604}
-              onClick={() => changePage(page + 1)}
+              onClick={() => changePage(stepSpreadPage(page, 'next', isTwoPageSpreadActive))}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               الصفحة التالية <ChevronLeft className="h-4 w-4" />
@@ -682,7 +715,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
                       aria-pressed={activeReciter === reciter.id}
                       onClick={() => {
                         stopAudio();
-                        setActiveReciter(reciter.id);
+                        const updated = savePreferredReciter(reciter.id);
+                        setActiveReciter(updated.preferredReciter);
                       }}
                       className={`min-h-10 shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-colors ${
                         activeReciter === reciter.id
@@ -905,16 +939,17 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         const startX = touchStartX.current; touchStartX.current = null;
         if (startX === null || event.changedTouches.length === 0) return;
         const delta = event.changedTouches[0].clientX - startX;
-        if (Math.abs(delta) > 65) changePage(page + (delta > 0 ? -1 : 1));
-      }} aria-label={`صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
+        if (Math.abs(delta) > 65) changePage(stepSpreadPage(page, delta > 0 ? 'prev' : 'next', isTwoPageSpreadActive));
+      }} aria-label={`صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${isFullWidth ? 'max-w-none' : 'max-w-7xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
         {readerLayout === 'printed' ? (
-          <QuranMushafFacsimilePage
-            page={page}
-            onAyahsResolved={setPrintedPageAyahs}
+          <PrintedMushafSpread
+            surface="library"
+            anchorPage={page}
             selectedAyah={tafsirAyah}
             onSelectAyah={setTafsirAyah}
+            onAyahsResolved={handlePrintedPageResolved}
             onFallback={() => selectReaderLayout('flow')}
-            maxWidthClass={isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-5xl' : 'max-w-3xl'}
+            maxWidthClass={isFullWidth ? 'max-w-none' : 'max-w-7xl'}
           />
         ) : (
           <div className="space-y-0">
@@ -1108,8 +1143,16 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         <span>انقر على أي آية لفتح التفسير المنقح من Quran.com مع إمكانية التبديل بين أمهات التفاسير والنسخ الفوري.</span>
       </div>
 
-      {/* Multi-Edition Tafsir Sheet */}
-      <TafsirSheet ayah={tafsirAyah} onClose={() => setTafsirAyah(null)} />
+      {/* Multi-Edition Tafsir Sheet (Flow Mode only; Printed mode manages desktop side/opposite Tafsir inside PrintedMushafSpread) */}
+      {readerLayout !== 'printed' && (
+        <TafsirSheet
+          ayah={tafsirAyah}
+          onSelectAyah={setTafsirAyah}
+          onClose={() => setTafsirAyah(null)}
+          pageNumber={page}
+          pageAyahs={ayahs}
+        />
+      )}
     </div>
   );
 };

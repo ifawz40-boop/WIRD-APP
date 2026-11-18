@@ -69,8 +69,10 @@ export function runQuranMushafReaderTests(): { passed: number; failed: number } 
     assert(source.includes('توسيع مساحة القراءة') && source.includes('تقليل عرض الصفحة'), 'Reader must offer a wider or comfortable reading surface');
     assert(source.includes('ليس محاكاة مطابقة لأسطر المصحف المطبوع') && source.includes('بيانات تخطيط موثّقة'), 'Reader must clearly disclose the flexible non-line-matched layout');
     assert(source.includes('autoPlayNextPageRef') && source.includes('setPage(page + 1)'), 'Page recitation must continue across page boundaries');
-    assert(source.includes('QuranMushafFacsimilePage') && source.includes("readerLayout === 'printed'"), 'Reader must offer an explicit printed-page mode');
+    assert(source.includes('PrintedMushafSpread') && source.includes("readerLayout === 'printed'"), 'Reader must offer an explicit printed-page spread mode');
     assert(source.includes("selectReaderLayout('flow')"), 'Reader must preserve a direct fallback to local flexible text');
+    const spread = fs.readFileSync(path.resolve(process.cwd(), 'src/components/library/PrintedMushafSpread.tsx'), 'utf8');
+    assert(spread.includes('QuranMushafFacsimilePage'), 'Shared PrintedMushafSpread must render QuranMushafFacsimilePage');
     const facsimile = fs.readFileSync(path.resolve(process.cwd(), 'src/components/library/QuranMushafFacsimilePage.tsx'), 'utf8');
     assert(facsimile.includes('sanitizeMushafSvgMarkup') === false, 'SVG sanitization must remain centralized in the page data service');
     assert(facsimile.includes('matchMushafAyahAreas') && facsimile.includes('onSelectAyah(ayah)'), 'Printed hit regions must resolve through local ayah coordinates');

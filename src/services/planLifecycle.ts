@@ -566,24 +566,102 @@ export const PlanLifecycle = {
 
   /**
    * Mark a task as completed or update individual properties.
-   * Completion timestamps are preserved once written.
+   * Completion timestamps and early/on-time/late status are preserved once written.
    */
   updateTask(
     plan: EngineGeneratedPlan,
     taskId: string,
-    updates: Partial<ScheduledDayPlan>
+    updates: Partial<ScheduledDayPlan>,
+    actionDateStr?: string
   ): EngineGeneratedPlan {
+    const today = actionDateStr || PlanningEngine.formatDate(new Date());
     const updatedSchedule = plan.schedule.map(day => {
       if (day.id !== taskId) return day;
 
       const merged = { ...day, ...updates };
-      if (merged.memorizationTask?.completed && !merged.memorizationTask.completedAt) {
-        merged.memorizationTask.completedAt = new Date().toISOString();
+      if (merged.memorizationTask?.completed) {
+        if (!merged.memorizationTask.completedAt) {
+          merged.memorizationTask.completedAt = new Date().toISOString();
+        }
+        const effectiveDate = merged.memorizationTask.completedDate || today;
+        merged.memorizationTask.completedDate = effectiveDate;
+        if (!merged.memorizationTask.completionTiming) {
+          merged.memorizationTask.completionTiming =
+            effectiveDate < day.date
+              ? 'completed_early'
+              : effectiveDate === day.date
+                ? 'completed_on_time'
+                : 'completed_late';
+        }
       }
       return merged;
     });
 
     return this.refreshActualVsPlanned({ ...plan, schedule: updatedSchedule });
+  },
+
+  getPlanCompletionStats(plan: EngineGeneratedPlan, todayStr?: string): {
+    totalVerses: number;
+    completedVerses: number;
+    remainingVerses: number;
+    completionPercentage: number;
+    earlyCompletedTasks: number;
+    onTimeCompletedTasks: number;
+    lateCompletedTasks: number;
+    overduePendingTasks: number;
+    dueTodayPendingTasks: number;
+  } {
+    const today = todayStr || PlanningEngine.formatDate(new Date());
+    let totalVerses = 0;
+    let completedVerses = 0;
+    let earlyCompletedTasks = 0;
+    let onTimeCompletedTasks = 0;
+    let lateCompletedTasks = 0;
+    let overduePendingTasks = 0;
+    let dueTodayPendingTasks = 0;
+
+    for (const day of plan.schedule) {
+      if (day.isRestDay || !day.memorizationTask) continue;
+      const t = day.memorizationTask;
+      totalVerses += t.versesCount;
+      if (t.completed) {
+        completedVerses += t.versesCount;
+        const timing =
+          t.completionTiming ||
+          (t.completedDate
+            ? t.completedDate < day.date
+              ? 'completed_early'
+              : t.completedDate === day.date
+                ? 'completed_on_time'
+                : 'completed_late'
+            : 'completed_on_time');
+        if (timing === 'completed_early') earlyCompletedTasks += 1;
+        else if (timing === 'completed_late') lateCompletedTasks += 1;
+        else onTimeCompletedTasks += 1;
+      } else if (day.date < today) {
+        overduePendingTasks += 1;
+      } else if (day.date === today) {
+        dueTodayPendingTasks += 1;
+      }
+    }
+
+    const effectiveTotal = Math.max(totalVerses, plan.meta?.totalVerses || 0);
+    const remainingVerses = Math.max(0, effectiveTotal - completedVerses);
+    const completionPercentage = effectiveTotal > 0
+      ? Math.min(100, Math.round((completedVerses / effectiveTotal) * 100))
+      : 0;
+
+    return {
+      totalVerses: effectiveTotal,
+      completedVerses,
+      remainingVerses,
+      completionPercentage,
+      earlyCompletedTasks,
+      onTimeCompletedTasks,
+      lateCompletedTasks,
+      overduePendingTasks,
+      dueTodayPendingTasks
+    };
   },
 
   refreshActualVsPlanned(plan: EngineGeneratedPlan): EngineGeneratedPlan {

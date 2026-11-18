@@ -19,6 +19,11 @@ import { persistEnginePlansSnapshot, persistJournaledTransaction, persistPlansSn
 import { ALL_SURAHS } from './data/quranMeta';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 import { OfflineNetworkBanner } from './components/shared/OfflineStatusControls';
+import {
+  getSavedPreferredReciter,
+  savePreferredReciter,
+  subscribeAudioPreferences
+} from './services/audioPreferences';
 
 // Lazy loaded views for optimal chunking and initial load performance
 const QuranLibraryView = React.lazy(() => import('./components/library/QuranLibraryView').then(m => ({ default: m.QuranLibraryView })));
@@ -111,11 +116,29 @@ export default function App() {
   }, [isMobileMenuOpen]);
 
   // App persistent state
-  const [profile, setProfile] = useState<UserProfile>(() => StorageService.getProfile());
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    const storedProfile = StorageService.getProfile();
+    const syncedReciter = getSavedPreferredReciter(storedProfile.preferredReciter || 'alafasy');
+    return syncedReciter !== storedProfile.preferredReciter
+      ? { ...storedProfile, preferredReciter: syncedReciter }
+      : storedProfile;
+  });
   const [plans, setPlans] = useState<MemorizationPlan[]>(() => StorageService.getPlans());
   const [enginePlans, setEnginePlans] = useState<EngineGeneratedPlan[]>(() => StorageService.getEnginePlans());
   const [revisionItems, setRevisionItems] = useState<RevisionItem[]>(() => StorageService.getRevisionItems());
   const [logs, setLogs] = useState<DailyLog[]>(() => StorageService.getLogsForDisplay());
+
+  // Keep profile.preferredReciter synchronized instantaneously with audioPreferences across screens
+  useEffect(() => {
+    const unsubscribe = subscribeAudioPreferences(prefs => {
+      setProfile(prev => (
+        prev.preferredReciter === prefs.preferredReciter
+          ? prev
+          : { ...prev, preferredReciter: prefs.preferredReciter }
+      ));
+    });
+    return unsubscribe;
+  }, []);
 
   // Session specific parameters when started from other views or URL deep link
   const [sessionParams, setSessionParams] = useState<{
@@ -421,21 +444,36 @@ export default function App() {
     let updatedEnginePlans: EngineGeneratedPlan[] | undefined;
     if (mode === 'memorize' && sessionParams.surahNumber) {
       const currentEnginePlans = StorageService.getEnginePlans();
-      const activeEnginePlan = currentEnginePlans.find(plan => plan.isActive && !plan.isPaused);
-      const matchingDay = activeEnginePlan?.schedule.find(day =>
-        day.memorizationTask && !day.memorizationTask.completed &&
-        day.memorizationTask.surahNumber === sessionParams.surahNumber &&
-        day.memorizationTask.startAyah === sessionParams.startAyah &&
-        day.memorizationTask.endAyah === sessionParams.endAyah
-      );
-      if (activeEnginePlan && matchingDay?.memorizationTask) {
-        const updatedPlan = PlanLifecycle.updateTask(activeEnginePlan, matchingDay.id, {
+      const completedDateStr = getLocalDateString();
+      const completedTimestamp = new Date().toISOString();
+      let didUpdateAnyPlan = false;
+
+      const mappedPlans = currentEnginePlans.map(plan => {
+        if (!plan.isActive || plan.isPaused) return plan;
+        const matchingDay = plan.schedule.find(day =>
+          day.memorizationTask && !day.memorizationTask.completed &&
+          day.memorizationTask.surahNumber === sessionParams.surahNumber &&
+          day.memorizationTask.startAyah === sessionParams.startAyah &&
+          day.memorizationTask.endAyah === sessionParams.endAyah
+        );
+        if (!matchingDay?.memorizationTask) return plan;
+
+        didUpdateAnyPlan = true;
+        return PlanLifecycle.updateTask(plan, matchingDay.id, {
           status: ((matchingDay.minorRevisionTask && !matchingDay.minorRevisionTask.completed) ||
             (matchingDay.majorRevisionTask && !matchingDay.majorRevisionTask.completed))
             ? 'partially_completed' : 'completed',
-          memorizationTask: { ...matchingDay.memorizationTask, completed: true, completedAt: new Date().toISOString() }
-        });
-        updatedEnginePlans = currentEnginePlans.map(plan => plan.id === activeEnginePlan.id ? updatedPlan : plan);
+          memorizationTask: {
+            ...matchingDay.memorizationTask,
+            completed: true,
+            completedAt: completedTimestamp,
+            completedDate: completedDateStr
+          }
+        }, completedDateStr);
+      });
+
+      if (didUpdateAnyPlan) {
+        updatedEnginePlans = mappedPlans;
       }
     }
 
@@ -519,6 +557,9 @@ export default function App() {
           ? 'تعذر تأمين الحفظ أو استعادة سجل سابق؛ لم نضف تعديل الملف الشخصي الجديد.'
           : 'تعذر حفظ إعدادات الملف الشخصي في التخزين الدائم.', 'error');
       return false;
+    }
+    if (updatedProfile.preferredReciter) {
+      savePreferredReciter(updatedProfile.preferredReciter);
     }
     setProfile(updatedProfile);
     return true;

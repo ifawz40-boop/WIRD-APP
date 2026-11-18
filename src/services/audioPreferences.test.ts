@@ -6,9 +6,16 @@ import {
   normalizeAudioRepeatCount,
   normalizeAyahSegmentRepeatCount,
   PLAYBACK_RATES,
-  normalizePlaybackRate
+  normalizePlaybackRate,
+  savePreferredReciter,
+  getUnifiedAudioPreferences,
+  subscribeAudioPreferences,
+  toStandardReciterId,
+  toRuqyahReciterId
 } from './audioPreferences';
 import { attachAyahRepeatHandler } from './audioRepeatController';
+import { globalAudioCoordinator } from './globalAudioCoordinator';
+import { getAyahAudioPlaybackUrl } from './audioService';
 
 export function runAudioPreferencesTests(): { passed: number; failed: number } {
   let passed = 0;
@@ -31,6 +38,50 @@ export function runAudioPreferencesTests(): { passed: number; failed: number } {
     }
     if (normalizeAyahSegmentRepeatCount(3) !== 3 || normalizeAyahSegmentRepeatCount(-1) !== 1 || normalizeAyahSegmentRepeatCount(99) !== 1) {
       throw new Error('Invalid per-ayah segment repeat normalization');
+    }
+  });
+  test('Unified reciter preferences synchronize bidirectional IDs and notify listeners immediately', () => {
+    if (toRuqyahReciterId('husary') !== 'ar.husary' || toStandardReciterId('ar.minshawi') !== 'minshawi') {
+      throw new Error('Reciter bidirectional mapping mismatch');
+    }
+    const events: string[] = [];
+    const unsubscribe = subscribeAudioPreferences(prefs => {
+      events.push(`${prefs.preferredReciter}:${prefs.ruqyahReciterId}`);
+    });
+    try {
+      const updated = savePreferredReciter('husary');
+      if (updated.preferredReciter !== 'husary' || updated.ruqyahReciterId !== 'ar.husary') {
+        throw new Error('Saving standard reciter did not sync Ruqyah ID');
+      }
+      const fromRuqyah = savePreferredReciter('ar.abdulbasit');
+      if (fromRuqyah.preferredReciter !== 'abdulbasit' || getUnifiedAudioPreferences().preferredReciter !== 'abdulbasit') {
+        throw new Error('Saving Ruqyah reciter did not sync standard reciter');
+      }
+      const descriptor = getAyahAudioPlaybackUrl(1, 1, 'ar.sudais');
+      if (!descriptor.url.includes('ar.abdurrahmaansudais') || descriptor.streamOnly) {
+        throw new Error('Extended approved CDN reciter failed URL resolution');
+      }
+      if (events.length !== 2) throw new Error('Expected live subscriber notifications for reciter changes');
+    } finally {
+      unsubscribe();
+      savePreferredReciter('alafasy');
+    }
+  });
+  test('Global audio coordinator enforces single active player focus across views', () => {
+    const counts = { library: 0, session: 0 };
+    const snapshot = () => ({ ...counts });
+    const unregLib = globalAudioCoordinator.register('library', () => { counts.library++; });
+    const unregSess = globalAudioCoordinator.register('session', () => { counts.session++; });
+    try {
+      globalAudioCoordinator.claimFocus('library');
+      const afterLib = snapshot();
+      if (afterLib.session !== 1 || afterLib.library !== 0) throw new Error('Claiming focus in library must stop session audio');
+      globalAudioCoordinator.claimFocus('session');
+      const afterSess = snapshot();
+      if (afterSess.library !== 1) throw new Error('Claiming focus in session must stop library audio');
+    } finally {
+      unregLib();
+      unregSess();
     }
   });
   test('Ayah repeat controller plays the exact target count', () => {

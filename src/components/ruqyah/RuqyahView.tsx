@@ -9,6 +9,13 @@ import { adjustRuqyahProgressCounter, createEmptyRuqyahProgressSnapshot, migrate
 import type { RuqyahProgressSnapshotV2 } from '../../services/ruqyahProgressSchema';
 import { persistRuqyahProgressSnapshot } from '../../services/journaledSnapshotService';
 import { STORAGE_KEYS, StorageService } from '../../services/storageService';
+import {
+  getSavedPlaybackRate,
+  getSavedRuqyahReciterId,
+  savePreferredReciter,
+  subscribeAudioPreferences
+} from '../../services/audioPreferences';
+import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { RuqyahApiLibrary } from './RuqyahApiLibrary';
 import { 
   ShieldCheck, 
@@ -65,7 +72,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   const resetTriggerRef = useRef<HTMLButtonElement>(null);
   const [reciters, setReciters] = useState(FALLBACK_QURAN_RECITERS);
-  const [selectedReciterId, setSelectedReciterId] = useState('ar.husary');
+  const [selectedReciterId, setSelectedReciterId] = useState<string>(() => getSavedRuqyahReciterId('ar.husary'));
   const [audioIsPlaying, setAudioIsPlaying] = useState(false);
   const [audioIsLoading, setAudioIsLoading] = useState(false);
   const [audioError, setAudioError] = useState('');
@@ -85,6 +92,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const selectedReciterIdRef = useRef(selectedReciterId);
+  const stopRuqyahAudioRef = useRef<() => void>(() => {});
   const audioQueueRef = useRef<Array<{ globalAyahNumber: number; itemId: string; title: string }>>([]);
   const audioQueueIndexRef = useRef(0);
   const audioRequestIdRef = useRef(0);
@@ -159,11 +167,13 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
     setAudioStatusMessage('');
 
     try {
+      globalAudioCoordinator.claimFocus('ruqyah');
       requestOfflineAudioCache(
         audioQueueRef.current.slice(index, index + 20).map(item =>
           buildQuranAyahAudioUrl(selectedReciterIdRef.current, item.globalAyahNumber)
         )
       );
+      audio.playbackRate = getSavedPlaybackRate();
       audio.src = buildQuranAyahAudioUrl(selectedReciterIdRef.current, entry.globalAyahNumber);
       audio.load();
       await audio.play();
@@ -240,7 +250,9 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
     setAudioQueueLabel('');
     setAudioError('');
     setAudioStatusMessage('');
+    globalAudioCoordinator.releaseFocus('ruqyah');
   };
+  stopRuqyahAudioRef.current = stopRuqyahAudio;
 
   const toggleAudioPlayback = () => {
     const audio = audioRef.current;
@@ -248,9 +260,12 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
     if (audioIsPlaying) {
       audio.pause();
       setAudioIsPlaying(false);
+      globalAudioCoordinator.releaseFocus('ruqyah');
       return;
     }
     if (audio.src && audioQueueLength > 0) {
+      globalAudioCoordinator.claimFocus('ruqyah');
+      audio.playbackRate = getSavedPlaybackRate();
       setAudioIsLoading(true);
       const requestId = audioRequestIdRef.current;
       void audio.play().then(() => {
@@ -269,6 +284,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const handleAudioReciterChange = (reciterId: string) => {
     stopRuqyahAudio();
     setSelectedReciterId(reciterId);
+    savePreferredReciter(reciterId);
   };
 
   const toggleItemAudio = (item: RuqyahItem) => {
@@ -283,6 +299,25 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   useEffect(() => {
     selectedReciterIdRef.current = selectedReciterId;
   }, [selectedReciterId]);
+
+  useEffect(() => {
+    const unregisterAudio = globalAudioCoordinator.register('ruqyah', () => stopRuqyahAudioRef.current());
+    const unsubscribePrefs = subscribeAudioPreferences(prefs => {
+      if (audioRef.current) audioRef.current.playbackRate = prefs.playbackRate;
+      setSelectedReciterId(prev => {
+        if (prev !== prefs.ruqyahReciterId) {
+          stopRuqyahAudioRef.current();
+          return prefs.ruqyahReciterId;
+        }
+        return prev;
+      });
+    });
+    return () => {
+      unregisterAudio();
+      unsubscribePrefs();
+      globalAudioCoordinator.releaseFocus('ruqyah');
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -317,6 +352,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
         setAudioCurrentTime(0);
         setAudioQueueLength(0);
         setAudioStatusMessage('اكتملت التلاوة الصوتية للآيات المحددة.');
+        globalAudioCoordinator.releaseFocus('ruqyah');
       }
     };
     const handleError = () => {

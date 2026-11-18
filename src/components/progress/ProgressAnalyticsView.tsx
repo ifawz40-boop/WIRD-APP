@@ -26,6 +26,7 @@ import { importBackupFile } from '../../services/backupPersistence';
 import { RetentionService } from '../../services/retentionService';
 import { getLocalDateString } from '../../services/unifiedPortionService';
 import { buildPageStatusUpdate, getPageAyahSegments, getPageProgressStatus, PageAyahSegment } from '../../services/pageProgressService';
+import { readReadingKhatma } from '../../services/readingKhatmaService';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 
 interface ProgressAnalyticsViewProps {
@@ -254,6 +255,9 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
   }
 
   const totalMemorizedPagesCount = pageStats.completed;
+  const retentionMetrics = RetentionService.getRetentionDashboardMetrics();
+  const readingKhatma = readReadingKhatma();
+  const readingKhatmaPagesCount = readingKhatma ? new Set(readingKhatma.completedPages).size : 0;
 
   return (
     <div className="space-y-6">
@@ -304,45 +308,45 @@ export const ProgressAnalyticsView: React.FC<ProgressAnalyticsViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Key Metrics Summary Grid */}
+      {/* 2. Key Metrics Summary Grid (Strict 5-Metric Separation) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="wird-card rounded-2xl p-5 space-y-1">
-          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الصفحات المتقنة والمحفوظة</div>
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الصفحات المحفوظة والمتقنة</div>
           <div className="text-2xl font-bold text-[#1C4E46] dark:text-[#6EE7B7] font-mono tabular-nums">
             {totalMemorizedPagesCount}
           </div>
           <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
-            من أصل 604 صفحة ({((totalMemorizedPagesCount / 604) * 100).toFixed(1)}%)
+            من 604 ({((totalMemorizedPagesCount / 604) * 100).toFixed(1)}%) · راسخ متقن: {pageStats.stable}
           </div>
         </div>
 
         <div className="wird-card rounded-2xl p-5 space-y-1">
-          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">صفحات في طور الحفظ</div>
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الحفظ الجديد (قيد الحفظ)</div>
           <div className="text-2xl font-bold text-purple-700 dark:text-purple-400 font-mono tabular-nums">
             {pageStats.currently_memorizing}
           </div>
-          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
-            قيد المتابعة اليومية
+          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+            إجمالي الآيات المحفوظة: {retentionMetrics.totalMemorizedAyahs} آية
           </div>
         </div>
 
         <div className="wird-card rounded-2xl p-5 space-y-1">
-          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">صفحات تحتاج مراجعة أو تثبيت</div>
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">المراجعة والآيات المتعثرة</div>
           <div className="text-2xl font-bold text-[#C59B27] dark:text-[#E0A96D] font-mono tabular-nums">
             {pageStats.needs_revision + pageStats.weak}
           </div>
           <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
-            منها {pageStats.weak} صفحات ضعيفة
+            مراجعات منجزة: {retentionMetrics.totalReviewsCompleted} · آيات متعثرة: {retentionMetrics.weakVersesCount}
           </div>
         </div>
 
         <div className="wird-card rounded-2xl p-5 space-y-1">
-          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">معدل التثبيت العام</div>
+          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الرسوخ وختمة القراءة</div>
           <div className="text-2xl font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
             %{totalMemorizedPagesCount > 0 ? Math.round(((pageStats.stable + pageStats.recently_memorized * 0.8) / totalMemorizedPagesCount) * 100) : 0}
           </div>
-          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
-            جودة الرسوخ التراكمية
+          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+            صفحات ختمة القراءة (منفصلة): {readingKhatmaPagesCount} / 604
           </div>
         </div>
       </div>

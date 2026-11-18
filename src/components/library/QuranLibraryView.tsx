@@ -33,13 +33,17 @@ import { QuranAudioQueueController } from '../../services/audioQueueController';
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
+  getSavedPreferredReciter,
   getSavedSegmentRepeatCount,
   normalizeAyahSegmentRepeatCount,
   saveAudioRepeatCount,
   savePlaybackRate,
-  saveSegmentRepeatCount
+  savePreferredReciter,
+  saveSegmentRepeatCount,
+  subscribeAudioPreferences
 } from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
+import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { QuranMushafReader } from './QuranMushafReader';
 import { QURAN_JUZ_STARTS } from '../../data/quranNavigationIndex.generated';
@@ -123,8 +127,10 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const [readingKhatma, setReadingKhatma] = useState<ReadingKhatma | null>(() => readReadingKhatma());
   const [readingKhatmaError, setReadingKhatmaError] = useState('');
 
-  // Audio state
-  const [activeReciter, setActiveReciter] = useState<ReciterId>(initialReciter || 'alafasy');
+  // Audio state (reconciled live across all audio views)
+  const [activeReciter, setActiveReciter] = useState<ReciterId>(() =>
+    getSavedPreferredReciter(initialReciter || 'alafasy')
+  );
   const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(() => getSavedPlaybackRate());
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -140,6 +146,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const segmentQueueRef = useRef<QuranAudioQueueController | null>(null);
   const currentRepeatCountRef = useRef(1);
   const repeatTargetRef = useRef<number | null>(repeatTarget === -1 ? null : repeatTarget);
+  const stopAudioRef = useRef<() => void>(() => {});
 
   // Filter surahs
   const filteredSurahs = useMemo(() => {
@@ -224,7 +231,9 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
+        globalAudioCoordinator.releaseFocus('library');
       } else {
+        globalAudioCoordinator.claimFocus('library');
         audioRef.current.play().then(() => setIsPlaying(true)).catch(error => {
           console.warn('Audio resume failed', error);
           setIsPlaying(false);
@@ -244,6 +253,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       audioRef.current.pause();
     }
 
+    globalAudioCoordinator.claimFocus('library');
     currentRepeatCountRef.current = 1;
     repeatTargetRef.current = repeatTarget === -1 ? null : repeatTarget;
     setCurrentRepeatCount(1);
@@ -356,23 +366,53 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     setIsSegmentPlaying(false);
     setIsSegmentPaused(false);
     setSegmentStatus(null);
+    globalAudioCoordinator.releaseFocus('library');
   };
+  stopAudioRef.current = handleStopAudio;
+
+  useEffect(() => {
+    const unregisterAudio = globalAudioCoordinator.register('library', () => stopAudioRef.current());
+    const unsubscribePrefs = subscribeAudioPreferences(prefs => {
+      setActiveReciter(prev => {
+        if (prev !== prefs.preferredReciter) {
+          stopAudioRef.current();
+          return prefs.preferredReciter;
+        }
+        return prev;
+      });
+      setPlaybackRate(prefs.playbackRate);
+      if (audioRef.current) audioRef.current.playbackRate = prefs.playbackRate;
+      segmentQueueRef.current?.setPlaybackRate(prefs.playbackRate);
+      setRepeatTarget(prefs.repeatCount);
+      repeatTargetRef.current = prefs.repeatCount === -1 ? null : prefs.repeatCount;
+      segmentQueueRef.current?.setAyahRepeatCount(normalizeAyahSegmentRepeatCount(prefs.repeatCount));
+      setSegmentRepeatCount(prefs.segmentRepeatCount);
+      segmentQueueRef.current?.setRepeatCount(prefs.segmentRepeatCount === -1 ? null : prefs.segmentRepeatCount);
+    });
+    return () => {
+      unregisterAudio();
+      unsubscribePrefs();
+    };
+  }, []);
 
   const handleToggleStudySegmentAudio = () => {
     const activeQueue = segmentQueueRef.current;
     if (activeQueue?.getState().active) {
       if (activeQueue.getState().paused) {
+        globalAudioCoordinator.claimFocus('library');
         activeQueue.resume();
         setIsSegmentPaused(false);
         setIsSegmentPlaying(true);
       } else {
         activeQueue.pause();
+        globalAudioCoordinator.releaseFocus('library');
       }
       return;
     }
     if (!currentAyahs.length || segmentStartIndex > segmentEndIndex) return;
 
     handleStopAudio();
+    globalAudioCoordinator.claimFocus('library');
     const tracks = currentAyahs.map(ayah => ({
       id: String(ayah.number),
       url: formatAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter)
@@ -407,6 +447,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         setPlayingAyah(null);
         setSegmentStatus(null);
         setCurrentRepeatCount(1);
+        globalAudioCoordinator.releaseFocus('library');
       },
       onError: error => {
         console.warn('[WIRD Study] Segment audio queue failed:', error);
@@ -418,6 +459,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         setPlayingAyah(null);
         setSegmentStatus(null);
         setCurrentRepeatCount(1);
+        globalAudioCoordinator.releaseFocus('library');
       }
     });
     segmentQueueRef.current = controller;
@@ -439,6 +481,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       setIsSegmentPlaying(false);
       setIsSegmentPaused(false);
       setIsPlaying(false);
+      globalAudioCoordinator.releaseFocus('library');
       console.warn('[WIRD Study] Could not start segment audio:', error);
     }
   };
@@ -453,6 +496,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       }
       segmentQueueRef.current?.stop();
       segmentQueueRef.current = null;
+      globalAudioCoordinator.releaseFocus('library');
     };
   }, []);
 
@@ -661,6 +705,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                     aria-pressed={isReciterActive}
                     onClick={() => {
                       handleStopAudio();
+                      savePreferredReciter(r.id);
                       setActiveReciter(r.id);
                     }}
                     className={`min-h-11 shrink-0 snap-start px-3 py-1.5 rounded-xl border text-xs font-bold transition-all whitespace-nowrap ${
@@ -1393,7 +1438,14 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       </footer>
 
       {/* Multi-Edition Tafsir Sheet */}
-      <TafsirSheet ayah={tafsirAyah} onClose={() => setTafsirAyah(null)} />
+      <TafsirSheet
+        ayah={tafsirAyah}
+        onSelectAyah={nextAyah => {
+          rememberReadingPosition(nextAyah.numberInSurah);
+          setTafsirAyah(nextAyah);
+        }}
+        onClose={() => setTafsirAyah(null)}
+      />
     </div>
   );
 };

@@ -25,25 +25,29 @@ import {
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { loadSurahVerses, getAyahWords, loadSimpleAyahText, loadSimpleAyahRange } from '../../data/quranDataLoader';
 import { QuranBasmala } from '../shared/QuranBasmala';
-import { Ayah, UserProfile } from '../../types/quran';
-import { computeGlobalAyahNumber, formatAyahAudioUrl, getLicensedAyahAudioUrl, resolveApprovedOfflineReciterId } from '../../services/audioService';
+import { Ayah, ReciterId, UserProfile } from '../../types/quran';
+import { RECITERS, computeGlobalAyahNumber, formatAyahAudioUrl, getLicensedAyahAudioUrl, resolveApprovedOfflineReciterId } from '../../services/audioService';
 import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import { createSecureId } from '../../services/secureId';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
+  getSavedPreferredReciter,
   getSavedSegmentRepeatCount,
   normalizeAyahSegmentRepeatCount,
   saveAudioRepeatCount,
   savePlaybackRate,
-  saveSegmentRepeatCount
+  savePreferredReciter,
+  saveSegmentRepeatCount,
+  subscribeAudioPreferences
 } from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
+import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { attachAyahRepeatHandler } from '../../services/audioRepeatController';
 import { SessionTafsirPanel } from './SessionTafsirPanel';
-import { QuranMushafFacsimilePage } from '../library/QuranMushafFacsimilePage';
+import { PrintedMushafSpread } from '../library/PrintedMushafSpread';
 import {
   DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES,
   getMemorizationDisplayPreferences,
@@ -51,6 +55,20 @@ import {
   type MemorizationDisplayPreferences,
   type MemorizationSessionPageWidth
 } from '../../services/memorizationDisplayPreferences';
+import {
+  CUMULATIVE_WINDOW_SIZES,
+  confirmAyahMastery,
+  confirmFinalSegmentMastery,
+  getSavedStudyMethod,
+  loadCumulativeSessionProgress,
+  recordListeningProgress,
+  recordRecallVerification,
+  saveCumulativeSessionProgress,
+  saveStudyMethod,
+  type AyahMemorizationStage,
+  type CumulativeSessionProgress,
+  type CumulativeWindowSize
+} from '../../services/cumulativeLinkingService';
 
 const SESSION_PAGE_WIDTH_CLASSES: Record<MemorizationSessionPageWidth, string> = {
   comfortable: 'max-w-4xl',
@@ -93,10 +111,24 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     return Math.min(Math.max(safeStart, initialEndAyah || initialMeta.versesCount), initialMeta.versesCount);
   });
   const [isRangeEditorOpen, setIsRangeEditorOpen] = useState(false);
-  const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
+  const [cumulativeProgress, setCumulativeProgress] = useState<CumulativeSessionProgress>(() =>
+    loadCumulativeSessionProgress(
+      initialSurahNumber,
+      Math.max(1, initialStartAyah),
+      Math.min(
+        Math.max(Math.max(1, initialStartAyah), initialEndAyah || (ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66]).versesCount),
+        (ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66]).versesCount
+      )
+    )
+  );
+  const [currentAyahIndex, setCurrentAyahIndex] = useState(() => Math.max(0, cumulativeProgress.currentIndex));
   const [allSurahAyahs, setAllSurahAyahs] = useState<Ayah[]>([]);
   const [isLoadingAyahs, setIsLoadingAyahs] = useState(true);
   const [loadRetry, setLoadRetry] = useState(0);
+
+  const [activeReciter, setActiveReciter] = useState<ReciterId>(() =>
+    getSavedPreferredReciter(profile.preferredReciter || 'alafasy')
+  );
 
   useEffect(() => {
     const meta = ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66];
@@ -105,6 +137,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     setSurahNumber(meta.number);
     setStartAyah(safeStart);
     setEndAyah(safeEnd);
+    const restored = loadCumulativeSessionProgress(meta.number, safeStart, safeEnd);
+    setCumulativeProgress(restored);
+    setStudyMethod(getSavedStudyMethod(meta.number, safeStart, safeEnd));
+    setCurrentAyahIndex(Math.min(restored.currentIndex, Math.max(0, safeEnd - safeStart)));
   }, [initialSurahNumber, initialStartAyah, initialEndAyah]);
 
   // Load only the active surah's verses into the memorization session.
@@ -112,7 +148,6 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   useEffect(() => {
     let cancelled = false;
     setAllSurahAyahs([]);
-    setCurrentAyahIndex(0);
     setIsLoadingAyahs(true);
     loadSurahVerses(surahNumber)
       .then(ayahs => { if (!cancelled) setAllSurahAyahs(ayahs); })
@@ -135,7 +170,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     if (!sessionAyahs.length || currentAyahIndex % 10 !== 0 || !('serviceWorker' in navigator)) return;
     let cancelled = false;
     const urls = sessionAyahs.slice(currentAyahIndex, currentAyahIndex + 20)
-      .map(ayah => getLicensedAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter))
+      .map(ayah => getLicensedAyahAudioUrl(surahNumber, ayah.numberInSurah, activeReciter))
       .filter(descriptor => !descriptor.streamOnly)
       .map(descriptor => descriptor.url);
     if (!urls.length) return;
@@ -147,7 +182,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       })
       .catch(error => console.warn('[WIRD Session] Audio cache unavailable:', error));
     return () => { cancelled = true; };
-  }, [surahNumber, profile.preferredReciter, sessionAyahs, currentAyahIndex]);
+  }, [surahNumber, activeReciter, sessionAyahs, currentAyahIndex]);
 
   const currentAyah: Ayah | undefined = sessionAyahs[currentAyahIndex];
 
@@ -201,6 +236,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   );
   const [printedPage, setPrintedPage] = useState<number>(() => currentAyah?.page || 1);
   const [outOfRangeNotice, setOutOfRangeNotice] = useState<string | null>(null);
+  const [printedTafsirAyah, setPrintedTafsirAyah] = useState<Ayah | null>(null);
 
   useEffect(() => {
     if (currentAyah?.page) {
@@ -270,17 +306,43 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   const playbackIterationRef = useRef(1);
   const repeatTargetRef = useRef<number | null>(audioRepeatCount === -1 ? null : audioRepeatCount);
   const completionInProgressRef = useRef(false);
+  const stopAudioRef = useRef<() => void>(() => {});
 
-  // Track 3: Interactive Hifz Method (free vs cumulative_linking) & Instant Weak-Verse Capture
-  const [studyMethod, setStudyMethod] = useState<'free' | 'cumulative_linking'>('free');
-  const [cumulativeWindow, setCumulativeWindow] = useState<'from_start' | 'last_5'>('from_start');
-  const [masteredIndices, setMasteredIndices] = useState<Set<number>>(new Set());
+  // Track 3: Durable 5-stage Cumulative Linking & Instant Weak-Verse Capture
+  const [studyMethod, setStudyMethod] = useState<'free' | 'cumulative_linking'>(() =>
+    getSavedStudyMethod(
+      initialSurahNumber,
+      Math.max(1, initialStartAyah),
+      Math.min(
+        Math.max(Math.max(1, initialStartAyah), initialEndAyah || (ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66]).versesCount),
+        (ALL_SURAHS[initialSurahNumber - 1] || ALL_SURAHS[66]).versesCount
+      )
+    )
+  );
+  const [masteryFeedback, setMasteryFeedback] = useState<string | null>(null);
+  const [awaitingFinalConfirm, setAwaitingFinalConfirm] = useState(false);
   const [isCumulativePlaying, setIsCumulativePlaying] = useState(false);
   const [weakMarkedAyahs, setWeakMarkedAyahs] = useState<Set<string>>(new Set());
   const [isCapturingWeakVerse, setIsCapturingWeakVerse] = useState(false);
   const [weakCaptureFeedback, setWeakCaptureFeedback] = useState<{ ayahKey: string; message: string; success: boolean } | null>(null);
   const weakCaptureMutationIdsRef = useRef<Map<string, string>>(new Map());
   const weakCaptureInFlightRef = useRef(false);
+
+  const masteredIndices = useMemo(
+    () => new Set(cumulativeProgress.masteredIndices),
+    [cumulativeProgress.masteredIndices]
+  );
+  const recallVerifiedIndices = useMemo(
+    () => new Set(cumulativeProgress.recallVerifiedIndices),
+    [cumulativeProgress.recallVerifiedIndices]
+  );
+
+  useEffect(() => {
+    saveCumulativeSessionProgress({
+      ...cumulativeProgress,
+      currentIndex: currentAyahIndex
+    });
+  }, [cumulativeProgress, currentAyahIndex]);
 
   const handlePlaybackRateChange = (rate: PlaybackRate) => {
     const savedRate = savePlaybackRate(rate);
@@ -300,6 +362,12 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     const savedCount = saveSegmentRepeatCount(count);
     setSegmentRepeatCount(savedCount);
     segmentAudioQueueRef.current?.setRepeatCount(savedCount === -1 ? null : savedCount);
+  };
+
+  const handleReciterChange = (reciterId: ReciterId) => {
+    stopAudioRef.current();
+    const prefs = savePreferredReciter(reciterId);
+    setActiveReciter(prefs.preferredReciter);
   };
 
   // 2. Progressive word masking: 0 = none, 1 = 30%, 2 = 60%, 3 = 100% (hidden)
@@ -375,7 +443,35 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     queueAdvanceRef.current = false;
     playbackIterationRef.current = 1;
     revokeAllActiveAudioUrls();
+    globalAudioCoordinator.releaseFocus('session');
   }, [revokeAllActiveAudioUrls]);
+  stopAudioRef.current = handleStopAudio;
+
+  useEffect(() => {
+    const unregisterAudio = globalAudioCoordinator.register('session', () => stopAudioRef.current());
+    const unsubscribePrefs = subscribeAudioPreferences(prefs => {
+      setActiveReciter(prev => {
+        if (prev !== prefs.preferredReciter) {
+          stopAudioRef.current();
+          return prefs.preferredReciter;
+        }
+        return prev;
+      });
+      setPlaybackRate(prefs.playbackRate);
+      if (audioRef.current) audioRef.current.playbackRate = prefs.playbackRate;
+      segmentAudioQueueRef.current?.setPlaybackRate(prefs.playbackRate);
+      setAudioRepeatCount(prefs.repeatCount);
+      repeatTargetRef.current = prefs.repeatCount === -1 ? null : prefs.repeatCount;
+      segmentAudioQueueRef.current?.setAyahRepeatCount(normalizeAyahSegmentRepeatCount(prefs.repeatCount));
+      setSegmentRepeatCount(prefs.segmentRepeatCount);
+      segmentAudioQueueRef.current?.setRepeatCount(prefs.segmentRepeatCount === -1 ? null : prefs.segmentRepeatCount);
+    });
+    return () => {
+      unregisterAudio();
+      unsubscribePrefs();
+      globalAudioCoordinator.releaseFocus('session');
+    };
+  }, []);
 
   const applySessionRange = useCallback((nextSurah: number, nextStart: number, nextEnd: number) => {
     const meta = ALL_SURAHS[nextSurah - 1] || ALL_SURAHS[66];
@@ -383,30 +479,37 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     const safeEnd = Math.min(Math.max(safeStart, nextEnd), meta.versesCount);
     handleStopAudio();
     setOutOfRangeNotice(null);
-    setCurrentAyahIndex(0);
+    setMasteryFeedback(null);
+    setAwaitingFinalConfirm(false);
     setRevealedWordIndices(new Set());
-    setMasteredIndices(new Set());
     setRepeatCount(0);
     setSurahNumber(meta.number);
     setStartAyah(safeStart);
     setEndAyah(safeEnd);
+    const restored = loadCumulativeSessionProgress(meta.number, safeStart, safeEnd);
+    setCumulativeProgress(restored);
+    setCurrentAyahIndex(Math.min(restored.currentIndex, Math.max(0, safeEnd - safeStart)));
     onRangeChange?.(meta.number, safeStart, safeEnd);
   }, [handleStopAudio, onRangeChange]);
 
   useEffect(() => {
     setRevealedWordIndices(new Set());
+    setMasteryFeedback(null);
+    setAwaitingFinalConfirm(false);
   }, [currentAyahIndex, maskLevel]);
 
+  const isMaskingDisabled = displayPreferences.viewMode === 'page' && displayPreferences.mushafStyle === 'printed';
+
   useEffect(() => {
-    if (displayPreferences.viewMode !== 'focused') {
+    if (isMaskingDisabled) {
       setMaskLevel(0);
       setRevealedWordIndices(new Set());
     }
-  }, [displayPreferences.viewMode]);
+  }, [isMaskingDisabled]);
 
-  // Progressive masking cue when cumulative_linking method is active in focused view
+  // Progressive masking cue when cumulative_linking method is active (works in both connected & focused views)
   useEffect(() => {
-    if (studyMethod !== 'cumulative_linking' || displayPreferences.viewMode !== 'focused') return;
+    if (studyMethod !== 'cumulative_linking' || isMaskingDisabled) return;
     if (repeatCount >= targetRepeats && maskLevel < 3) {
       setMaskLevel(3);
     } else if (repeatCount >= Math.max(2, Math.ceil(targetRepeats * 0.7)) && maskLevel < 2) {
@@ -414,7 +517,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     } else if (repeatCount >= Math.max(1, Math.ceil(targetRepeats * 0.4)) && maskLevel < 1) {
       setMaskLevel(1);
     }
-  }, [studyMethod, displayPreferences.viewMode, repeatCount, targetRepeats, maskLevel]);
+  }, [studyMethod, isMaskingDisabled, repeatCount, targetRepeats, maskLevel]);
 
   useEffect(() => {
     setRepeatCount(0);
@@ -442,13 +545,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       setIsPlaying(false);
       setIsAudioLoading(false);
       revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('session');
       return;
     }
 
+    globalAudioCoordinator.claimFocus('session');
     const requestSeq = ++playbackRequestSeqRef.current;
-    const approvedReciterId = resolveApprovedOfflineReciterId(profile.preferredReciter);
+    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
     const globalAyah = computeGlobalAyahNumber(surahNumber, currentAyah.numberInSurah);
-    const fallbackUrl = formatAyahAudioUrl(surahNumber, currentAyah.numberInSurah, profile.preferredReciter);
+    const fallbackUrl = formatAyahAudioUrl(surahNumber, currentAyah.numberInSurah, activeReciter);
     const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
       approvedReciterId,
       globalAyah,
@@ -485,6 +590,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       setIsPlaying(false);
       setIsAudioLoading(false);
       revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('session');
     };
 
     audio.play().catch(e => {
@@ -496,6 +602,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       setIsPlaying(false);
       setIsAudioLoading(false);
       revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('session');
     });
 
     attachAyahRepeatHandler(
@@ -510,6 +617,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         setIsPlaying(false);
         setIsAudioLoading(false);
         revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('session');
+        setCumulativeProgress(prev => recordListeningProgress(prev, currentAyahIndexRef.current, false));
       },
       () => {
         if (audioRef.current !== audio) return;
@@ -519,6 +628,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         setIsPlaying(false);
         setIsAudioLoading(false);
         revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('session');
       }
     );
   };
@@ -530,12 +640,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   ) => {
     if (!sessionAyahs.length || startIdx > endIdx) return;
     handleStopAudio();
+    globalAudioCoordinator.claimFocus('session');
     const requestSeq = ++playbackRequestSeqRef.current;
-    const approvedReciterId = resolveApprovedOfflineReciterId(profile.preferredReciter);
+    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
 
     const tracks = await Promise.all(
       sessionAyahs.map(async ayah => {
-        const fallbackUrl = formatAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter);
+        const fallbackUrl = formatAyahAudioUrl(surahNumber, ayah.numberInSurah, activeReciter);
         const globalAyah = computeGlobalAyahNumber(surahNumber, ayah.numberInSurah);
         const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
           approvedReciterId,
@@ -582,16 +693,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         setIsCumulativePlaying(false);
         setSegmentProgress(null);
         revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('session');
         if (options.cumulativeMode && typeof options.returnToIndex === 'number') {
-          setMasteredIndices(prev => {
-            const next = new Set(prev);
-            next.add(options.returnToIndex!);
-            return next;
-          });
-          if (options.returnToIndex < sessionAyahs.length - 1) {
-            queueAdvanceRef.current = false;
-            setCurrentAyahIndex(options.returnToIndex + 1);
-          }
+          // Audio playback records listening/cumulative-bridge familiarity ONLY;
+          // mastery requires explicit recall verification + confirmation.
+          const targetIdx = options.returnToIndex;
+          setCumulativeProgress(prev => recordListeningProgress(prev, targetIdx, true));
+          queueAdvanceRef.current = true;
+          currentAyahIndexRef.current = targetIdx;
+          setCurrentAyahIndex(targetIdx);
         }
       },
       onError: error => {
@@ -603,6 +713,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         setIsCumulativePlaying(false);
         setSegmentProgress(null);
         revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('session');
       }
     });
     segmentAudioQueueRef.current = controller;
@@ -626,6 +737,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       setIsCumulativePlaying(false);
       setSegmentProgress(null);
       revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('session');
       console.warn('[WIRD Session] Could not start segment audio:', error);
     }
   };
@@ -633,16 +745,26 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   const handleToggleSegmentAudio = () => {
     const activeQueue = segmentAudioQueueRef.current;
     if (activeQueue?.getState().active && !isCumulativePlaying) {
-      if (activeQueue.getState().paused) { activeQueue.resume(); setIsSegmentPaused(false); }
-      else activeQueue.pause();
+      if (activeQueue.getState().paused) {
+        globalAudioCoordinator.claimFocus('session');
+        activeQueue.resume();
+        setIsSegmentPaused(false);
+      } else {
+        activeQueue.pause();
+        globalAudioCoordinator.releaseFocus('session');
+      }
       return;
     }
     void startRangeQueuePlayback(segmentStartIndex, segmentEndIndex, { cumulativeMode: false });
   };
 
   const cumulativeStartIndex = useMemo(
-    () => (cumulativeWindow === 'last_5' ? Math.max(0, currentAyahIndex - 4) : 0),
-    [cumulativeWindow, currentAyahIndex]
+    () => (
+      cumulativeProgress.windowMode === 'last_n'
+        ? Math.max(0, currentAyahIndex - cumulativeProgress.windowSize + 1)
+        : 0
+    ),
+    [cumulativeProgress.windowMode, cumulativeProgress.windowSize, currentAyahIndex]
   );
 
   const handleCumulativeLinkPlayback = () => {
@@ -654,6 +776,25 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       cumulativeMode: true,
       returnToIndex: currentAyahIndex
     });
+  };
+
+  const handleVerifyRecallForCurrentAyah = () => {
+    setMasteryFeedback(null);
+    setCumulativeProgress(prev => recordRecallVerification(prev, currentAyahIndex));
+  };
+
+  const handleConfirmCurrentAyahMastery = () => {
+    const outcome = confirmAyahMastery(cumulativeProgress, currentAyahIndex);
+    if (!outcome.confirmed) {
+      setMasteryFeedback(outcome.reasonAr || 'تحقق من الاسترجاع بدون نظر أولاً قبل تثبيت الإتقان.');
+      return;
+    }
+    setMasteryFeedback(null);
+    setCumulativeProgress(outcome.state);
+    if (currentAyahIndex < sessionAyahs.length - 1) {
+      handleStopAudio();
+      setCurrentAyahIndex(prev => prev + 1);
+    }
   };
 
   const handleCaptureWeakVerse = async () => {
@@ -759,32 +900,40 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     });
   };
 
+  const finalizeSessionCompletion = async () => {
+    handleStopAudio();
+    if (completionInProgressRef.current) return;
+    completionInProgressRef.current = true;
+    const minutesSpent = Math.max(1, Math.round(secondsElapsed / 60));
+    try {
+      const saved = await onCompleteSession(
+        mode === 'memorize' ? sessionAyahs.length : 0,
+        mode === 'review' ? Math.max(1, new Set(sessionAyahs.map(ayah => ayah.page)).size) : 0,
+        minutesSpent,
+        `${mode === 'review' ? 'مراجعة' : 'إتمام حفظ'} سورة ${surahMeta.name} الآيات (${sessionAyahs[0]?.numberInSurah}-${sessionAyahs[sessionAyahs.length - 1]?.numberInSurah})`,
+        mode
+      );
+      if (!saved) { completionInProgressRef.current = false; return; }
+      handleStopAudio();
+      setIsCompleted(true);
+    } catch (error) {
+      completionInProgressRef.current = false;
+      console.error('[WIRD Session] Completion persistence failed:', error);
+    }
+  };
+
   // Next / Previous Ayah (Semantic RTL: Next is on Left, Prev is on Right)
   const handleNextAyah = async () => {
     if (currentAyahIndex < sessionAyahs.length - 1) {
       handleStopAudio();
       setCurrentAyahIndex(prev => prev + 1);
-    } else {
-      handleStopAudio();
-      if (completionInProgressRef.current) return;
-      completionInProgressRef.current = true;
-      const minutesSpent = Math.max(1, Math.round(secondsElapsed / 60));
-      try {
-        const saved = await onCompleteSession(
-          mode === 'memorize' ? sessionAyahs.length : 0,
-          mode === 'review' ? Math.max(1, new Set(sessionAyahs.map(ayah => ayah.page)).size) : 0,
-          minutesSpent,
-          `${mode === 'review' ? 'مراجعة' : 'إتمام حفظ'} سورة ${surahMeta.name} الآيات (${sessionAyahs[0]?.numberInSurah}-${sessionAyahs[sessionAyahs.length - 1]?.numberInSurah})`,
-          mode
-        );
-        if (!saved) { completionInProgressRef.current = false; return; }
-        handleStopAudio();
-        setIsCompleted(true);
-      } catch (error) {
-        completionInProgressRef.current = false;
-        console.error('[WIRD Session] Completion persistence failed:', error);
-      }
+      return;
     }
+    if (studyMethod === 'cumulative_linking' && !cumulativeProgress.finalSegmentConfirmed) {
+      setAwaitingFinalConfirm(true);
+      return;
+    }
+    await finalizeSessionCompletion();
   };
 
   const handlePrevAyah = () => {
@@ -836,12 +985,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     updateDisplayPreferences({ mushafStyle: 'connected' });
   }, [updateDisplayPreferences]);
 
-  const isMaskingDisabled = displayPreferences.viewMode !== 'focused';
-
   const handleMaskLevelChange = useCallback((nextLevel: number) => {
-    if (displayPreferences.viewMode !== 'focused' && nextLevel > 0) return;
+    if (isMaskingDisabled && nextLevel > 0) return;
     setMaskLevel(nextLevel);
-  }, [displayPreferences.viewMode]);
+  }, [isMaskingDisabled]);
 
   if (isLoadingAyahs) {
     return (
@@ -1372,6 +1519,20 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] sm:col-span-2">
+                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">القارئ المعتمد</span>
+                  <select
+                    aria-label="اختيار القارئ في الجلسة"
+                    value={activeReciter}
+                    onChange={event => handleReciterChange(event.target.value as ReciterId)}
+                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  >
+                    {RECITERS.map(reciter => (
+                      <option key={reciter.id} value={reciter.id}>{reciter.name}</option>
+                    ))}
+                  </select>
+                </label>
+
                 <div className="flex flex-col justify-end">
                   <AudioPlaybackRateControl value={playbackRate} onChange={handlePlaybackRateChange} />
                 </div>
@@ -1528,13 +1689,20 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
             {displayPreferences.mushafStyle === 'printed' ? (
               <div className="space-y-4">
-                <QuranMushafFacsimilePage
-                  page={printedPage}
-                  onAyahsResolved={handlePrintedAyahsResolved}
+                <PrintedMushafSpread
+                  surface="session"
+                  anchorPage={printedPage}
                   selectedAyah={currentAyah}
-                  onSelectAyah={handlePrintedSelectAyah}
+                  onSelectAyah={(ayah: Ayah | null) => {
+                    if (ayah) handlePrintedSelectAyah(ayah);
+                  }}
+                  tafsirAyah={printedTafsirAyah}
+                  onTafsirAyahChange={(nextAyah: Ayah | null) => {
+                    setPrintedTafsirAyah(nextAyah);
+                    if (nextAyah) handlePrintedSelectAyah(nextAyah);
+                  }}
+                  onAyahsResolved={handlePrintedAyahsResolved}
                   onFallback={handlePrintedFallback}
-                  maxWidthClass={displayPreferences.pageWidth === 'full' ? 'max-w-none' : displayPreferences.pageWidth === 'wide' ? 'max-w-5xl' : 'max-w-3xl'}
                 />
 
                 {outOfRangeNotice && (
@@ -1580,6 +1748,29 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   >
                     {sessionAyahs.map((ayah, index) => {
                       const isActive = index === currentAyahIndex;
+                      const isMastered = masteredIndices.has(index);
+                      if (isActive && maskLevel > 0) {
+                        return (
+                          <span
+                            key={ayah.numberInSurah}
+                            id="active-connected-ayah"
+                            className="inline-flex flex-wrap items-center gap-x-2 gap-y-2 rounded-xl bg-[#1C4E46]/10 dark:bg-[#1E4A47]/65 ring-1 ring-[#C59B27]/60 mx-1 px-2.5 py-1 align-baseline"
+                          >
+                            {renderMaskedWords()}
+                            <button
+                              ref={activePageAyahRef}
+                              type="button"
+                              aria-pressed={true}
+                              aria-label={`الآية ${ayah.numberInSurah}`}
+                              onClick={() => setMaskLevel(0)}
+                              title="اضغط لإظهار نص الآية كاملاً"
+                              className="ayah-number cursor-pointer"
+                            >
+                              {ayah.numberInSurah}
+                            </button>
+                          </span>
+                        );
+                      }
                       return (
                         <button
                           ref={isActive ? activePageAyahRef : undefined}
@@ -1594,7 +1785,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                           className={`inline text-right rounded-xl transition-colors cursor-pointer mx-0.5 px-1.5 py-0.5 ${
                             isActive
                               ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/65 ring-1 ring-[#C59B27]/60'
-                              : 'hover:bg-[#1C4E46]/5 dark:hover:bg-[#162744]/70'
+                              : isMastered
+                                ? 'bg-[#C59B27]/8 dark:bg-[#E0A96D]/10 hover:bg-[#1C4E46]/8'
+                                : 'hover:bg-[#1C4E46]/5 dark:hover:bg-[#162744]/70'
                           }`}
                         >
                           <span>{pageDisplayTexts[index]}</span>
@@ -1633,7 +1826,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
         {/* Merged Word Masking & Manual Repetition Toolbar directly below Quran text */}
         <div className="wird-card rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5">
-          {/* Masking Controls (Focused Single-Ayah Only) */}
+          {/* Masking Controls (Enabled in both Connected and Focused views; disabled only in Printed facsimile view) */}
           <div className="flex flex-col gap-2 text-xs">
             <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5">
               <div className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold">
@@ -1661,7 +1854,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     aria-disabled={isMaskingDisabled}
                     aria-pressed={!isMaskingDisabled && maskLevel === m.level}
                     onClick={() => handleMaskLevelChange(m.level)}
-                    title={isMaskingDisabled ? 'التسميع بالإخفاء متاح في وضع آية واحدة فقط' : undefined}
+                    title={isMaskingDisabled ? 'أوقف وضع المصحف المطبوع لتفعيل الإخفاء التفاعلي على الآية الحالية' : undefined}
                     className={`min-h-11 px-3 py-1.5 rounded-lg font-bold transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${
                       !isMaskingDisabled && maskLevel === m.level
                         ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
@@ -1676,13 +1869,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
             {isMaskingDisabled && (
               <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
-                <span>الإخفاء متاح في وضع آية واحدة فقط</span>
+                <span>الإخفاء التفاعلي متاح في العرض المتصل وآية واحدة</span>
                 <button
                   type="button"
-                  onClick={() => updateDisplayPreferences({ viewMode: 'focused' })}
+                  onClick={() => updateDisplayPreferences({ mushafStyle: 'connected' })}
                   className="min-h-11 px-3 py-1.5 rounded-xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30 bg-white dark:bg-[#111F36] text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:border-[#C59B27] transition-colors whitespace-nowrap"
                 >
-                  التبديل إلى آية واحدة
+                  العودة للعرض المتصل
                 </button>
               </div>
             )}
@@ -1735,7 +1928,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 <button
                   type="button"
                   aria-pressed={studyMethod === 'free'}
-                  onClick={() => setStudyMethod('free')}
+                  onClick={() => setStudyMethod(saveStudyMethod(surahNumber, startAyah, endAyah, 'free'))}
                   className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border transition-colors whitespace-nowrap ${
                     studyMethod === 'free'
                       ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
@@ -1747,7 +1940,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 <button
                   type="button"
                   aria-pressed={studyMethod === 'cumulative_linking'}
-                  onClick={() => setStudyMethod('cumulative_linking')}
+                  onClick={() => setStudyMethod(saveStudyMethod(surahNumber, startAyah, endAyah, 'cumulative_linking'))}
                   className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${
                     studyMethod === 'cumulative_linking'
                       ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
@@ -1800,7 +1993,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-[#142421] dark:text-[#F5F1E8]">
                   <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
-                    مسار التثبيت والربط:
+                    مسار التثبيت والربط الخماسي:
                   </span>
                   <span className="font-mono tabular-nums">
                     المتقنة {masteredIndices.size}/{sessionAyahs.length}
@@ -1810,10 +2003,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
-                    aria-pressed={cumulativeWindow === 'from_start'}
-                    onClick={() => setCumulativeWindow('from_start')}
+                    aria-pressed={cumulativeProgress.windowMode === 'from_start'}
+                    onClick={() => setCumulativeProgress(prev => ({ ...prev, windowMode: 'from_start' }))}
                     className={`min-h-11 px-2.5 py-1 rounded-lg border text-[11px] font-bold whitespace-nowrap ${
-                      cumulativeWindow === 'from_start'
+                      cumulativeProgress.windowMode === 'from_start'
                         ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/50 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
                         : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
                     }`}
@@ -1822,68 +2015,112 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   </button>
                   <button
                     type="button"
-                    aria-pressed={cumulativeWindow === 'last_5'}
-                    onClick={() => setCumulativeWindow('last_5')}
+                    aria-pressed={cumulativeProgress.windowMode === 'last_n'}
+                    onClick={() => setCumulativeProgress(prev => ({ ...prev, windowMode: 'last_n' }))}
                     className={`min-h-11 px-2.5 py-1 rounded-lg border text-[11px] font-bold whitespace-nowrap ${
-                      cumulativeWindow === 'last_5'
+                      cumulativeProgress.windowMode === 'last_n'
                         ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/50 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
                         : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
                     }`}
                   >
-                    آخر 5 آيات
+                    آخر {cumulativeProgress.windowSize} آيات
                   </button>
+                  {cumulativeProgress.windowMode === 'last_n' && (
+                    <select
+                      aria-label="عدد آيات نافذة الربط التراكمي"
+                      value={cumulativeProgress.windowSize}
+                      onChange={event => setCumulativeProgress(prev => ({
+                        ...prev,
+                        windowSize: Number(event.target.value) as CumulativeWindowSize
+                      }))}
+                      className="min-h-11 rounded-lg border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-2 text-[11px] font-bold text-[#142421] dark:text-[#F5F1E8]"
+                    >
+                      {CUMULATIVE_WINDOW_SIZES.map(size => (
+                        <option key={size} value={size}>{size} آيات</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                <div className={`p-2.5 rounded-xl border ${repeatCount < Math.ceil(targetRepeats * 0.4) ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
-                  1. استماع وتكرار ({repeatCount}/{Math.ceil(targetRepeats * 0.4)})
-                </div>
-                <div className={`p-2.5 rounded-xl border ${repeatCount >= Math.ceil(targetRepeats * 0.4) && maskLevel < 3 ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
-                  2. تسميع بالإخفاء التدرجي ({maskLevel === 0 ? 'مظهرة' : maskLevel === 1 ? '30%' : maskLevel === 2 ? '60%' : '100%'})
-                </div>
-                <div className={`p-2.5 rounded-xl border ${masteredIndices.has(currentAyahIndex) || maskLevel === 3 ? 'border-[#C59B27] bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
-                  3. الربط التراكمي ({sessionAyahs[cumulativeStartIndex]?.numberInSurah}–{currentAyah.numberInSurah})
-                </div>
-              </div>
+              {(() => {
+                const activeStage: AyahMemorizationStage =
+                  cumulativeProgress.stageByIndex[currentAyahIndex] || 'listen_repeat';
+                const isRecallVerified = recallVerifiedIndices.has(currentAyahIndex);
+                const isMastered = masteredIndices.has(currentAyahIndex);
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px]">
+                    <div className={`p-2 rounded-xl border ${activeStage === 'listen_repeat' ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      1. استماع وتكرار ({repeatCount}/{Math.ceil(targetRepeats * 0.4)})
+                    </div>
+                    <div className={`p-2 rounded-xl border ${activeStage === 'conceal_recall' ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      2. تسميع بالإخفاء ({maskLevel === 0 ? 'مظهرة' : maskLevel === 1 ? '30%' : maskLevel === 2 ? '60%' : '100%'})
+                    </div>
+                    <div className={`p-2 rounded-xl border ${isRecallVerified ? 'border-[#1C4E46]/50 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 font-bold text-[#1C4E46] dark:text-[#E0A96D]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      3. {isRecallVerified ? 'تم تحقق الاسترجاع' : 'تحقق الاسترجاع'}
+                    </div>
+                    <div className={`p-2 rounded-xl border ${activeStage === 'cumulative_bridge' || activeStage === 'connected_loop' ? 'border-[#C59B27] bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      4. الربط ({sessionAyahs[cumulativeStartIndex]?.numberInSurah}–{currentAyah.numberInSurah})
+                    </div>
+                    <div className={`p-2 rounded-xl border ${isMastered ? 'border-[#C59B27] bg-[#C59B27]/18 dark:bg-[#E0A96D]/20 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      5. {isMastered ? 'متقنة ومثبتة' : 'تثبيت الإتقان'}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {masteryFeedback && (
+                <p role="alert" className="text-xs font-semibold text-amber-800 dark:text-[#E0A96D]">
+                  {masteryFeedback}
+                </p>
+              )}
 
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={handleCumulativeLinkPlayback}
-                  disabled={!sessionAyahs.length}
-                  className={`min-h-11 px-4 py-2 rounded-xl font-bold inline-flex items-center gap-2 whitespace-nowrap transition-colors ${
-                    isCumulativePlaying
-                      ? 'bg-[#C59B27] text-[#0B132B]'
-                      : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
-                  }`}
-                >
-                  <Link2 className="w-4 h-4 shrink-0" />
-                  <span>
-                    {isCumulativePlaying
-                      ? 'إيقاف الربط التراكمي'
-                      : `تشغيل الربط التراكمي (الآيات ${sessionAyahs[cumulativeStartIndex]?.numberInSurah ?? startAyah}–${currentAyah.numberInSurah})`}
-                  </span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleVerifyRecallForCurrentAyah}
+                    className={`min-h-11 px-3.5 py-2 rounded-xl border font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+                      recallVerifiedIndices.has(currentAyahIndex)
+                        ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/60 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
+                        : 'bg-white dark:bg-[#0B132B] border-[#1C4E46]/25 dark:border-[#E0A96D]/30 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                    }`}
+                  >
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                    <span>
+                      {recallVerifiedIndices.has(currentAyahIndex)
+                        ? 'تم التحقق من الاسترجاع'
+                        : 'تحقق من الاسترجاع بدون نظر'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCumulativeLinkPlayback}
+                    disabled={!sessionAyahs.length}
+                    className={`min-h-11 px-4 py-2 rounded-xl font-bold inline-flex items-center gap-2 whitespace-nowrap transition-colors ${
+                      isCumulativePlaying
+                        ? 'bg-[#C59B27] text-[#0B132B]'
+                        : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
+                    }`}
+                  >
+                    <Link2 className="w-4 h-4 shrink-0" />
+                    <span>
+                      {isCumulativePlaying
+                        ? 'إيقاف الربط التراكمي'
+                        : `تشغيل الربط التراكمي (الآيات ${sessionAyahs[cumulativeStartIndex]?.numberInSurah ?? startAyah}–${currentAyah.numberInSurah})`}
+                    </span>
+                  </button>
+                </div>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setMasteredIndices(prev => {
-                      const next = new Set(prev);
-                      next.add(currentAyahIndex);
-                      return next;
-                    });
-                    if (currentAyahIndex < sessionAyahs.length - 1) {
-                      handleStopAudio();
-                      setCurrentAyahIndex(prev => prev + 1);
-                    }
-                  }}
-                  className="min-h-11 px-4 py-2 rounded-xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30 bg-white dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D] font-bold inline-flex items-center gap-1.5 whitespace-nowrap hover:border-[#C59B27] transition-colors"
+                  onClick={handleConfirmCurrentAyahMastery}
+                  className="min-h-11 px-4 py-2 rounded-xl border border-[#C59B27]/60 dark:border-[#E0A96D]/45 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1.5 whitespace-nowrap hover:border-[#C59B27] transition-colors"
                 >
-                  <Check className="w-4 h-4 shrink-0" />
+                  <Check className="w-4 h-4 shrink-0 text-[#1C4E46] dark:text-[#E0A96D]" />
                   <span>
-                    {currentAyahIndex < sessionAyahs.length - 1 ? 'إتقان والانتقال للتالية' : 'تسجيل إتقان الآية'}
+                    {currentAyahIndex < sessionAyahs.length - 1 ? 'تثبيت الإتقان والانتقال للتالية' : 'تثبيت إتقان الآية'}
                   </span>
                 </button>
               </div>
@@ -1979,6 +2216,44 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
       {/* 4. Collapsed Ayah Tafsir Accordion */}
       <SessionTafsirPanel ayah={currentAyah} />
+
+      {/* Explicit Final Segment Confirmation Banner when in Cumulative Linking Mode */}
+      {awaitingFinalConfirm && studyMethod === 'cumulative_linking' && !cumulativeProgress.finalSegmentConfirmed && (
+        <section
+          role="region"
+          aria-label="تأكيد إتمام المقطع المتصل"
+          className="wird-card rounded-2xl border border-[#C59B27]/50 dark:border-[#E0A96D]/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+        >
+          <div className="space-y-1">
+            <h4 className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+              تأكيد الربط الختامي للورد ({sessionAyahs[0]?.numberInSurah ?? startAyah}–{sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah})
+            </h4>
+            <p className="text-[#5B6F6B] dark:text-[#8B9E9B]">
+              أكّد تسميع ومراجعة كامل مقطع الجلسة متصلاً قبل تسجيل إتمام جلسة الحفظ. (الآيات المثبتة: {masteredIndices.size}/{sessionAyahs.length})
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAwaitingFinalConfirm(false)}
+              className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 font-bold text-[#142421] dark:text-[#F5F1E8]"
+            >
+              مراجعة إضافية
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCumulativeProgress(prev => confirmFinalSegmentMastery(prev));
+                setAwaitingFinalConfirm(false);
+                void finalizeSessionCompletion();
+              }}
+              className="min-h-11 px-4 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#E0A96D] dark:text-[#0B132B] text-white font-bold"
+            >
+              تأكيد إتمام كامل المقطع
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* 5. Sticky Session Navigation */}
       <div

@@ -64,6 +64,8 @@ import { runEnginePlanArchiveTests } from '../services/enginePlanArchive.test';
 import { runOfflineQuranAudioLibraryTests } from '../services/offlineQuranAudioLibrary.test';
 import { runPlanMissedDayRecoveryTests } from '../services/planMissedDayRecovery.test';
 import { runTestQuestionGeneratorTests } from '../services/testQuestionGenerator.test';
+import { runMushafSpreadServiceTests } from '../services/mushafSpreadService.test';
+import { runCumulativeLinkingServiceTests } from '../services/cumulativeLinkingService.test';
 
 export interface SuiteResult {
   passed: number;
@@ -175,6 +177,8 @@ async function main() {
     { name: 'Unified Offline Audio Store, Concurrency, Quota Preflight & Local Playback', runner: runOfflineQuranAudioLibraryTests },
     { name: 'Hybrid Missed-Day Plan Detection & Recovery Actions', runner: runPlanMissedDayRecoveryTests },
     { name: 'Memorization Test Fill-Blank Words & Scope Filters', runner: runTestQuestionGeneratorTests },
+    { name: 'Two-Page Printed Mushaf Spread Math & Surface Preferences', runner: runMushafSpreadServiceTests },
+    { name: '5-Stage Cumulative Linking Memorization Engine & Recall Gate', runner: runCumulativeLinkingServiceTests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);

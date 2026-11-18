@@ -35,7 +35,7 @@ export function runSessionStudyUiTests(): { passed: number; failed: number } {
     assert(session.includes('إعدادات العرض والصوت'), 'unified settings toggle must be present');
     assert(session.includes('aria-label="إعدادات عرض جلسة الحفظ"') && session.includes('aria-label="إعدادات الصوت والمقطع الصوتي"'), 'unified settings grid must group display and audio controls clearly');
     assert(session.includes('wird:memorization-display-panel-open:v1'), 'settings drawer open state must persist cleanly');
-    assert(session.includes('<QuranMushafFacsimilePage') && session.includes('mushaf-page-frame'), 'all-ayahs view must offer both printed facsimile and connected Mushaf frame');
+    assert(session.includes('<PrintedMushafSpread') && session.includes('mushaf-page-frame'), 'all-ayahs view must offer both shared printed spread and connected Mushaf frame');
     assert(header.includes("currentTab !== 'dashboard' && currentTab !== 'session'"), 'header must hide redundant session shortcut inside an active session');
   });
   test('whole-session verified text loader waits for loaded sessionAyahs and uses bounded session bounds', () => {
@@ -53,7 +53,7 @@ export function runSessionStudyUiTests(): { passed: number; failed: number } {
       'whole-session Tanzil Simple loader must query the exact loaded session ayah bounds'
     );
   });
-  test('session isolates word masking strictly to Single-Ayah view, keeps All-Ayahs uninterrupted, and verifies tokenized Quran text', () => {
+  test('session supports inline word masking across connected & focused views (disabled only in printed spread) and verifies tokenized Quran text', () => {
     const session = read('src/components/session/MemorizationSessionView.tsx');
     const library = read('src/components/library/QuranLibraryView.tsx');
     const testsView = read('src/components/tests/MemorizationTestsView.tsx');
@@ -72,14 +72,13 @@ export function runSessionStudyUiTests(): { passed: number; failed: number } {
       'library must remove the 10-ayah cap and offer custom/full range selection'
     );
     assert(
-      !session.includes('تسميع الآية {currentAyah.numberInSurah}') &&
-      !session.includes('renderMaskedWords(true)') &&
-      session.includes('const isMaskingDisabled = displayPreferences.viewMode !== \'focused\';') &&
+      session.includes("const isMaskingDisabled = displayPreferences.viewMode === 'page' && displayPreferences.mushafStyle === 'printed';") &&
       session.includes('disabled={isMaskingDisabled}') &&
-      session.includes('التبديل إلى آية واحدة') &&
+      session.includes('العودة للعرض المتصل') &&
+      session.includes('active-connected-ayah') &&
       session.includes('tokenized.join(\' \') !== normalizedInput') &&
       session.includes("'•'.repeat(dotCount)"),
-      'word masking must be scoped strictly to single-ayah view with disabled controls + quick switch in all-ayahs mode and runtime round-trip verification'
+      'word masking must support connected + single-ayah views, disable cleanly in printed SVG spread, and verify runtime tokenization'
     );
     assert(
       testsView.includes('const finalScore = score;') &&

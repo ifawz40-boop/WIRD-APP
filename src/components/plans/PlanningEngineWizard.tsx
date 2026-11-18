@@ -1501,11 +1501,21 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             ({day.dayNameAr})
                           </span>
                           <span className="text-[#5B6F6B]">·</span>
-                          {isDone ? (
-                            <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] inline-flex items-center gap-1">
-                              <Check className="w-3.5 h-3.5" /> تم الحفظ
-                            </span>
-                          ) : (
+                          {isDone ? (() => {
+                            const task = day.memorizationTask!;
+                            const completedDate = task.completedDate || (typeof task.completedAt === 'string' ? task.completedAt.slice(0, 10) : day.date);
+                            const timing = task.completionTiming || (completedDate < day.date ? 'completed_early' : completedDate === day.date ? 'completed_on_time' : 'completed_late');
+                            const timingLabel = timing === 'completed_early'
+                              ? 'تم الحفظ مبكراً'
+                              : timing === 'completed_late'
+                                ? 'تم الحفظ متأخراً'
+                                : 'تم الحفظ في موعده';
+                            return (
+                              <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] inline-flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> {timingLabel}
+                              </span>
+                            );
+                          })() : (
                             <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
                               قيد الإنجاز
                             </span>

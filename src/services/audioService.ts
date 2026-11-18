@@ -76,6 +76,23 @@ export function getLicensedAyahAudioUrl(
   };
 }
 
+export function getAyahAudioPlaybackUrl(
+  surahNumber: number,
+  ayahNumberInSurah: number,
+  reciterOrRuqyahId: string = 'alafasy'
+): LicensedAyahAudioDescriptor {
+  const globalAyahNumber = computeGlobalAyahNumber(surahNumber, ayahNumberInSurah);
+  if (reciterOrRuqyahId.startsWith('ar.')) {
+    return {
+      url: buildQuranAyahAudioUrl(reciterOrRuqyahId, globalAyahNumber),
+      approvedReciterId: reciterOrRuqyahId,
+      globalAyahNumber,
+      streamOnly: false
+    };
+  }
+  return getLicensedAyahAudioUrl(surahNumber, ayahNumberInSurah, reciterOrRuqyahId as ReciterId);
+}
+
 /**
  * Ask the active service worker to persist the next short recitation segment.
  * This is opportunistic: playback never waits for caching, and the worker

@@ -30,6 +30,8 @@ export interface ScheduledTaskUnit {
   estimatedMinutes: number;
   completed: boolean;
   completedAt?: string;
+  completedDate?: string; // YYYY-MM-DD of actual completion
+  completionTiming?: 'completed_early' | 'completed_on_time' | 'completed_late';
   userRating?: 'strong' | 'medium' | 'weak';
 }
 

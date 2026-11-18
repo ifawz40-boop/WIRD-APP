@@ -16,7 +16,7 @@ export const DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES: Readonly<MemorizationDisp
   fontSize: 32,
   uiScale: 100,
   density: 'comfortable',
-  viewMode: 'focused',
+  viewMode: 'page',
   mushafStyle: 'connected',
   pageWidth: 'comfortable'
 };

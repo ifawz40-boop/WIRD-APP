@@ -1,6 +1,6 @@
 # WIRD UX Page and Tool Map
 
-Baseline: current repository UX inventory reviewed 2026-11-11. Proposed destinations are explicitly marked; they are not claims about existing navigation.
+Baseline: Master UX Restructuring & Connected Quran Experience reconciled in AI Studio workspace (2026-11-18).
 
 ## Non-negotiable design rules
 - WIRD's verified local Quran corpus remains authoritative for text, coordinates, audio identity, tafsir references, bookmarks, and progress.
@@ -11,21 +11,21 @@ Baseline: current repository UX inventory reviewed 2026-11-11. Proposed destinat
 - Any Seerah lesson, historical claim, date, map marker, or quiz answer must link to a reviewed source record. Do not publish AI-generated historical/religious content.
 - Do not depict the Prophet ﷺ or Companions; use abstract patterns, landscapes, verified maps, calligraphy, and non-figurative illustrations.
 
-## Current pages
+## Current pages & connected experience map
 
-| Page | Tab | Main tools | Priority |
-|---|---|---|---:|
-| Home | `dashboard` | Daily task, due revision, Quran progress, weekly activity, quick actions | 1 |
-| Quran library / Mushaf | `library` | Surah/page navigation, text, audio, tafsir, bookmarks, display controls | 2 |
-| Memorization session | `session` | Ayah range, repeat, masking, audio, tafsir, completion | 3 |
-| Revision center | `revision` | Due portions, review scheduling, weak ayahs | 4 |
-| Memorization plans | `plans` | User and generated plans | 5 |
-| Memorization tests | `tests` | Complete ayah, reverse recall, random recall, mutashabihat | 6 |
-| Progress | `progress` | Persisted activity and memorization/revision metrics | 7 |
-| Quran advisor | `advisor` | Plan-aware memorization guidance | 8 |
-| Ruqyah | `ruqyah` | Ruqyah reading and audio | 9 |
-| Settings | `settings` | Profile, preferences, backup, account and sync controls | 10 |
-| Brand showcase | `showcase` | Internal design reference; keep out of normal navigation | Exclude |
+| Page | Tab | Main tools | Integration & UX restructuring (2026-11-18) | Priority |
+|---|---|---|---|---:|
+| Home (`وردك اليوم`) | `dashboard` | Unified multi-plan due tasks (`getUnifiedDailyHubSummary`), overdue/early timing, missed-day recovery across all active plans, due revision + urgent weak verses shortcut, separated 5-metric summary (`ReadingKhatma` separate), weekly chart, quick actions | Unified `"وردك اليوم"` multi-plan hub replaces fragmented plan/task views; strict 5-metric clarity | 1 |
+| Quran library / Mushaf | `library` | Surah/page/Juz/Hizb navigation, flexible flow & shared 2-page RTL `<PrintedMushafSpread surface="library">`, dual-option Tafsir (`TafsirContentPane` slide-over OR opposite-page replacement with `العودة لصفحة المصحف`, prev/next ayah stepping, page index), bookmarks, display & offline audio downloads, separate `ReadingKhatmaPanel` | Instant reciter/rate/repeat sync via `audioPreferences`; single-player focus via `globalAudioCoordinator` | 2 |
+| Memorization session | `session` | Connected-first default (`viewMode: 'page'`), inline word masking directly in connected AND focused modes (disabled only in printed spread), shared 2-page `<PrintedMushafSpread surface="session">`, durable 5-stage anti-shortcut Cumulative Linking (`cumulativeLinkingService`, selectable `from_start` / `last_n` `3|5|7|10` window, recall-verified mastery gate), unified display+reciter+audio drawer, quick weak-verse capture | Single connected study environment bridging Mushaf, Tafsir, Audio, Word Masking, and Revision | 3 |
+| Revision center | `revision` | Prioritized daily spaced-repetition queue, weekly schedule, explicit weak-verses resolution, audit history, retention gauges | Explicit confirmation only for weak-verse resolution; clear separation of memorized vs reviewed vs weak | 4 |
+| Memorization plans | `plans` | Smart Planning Engine wizard, hybrid missed-day recovery (shift/light/rebalance), schedule timing (`تم الحفظ مبكراً` / `في موعده` / `متأخراً`), preset plans | Every active plan surfaces into `"وردك اليوم"` on Home; early/late timing persisted on completion | 5 |
+| Memorization tests | `tests` | Complete ayah, fill-blank words, reverse recall, random recall, curated mutashabihat, scope filters (`all` / `surah` / `weak_priority`) | Accessible from Home quick actions & post-memorization loop | 6 |
+| Progress | `progress` | 604-page visual Mushaf map + 30-Juz overview, separated 5-metric summary (including standalone Reading Khatma pages), verified backup export/import | Eliminates conflation between memorized pages and Reading Khatma | 7 |
+| Quran advisor | `advisor` | Plan-aware guidance & schedule calculator (604 pages) | Connected to Revision & Plans | 8 |
+| Ruqyah | `ruqyah` | Canonical Quran Ruqyah + authentic adhkar & guidelines, unified audio queue & reciter selector | Live synced reciter preferences & `globalAudioCoordinator` focus lock | 9 |
+| Settings | `settings` | Profile, unified reciter/rate/repeat defaults, 252-asset offline preparation & audio library, backup/restore, account & sync status | Device-local display preferences kept separate from synced user records | 10 |
+| Brand showcase | `showcase` | Internal design reference; keep out of normal navigation | — | Exclude |
 
 ## Proposed second core learning feature — كتاب «حكاية السيرة»
 

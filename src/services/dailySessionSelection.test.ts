@@ -2,8 +2,11 @@ import {
   getDailySessionSelection,
   getNextDueEngineTask,
   getNextPresetMemorizationRange,
+  getAllActiveEngineTasks,
+  getUnifiedDailyHubSummary,
   isPresetAutoStartSupported
 } from './dailySessionSelection';
+import { PlanLifecycle } from './planLifecycle';
 import type { EngineGeneratedPlan, ScheduledDayPlan, ScheduledTaskUnit } from './planningEngine';
 import type { MemorizationPlan, WirdPortion } from '../types/quran';
 import { ALL_SURAHS } from '../data/quranMeta';
@@ -169,6 +172,45 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     const plan = makePreset({ type: 'juz', targetJuz: [29] });
     const selection = getDailySessionSelection([plan], [], [], '2026-11-05');
     assert(selection.kind === 'blocked', 'Unsupported Juz plan must not silently start an unrelated range');
+  });
+
+  test('Multi-plan hub collects all active plans due tasks without showing future tasks and tracks early completion timing', () => {
+    const planA = makeEnginePlan(
+      [
+        makeDay('2026-11-05', makeTask(67)),
+        makeDay('2026-11-06', makeTask(68))
+      ],
+      { id: 'plan-a', title: 'خطة الملك', input: { title: 'خطة الملك' } as EngineGeneratedPlan['input'] }
+    );
+    const planB = makeEnginePlan(
+      [
+        makeDay('2026-11-04', makeTask(78)),
+        makeDay('2026-11-07', makeTask(79))
+      ],
+      { id: 'plan-b', title: 'خطة النبأ', input: { title: 'خطة النبأ' } as EngineGeneratedPlan['input'] }
+    );
+    const planBCompletedEarly = PlanLifecycle.updateTask(
+      planB,
+      '2026-11-07',
+      {
+        status: 'completed',
+        memorizationTask: { ...makeTask(79), completed: true }
+      },
+      '2026-11-05'
+    );
+
+    const { dueItems, completedTodayItems } = getAllActiveEngineTasks([planA, planBCompletedEarly], '2026-11-05');
+    assert(dueItems.length === 2, 'Both active plans must surface in dueItems');
+    assert(dueItems[0].planId === 'plan-b' && dueItems[0].isOverdue, 'Overdue plan B task must appear first and flagged overdue');
+    assert(dueItems[1].planId === 'plan-a' && !dueItems[1].isOverdue, 'Today plan A task must appear cleanly');
+    assert(completedTodayItems.length === 1 && completedTodayItems[0].completionTiming === 'completed_early', 'Early completion today must be tracked accurately');
+
+    const stats = PlanLifecycle.getPlanCompletionStats(planBCompletedEarly, '2026-11-05');
+    assert(stats.earlyCompletedTasks === 1 && stats.overduePendingTasks === 1, 'Plan stats must separate early vs overdue counts');
+
+    const summary = getUnifiedDailyHubSummary([], [planA, planBCompletedEarly], [], [], '2026-11-05');
+    assert(summary.dueEngineItems.length === 2, 'Unified daily hub must aggregate both active plans');
+    assert(summary.dueEngineItems.every(item => item.scheduledDate <= '2026-11-05'), 'Future tasks must never surface as due today');
   });
 
   return { passed, failed };
