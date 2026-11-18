@@ -179,3 +179,10 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Security remains the sole known CI blocker after the production-only audit passed. Full graph audit still flags `picomatch@4.0.7` only through the Vite → tinyglobby → fdir build-toolchain chain. npm still lists 4.0.7 as latest and GitHub advisory has no patched version; do not fabricate a patched pin or waive the full audit. Keep the production merge blocked until a genuine upstream fix or documented approved risk decision exists.
 - Vercel PR preview deployment is rate-limited by the Free plan (`api-deployments-free-per-day`); this is separate from source tests and does not affect current main production.
 - Physical Android/iOS/Safari cold-start + airplane-mode acceptance remains outstanding; CI/browser simulation is not equivalent.
+
+### Local audio relay integration correction — 2026-11-18
+
+- Code review found that the browser offline downloader calls same-origin `/api/quran-audio-download`, but the Express server used by local development and the production Node server did not register that route (Vercel's standalone API route existed).
+- Registered the same allowlisted binary handler in `server.ts` before SPA fallback.
+- Extended native API import/invalid-input smoke coverage and production + development server smoke tests to require JSON HTTP 400 for an unapproved reciter. This verifies route registration without making an upstream audio request.
+- These changes are on the active release branch; exact-head CI must be rerun before treating the correction as verified.
