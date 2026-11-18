@@ -425,7 +425,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
       </div>
 
       {/* Mobile Modal Tafsir Sheet */}
-      {!isDesktopViewport && activeTafsirAyah && effectiveTafsirPage === null && (
+      {!isDesktopViewport && activeTafsirAyah && effectiveTafsirSourcePage === null && (
         <TafsirSheet
           ayah={activeTafsirAyah}
           onSelectAyah={next => {
