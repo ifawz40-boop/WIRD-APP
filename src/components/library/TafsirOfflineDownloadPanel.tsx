@@ -99,9 +99,14 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
         </p>
       )}
       {isComplete ? (
-        <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" role="status">
-          اكتمل تنزيل التفسير الميسر. أصبح متاحًا محليًا دون اتصال.
-        </p>
+        <div className="mt-3 space-y-2">
+          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" role="status">
+            اكتمل تنزيل التفسير الميسر. أصبح متاحًا محليًا دون اتصال.
+          </p>
+          <button type="button" onClick={startDownload} disabled={isDownloading} className="min-h-11 rounded-xl border border-[#1C4E46]/20 px-4 py-2 text-xs font-bold text-[#1C4E46] disabled:opacity-60 dark:border-[#E0A96D]/30 dark:text-[#E0A96D]">
+            {isDownloading ? 'جارٍ التحقق من إصدار المصدر...' : 'التحقق من تحديث المصدر'}
+          </button>
+        </div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
           {isDownloading ? (
