@@ -33,7 +33,7 @@ export function runOfflineReaderIntegrationTests(): { passed: number; failed: nu
 
   test('Tafsir Muyassar uses a clearly labelled pinned local fallback', () => {
     const source = read('src/components/library/TafsirContentPane.tsx');
-    assert(source.includes('getOfflineTafsirForAyah') && source.includes('selectedBookId === 16'), 'Only the pinned Tafsir Muyassar edition may use the local fallback');
+    assert(source.includes('getOfflineTafsirForAyah') && source.includes('selectedBookId === 16') && source.includes('if (!offlineStatus.isComplete)'), 'Only the pinned Tafsir Muyassar edition may fall back after the complete package is verified');
     assert(source.includes('التفسير الميسر — نسخة محلية'), 'Local fallback must identify its source instead of silently changing editions');
     const settings = read('src/components/settings/SettingsView.tsx');
     assert(settings.includes('<TafsirOfflineDownloadPanel />'), 'Users must have an explicit offline Tafsir download control');
