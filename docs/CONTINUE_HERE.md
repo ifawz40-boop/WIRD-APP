@@ -433,3 +433,8 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Current PR #390 SHA: `eb7394e5f86c5d9b2d3a155df04861bb8e634bea`; run `44235296378` / #4599 is running on this exact SHA.
 - Automated unit suites, 604-page Mushaf coordinate validator, API import smoke, approved audio CDN/range smoke, Firestore Rules Emulator, TypeScript, production build and server startup smoke all passed. Desktop/mobile Playwright is in progress.
 - Security audit failed on `picomatch@4.0.7` via Vite toolchain. Do not merge/deploy.
+
+
+## Al Quran Cloud audio terms recheck — 2026-11-18
+- Rechecked official provider Terms & Conditions (last updated 2026-11-13): audio CDN is free and needs no key; recitations remain copyright of the reciters/estates; streaming, embedding and downloading are permitted for personal and educational use; the terms warn that reciters may request removal if used in a commercial product. Official CDN documentation confirms the HTTPS ayah path pattern `https://cdn.islamic.network/quran/audio/{bitrate}/{edition}/{number}.mp3` and global ayah range 1–6236.
+- WIRD's implementation downloads only user-selected, curated Al Quran Cloud editions to the user's device; it does not rehost or redistribute. Keep a release-time terms recheck and do not assume the same permission covers future commercial monetization.
