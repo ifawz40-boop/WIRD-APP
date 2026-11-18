@@ -194,3 +194,14 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - Tafsir full-page mode requires the complete validated QuranEnc Muyassar package; single-ayah pane checks the local package first before network.
 - Bun package manifest/lockfile were reconciled; Vite/Tailwind build tools are dev-only.
 - No full exact-head test result is claimed yet. CI is running from the draft PR while implementation/review continues. The full audit advisory remains a release blocker; do not waive it.
+
+### Current execution checkpoint — 2026-11-18 (after first CI remediation)
+
+- Active branch: `release/wird-completion-20261118`.
+- Draft PR: https://github.com/xm8eslam-stack/WIRD-APP/pull/391, base current `main`; do not merge while any required gate is red.
+- Current latest branch SHA when recorded: `ec01ab507a1036c5bec206c94f3bbf16d7917c6f`; latest workflow `44312458783` was still running.
+- Previous exact-head `44307063505` had 803/0 aggregate tests, API import pass, CDN smoke 8/8, Firestore Rules 31/0, but TypeScript failed. Fixes committed: narrow the blocked dashboard task before reading plan identity; move spread-mode computation before the audioAyahs expression.
+- Earlier stale Mushaf test assertion was corrected; 803/0 confirms the aggregate test suite now passes on the earlier exact SHA.
+- Full dependency audit remains red on unpatched dev-only picomatch 4.0.7; production-only audit passes. npm latest is still 4.0.7, so do not invent 4.0.8 or use a waiver.
+- Vercel preview is currently blocked by Free plan deployment-rate limit. Do not touch production settings/secrets or remote sync flags.
+- Next: inspect exact latest workflow; fix any remaining TS/build/E2E failures; continue source review and device acceptance plan. Only merge/publish after all required release gates are genuinely green.
