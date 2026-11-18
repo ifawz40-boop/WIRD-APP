@@ -34,6 +34,8 @@ jobs:
           bun-version: 1.4.4
       - name: Install dependencies from the committed lockfile
         run: bun install --frozen-lockfile
+      - name: Audit production dependency graph
+        run: bun audit --prod --audit-level=high
       - name: Audit the complete committed Bun dependency graph
         run: bun audit --audit-level=high
 
