@@ -15,6 +15,7 @@ import {
 } from '../../services/mushafSpreadService';
 import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
 import { TafsirContentPane } from './TafsirContentPane';
+import { TafsirMushafPage } from './TafsirMushafPage';
 import { TafsirSheet } from './TafsirSheet';
 
 interface PrintedMushafSpreadProps {
@@ -26,6 +27,7 @@ interface PrintedMushafSpreadProps {
   onTafsirAyahChange?: (ayah: Ayah | null) => void;
   onAyahsResolved?: (resolved: { page: number; ayahs: Ayah[] }) => void;
   onFallback: () => void;
+  onNavigateToAyah?: (surahNumber: number, ayahNumber: number) => number | null;
   maxWidthClass?: string;
 }
 
@@ -38,6 +40,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   onTafsirAyahChange,
   onAyahsResolved,
   onFallback,
+  onNavigateToAyah,
   maxWidthClass = 'max-w-5xl'
 }) => {
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
@@ -51,6 +54,8 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   );
   const [resolvedByPage, setResolvedByPage] = useState<Record<number, Ayah[]>>({});
   const [activeTafsirPage, setActiveTafsirPage] = useState<number | null>(null);
+  const [pageTafsirPreferences, setPageTafsirPreferences] = useState<Record<number, boolean>>({});
+  const [preferredTafsirPage, setPreferredTafsirPage] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -72,6 +77,19 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     () => (isTwoPage ? [rightPage, leftPage] : [anchorPage]),
     [isTwoPage, rightPage, leftPage, anchorPage]
   );
+
+  // Each page remembers its own Tafsir preference. Only one visible page is
+  // rendered as Tafsir at a time; navigating to another spread restores that
+  // page's previous preference instead of erasing it.
+  const effectiveTafsirPage = useMemo(() => {
+    if (
+      preferredTafsirPage !== null &&
+      visiblePages.includes(preferredTafsirPage) &&
+      pageTafsirPreferences[preferredTafsirPage]
+    ) return preferredTafsirPage;
+    return visiblePages.find(page => pageTafsirPreferences[page]) ?? null;
+  }, [preferredTafsirPage, visiblePages, pageTafsirPreferences]);
+
 
   const handleAyahsResolved = useCallback(
     (resolved: { page: number; ayahs: Ayah[] }) => {
@@ -118,11 +136,40 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     [onSelectAyah, onTafsirAyahChange]
   );
 
+  const handleSetPageContentMode = (targetPage: number, mode: 'quran' | 'tafsir') => {
+    setPageTafsirPreferences(prev => ({ ...prev, [targetPage]: mode === 'tafsir' }));
+    if (mode === 'tafsir') {
+      setPreferredTafsirPage(targetPage);
+      setActiveTafsirPage(targetPage);
+      const pageAyahs = resolvedByPage[targetPage] || [];
+      const current = [activeTafsirAyah, selectedAyah].find(candidate =>
+        candidate && pageAyahs.some(item =>
+          item.surahNumber === candidate.surahNumber && item.numberInSurah === candidate.numberInSurah
+        )
+      );
+      const target = current || pageAyahs[0];
+      if (target) setTafsirTarget(target);
+    } else {
+      setPreferredTafsirPage(current => current === targetPage ? null : current);
+      if (activeTafsirPage === targetPage) {
+        setActiveTafsirPage(null);
+        setTafsirTarget(null);
+      }
+    }
+  };
+
+  const handleNavigateFromTafsir = (surahNumber: number, ayahNumber: number) => {
+    const targetPage = onNavigateToAyah?.(surahNumber, ayahNumber) ?? null;
+    if (targetPage !== null) {
+      setPageTafsirPreferences(prev => ({ ...prev, [targetPage]: true }));
+      setPreferredTafsirPage(targetPage);
+      setActiveTafsirPage(targetPage);
+    }
+  };
+
   const handleOpenPageTafsir = (targetPage: number) => {
-    const ayahs = resolvedByPage[targetPage];
-    if (!ayahs?.length) return;
-    setActiveTafsirPage(targetPage);
-    setTafsirTarget(ayahs[0]);
+    if (!resolvedByPage[targetPage]?.length) return;
+    handleSetPageContentMode(targetPage, 'tafsir');
   };
 
   const handleCloseTafsir = () => {
@@ -149,7 +196,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   }, [activeTafsirAyah, visiblePages, resolvedByPage, activeTafsirPage, anchorPage]);
 
   const activePageAyahs = inspectedOwnerPage ? resolvedByPage[inspectedOwnerPage] : undefined;
-  const isTafsirOpenDesktop = isDesktopViewport && Boolean(activeTafsirAyah);
+  const isTafsirOpenDesktop = isDesktopViewport && Boolean(activeTafsirAyah) && effectiveTafsirPage === null;
   const replaceRightSlotWithTafsir =
     isTafsirOpenDesktop &&
     isTwoPage &&
@@ -258,8 +305,24 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
               );
             }
 
+            const pageAyahs = resolvedByPage[pageNum] || [];
+            // The odd/right-hand printed page is presented in the left slot in
+            // this RTL grid, matching the physical Mushaf's facing-page order.
+            const sideLabel = pageNum === rightPage ? 'الصفحة اليسرى' : 'الصفحة اليمنى';
+            const isPageTafsir = effectiveTafsirPage === pageNum;
+            const selectedForPage = [activeTafsirAyah, selectedAyah].find(candidate =>
+              candidate && pageAyahs.some(item =>
+                item.surahNumber === candidate.surahNumber && item.numberInSurah === candidate.numberInSurah
+              )
+            ) || pageAyahs[0] || null;
+
             return (
-              <div key={`spread-page-${pageNum}`} className="min-w-0 flex flex-col gap-1.5">
+              <section
+                key={`spread-page-${pageNum}`}
+                role="group"
+                aria-label={`محتوى ${sideLabel}`}
+                className="min-w-0 flex flex-col gap-1.5"
+              >
                 {isTwoPage && (
                   <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
                     <span>صفحة {pageNum}</span>
@@ -268,15 +331,41 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                     )}
                   </div>
                 )}
-                <QuranMushafFacsimilePage
-                  page={pageNum}
-                  onAyahsResolved={handleAyahsResolved}
-                  selectedAyah={activeTafsirAyah || selectedAyah}
-                  onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
-                  onFallback={onFallback}
-                  maxWidthClass="max-w-none"
-                />
-              </div>
+                <div className="flex items-center justify-between gap-2 rounded-xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/20 bg-white/80 dark:bg-[#0B132B]/80 p-1.5">
+                  <button
+                    type="button"
+                    aria-pressed={!isPageTafsir}
+                    onClick={() => handleSetPageContentMode(pageNum, 'quran')}
+                    className={`min-h-10 flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${!isPageTafsir ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'text-[#5B6F6B] dark:text-[#AAB8B4]'}`}
+                  >القرآن</button>
+                  <button
+                    type="button"
+                    aria-pressed={isPageTafsir}
+                    disabled={!pageAyahs.length}
+                    onClick={() => handleSetPageContentMode(pageNum, 'tafsir')}
+                    className={`min-h-10 flex-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${isPageTafsir ? 'bg-[#1C4E46] text-white dark:bg-[#1E4A47]' : 'text-[#5B6F6B] dark:text-[#AAB8B4] disabled:opacity-40'}`}
+                  >التفسير الميسر</button>
+                </div>
+                {isPageTafsir ? (
+                  <TafsirMushafPage
+                    pageNumber={pageNum}
+                    sourcePageNumber={pageNum}
+                    sourceSideLabel={sideLabel}
+                    ayahs={pageAyahs}
+                    selectedAyah={selectedForPage}
+                    onNavigate={handleNavigateFromTafsir}
+                  />
+                ) : (
+                  <QuranMushafFacsimilePage
+                    page={pageNum}
+                    onAyahsResolved={handleAyahsResolved}
+                    selectedAyah={activeTafsirAyah || selectedAyah}
+                    onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
+                    onFallback={onFallback}
+                    maxWidthClass="max-w-none"
+                  />
+                )}
+              </section>
             );
           })}
         </div>
@@ -305,7 +394,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
       </div>
 
       {/* Mobile Modal Tafsir Sheet */}
-      {!isDesktopViewport && activeTafsirAyah && (
+      {!isDesktopViewport && activeTafsirAyah && effectiveTafsirPage === null && (
         <TafsirSheet
           ayah={activeTafsirAyah}
           onSelectAyah={next => {
