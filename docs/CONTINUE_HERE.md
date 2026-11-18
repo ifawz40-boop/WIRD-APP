@@ -550,3 +550,9 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Read-only Vercel inspection shows the latest READY deployment is preview SHA `6d3c8f41596d7cf80896a2b6a0b57505982831c3` on `feat/offline-mushaf-package-20261117` (deployment `dpl_CRuv1GaQDDsuN5SXWjjaFBzJG9fH`).
 - Current candidate head is `6e28979549d6e0bbaef442b9b409426e99504571`; therefore the available preview is stale by the subsequent test/settings fixes. Do not use it as live verification for the current candidate.
 - No deployment was created or promoted during this continuation.
+
+
+### 2026-11-18 — #4645 follow-up
+- #4645 (`44243189810`, SHA `6e28979549d6e0bbaef442b9b409426e99504571`) completed **FAIL** with 188 passed, 2 failed, 2 skipped. Both failures were the same Mushaf revalidation test on Desktop/Mobile: the transient disabled-state assertion was not reliable, even with a delayed mock route.
+- Updated the test to assert the actual success toast, repaired-page request count, and completion state instead of a transient button-disabled state. It also verifies the full 604/604 package can be integrity-checked offline with only 1 MiB free quota remaining.
+- New exact-head run #4650: `44244747430`, SHA `037aeb8fd55a1990b5fcc2268b29bd0ac691e4d5`; core tests are running. Security audit remains red only for the disputed picomatch advisory.
