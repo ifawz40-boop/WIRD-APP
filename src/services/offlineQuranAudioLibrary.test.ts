@@ -114,6 +114,38 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     upgraded.close();
   });
 
+  await test('Different disjoint ayah ranges with identical count and endpoints never share a download-job fingerprint', async () => {
+    const mockCache = createMockCacheStorage();
+    const lib = new OfflineQuranAudioLibrary({
+      indexedDBFactory: new IDBFactory(),
+      databaseName: `wird-audio-fingerprint-${++dbCounter}`,
+      cacheStorageFactory: mockCache.factory,
+      lockManager: null,
+      storageEstimateFn: async () => ({ usage: 0, quota: 500_000_000 })
+    });
+    const first = await lib.enqueueDownloadJob({
+      scopeKind: 'range', labelAr: 'نطاق أول', reciterId: 'ar.alafasy',
+      ranges: [
+        { surahNumber: 2, startAyah: 1, endAyah: 2 },
+        { surahNumber: 2, startAyah: 5, endAyah: 6 }
+      ], autoStart: false
+    });
+    const second = await lib.enqueueDownloadJob({
+      scopeKind: 'range', labelAr: 'نطاق ثانٍ', reciterId: 'ar.alafasy',
+      ranges: [
+        { surahNumber: 2, startAyah: 1, endAyah: 1 },
+        { surahNumber: 2, startAyah: 4, endAyah: 6 }
+      ], autoStart: false
+    });
+    assert(first.jobId !== second.jobId, 'Distinct exact ayah sequences must not be deduplicated as the same active job');
+    const [firstItems, secondItems] = await Promise.all([
+      lib.getJobItems(first.jobId), lib.getJobItems(second.jobId)
+    ]);
+    assert(firstItems.map(item => item.ayahNumber).join(',') === '1,2,5,6', 'First job must retain its exact disjoint ranges');
+    assert(secondItems.map(item => item.ayahNumber).join(',') === '1,4,5,6', 'Second job must retain its different exact disjoint ranges');
+    lib.close();
+  });
+
   await test('Staged cache generation is removed after a simulated crash before metadata commit', async () => {
     const factory = new IDBFactory();
     const databaseName = `wird-audio-staging-crash-${++dbCounter}`;
