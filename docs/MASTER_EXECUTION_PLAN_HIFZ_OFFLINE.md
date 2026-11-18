@@ -11,6 +11,25 @@
 
 ---
 
+## Current execution checkpoint — 2026-11-18
+
+**Active integration candidate:** PR #390, branch `feat/offline-mushaf-package-20261117`.
+- Last completed full application gate: Quality Gate #4599 / run `44235296378`, exact SHA `eb7394e5f86c5d9b2d3a155df04861bb8e634bea`. Application job PASS: 776 unit assertions, 31 Firestore Rules Emulator tests, 604 Mushaf coordinate maps, API import/audio CDN smoke, TypeScript, production build, production server startup, and 184 Playwright passed / 0 failed / 2 intentional viewport skips. Printed Mushaf partial-download/resume/offline-open passed on Desktop and Mobile.
+- Security audit job FAIL: `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. No fixed upstream release found. No override, suppression, threshold reduction, or risk acceptance.
+- Latest PR head `c69f6dc15b7067bcd7d40f266d5ab7dbe35e36fe` adds a new Playwright regression for the user's multi-plan dashboard issue: three active plans, all due tasks visible, two extra quick-start actions, and selected plan ID retained in session route. Exact Quality Gate #4604 is running; #4599 does not validate this newest test.
+- Offline Mushaf hardening: MJS/WASM included in public and emitted-asset manifests and Service Worker MIME allowlist; downloaded SVG pages are sanitized before Cache Storage persistence, with regression coverage.
+- Offline audio hardening: exact ordered ayah-sequence job fingerprints; IndexedDB v3→v4 migration preserves legacy queued/paused jobs and avoids disjoint-range fingerprint collisions. Explicit downloads support Surah/Juz/plan with curated Al Quran Cloud reciters; EveryAyah remains stream-only.
+- Official Al Quran Cloud Terms rechecked 2026-11-18 (page last updated 2026-11-13): recitations remain copyright of reciters/estates; streaming, embedding and downloading permitted for personal/educational use; terms warn reciters may request removal in a commercial product. Do not assume this permits future commercial monetization or rehosting.
+- Main remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; PR #390 is Draft/HOLD, 204 commits ahead at the last comparison. No merge or production deployment. Production deployment source SHA and real-device cold-restart/airplane-mode acceptance remain unverified.
+
+**Phase 0 status:** PARTIAL — source baseline and current PR/CI inventory are recorded; live Production deployment verification remains unavailable.
+
+**Phase 2 status:** IMPLEMENTED IN PR #390 CANDIDATE / RELEASE HOLD — offline audio repository/download manager, local-first playback, app-shell preparation, and 604-page Mushaf package exist and automated tests pass on #4599. Exact-head #4604 pending. Real-device restart/airplane-mode, storage eviction, and install/update lifecycle acceptance still required.
+
+**Phase 5 status:** BLOCKED — high-severity dependency audit finding unresolved; latest exact-head CI still running; Preview/Production promotion prohibited.
+
+---
+
 ## 1. Confirmed product and engineering decisions
 
 1. **Memorization studio:** retain the existing Free mode and add guided cumulative linking. Each new ayah follows listen/repeat → progressive masking/recall → cumulative linking to earlier ayat. Default linking window is up to the previous five ayat, configurable within the current session/range. No AI tajweed grading.
@@ -45,7 +64,7 @@ Status vocabulary: `NOT STARTED` · `IN PROGRESS` · `BLOCKED` · `PASS` · `HOL
 Do not mark a phase PASS until its acceptance criteria and evidence are recorded below.
 
 ### Phase 0 — Repository and product baseline audit
-**Status: IN PROGRESS**
+**Status: PARTIAL — main baseline and current PR inventory verified; live Production source SHA remains unverified**
 
 - [ ] Re-fetch live `main` HEAD, open PR inventory, branch heads, exact CI checks, and changed paths.
 - [ ] Reconcile the uncommitted Google AI Studio workspace changes into a dedicated feature branch/PR; inspect the complete diff before push.
@@ -70,7 +89,7 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Acceptance:** Free mode unchanged; cumulative mode completes an end-to-end session; ayah order and boundaries are correct; weak ayah event is durable; reload/re-entry preserves progress; tests pass on exact SHA.
 
 ### Phase 2 — Offline audio repository, downloads, and PWA readiness
-**Status: PARTIAL — download manager, durable library, local playback and app-shell preparation exist; cross-tab/crash/offline acceptance remains incomplete**
+**Status: IMPLEMENTED IN PR #390 CANDIDATE / RELEASE HOLD — automated gates pass on prior exact SHA; real-device and latest-head acceptance remain incomplete**
 
 #### 2A. Source and rights validation
 - [ ] Verify official Al Quran Cloud documentation and applicable terms for the precise reciter/audio endpoint, permitted caching and offline storage, attribution, and redistribution restrictions.
@@ -129,7 +148,7 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Acceptance:** old plans are preserved and readable after migration; repeated migration is idempotent; corrupted/incomplete copies never become active; scope isolation is proven; export matches source records; rollback path is tested; sync journal/outbox remains consistent.
 
 ### Phase 5 — Release gates and operational verification
-**Status: NOT STARTED**
+**Status: BLOCKED — dependency audit fails on picomatch@4.0.7; exact-head #4604 and real-device acceptance remain outstanding**
 
 - [ ] `tsc --noEmit`
 - [ ] `npm test`
