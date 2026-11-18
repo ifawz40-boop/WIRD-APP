@@ -17,7 +17,7 @@ interface MemorizationPlansViewProps {
   onUpdatePlans: (plans: MemorizationPlan[]) => boolean | Promise<boolean>;
   enginePlans: EngineGeneratedPlan[];
   onUpdateEnginePlans: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
-  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
+  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review', enginePlanId?: string, enginePlanDate?: string) => void;
   onOpenAdvisor?: () => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
@@ -159,7 +159,7 @@ export const MemorizationPlansView: React.FC<MemorizationPlansViewProps> = ({
         <PlanningEngineWizard
           enginePlans={enginePlans}
           onUpdateEnginePlans={onUpdateEnginePlans}
-          onStartSession={onStartSession}
+          onStartSession={(surahNumber, startAyah, endAyah, enginePlanId, enginePlanDate) => onStartSession(surahNumber, startAyah, endAyah, 'memorize', enginePlanId, enginePlanDate)}
           onOpenAdvisor={onOpenAdvisor}
           onToast={onToast}
         />
