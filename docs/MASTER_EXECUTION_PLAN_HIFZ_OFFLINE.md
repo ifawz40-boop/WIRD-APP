@@ -122,3 +122,24 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Added this persistent master plan.
 - No application source files changed yet.
 - Next action: refresh PR #390 head and workflow state, then perform the file-by-file reconciliation map before integrating code.
+
+
+## Phase 1 — initial reconciliation findings (2026-11-18)
+
+- Refreshed PR #390 metadata: current head `f41c969dfb9652890a1db369a8e0d695e8ae0ee1`; still Draft / HOLD / not mergeable; 291 commits, 54 changed files, +5,253 / -317.
+- Current exact-head workflow run `44289967861` / Quality Gate #4710 is completed but **cancelled**. The full dependency audit failed on dev-only `picomatch@4.0.7`; the application job was cancelled before tests began. No passing exact-head gate exists for this SHA.
+- Compared the shared base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a` against both branches. Main has 2 newer commits; PR has 291 commits after the shared base.
+- Overlapping runtime files requiring surgical integration include:
+  - `src/App.tsx`
+  - `src/components/dashboard/DashboardView.tsx`
+  - `src/components/library/QuranLibraryView.tsx`
+  - `src/components/library/QuranMushafReader.tsx`
+  - `src/components/session/MemorizationSessionView.tsx`
+  - `src/services/audioService.ts`
+  - `src/services/dailySessionSelection.ts`
+  - `src/tests/runAllTests.ts`
+  - `src/tests/quranMushafReader.test.ts`
+- Main also adds UX-specific components/tests and updates `audioPreferences.ts`, cumulative linking, spread/tafsir UI and plan lifecycle. These must be retained while bringing across offline package features.
+- Dependency manifests differ: candidate moves Vite + Vite plugins to devDependencies while main keeps them in dependencies. Keep main dependency classification unless a production/runtime audit proves otherwise; reconcile lockfile intentionally, never copy blindly.
+- Current main contains tracked Playwright artifacts in `test-results/`; review repository hygiene, but do not delete unrelated history as part of this merge without checking provenance.
+- No application source has been modified in this execution branch yet. The branch currently contains the persistent plan/checkpoint only. The next concrete implementation task is to create a file-level reconciliation patch set for the overlapping runtime files and candidate-only offline services/components.
