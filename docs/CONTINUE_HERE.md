@@ -210,3 +210,9 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 
 - Registered `/api/quran-audio-download` in Express so local and production Node-server runs use the same allowlisted binary relay as Vercel.
 - Added API-import validation plus dev/production server smoke assertions for invalid reciter input (expected JSON 400). Exact-head workflow is required to verify this.
+
+### Latest code-review correction — 2026-11-18
+
+- Plan detail screens expose future scheduled tasks. The completion matcher now permits early completion only when the launch includes both exact plan ID and scheduled date; generic/legacy launches still cannot start or complete future work.
+- Regression test added for exact future plan/date versus missing date. Next exact-head Quality Gate must include this commit.
+- Current offline capability matrix and audio plan were refreshed with PR #391 implementation evidence and remaining release blockers.
