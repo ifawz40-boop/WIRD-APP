@@ -26,7 +26,7 @@ import { ALL_SURAHS } from '../../data/quranMeta';
 import { loadSurahVerses, getAyahWords, loadSimpleAyahText, loadSimpleAyahRange } from '../../data/quranDataLoader';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { Ayah, UserProfile } from '../../types/quran';
-import { computeGlobalAyahNumber, formatAyahAudioUrl, getLicensedAyahAudioUrl, resolveApprovedOfflineReciterId } from '../../services/audioService';
+import { computeGlobalAyahNumber, getLicensedAyahAudioUrl } from '../../services/audioService';
 import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import { createSecureId } from '../../services/secureId';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
@@ -446,9 +446,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     }
 
     const requestSeq = ++playbackRequestSeqRef.current;
-    const approvedReciterId = resolveApprovedOfflineReciterId(profile.preferredReciter);
+    const audioDescriptor = getLicensedAyahAudioUrl(surahNumber, currentAyah.numberInSurah, profile.preferredReciter);
+    const approvedReciterId = audioDescriptor.approvedReciterId;
     const globalAyah = computeGlobalAyahNumber(surahNumber, currentAyah.numberInSurah);
-    const fallbackUrl = formatAyahAudioUrl(surahNumber, currentAyah.numberInSurah, profile.preferredReciter);
+    const fallbackUrl = audioDescriptor.url;
     const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
       approvedReciterId,
       globalAyah,
@@ -535,16 +536,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     if (!sessionAyahs.length || startIdx > endIdx) return;
     handleStopAudio();
     const requestSeq = ++playbackRequestSeqRef.current;
-    const approvedReciterId = resolveApprovedOfflineReciterId(profile.preferredReciter);
-
     const tracks = await Promise.all(
       sessionAyahs.map(async ayah => {
-        const fallbackUrl = formatAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter);
+        const audioDescriptor = getLicensedAyahAudioUrl(surahNumber, ayah.numberInSurah, profile.preferredReciter);
         const globalAyah = computeGlobalAyahNumber(surahNumber, ayah.numberInSurah);
         const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
-          approvedReciterId,
+          audioDescriptor.approvedReciterId,
           globalAyah,
-          fallbackUrl
+          audioDescriptor.url
         );
         if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
         return { id: String(ayah.number), url: resolved.src };
