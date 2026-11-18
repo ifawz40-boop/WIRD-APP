@@ -508,13 +508,18 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     );
     if (!targetPage) return null;
     const pageNumber = Number(targetPage[0]);
+    jumpToNavigationPoint({ surahNumber, ayahNumber, page: pageNumber });
+    return pageNumber;
+  };
+
+  const handleNavigateFromTafsir = (surahNumber: number, ayahNumber: number): number | null => {
+    const pageNumber = handleNavigateToAyah(surahNumber, ayahNumber);
     void loadSurahVerses(surahNumber).then(verses => {
       const targetAyah = verses.find(ayah => ayah.numberInSurah === ayahNumber);
       if (targetAyah) setTafsirAyah(targetAyah);
     }).catch(error => {
-      console.warn('[WIRD Mushaf] Could not restore the selected local ayah after navigation:', error);
+      console.warn('[WIRD Mushaf] Could not restore the selected local ayah after Tafsir navigation:', error);
     });
-    jumpToNavigationPoint({ surahNumber, ayahNumber, page: pageNumber });
     return pageNumber;
   };
 
@@ -1000,7 +1005,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             selectedAyah={tafsirAyah}
             onSelectAyah={setTafsirAyah}
             onAyahsResolved={handlePrintedPageResolved}
-            onNavigateToAyah={handleNavigateToAyah}
+            onNavigateToAyah={handleNavigateFromTafsir}
             onFallback={() => selectReaderLayout('flow')}
             maxWidthClass={isFullWidth ? 'max-w-none' : 'max-w-7xl'}
           />
