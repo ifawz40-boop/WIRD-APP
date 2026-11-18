@@ -133,6 +133,49 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(navigation).toContainText('1:2');
   });
 
+  test('Mushaf bottom page navigation works in single and facing-spread modes with correct boundaries', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 1280) < 768, 'Facing spread navigation is desktop-only.');
+
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+
+    const navigation = page.getByRole('navigation', { name: 'التنقل بين صفحات المصحف' });
+    const previous = navigation.getByRole('button', { name: 'الصفحة السابقة' });
+    const next = navigation.getByRole('button', { name: 'الصفحة التالية' });
+    await expect(navigation).toContainText('1 / 604');
+    await expect(previous).toBeDisabled();
+    await expect(next).toBeEnabled();
+    await expect(previous).toHaveCSS('min-height', '56px');
+    await expect(next).toHaveCSS('min-height', '56px');
+
+    await next.click();
+    await expect(navigation).toContainText('2 / 604');
+    await previous.click();
+    await expect(navigation).toContainText('1 / 604');
+
+    await page.getByRole('spinbutton', { name: 'رقم صفحة المصحف' }).fill('604');
+    await page.getByRole('button', { name: 'انتقال إلى رقم الصفحة' }).click();
+    await expect(navigation).toContainText('604 / 604');
+    await expect(next).toBeDisabled();
+    await expect(previous).toBeEnabled();
+
+    await page.getByRole('spinbutton', { name: 'رقم صفحة المصحف' }).fill('1');
+    await page.getByRole('button', { name: 'انتقال إلى رقم الصفحة' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+    const spreadMode = page.getByRole('group', { name: 'نمط صفحات المصحف المطبوع' });
+    await spreadMode.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+
+    await next.click();
+    await expect(navigation).toContainText('3 / 604');
+    await previous.click();
+    await expect(navigation).toContainText('1 / 604');
+
+    await page.getByRole('spinbutton', { name: 'رقم صفحة المصحف' }).fill('603');
+    await page.getByRole('button', { name: 'انتقال إلى رقم الصفحة' }).click();
+    await expect(navigation).toContainText('603 / 604');
+    await expect(next).toBeDisabled();
+  });
+
   test('printed Mushaf can switch between one page and a right-to-left facing spread', async ({ page }) => {
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
