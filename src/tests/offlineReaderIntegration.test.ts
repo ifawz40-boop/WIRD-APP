@@ -44,7 +44,7 @@ export function runOfflineReaderIntegrationTests(): { passed: number; failed: nu
     const spread = read('src/components/library/PrintedMushafSpread.tsx');
     const page = read('src/components/library/TafsirMushafPage.tsx');
     const service = read('src/services/mushafSpreadService.ts');
-    assert(spread.includes('<TafsirMushafPage') && spread.includes('getSourcePageForSlot'), 'Either facing slot must be able to render Tafsir for the opposite Quran page');
+    assert(spread.includes('<TafsirMushafPage') && spread.includes('getSourcePageForSlot') && spread.includes('slotPage === rightPage ? leftPage : rightPage'), 'Either facing slot must render Tafsir for the opposite Quran page');
     assert(spread.includes('aria-label={`محتوى ${slotSideLabel}`}') && spread.includes('التفسير الميسر'), 'Both sides need accessible Quran/Tafsir selectors');
     assert(spread.includes('saveMushafTafsirPagePreferences') && service.includes('wird:mushaf-tafsir-page-modes:v1:'), 'Per-source-page Tafsir choices must persist locally');
     assert(page.includes('getOfflineTafsirForSurah') && page.includes('status.isComplete'), 'Page Tafsir must read only from the complete validated local package');
