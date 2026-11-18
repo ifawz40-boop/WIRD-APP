@@ -68,6 +68,7 @@ import { runMushafSpreadServiceTests } from '../services/mushafSpreadService.tes
 import { runCumulativeLinkingServiceTests } from '../services/cumulativeLinkingService.test';
 import { runOfflineTafsirLibraryTests } from '../services/tafsirOfflineLibrary.test';
 import { runQuranAudioDownloadProxyTests } from './quranAudioDownloadProxy.test';
+import { runOfflineReaderIntegrationTests } from './offlineReaderIntegration.test';
 
 export interface SuiteResult {
   passed: number;
@@ -183,6 +184,7 @@ async function main() {
     { name: '5-Stage Cumulative Linking Memorization Engine & Recall Gate', runner: runCumulativeLinkingServiceTests },
     { name: 'Offline Tafsir Package Integrity and Resume', runner: runOfflineTafsirLibraryTests },
     { name: 'Quran Audio Download Relay Allowlist and Binary Safety', runner: runQuranAudioDownloadProxyTests },
+    { name: 'Offline Quran Reader, Mushaf, Session & Tafsir Integration', runner: runOfflineReaderIntegrationTests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);
