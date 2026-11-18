@@ -40,7 +40,7 @@ interface DashboardViewProps {
   revisionItems: RevisionItem[];
   logs: DailyLog[];
   onNavigate: (tab: NavTabId) => void;
-  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
+  onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review', enginePlanId?: string, enginePlanDate?: string) => void;
   onUpdateEnginePlans?: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
@@ -460,7 +460,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                       <button
                         type="button"
-                        onClick={() => onStartSession(item.task.surahNumber, item.task.startAyah, item.task.endAyah, 'memorize')}
+                        onClick={() => onStartSession(item.task.surahNumber, item.task.startAyah, item.task.endAyah, 'memorize', item.planId, item.scheduledDate)}
                         className="min-h-11 px-3.5 py-1.5 rounded-xl bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#1C4E46] dark:hover:bg-[#1E4A47] text-[#142421] dark:text-[#F5F1E8] hover:text-white font-bold transition-colors shrink-0"
                       >
                         متابعة الحفظ
@@ -527,7 +527,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               disabled={dailyTask.source === 'blocked'}
-              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode)}
+              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode, dailyTask.enginePlanId, dailyTask.enginePlanDate)}
               className="flex-1 w-full min-h-12 flex items-center justify-center gap-2 py-3 px-4 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white font-bold text-xs md:text-sm rounded-xl shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ring-1 ring-[#C59B27]/35"
             >
               <Play className="w-4 h-4 fill-white" />
