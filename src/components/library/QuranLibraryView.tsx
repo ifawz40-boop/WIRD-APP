@@ -389,7 +389,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     handleStopAudio();
     const tracks = currentAyahs.map(ayah => ({
       id: String(ayah.number),
-      url: formatAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter)
+      url: getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url
     }));
     requestOfflineAudioCache(
       tracks.slice(segmentStartIndex, Math.min(segmentEndIndex + 1, segmentStartIndex + 20)).map(track => track.url)
