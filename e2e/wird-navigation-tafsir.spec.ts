@@ -350,6 +350,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(downloadPanel).toContainText('114 / 114 سورة');
     const recheckButton = downloadPanel.getByRole('button', { name: 'التحقق من تحديث المصدر' });
     await recheckButton.click();
+    await expect(downloadPanel.getByRole('button', { name: 'جارٍ التحقق من إصدار المصدر...' })).toBeVisible();
     await expect(recheckButton).toBeEnabled({ timeout: 30_000 });
     expect(catalogueRequests).toBe(1);
     expect(surahRequests).toBe(0);
