@@ -15,6 +15,8 @@ function makeValidSvg(): string {
 async function enterGuest(page: Page) {
   await page.goto('/');
   const guestButton = page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' });
+  const readyHeading = page.getByRole('heading', { name: /السلام عليكم ورحمة الله|القرآن الكريم/ });
+  await expect(guestButton.or(readyHeading)).toBeVisible({ timeout: 15_000 });
   if (await guestButton.isVisible().catch(() => false)) await guestButton.click();
 }
 
@@ -32,8 +34,9 @@ async function openTafsirDownloadPanel(page: Page) {
   await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
   await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
   await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-  await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
-  await page.getByRole('group', { name: 'محتوى الصفحة اليسرى' }).getByRole('button', { name: 'التفسير الميسر' }).click();
+  const spreadButton = page.getByRole('button', { name: 'صفحتان متقابلتان' });
+  if (await spreadButton.isVisible().catch(() => false)) await spreadButton.click();
+  await page.getByRole('button', { name: 'التفسير الميسر' }).first().click();
   return page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
 }
 

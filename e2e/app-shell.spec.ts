@@ -120,12 +120,12 @@ test('dashboard displays due memorization tasks from all active plans and preser
   await page.goto('/');
   await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
 
-  const dueSection = page.locator('section[aria-labelledby="dashboard-multi-plan-due-title"]');
+  const dueSection = page.getByRole('list', { name: 'مهام الخطط النشطة اليوم' });
   await expect(dueSection).toBeVisible();
-  await expect(page.getByText('01 خطة أولى')).toBeVisible();
+  await expect(dueSection.getByRole('listitem')).toHaveCount(3);
+  await expect(dueSection).toContainText('01 خطة أولى');
   await expect(dueSection).toContainText('02 خطة ثانية');
   await expect(dueSection).toContainText('03 خطة ثالثة');
-  await expect(dueSection.getByRole('button', { name: 'ابدأ' })).toHaveCount(2);
 
   await page.goto('/#/revision');
   const headerDailySession = page.getByRole('button', { name: 'جلسة اليوم' });
@@ -134,8 +134,8 @@ test('dashboard displays due memorization tasks from all active plans and preser
   await expect(page).toHaveURL(new RegExp(`plan=plan-a.*planDate=${today}`));
 
   await page.goto('/#/dashboard');
-  const secondPlanCard = page.locator('section[aria-labelledby="dashboard-multi-plan-due-title"] div.grid > div').filter({ hasText: '02 خطة ثانية' });
-  await secondPlanCard.getByRole('button', { name: 'ابدأ' }).click();
+  const secondPlanCard = dueSection.getByRole('listitem').filter({ hasText: '02 خطة ثانية' });
+  await secondPlanCard.getByRole('button', { name: 'متابعة الحفظ' }).click();
   await expect(page).toHaveURL(new RegExp(`plan=plan-b.*planDate=${today}`));
 });
 

@@ -193,3 +193,12 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Matcher now allows a future task only when both exact enginePlanId and enginePlanDate are supplied. Dashboard/legacy/unqualified launches remain restricted to due work; duplicate or ambiguous matches still fail closed.
 - Added regression coverage proving exact future plan/date succeeds and plan ID without date remains blocked.
 - This fix is committed on the release branch and must be included in the next exact-head CI result.
+
+
+### Exact-head browser regression checkpoint — 2026-11-18
+
+- Run `44319128503` on candidate SHA `10d5bebe772ba87a2289f559581fcb7de539838c`: 804 aggregate tests passed; full dependency audit passed (0/359); TypeScript, build, server smoke, API import, 604-page Mushaf, Quran audio CDN/range (8/8), and Firestore Rules (31/31) passed.
+- Browser gate failed: 185 passed, 23 failed, 2 skipped. Failure triage identified outdated dashboard selectors, desktop spread assumptions in mobile tests, a production-preview-incompatible source-module import in the offline-audio E2E, a genuine Tafsir dialog focus race, and duplicate strict-mode locators.
+- Release branch remediation adds semantic task-list markup, a CI-only offline-audio test bridge (enabled only for CI E2E build), responsive mobile assertions, corrected selectors, and a focus timing fix. The full exact-head CI must rerun after this checkpoint; no merge or production publish until all tests pass.
+- Picomatch full audit remains green through the local bounded MIT downstream fork; do not suppress the audit or claim the downstream version is an upstream release.
+- PR #391 remains Draft/unmerged. Main and production remain untouched; physical-device cold restart/airplane-mode acceptance remains outstanding.

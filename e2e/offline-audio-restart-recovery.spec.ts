@@ -23,8 +23,10 @@ test.describe('offline Quran audio durable download recovery', () => {
     });
 
     await page.goto('/');
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__WIRD_E2E__?.OfflineQuranAudioLibrary === 'function')).toBe(true);
     const firstAttempt = await page.evaluate(async ({ databaseName, cacheName }) => {
-      const { OfflineQuranAudioLibrary } = await import('/src/services/offlineQuranAudioLibrary.ts');
+      const OfflineQuranAudioLibrary = (window as any).__WIRD_E2E__?.OfflineQuranAudioLibrary;
+      if (typeof OfflineQuranAudioLibrary !== 'function') throw new Error('CI-only offline audio test bridge is unavailable.');
       const library = new OfflineQuranAudioLibrary({
         databaseName,
         cacheName,
@@ -48,8 +50,10 @@ test.describe('offline Quran audio durable download recovery', () => {
 
     // A real page reload creates a new JS realm and library instance while retaining IndexedDB + Cache Storage.
     await page.reload();
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__WIRD_E2E__?.OfflineQuranAudioLibrary === 'function')).toBe(true);
     const recovered = await page.evaluate(async ({ databaseName, cacheName, jobId }) => {
-      const { OfflineQuranAudioLibrary } = await import('/src/services/offlineQuranAudioLibrary.ts');
+      const OfflineQuranAudioLibrary = (window as any).__WIRD_E2E__?.OfflineQuranAudioLibrary;
+      if (typeof OfflineQuranAudioLibrary !== 'function') throw new Error('CI-only offline audio test bridge is unavailable.');
       const library = new OfflineQuranAudioLibrary({
         databaseName,
         cacheName,
@@ -79,7 +83,8 @@ test.describe('offline Quran audio durable download recovery', () => {
 
     await page.context().setOffline(true);
     const offlinePlayback = await page.evaluate(async ({ databaseName, cacheName }) => {
-      const { OfflineQuranAudioLibrary } = await import('/src/services/offlineQuranAudioLibrary.ts');
+      const OfflineQuranAudioLibrary = (window as any).__WIRD_E2E__?.OfflineQuranAudioLibrary;
+      if (typeof OfflineQuranAudioLibrary !== 'function') throw new Error('CI-only offline audio test bridge is unavailable.');
       const library = new OfflineQuranAudioLibrary({ databaseName, cacheName });
       const playback = await library.resolvePlaybackSource('ar.alafasy', 1, 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3');
       const isBlob = playback.src.startsWith('blob:');

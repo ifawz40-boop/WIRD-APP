@@ -439,10 +439,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </button>
                 </div>
 
-                <div className="divide-y divide-[#1C4E46]/10 dark:divide-[#E0A96D]/15">
+                <div role="list" aria-label="مهام الخطط النشطة اليوم" className="divide-y divide-[#1C4E46]/10 dark:divide-[#E0A96D]/15">
                   {hub.dueEngineItems.map((item) => (
                     <div
                       key={`${item.planId}-${item.taskId}`}
+                      role="listitem"
                       className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="min-w-0 space-y-0.5 text-right">
@@ -471,6 +472,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {hub.dueEngineItems.length === 0 && hub.presetItems.map((preset) => (
                     <div
                       key={preset.planId}
+                      role="listitem"
                       className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="min-w-0 space-y-0.5 text-right">
@@ -504,6 +506,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {hub.completedTodayItems.map((done) => (
                     <div
                       key={`done-${done.planId}-${done.scheduledDate}`}
+                      role="listitem"
                       className="py-2 first:pt-1 last:pb-1 flex items-center justify-between gap-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]"
                     >
                       <span className="font-semibold text-[#1C4E46] dark:text-[#6EE7B7]">

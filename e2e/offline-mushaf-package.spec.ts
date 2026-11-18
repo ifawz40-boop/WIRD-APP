@@ -87,7 +87,7 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
 
     await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
-    await expect(page.locator('#wird-ayah-1-1')).toBeVisible();
+    await expect(page.locator('#wird-ayah-1-1').first()).toBeVisible();
     expect(requestCounts.get(1)).toBe(1);
   });
 

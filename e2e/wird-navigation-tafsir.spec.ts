@@ -4,6 +4,11 @@ import { getMushafFacsimilePageUrls, MUSHAF_OFFLINE_CACHE_NAME } from '../src/se
 
 const quranEncVersionMockedPages = new WeakSet<Page>();
 
+async function enableSpreadIfAvailable(page: Page) {
+  const spreadButton = page.getByRole('button', { name: 'صفحتان متقابلتان' });
+  if (await spreadButton.isVisible().catch(() => false)) await spreadButton.click();
+}
+
 async function mockQuranEncVersion(page: Page) {
   if (quranEncVersionMockedPages.has(page)) return;
   quranEncVersionMockedPages.add(page);
@@ -118,7 +123,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
 
     await expect(page.locator('#wird-ayah-1-1')).toBeVisible();
-    const navigation = page.getByRole('navigation', { name: 'التنقل بين الآيات' });
+    const navigation = page.getByRole('navigation', { name: 'التنقل بين الآيات' }).last();
     await expect(navigation).toBeVisible();
     await expect(navigation.getByRole('button', { name: 'الآية السابقة' })).toBeDisabled();
     await expect(navigation.getByRole('button', { name: 'الآية التالية' })).toBeEnabled();
@@ -133,7 +138,13 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
 
-    const displayMode = page.getByRole('group', { name: 'طريقة عرض صفحات المصحف' });
+    const displayMode = page.getByRole('group', { name: 'نمط صفحات المصحف المطبوع' });
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      await expect(displayMode).toHaveCount(0);
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toHaveCount(0);
+      return;
+    }
     await expect(displayMode.getByRole('button', { name: 'صفحة واحدة' })).toHaveAttribute('aria-pressed', 'true');
     await displayMode.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
 
@@ -203,7 +214,12 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+    await enableSpreadIfAvailable(page);
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toHaveCount(0);
+      return;
+    }
     await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
     await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
 
@@ -212,7 +228,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
     await expect(rightContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
 
-    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).first().click();
     const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
     await expect(downloadPanel).toBeVisible();
     await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
@@ -227,7 +243,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(page.locator('#wird-tafsir-ayah-1-2')).toContainText('تفسير اختباري 1:2');
     await expect(page.locator('#wird-tafsir-ayah-1-2')).toContainText('موضع القراءة');
 
-    await rightContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+    await rightContent.getByRole('button', { name: 'التفسير الميسر' }).first().click();
     await expect(page.locator('#wird-tafsir-ayah-2-1')).toContainText('تفسير اختباري 2:1');
     await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
 
@@ -238,7 +254,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(page.getByRole('main', { name: 'صفحتا المصحف 1 و2' })).toBeVisible();
     await expect(page.locator('#wird-ayah-1-7')).toBeVisible();
     await expect(rightContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' }).first()).toHaveAttribute('aria-pressed', 'true');
     expect(requestedSurahs).toHaveLength(114);
   });
 
@@ -272,8 +288,8 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
-    await page.getByRole('group', { name: 'محتوى الصفحة اليسرى' }).getByRole('button', { name: 'التفسير الميسر' }).click();
+    await enableSpreadIfAvailable(page);
+    await page.getByRole('button', { name: 'التفسير الميسر' }).first().click();
 
     const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
     await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
@@ -343,15 +359,19 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
-    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
-    await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
-
-    const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
-    await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
-    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).click();
-    await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('main', { name: 'صفحتا المصحف 1 و2' })).toBeVisible();
+    await enableSpreadIfAvailable(page);
+    const isMobile = (page.viewportSize()?.width ?? 1280) < 768;
+    if (isMobile) {
+      await page.getByRole('button', { name: 'التفسير الميسر' }).first().click();
+    } else {
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible();
+      await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible();
+      const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
+      await expect(leftContent.getByRole('button', { name: 'القرآن' })).toHaveAttribute('aria-pressed', 'true');
+      await leftContent.getByRole('button', { name: 'التفسير الميسر' }).first().click();
+      await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' }).first()).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.getByRole('main', { name: 'صفحتا المصحف 1 و2' })).toBeVisible();
+    }
 
     // The Tafsir pane resolves its IndexedDB read asynchronously after the tab is selected.
     // Wait for the completed-state action rather than racing the initial loading placeholder.
@@ -436,8 +456,8 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
-    await page.getByRole('group', { name: 'محتوى الصفحة اليسرى' }).getByRole('button', { name: 'التفسير الميسر' }).click();
+    await enableSpreadIfAvailable(page);
+    await page.getByRole('button', { name: 'التفسير الميسر' }).first().click();
 
     const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
     await expect(downloadPanel).toContainText('0 / 114 سورة');
@@ -466,9 +486,8 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
     await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
-    const leftContent = page.getByRole('group', { name: 'محتوى الصفحة اليسرى' });
-    await leftContent.getByRole('button', { name: 'التفسير الميسر' }).click();
+    await enableSpreadIfAvailable(page);
+    await page.getByRole('button', { name: 'التفسير الميسر' }).first().click();
 
     const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
     await downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' }).click();
@@ -519,7 +538,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
       await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
       await expect(page.locator('#wird-ayah-1-1')).toBeVisible({ timeout: 15_000 });
       await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
-      await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+      await enableSpreadIfAvailable(page);
       await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 1"]')).toBeVisible({ timeout: 15_000 });
       await expect(page.locator('svg[aria-label="صفحة المصحف المطبوعة رقم 2"]')).toBeVisible({ timeout: 15_000 });
     } finally {

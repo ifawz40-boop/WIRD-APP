@@ -77,8 +77,8 @@ jobs:
         run: bun run test:firestore-rules
       - name: TypeScript validation
         run: bun run lint
-      - name: Production build (includes Quran chunk validation)
-        run: bun run build
+      - name: Production build (includes Quran chunk validation and CI-only E2E bridge)
+        run: VITE_WIRD_E2E_TEST_HOOKS=true bun run build
       - name: Production server startup smoke test
         run: bun run smoke:server
 

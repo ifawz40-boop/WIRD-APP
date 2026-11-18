@@ -90,14 +90,16 @@ test.describe('WIRD dashboard accessibility and responsive UX', () => {
     await page.reload();
     await expect(page.getByRole('heading', { name: /السلام عليكم ورحمة الله/ })).toBeVisible();
 
-    const dueSection = page.getByRole('region', { name: 'مهام الحفظ المستحقة من بقية الخطط' });
+    const dueSection = page.getByRole('list', { name: 'مهام الخطط النشطة اليوم' });
     await expect(dueSection).toBeVisible();
-    await expect(dueSection).toContainText('3 مهام');
+    await expect(dueSection.getByRole('listitem')).toHaveCount(3);
     await expect(page.locator('#dashboard-daily-wird')).toContainText('خطة: خطة الحفظ الأولى');
+    await expect(dueSection).toContainText('خطة الحفظ الأولى');
     await expect(dueSection).toContainText('خطة الحفظ الثانية');
     await expect(dueSection).toContainText('خطة الحفظ الثالثة');
-    await expect(dueSection).toContainText('متأخر');
-    await expect(dueSection).toContainText('مستحق اليوم');
+    await expect(dueSection).toContainText(`مستحق من ${dueDates[0]}`);
+    await expect(dueSection).toContainText(`مستحق من ${dueDates[1]}`);
+    await expect(dueSection).toContainText('مهمة اليوم');
   });
 
   test('dashboard remains usable on a narrow phone without horizontal overflow', async ({ page }) => {
