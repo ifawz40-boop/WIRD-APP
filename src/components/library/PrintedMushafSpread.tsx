@@ -29,7 +29,7 @@ interface PrintedMushafSpreadProps {
   onTafsirAyahChange?: (ayah: Ayah | null) => void;
   onAyahsResolved?: (resolved: { page: number; ayahs: Ayah[] }) => void;
   onFallback: () => void;
-  onNavigateToAyah?: (surahNumber: number, ayahNumber: number) => number | null;
+  onNavigateToAyah?: (surahNumber: number, ayahNumber: number) => number | null | Promise<number | null>;
   maxWidthClass?: string;
 }
 
@@ -178,8 +178,8 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     handleSetSourcePageMode(getSourcePageForSlot(slotPage), mode);
   };
 
-  const handleNavigateFromTafsir = (surahNumber: number, ayahNumber: number) => {
-    const targetPage = onNavigateToAyah?.(surahNumber, ayahNumber) ?? null;
+  const handleNavigateFromTafsir = async (surahNumber: number, ayahNumber: number) => {
+    const targetPage = await (onNavigateToAyah?.(surahNumber, ayahNumber) ?? null);
     if (targetPage !== null) {
       setPageTafsirPreferences(prev => {
         const nextPages = { ...prev, [targetPage]: true };
@@ -384,7 +384,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                     sourceSideLabel={sourceSideLabel}
                     ayahs={sourceAyahs}
                     selectedAyah={selectedForPage}
-                    onNavigate={handleNavigateFromTafsir}
+                    onNavigate={async (surahNumber, ayahNumber) => { await handleNavigateFromTafsir(surahNumber, ayahNumber); }}
                   />
                 ) : (
                   <QuranMushafFacsimilePage
