@@ -31,8 +31,8 @@ const safeCases = [
 for (const [input, pattern, expected] of safeCases) {
   assert.equal(picomatch.isMatch(input, pattern), expected, `${pattern} => ${input}`);
 }
-const worker = `const pm=require('picomatch');const patterns=${JSON.stringify(unsafe)};const input='x'.repeat(100000)+'!';for(const p of patterns){for(const options of [{},{maxExtglobRecursion:false},{maxExtglobRecursion:100}]){try{pm(p,options)(input)}catch(e){if(!(e instanceof SyntaxError))throw e}}}`;
+const worker = `const pm=require('picomatch');const cases=${JSON.stringify([['+(a*b)', 'a'.repeat(100000)+'!'],['*(a*|b)', 'a'.repeat(100000)+'!'],['+(ab|abab)', 'ab'.repeat(50000)+'c'],['+(a|aa)', 'a'.repeat(100000)+'!'],['+(+(a))', 'a'.repeat(100000)+'!'],['*(!(foo))', 'f'.repeat(100000)+'!'])};for(const [p,input] of cases){for(const options of [{},{maxExtglobRecursion:false},{maxExtglobRecursion:100}]){try{pm(p,options)(input)}catch(e){if(!(e instanceof SyntaxError))throw e}}}`;
 const result = spawnSync(process.execPath, ['-e', worker], { encoding: 'utf8', timeout: 3000 });
 assert.ifError(result.error);
 assert.equal(result.status, 0, result.stderr || 'isolated ReDoS regression worker failed or exceeded its deadline');
-console.log(`picomatch security regression: ${unsafe.length} unsafe patterns rejected; ${safeCases.length} safe patterns preserved; bounded worker completed.`);
+console.log(`picomatch security regression: ${unsafe.length} risky patterns rejected or literalized; ${safeCases.length} safe patterns preserved; bounded worker completed.`);
