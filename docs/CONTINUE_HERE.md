@@ -302,3 +302,15 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 3. Obtain explicit owner approval before changing either Production sync flag. Do not modify Vercel settings or secrets otherwise.
 4. Once code/security gates pass, verify the exact current preview SHA, then test install → prepare offline package → download audio/Mushaf/Tafsir → close app → enable airplane mode → reopen and use on a real device.
 5. Only then consider removing Draft and merging. Production deploy is a separate step and may be blocked by Vercel Hobby daily deployment limits.
+
+
+## 2026-11-18 — audio cold-restart recovery test added
+
+- Added a focused unit/integration regression inside `src/services/offlineQuranAudioLibrary.test.ts` (latest code commit `95c74d808195a675d54338f87e7705bc33b319cd`). It simulates a tab closing while ayah 2 is in flight, creates a fresh `OfflineQuranAudioLibrary` instance over the same IndexedDB factory/database and Cache Storage, runs reconciliation, and asserts:
+  - Ayah 1 remains verified and is not fetched again.
+  - Only the interrupted ayah 2 is fetched twice (initial aborted request + one retry).
+  - Ayah 3 is fetched once; all three files end available and the job completes.
+- The test is added to the existing `runOfflineQuranAudioLibraryTests()` suite, so it is included by the existing aggregate test runner if that runner imports this suite as expected.
+- **Verification pending:** the connector did not expose a new GitHub Actions run for the latest branch commit at the time of this checkpoint. Do not report this new test as passing until an exact-head Quality Gate completes.
+- New Playwright reload-recovery tests for Tafsir and 604-page Mushaf are also present in `e2e/offline-restart-recovery.spec.ts` (commits `c52470c4dba00c71fd80a35a9c3345825efdc99d`, `b2dd84b8a78ca99532c71aa00db0af91e4259608`). They too remain unverified pending exact-head CI.
+- Latest source commit: `95c74d808195a675d54338f87e7705bc33b319cd`. Latest documentation checkpoint will be recorded by a subsequent docs commit.
