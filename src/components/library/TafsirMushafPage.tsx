@@ -102,7 +102,7 @@ export const TafsirMushafPage: React.FC<TafsirMushafPageProps> = ({
           <span className="text-[10px] font-semibold text-[#5B6F6B] dark:text-[#AAB8B4]">موضع العرض: ص {pageNumber}</span>
         </div>
         <h3 className="mt-1 text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">تفسير آيات {sourceSideLabel} {sourcePageNumber}</h3>
-        <p className="mt-1 text-[10px] text-[#5B6F6B] dark:text-[#AAB8B4]">هذا الجانب يعرض تفسير آيات الصفحة المقابلة، بينما يظل الجانب الآخر متاحًا لقراءة المصحف.</p>
+        <p className="mt-1 text-[10px] text-[#5B6F6B] dark:text-[#AAB8B4]">{sourceSideLabel === 'الصفحة' ? 'يعرض هذا الوضع تفسير آيات الصفحة نفسها.' : 'هذا الجانب يعرض تفسير آيات الصفحة المقابلة، بينما يظل الجانب الآخر متاحًا لقراءة المصحف.'}</p>
         {isOfflineReady && <p className="mt-2 text-[10px] font-bold text-emerald-700 dark:text-emerald-300" role="status">التفسير متاح محليًا دون اتصال.</p>}
       </header>
 
