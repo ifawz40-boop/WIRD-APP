@@ -439,6 +439,7 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
 
     const fetchFn: typeof fetch = async (input, init) => {
       assert(init?.redirect === 'error', 'Download fetch must fail closed on redirects (redirect: error)');
+      assert(init?.credentials === 'same-origin', 'Protected Preview requests must retain the same-origin Vercel session without sending credentials to external hosts');
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const parsedUrl = new URL(url, 'https://wird.test');
       assert(parsedUrl.origin === 'https://wird.test' && parsedUrl.pathname === '/api/quran-audio-download',
