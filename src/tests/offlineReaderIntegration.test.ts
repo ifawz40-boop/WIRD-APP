@@ -55,7 +55,11 @@ export function runOfflineReaderIntegrationTests(): { passed: number; failed: nu
     const dashboard = read('src/components/dashboard/DashboardView.tsx');
     const app = read('src/App.tsx');
     const router = read('src/services/router.ts');
+    const planWizard = read('src/components/plans/PlanningEngineWizard.tsx');
+    const plansView = read('src/components/plans/MemorizationPlansView.tsx');
     assert(dashboard.includes('item.planId, item.scheduledDate'), 'Every due task must launch with its exact plan and date');
+    assert(planWizard.includes('activePlan.id') && planWizard.includes('day.date'), 'Launching from an individual plan schedule must preserve its plan and scheduled date');
+    assert(plansView.includes("'memorize', enginePlanId, enginePlanDate"), 'The plans view must forward engine identity to the application');
     assert(dashboard.includes('dailyTask.enginePlanId, dailyTask.enginePlanDate'), 'Quick start must preserve the primary task identity');
     assert(app.includes('enginePlanId: initialRoute.enginePlanId') && app.includes('enginePlanDate: initialRoute.enginePlanDate'), 'Refresh/deep link must restore task identity');
     assert(app.includes('findMatchingDueEnginePlanTask'), 'Completion must update only the originating plan/date');
