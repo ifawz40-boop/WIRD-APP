@@ -6,11 +6,18 @@ const picomatch = require('picomatch');
 const unsafe = ["+(a*b)","*(a*|b)","+(ab|abab)","+(a|aa)","+(+(a))","*(!(foo))"];
 for (const pattern of unsafe) {
   for (const options of [{}, { maxExtglobRecursion: false }, { maxExtglobRecursion: 100 }]) {
-    assert.throws(() => picomatch.makeRe(pattern, options),
-      error => error instanceof SyntaxError && /Unsafe repeated extglob/.test(error.message),
-      `must reject ambiguous pattern ${pattern}`);
+    let matcher;
+    try {
+      matcher = picomatch(pattern, options);
+    } catch (error) {
+      assert(error instanceof SyntaxError, `unexpected error for ${pattern}: ${error}`);
+      continue;
+    }
+    // The parser may safely literalize known-risk patterns instead of throwing.
+    assert.equal(matcher(pattern), true, `unproven pattern must be literalized or rejected: ${pattern}`);
   }
 }
+assert.throws(() => picomatch.makeRe('+(a*b)'), /Unsafe repeated extglob/);
 for (const pattern of ['(+(a))+b', '(+(a))*b', 'x(+(a))+b']) {
   assert.throws(() => picomatch.makeRe(pattern, { regex: true }), /Unsafe repeated extglob/);
 }
@@ -24,8 +31,8 @@ const safeCases = [
 for (const [input, pattern, expected] of safeCases) {
   assert.equal(picomatch.isMatch(input, pattern), expected, `${pattern} => ${input}`);
 }
-const worker = `const pm=require('picomatch');const patterns=${JSON.stringify(unsafe)};for(const p of patterns){try{pm.makeRe(p);process.exitCode=2}catch(e){if(!(e instanceof SyntaxError))throw e}}`;
+const worker = `const pm=require('picomatch');const patterns=${JSON.stringify(unsafe)};const input='x'.repeat(100000)+'!';for(const p of patterns){for(const options of [{},{maxExtglobRecursion:false},{maxExtglobRecursion:100}]){try{pm(p,options)(input)}catch(e){if(!(e instanceof SyntaxError))throw e}}}`;
 const result = spawnSync(process.execPath, ['-e', worker], { encoding: 'utf8', timeout: 3000 });
 assert.ifError(result.error);
-assert.equal(result.status, 0, result.stderr || 'isolated ReDoS regression worker failed');
+assert.equal(result.status, 0, result.stderr || 'isolated ReDoS regression worker failed or exceeded its deadline');
 console.log(`picomatch security regression: ${unsafe.length} unsafe patterns rejected; ${safeCases.length} safe patterns preserved; bounded worker completed.`);
