@@ -186,3 +186,10 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Registered the same allowlisted binary handler in `server.ts` before SPA fallback.
 - Extended native API import/invalid-input smoke coverage and production + development server smoke tests to require JSON HTTP 400 for an unapproved reciter. This verifies route registration without making an upstream audio request.
 - These changes are on the active release branch; exact-head CI must be rerun before treating the correction as verified.
+
+### Additional correctness fix — exact future plan completion — 2026-11-18
+
+- Review found that the plan detail screen exposes future scheduled tasks, but the completion matcher previously rejected all future dates even when the user launched that exact task from the plan detail. This could leave a legitimately early-completed task unmarked.
+- Matcher now allows a future task only when both exact enginePlanId and enginePlanDate are supplied. Dashboard/legacy/unqualified launches remain restricted to due work; duplicate or ambiguous matches still fail closed.
+- Added regression coverage proving exact future plan/date succeeds and plan ID without date remains blocked.
+- This fix is committed on the release branch and must be included in the next exact-head CI result.
