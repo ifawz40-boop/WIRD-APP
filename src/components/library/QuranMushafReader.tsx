@@ -513,7 +513,6 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   };
 
   const currentBookmark = bookmarks.includes(page);
-  const lastNavigablePage = isTwoPageSpreadActive ? 603 : 604;
   const primarySurah = audioAyahs.length ? ALL_SURAHS.find(s => s.number === audioAyahs[0].surahNumber) : undefined;
   const currentJuz = audioAyahs.length ? audioAyahs[0].juz : Math.ceil(page / 20);
   const hasMultipleSurahsOnPage = useMemo(
@@ -527,6 +526,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     typeof window !== 'undefined' &&
     resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
     window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+  const lastNavigablePage = isTwoPageSpreadActive ? 603 : 604;
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
