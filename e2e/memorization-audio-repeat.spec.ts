@@ -109,7 +109,10 @@ test.describe('Memorization session audio repetition', () => {
     const audioStatus = page.getByRole('status').filter({ hasText: 'جارٍ تحميل التلاوة' });
     await expect(audioStatus).toHaveCount(0);
 
+    const previousAudioCount = await page.evaluate(() => (window as any).__wirdMockAudios.length);
     await page.getByRole('button', { name: 'استماع للآية' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__wirdMockAudios.length)).toBe(previousAudioCount + 1);
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__wirdMockAudios.at(-1).onerror)).toBe('function');
     await page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onerror?.());
     await expect(page.getByRole('button', { name: 'استماع للآية' })).toBeVisible();
     await expect(audioStatus).toHaveCount(0);
