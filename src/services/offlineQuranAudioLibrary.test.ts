@@ -784,6 +784,86 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     assert(STORE_AUDIO_JOBS === 'jobs' && STORE_AUDIO_FILES === 'files', 'Store names valid');
   });
 
+  await test('A closed-tab audio worker recovers from the same IndexedDB + Cache Storage without re-downloading verified ayahs', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-restart-${++dbCounter}`;
+    const mockCache = createMockCacheStorage();
+    const callsByUrl = new Map<string, number>();
+    let secondRequestStarted!: () => void;
+    const secondStarted = new Promise<void>(resolve => { secondRequestStarted = resolve; });
+    let blockSecondRequest = true;
+
+    const fetchFn: typeof fetch = async (input, init) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      const count = (callsByUrl.get(url) || 0) + 1;
+      callsByUrl.set(url, count);
+
+      if (url.endsWith('/2.mp3') && blockSecondRequest) {
+        blockSecondRequest = false;
+        secondRequestStarted();
+        await new Promise<void>((resolve, reject) => {
+          const signal = init?.signal;
+          const abort = () => reject(Object.assign(new Error('Simulated closed-tab abort'), { name: 'AbortError' }));
+          if (signal?.aborted) return abort();
+          signal?.addEventListener('abort', abort, { once: true });
+        });
+      }
+
+      return new Response(new Uint8Array([0xff, 0xfb, 0x90, count]).buffer, {
+        status: 200,
+        headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': '4' }
+      });
+    };
+
+    const deps = {
+      indexedDBFactory: factory,
+      databaseName,
+      cacheStorageFactory: mockCache.factory,
+      fetchFn,
+      concurrency: 1,
+      lockRunner: async (_name: string, task: () => Promise<any>) => task(),
+      storageEstimateFn: async () => ({ usage: 0, quota: 200_000_000 })
+    };
+
+    const firstTab = new OfflineQuranAudioLibrary(deps);
+    const job = await firstTab.enqueueDownloadJob({
+      scopeKind: 'range',
+      labelAr: 'اختبار استعادة تنزيل الصوت بعد إغلاق التطبيق',
+      reciterId: 'ar.alafasy',
+      ranges: [{ surahNumber: 112, startAyah: 1, endAyah: 3 }],
+      autoStart: false
+    });
+
+    const interruptedRun = firstTab.startOrResumeJob(job.jobId);
+    await secondStarted;
+    firstTab.close();
+    await interruptedRun;
+
+    const restartedTab = new OfflineQuranAudioLibrary(deps);
+    await restartedTab.reconcileLibrary();
+    const recoveredBeforeResume = (await restartedTab.listJobs()).find(entry => entry.jobId === job.jobId);
+    assert(
+      recoveredBeforeResume?.completedItems === 1 &&
+      (recoveredBeforeResume.status === 'partial' || recoveredBeforeResume.status === 'queued'),
+      'After restart, the first verified ayah must remain durable and the interrupted job must be resumable'
+    );
+
+    const completed = await restartedTab.startOrResumeJob(job.jobId);
+    assert(completed?.status === 'completed' && completed.completedItems === 3,
+      'A new library instance must resume and complete all remaining ayahs');
+    const calls = [...callsByUrl.entries()];
+    assert(calls.length === 3, 'Exactly three distinct ayah URLs must be requested');
+    assert(calls.filter(([url]) => url.endsWith('/1.mp3')).reduce((sum, [, count]) => sum + count, 0) === 1,
+      'The already verified first ayah must never be downloaded again after restart');
+    assert(calls.filter(([url]) => url.endsWith('/2.mp3')).reduce((sum, [, count]) => sum + count, 0) === 2,
+      'Only the interrupted second ayah must be retried after restart');
+    assert(calls.filter(([url]) => url.endsWith('/3.mp3')).reduce((sum, [, count]) => sum + count, 0) === 1,
+      'The third ayah must be downloaded exactly once after restart');
+    assert((await restartedTab.getStats()).availableFilesCount === 3,
+      'All three verified audio files must be available in the persistent cache after recovery');
+    restartedTab.close();
+  });
+
   return { passed, failed };
 }
 
