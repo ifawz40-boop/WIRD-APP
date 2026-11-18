@@ -510,7 +510,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       const result = await prepareWirdForOffline(setOfflineProgress);
       const status = await getWirdOfflinePackageStatus();
       setOfflinePackageStatus(status);
-      onToast?.(`اكتمل تنزيل ${result.completed} ملفًا. تم التحقق من حفظ ${status.cached} من أصل ${status.total} ملفًا برمجيًا. ${storageStatus.persisted ? 'حماية التخزين الدائم مفعّلة.' : 'قد يحذف المتصفح بعض الملفات عند ضغط المساحة؛ احتفظ بنسخة احتياطية من بياناتك.'}`, status.missing === 0 ? 'success' : 'info');
+      onToast?.(`اكتمل تنزيل ${result.completed} ملفًا. تم التحقق من حفظ ${status.cached} من أصل ${status.total} ملفًا برمجيًا. ${storageStatus.persisted ? 'حماية التخزين الدائم مفعّلة.' : 'قد يحذف المتصفح بعض الملفات عند ضغط المساحة؛ احتفظ بنسخة احتياطية من بياناتك.'}`, 'info');
     } catch (error) {
       onToast?.(error instanceof Error ? error.message : 'تعذر إكمال التجهيز المحلي؛ يمكنك إعادة المحاولة وسيُستكمل ما تم تنزيله.', 'error');
     } finally {
@@ -554,7 +554,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setMushafPackageStatus(status);
       onToast?.(
         status.missing === 0
-          ? 'تم التحقق من حفظ صفحات المصحف المصوّر الـ604 على هذا الجهاز.'
+          ? 'عُثر على ملفات الصفحات الـ604 محليًا؛ اضغط «إعادة التحقق» لفحص سلامة المحتوى.'
           : `المحفوظ ${status.cached} من 604 صفحات؛ المتبقي ${status.missing} صفحة.`,
         status.missing === 0 ? 'success' : 'info'
       );
@@ -566,7 +566,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   const handleDownloadMushafPackage = async () => {
-    if (isDownloadingMushafPackage || !isOnline) return;
+    if (isDownloadingMushafPackage || (!isOnline && mushafPackageStatus?.missing !== 0)) return;
     setIsDownloadingMushafPackage(true);
     setMushafPackageProgress(null);
     const controller = new AbortController();
@@ -839,8 +839,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <button type="button" onClick={handleCheckMushafPackage} disabled={isCheckingMushafPackage || isDownloadingMushafPackage} className="min-h-10 rounded-lg border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 px-3 py-2 font-bold disabled:opacity-50">
               {isCheckingMushafPackage ? 'جارٍ الفحص...' : 'فحص صفحات المصحف'}
             </button>
-            <button type="button" onClick={handleDownloadMushafPackage} disabled={!isOnline || isDownloadingMushafPackage || mushafPackageStatus?.missing === 0} className="min-h-10 rounded-lg bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] px-3 py-2 font-bold disabled:opacity-50">
-              {isDownloadingMushafPackage ? 'جارٍ تنزيل صفحات المصحف...' : mushafPackageStatus?.cached ? 'استكمال تنزيل المصحف' : 'تنزيل المصحف المصوّر كاملًا'}
+            <button type="button" onClick={handleDownloadMushafPackage} disabled={isDownloadingMushafPackage || (!isOnline && mushafPackageStatus?.missing !== 0)} className="min-h-10 rounded-lg bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] px-3 py-2 font-bold disabled:opacity-50">
+              {isDownloadingMushafPackage ? 'جارٍ فحص/تنزيل صفحات المصحف...' : mushafPackageStatus?.missing === 0 ? 'إعادة التحقق من صفحات المصحف' : mushafPackageStatus?.cached ? 'استكمال تنزيل المصحف' : 'تنزيل المصحف المصوّر كاملًا'}
             </button>
             {isDownloadingMushafPackage && (
               <button type="button" onClick={() => mushafDownloadControllerRef.current?.abort()} className="min-h-10 rounded-lg border border-[#9A7512]/30 px-3 py-2 font-bold">إيقاف مؤقت</button>
