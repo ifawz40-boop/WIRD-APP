@@ -97,7 +97,17 @@ async function runServerSmoke(mode, port) {
       throw new Error(`${mode} tafsir API route did not return the expected JSON validation response.`);
     }
 
-    console.log(`${mode} server smoke test passed: advisor and tafsir API routes responded with JSON.`);
+    const audioDownloadResponse = await fetch(`${baseUrl}/api/quran-audio-download?reciter=unapproved&ayah=1`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(2_000)
+    });
+    const audioDownloadContentType = audioDownloadResponse.headers.get('content-type') || '';
+    const audioDownloadPayload = await audioDownloadResponse.json();
+    if (audioDownloadResponse.status !== 400 || !audioDownloadContentType.includes('application/json') || audioDownloadPayload.error !== 'INVALID_AUDIO_REQUEST') {
+      throw new Error(`${mode} Quran audio download route did not return the expected JSON validation response.`);
+    }
+
+    console.log(`${mode} server smoke test passed: advisor, tafsir, and Quran audio download API routes responded with JSON.`);
   } finally {
     if (!exited && server.pid) {
       await killProcessTree(server);
