@@ -40,6 +40,17 @@ export function runOfflineReaderIntegrationTests(): { passed: number; failed: nu
   });
 
 
+  test('Facing Mushaf can show complete offline Tafsir on either opposite side', () => {
+    const spread = read('src/components/library/PrintedMushafSpread.tsx');
+    const page = read('src/components/library/TafsirMushafPage.tsx');
+    const service = read('src/services/mushafSpreadService.ts');
+    assert(spread.includes('<TafsirMushafPage') && spread.includes('getSourcePageForSlot'), 'Either facing slot must be able to render Tafsir for the opposite Quran page');
+    assert(spread.includes('aria-label={`محتوى ${slotSideLabel}`}') && spread.includes('التفسير الميسر'), 'Both sides need accessible Quran/Tafsir selectors');
+    assert(spread.includes('saveMushafTafsirPagePreferences') && service.includes('wird:mushaf-tafsir-page-modes:v1:'), 'Per-source-page Tafsir choices must persist locally');
+    assert(page.includes('getOfflineTafsirForSurah') && page.includes('status.isComplete'), 'Page Tafsir must read only from the complete validated local package');
+    assert(page.includes('wird-tafsir-ayah-') && page.includes('OFFLINE_TAFSIR_SOURCE.version'), 'Local Tafsir rows must preserve ayah identity and source/version attribution');
+  });
+
   test('Daily plan identity survives dashboard launch, deep link, and completion', () => {
     const dashboard = read('src/components/dashboard/DashboardView.tsx');
     const app = read('src/App.tsx');
