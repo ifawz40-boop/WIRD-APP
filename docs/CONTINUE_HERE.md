@@ -455,3 +455,11 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Master execution tracker refreshed with the 2026-11-18 candidate state, exact #4599 evidence, #4604 in-progress UI regression, current security hold, and revised Phase 0/2/5 statuses. Commit: `e7af48be4ddcbe22f3c63248e84a0d87f4a73a19`.
 
 - Master plan Phase 2 checklist updated: source terms/allowlist/EveryAyah boundary, unified IndexedDB audio repository, exact cache verification/recovery, cross-tab/concurrency controls, user controls, storage/readiness center, selective deletion, PWA install/Safari guide, and offline capability matrix are checked as implemented. Cold-restart/airplane-mode physical acceptance remains unchecked. Latest master-plan commit: `3450c951db1dd8e5780da426682ca26074551cf7`.
+
+
+## Quality Gate #4604 completed + Service Worker cache v4 — 2026-11-18
+- Exact tested SHA `c69f6dc15b7067bcd7d40f266d5ab7dbe35e36fe`; application job PASS: 776 unit assertions, 31 Firestore Rules, 604 Mushaf maps, API/audio smoke, TypeScript, production build/server smoke; Playwright 186 passed / 0 failed / 2 intentional viewport skips. New dashboard three-plan test passed Desktop 483ms and Mobile 527ms; offline Mushaf and sanitizer tests passed.
+- Security audit job remains FAIL on `picomatch@4.0.7` through Vite toolchain; official npm latest and GitHub releases still 4.0.7, no fixed version. No bypass.
+- After #4604, bumped Service Worker shell cache `wird-app-v3` → `wird-app-v4` so a failed SW install cannot overwrite the currently active shell cache. Activation cleans the old shell only after new worker readiness; explicit content cache `wird-app-content-v1` and dedicated audio/Mushaf caches remain preserved. Updated PWA unit and E2E assertions.
+- Refreshed official Al Quran Cloud terms in the audio plan: personal/educational recitation downloads allowed; reciters retain copyright; commercial products may receive removal requests; no rehosting/redistribution assumed.
+- Latest PR #390 head `c36d982e4b29385b56fecbbdd0fa82c0289a3e65`, 45 files (+3,822/-269), 211 commits ahead of main `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. #4604 predates cache v4 and doc changes; new exact-head Quality Gate required. Draft/HOLD, no merge/deploy.
