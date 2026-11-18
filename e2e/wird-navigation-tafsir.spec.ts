@@ -337,7 +337,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
         transaction.onabort = () => reject(transaction.error);
       });
       database.close();
-    }, []);
+    }, ALL_SURAHS.map(surah => surah.versesCount));
 
     await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
     await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
