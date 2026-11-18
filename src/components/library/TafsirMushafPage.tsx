@@ -13,7 +13,7 @@ import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 interface TafsirMushafPageProps {
   pageNumber: number;
   sourcePageNumber: number;
-  sourceSideLabel: 'الصفحة اليمنى' | 'الصفحة اليسرى';
+  sourceSideLabel: 'الصفحة اليمنى' | 'الصفحة اليسرى' | 'الصفحة';
   ayahs: Ayah[];
   selectedAyah: Ayah | null;
   onNavigate: (surahNumber: number, ayahNumber: number) => void;
