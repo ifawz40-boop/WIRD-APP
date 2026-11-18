@@ -45,13 +45,13 @@ WIRD stores the raw payload without editing translation or footnote fields, disp
 
 ## Current Mushaf and offline behavior
 
-- In facing-page Mushaf mode, both sides remain Quran by default; the existing Tafsir pane opens for the selected ayah.
-- Page overview lists the ayahs on the page. Selecting one opens its Tafsir in the pane; the source translation itself is not rewritten.
-- The offline fallback is enabled only for the explicitly selected Tafsir Muyassar edition (edition ID 16) and only after the complete 114-surah package passes its manifest/source-version validation.
-- If the package is partial, stale, corrupt or unavailable, it is not presented as a complete offline edition. The settings panel offers resume/verification; the reader continues with normal online/cache behavior and reports an error if neither source is available.
-- Local fallback visibly identifies QuranEnc.com, the publisher and pinned version. The stored source payload and footnotes remain unchanged; WIRD's canonical Quran text remains the sole source for ayah text and coordinates.
-- A separate full-page Tafsir layout is not yet mounted in the main Mushaf spread UI; `TafsirMushafPage.tsx` remains an optional component pending a later UX decision.
-
+- In facing-page Mushaf mode, both sides default to Quran. Each side has explicit Quran / Tafsir Muyassar selectors.
+- Selecting Tafsir on one side displays the complete Tafsir for the Quran page opposite it; the other side remains Quran. Only one Tafsir side is active in a visible spread at a time.
+- The Tafsir side renders every ayah from the opposite page with WIRD's canonical local Quran text, untouched QuranEnc translation and footnotes, selected-ayah highlighting, and previous/next ayah navigation.
+- Per-source-page Tafsir preferences are stored locally per reader surface. Switching which side shows Tafsir temporarily leaves the other preference intact; navigating back to a page restores its previous preference.
+- The offline Tafsir page is backed only by the complete local QuranEnc Arabic al-Muyassar corpus; no online request is made while reading. An incomplete, stale or corrupt package is not presented as a complete offline edition; the page offers resumable download/verification instead.
+- The single-ayah Tafsir pane also has an offline fallback, limited to explicitly selected Tafsir Muyassar (edition ID 16) and gated on the complete 114-surah package.
+- Local rendering visibly identifies QuranEnc.com, the publisher and pinned version. The stored source payload and footnotes remain unchanged; WIRD's canonical Quran text remains the sole source for ayah text and coordinates.
 ## Implementation locations
 
 - `src/services/tafsirOfflineLibrary.ts`
@@ -62,4 +62,4 @@ WIRD stores the raw payload without editing translation or footnote fields, disp
 
 ## Release gates
 
-PR #386 remains Draft until exact-head CI, desktop/mobile E2E, source-integrity rejection tests, pause/resume tests and offline reading tests pass. The prerequisite CI chain is currently blocked by the high-severity picomatch advisory documented in docs/CONTINUE_HERE.md. Do not bypass the security audit.
+Exact-head CI, desktop/mobile E2E, source-integrity rejection tests, pause/resume tests and offline reading tests remain mandatory release gates for the integrated branch. The prerequisite CI chain is currently blocked by the high-severity picomatch advisory documented in docs/CONTINUE_HERE.md. Do not bypass the security audit.
