@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { formatAyahAudioUrl, RECITERS } from './audioService';
+import { formatAyahAudioUrl, OFFLINE_DOWNLOADABLE_RECITERS, RECITERS, resolveApprovedOfflineReciterId } from './audioService';
 
 export function runAudioServiceTests(): { passed: number; failed: number } {
   let passed = 0;
@@ -25,6 +25,25 @@ export function runAudioServiceTests(): { passed: number; failed: number } {
       if (!url.endsWith('/001001.mp3')) throw new Error('Unexpected ayah filename');
       if (!url.includes(reciter.subfolder)) throw new Error('Reciter folder mismatch');
     });
+  });
+
+  test('offline download choices are limited to reciters selectable in the Quran reader', () => {
+    const playerOfflineIds = RECITERS
+      .map(reciter => resolveApprovedOfflineReciterId(reciter.id))
+      .filter((id): id is string => Boolean(id));
+    const downloadIds = OFFLINE_DOWNLOADABLE_RECITERS.map(reciter => reciter.id);
+    if (downloadIds.length !== playerOfflineIds.length) {
+      throw new Error('Offline download list must contain exactly the player-supported approved reciters');
+    }
+    if (playerOfflineIds.some(id => !downloadIds.includes(id))) {
+      throw new Error('Every player-supported approved reciter must be available for offline download');
+    }
+    if (downloadIds.includes('ar.saoodshuraym') || downloadIds.includes('ar.ahmedajamy')) {
+      throw new Error('Reciters unavailable in the Quran player must not be offered as offline downloads');
+    }
+    if (resolveApprovedOfflineReciterId('ghamdi') !== null) {
+      throw new Error('Ghamdi must remain stream-only');
+    }
   });
 
   test('offline session-cache helper is restricted to the reviewed Quran CDN', () => {
