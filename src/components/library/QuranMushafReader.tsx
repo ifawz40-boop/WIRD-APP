@@ -502,13 +502,20 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     if (point) jumpToNavigationPoint(point);
   };
 
-  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number) => {
+  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number): number | null => {
     const targetPage = Object.entries(PAGE_INDEX).find(([, segments]) =>
       segments.some(segment => segment.surahNumber === surahNumber && ayahNumber >= segment.startAyah && ayahNumber <= segment.endAyah)
     );
-    if (!targetPage) return;
-    jumpToNavigationPoint({ surahNumber, ayahNumber, page: Number(targetPage[0]) });
-    setTafsirAyah(null);
+    if (!targetPage) return null;
+    const pageNumber = Number(targetPage[0]);
+    void loadSurahVerses(surahNumber).then(verses => {
+      const targetAyah = verses.find(ayah => ayah.numberInSurah === ayahNumber);
+      if (targetAyah) setTafsirAyah(targetAyah);
+    }).catch(error => {
+      console.warn('[WIRD Mushaf] Could not restore the selected local ayah after navigation:', error);
+    });
+    jumpToNavigationPoint({ surahNumber, ayahNumber, page: pageNumber });
+    return pageNumber;
   };
 
   const jumpToSurah = (surahNumber: number) => {
@@ -993,6 +1000,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             selectedAyah={tafsirAyah}
             onSelectAyah={setTafsirAyah}
             onAyahsResolved={handlePrintedPageResolved}
+            onNavigateToAyah={handleNavigateToAyah}
             onFallback={() => selectReaderLayout('flow')}
             maxWidthClass={isFullWidth ? 'max-w-none' : 'max-w-7xl'}
           />
