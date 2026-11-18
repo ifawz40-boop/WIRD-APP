@@ -20,11 +20,12 @@
 
 ## Next engineering actions (continue without waiting for test jobs)
 
-1. Add true reload/closed-tab recovery coverage, not only same-page resume:
-   - Tafsir: interrupt after one or more valid surahs, reload the page, reopen the panel, and prove persisted surahs are not downloaded again while the first missing surah resumes.
-   - Audio: interrupt an in-flight job, close/recreate the library instance against the same IndexedDB + Cache Storage, reconcile, and prove verified files survive while unfinished items resume exactly once.
-   - Mushaf: current E2E covers a 503 interruption and same-page resume; add a reload between failure and resume and prove cached valid pages are reused.
-2. Re-run Quality Gate on the final exact branch head after these additions. Keep production-only audit and complete dependency audit separate and visible.
+1. Added `e2e/offline-restart-recovery.spec.ts` on 2026-11-18 (code commits `c52470c4dba00c71fd80a35a9c3345825efdc99d` and cache-name correction `b2dd84b8a78ca99532c71aa00db0af91e4259608`):
+   - Tafsir: simulate HTTP 503 after one verified surah, reload the app, and assert the saved surah is not downloaded again before completing all 114.
+   - Mushaf: simulate HTTP 503 during the 604-page package, reload the app, and assert the five valid cached pages are reused while the failed page is fetched again.
+   - These new tests are **NOT YET VERIFIED**; no exact-head GitHub Actions run has been observed for the new commits. The latest Vercel status is blocked by the account build/deployment rate limit, not an application build result.
+2. Still add audio close/recreate recovery coverage: interrupt an in-flight job, create a new library instance against the same IndexedDB + Cache Storage, reconcile, and prove verified files survive while unfinished items resume exactly once.
+3. Re-run Quality Gate on the final exact branch head after these additions. Keep production-only audit and complete dependency audit separate and visible.
 3. Physical Android/iOS/Safari cold-restart + airplane-mode acceptance remains mandatory; Playwright is not a substitute.
 4. Offline-only production boundary is not currently confirmed: the last read-only Vercel inspection reported `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` on Production. Do not change either without explicit owner approval; verify both are false before any offline-only Production release.
 5. Keep the PR Draft/HOLD until the full security gate has an evidence-based resolution or the owner explicitly authorizes a documented risk exception. No such exception is currently authorized.
