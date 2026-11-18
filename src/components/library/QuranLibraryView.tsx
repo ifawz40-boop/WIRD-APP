@@ -460,21 +460,30 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     handleStopAudio();
     globalAudioCoordinator.claimFocus('library');
     const requestSeq = ++playbackRequestSeqRef.current;
-    const resolvedTracks = await Promise.all(currentAyahs.map(async ayah => {
-      const descriptor = getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter);
-      const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
-        descriptor.approvedReciterId,
-        descriptor.globalAyahNumber,
-        descriptor.url
-      );
-      return { track: { id: String(ayah.number), url: resolved.src }, revoke: resolved.revoke };
+    const tracks = currentAyahs.map(ayah => ({
+      id: String(ayah.number),
+      url: getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url
     }));
+    const resolvedTracks = await Promise.all(
+      currentAyahs.slice(segmentStartIndex, segmentEndIndex + 1).map(async (ayah, offset) => {
+        const index = segmentStartIndex + offset;
+        const descriptor = getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter);
+        const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+          descriptor.approvedReciterId,
+          descriptor.globalAyahNumber,
+          descriptor.url
+        );
+        return { index, track: { id: String(ayah.number), url: resolved.src }, revoke: resolved.revoke };
+      })
+    );
     if (requestSeq !== playbackRequestSeqRef.current) {
       resolvedTracks.forEach(item => item.revoke?.());
       return;
     }
-    resolvedTracks.forEach(item => { if (item.revoke) activeObjectUrlRevokersRef.current.add(item.revoke); });
-    const tracks = resolvedTracks.map(item => item.track);
+    resolvedTracks.forEach(item => {
+      tracks[item.index] = item.track;
+      if (item.revoke) activeObjectUrlRevokersRef.current.add(item.revoke);
+    });
     requestOfflineAudioCache(
       tracks.slice(segmentStartIndex, Math.min(segmentEndIndex + 1, segmentStartIndex + 20)).map(track => track.url)
     );
