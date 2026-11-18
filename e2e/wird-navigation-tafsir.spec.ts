@@ -475,7 +475,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(downloadPanel.getByRole('button', { name: 'تنزيل التفسير الميسر كاملًا' })).toBeVisible();
   });
 
-  test('full offline preparation caches lazy Quran assets and opens the mushaf offline', async ({ page, context }) => {
+  test('full offline preparation caches lazy Quran assets and cold-starts the mushaf offline after reload', async ({ page, context }) => {
     test.skip((page.viewportSize()?.width ?? 1280) < 768, 'The full asset download is exercised once on desktop; mobile settings reachability is covered separately.');
     test.setTimeout(180_000);
 
@@ -508,6 +508,11 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
 
     try {
       await context.setOffline(true);
+      // Simulate closing and reopening the app while the device remains offline.
+      // The service worker must serve the cached document and every required shell asset.
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+      await expect(page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ })).toBeVisible({ timeout: 15_000 });
       await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
       await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
       await expect(page.locator('#wird-ayah-1-1')).toBeVisible({ timeout: 15_000 });
