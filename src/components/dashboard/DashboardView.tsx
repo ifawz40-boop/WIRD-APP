@@ -527,7 +527,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               disabled={dailyTask.source === 'blocked'}
-              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode, dailyTask.enginePlanId, dailyTask.enginePlanDate)}
+              onClick={() => { if (dailyTask.source === 'blocked') return; onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode, dailyTask.enginePlanId, dailyTask.enginePlanDate); }}
               className="flex-1 w-full min-h-12 flex items-center justify-center gap-2 py-3 px-4 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white font-bold text-xs md:text-sm rounded-xl shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ring-1 ring-[#C59B27]/35"
             >
               <Play className="w-4 h-4 fill-white" />
