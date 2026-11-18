@@ -39,5 +39,17 @@ export function runOfflineReaderIntegrationTests(): { passed: number; failed: nu
     assert(settings.includes('<TafsirOfflineDownloadPanel />'), 'Users must have an explicit offline Tafsir download control');
   });
 
+
+  test('Daily plan identity survives dashboard launch, deep link, and completion', () => {
+    const dashboard = read('src/components/dashboard/DashboardView.tsx');
+    const app = read('src/App.tsx');
+    const router = read('src/services/router.ts');
+    assert(dashboard.includes('item.planId, item.scheduledDate'), 'Every due task must launch with its exact plan and date');
+    assert(dashboard.includes('dailyTask.enginePlanId, dailyTask.enginePlanDate'), 'Quick start must preserve the primary task identity');
+    assert(app.includes('enginePlanId: initialRoute.enginePlanId') && app.includes('enginePlanDate: initialRoute.enginePlanDate'), 'Refresh/deep link must restore task identity');
+    assert(app.includes('findMatchingDueEnginePlanTask'), 'Completion must update only the originating plan/date');
+    assert(router.includes('planDate') && router.includes('enginePlanId'), 'Session URLs must carry validated plan/date context');
+  });
+
   return { passed, failed };
 }
