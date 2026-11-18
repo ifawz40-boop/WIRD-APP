@@ -517,3 +517,10 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 4. Physical acceptance remains required on Android Chrome, iOS Safari, and desktop Safari/Chromium, including airplane mode, storage quota pressure, eviction, resume, and app restart.
 5. Keep PR #390 Draft/HOLD until the High dependency audit is resolved by an official maintainer-reviewed upstream release and exact-head Quality Gate is fully green.
 6. Only after release gates pass: request/perform merge to `main`, then production deployment when Vercel quota permits. Never activate remote-sync flags as part of this offline-only release.
+
+
+### Follow-up findings after the #4639 run started
+- Mushaf 604/604 integrity verification currently still passes through the full-package quota-reserve gate. On nearly-full storage, a no-missing-pages verification can be blocked despite requiring no new package bytes. Next fix: apply full-package quota preflight only when pages are missing; add a 604/604 low-quota verification test. If a corrupt page is discovered, delete/replace it and report an honest incomplete state if Cache Storage cannot accept the replacement.
+- The three-plan Playwright fixture currently seeds all three plans with the same start date. Strengthen it to use distinct start dates (two-days-overdue, yesterday, today), verify the selected `planDate` for each, click the dashboard primary CTA, the header quick-start, and both additional plan cards. This matches the original user scenario more closely.
+- Add a cold-tab offline acceptance test: after the app shell and offline audio are cached, close the page, open a new tab in the same browser context while offline, and verify app shell + durable audio still work.
+- Audio UX follow-up: the offline downloader lists seven Al Quran Cloud reciters while the main player maps four approved editions plus Ghamdi as stream-only. Align the selectable lists or explicitly mark stream-only / non-playable download options before broad release.
