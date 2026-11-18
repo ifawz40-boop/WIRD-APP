@@ -1,6 +1,9 @@
 // Bump the shell cache on SW install changes so a failed install never overwrites the active worker's cache.
 const CACHE_NAME = 'wird-app-v4';
 const AUDIO_CACHE_NAME = 'wird-app-audio-v1';
+const OFFLINE_AUDIO_LIBRARY_CACHE_NAME = 'wird-offline-quran-audio-v1';
+const OFFLINE_AUDIO_LIBRARY_DB_NAME = 'wird-offline-audio';
+const OFFLINE_AUDIO_LIBRARY_FILE_STORE = 'files';
 const CONTENT_CACHE_NAME = 'wird-app-content-v1';
 const MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-v1';
 const MAX_MUSHAF_PAGE_CACHE_ENTRIES = 24;
@@ -297,6 +300,93 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+let offlineAudioLibraryDbPromise = null;
+
+function openOfflineAudioLibraryDatabase() {
+  if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+  if (offlineAudioLibraryDbPromise) return offlineAudioLibraryDbPromise;
+
+  offlineAudioLibraryDbPromise = (async () => {
+    if (typeof indexedDB.databases === 'function') {
+      try {
+        const databases = await indexedDB.databases();
+        if (!databases.some(database => database.name === OFFLINE_AUDIO_LIBRARY_DB_NAME)) return null;
+      } catch {
+        // Fall through to open(); some browsers do not expose database enumeration reliably.
+      }
+    }
+
+    return await new Promise((resolve, reject) => {
+      const request = indexedDB.open(OFFLINE_AUDIO_LIBRARY_DB_NAME);
+      request.onsuccess = () => {
+        const database = request.result;
+        database.onversionchange = () => {
+          database.close();
+          offlineAudioLibraryDbPromise = null;
+        };
+        resolve(database);
+      };
+      request.onerror = () => reject(request.error || new Error('Offline audio database could not be opened.'));
+      request.onblocked = () => reject(new Error('Offline audio database is blocked by an upgrade.'));
+    });
+  })().catch(error => {
+    offlineAudioLibraryDbPromise = null;
+    throw error;
+  });
+
+  return offlineAudioLibraryDbPromise;
+}
+
+async function resolveOfflineLibraryAudioResponse(requestUrl) {
+  const url = new URL(requestUrl);
+  const match = url.pathname.match(/^\\/quran\\/audio\\/(?:64|128|192)\\/([^/]+)\\/([1-6][0-9]{0,3})\\.mp3$/);
+  if (!match) return null;
+
+  const reciterIdByEdition = {
+    'ar.husary': 'ar.husary',
+    'ar.minshawi': 'ar.minshawi',
+    'ar.abdulbasitmurattal': 'ar.abdulbasit',
+    'ar.abdurrahmaansudais': 'ar.sudais',
+    'ar.saoodshuraym': 'ar.shuraim',
+    'ar.ahmedajamy': 'ar.ajamy',
+    'ar.alafasy': 'ar.alafasy'
+  };
+  const reciterId = reciterIdByEdition[match[1]];
+  const globalAyahNumber = Number(match[2]);
+  if (!reciterId || !Number.isSafeInteger(globalAyahNumber) || globalAyahNumber < 1 || globalAyahNumber > 6236) return null;
+
+  let database;
+  try {
+    database = await openOfflineAudioLibraryDatabase();
+    if (!database || !database.objectStoreNames.contains(OFFLINE_AUDIO_LIBRARY_FILE_STORE)) return null;
+
+    const file = await new Promise((resolve, reject) => {
+      const transaction = database.transaction([OFFLINE_AUDIO_LIBRARY_FILE_STORE], 'readonly');
+      const request = transaction.objectStore(OFFLINE_AUDIO_LIBRARY_FILE_STORE).get(reciterId + ':' + globalAyahNumber);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error || new Error('Offline audio metadata lookup failed.'));
+      transaction.onerror = () => reject(transaction.error || new Error('Offline audio metadata transaction failed.'));
+    });
+
+    if (!file || file.schemaVersion !== 1 || file.available !== true || file.deletionPending === true ||
+        file.reciterId !== reciterId || file.globalAyahNumber !== globalAyahNumber ||
+        file.url !== requestUrl || typeof file.cacheGenerationId !== 'string' || !file.cacheGenerationId ||
+        !Number.isSafeInteger(file.byteLength) || file.byteLength <= 0 || file.byteLength > 8 * 1024 * 1024) {
+      return null;
+    }
+
+    const cache = await caches.open(OFFLINE_AUDIO_LIBRARY_CACHE_NAME);
+    const cacheKey = 'https://wird.local/offline-audio/' + encodeURIComponent(reciterId) + '/' + globalAyahNumber + '/' + encodeURIComponent(file.cacheGenerationId) + '.mp3';
+    const response = await cache.match(cacheKey);
+    if (!response || response.status !== 200 || response.type === 'opaque') return null;
+    const contentType = response.headers.get('content-type') || file.contentType || '';
+    if (!/^audio\\//i.test(contentType)) return null;
+    return response;
+  } catch {
+    return null;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -378,6 +468,8 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open(AUDIO_CACHE_NAME);
       const cached = await cache.match(req);
       if (cached) return cached;
+      const durableOfflineAudio = await resolveOfflineLibraryAudioResponse(req.url);
+      if (durableOfflineAudio) return durableOfflineAudio;
       try { return await fetch(req); }
       catch (error) {
         console.warn('[WIRD SW] Approved Quran CDN audio unavailable offline:', req.url, error);
