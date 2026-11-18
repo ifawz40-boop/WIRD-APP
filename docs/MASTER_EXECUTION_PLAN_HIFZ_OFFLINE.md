@@ -169,3 +169,13 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Package manifest and Bun lock were reconciled with the current declared overrides; Vite/Tailwind build tooling was moved to devDependencies (not runtime). This addresses the prior stale lock resolution for esbuild and the declared gRPC override.
 - Draft PR opened for continuous CI: https://github.com/xm8eslam-stack/WIRD-APP/pull/391. It targets current main and remains unmerged.
 - The GitHub-reviewed high-severity picomatch advisory still has no official patched release in the upstream package at last check. The advisory is disputed by the upstream maintainer, but it remains present in the full audit; do not suppress or waive it. Keep production merge blocked until official remediation or explicit release decision.
+
+### 2026-11-18 — First exact-head regression cycle
+
+- PR #391 now targets the current main SHA `026a86bc5e26d8f27cafadbf1ddce3b155fe00d6`; branch remains unmerged and Draft.
+- Exact-head run `44307063505` at SHA `36e28dd253b5ec779f30e4530bc2d7c8ac69e4b0`: aggregate suite **803 passed / 0 failed**; native API imports passed; Quran audio CDN smoke **8/8**; Firestore Rules **31 passed / 0 failed**. TypeScript then exposed two integration issues: dashboard union narrowing for blocked tasks and Mushaf spread-mode declaration order. Both were corrected in subsequent commits.
+- An earlier exact-head test run `44306865374` had 802 passed / 1 failed because the Mushaf reader test still asserted the old one-page `setPage(page + 1)` implementation after the reader had moved to the shared one/two-page `stepSpreadPage` helper. The test was updated to assert the active spread behavior; current run above passes.
+- Current post-fix head: `ec01ab507a1036c5bec206c94f3bbf16d7917c6f`; workflow run `44312458783` was in progress at checkpoint time. Re-fetch its result before further changes; do not assume the TypeScript fixes passed.
+- Security remains the sole known CI blocker after the production-only audit passed. Full graph audit still flags `picomatch@4.0.7` only through the Vite → tinyglobby → fdir build-toolchain chain. npm still lists 4.0.7 as latest and GitHub advisory has no patched version; do not fabricate a patched pin or waive the full audit. Keep the production merge blocked until a genuine upstream fix or documented approved risk decision exists.
+- Vercel PR preview deployment is rate-limited by the Free plan (`api-deployments-free-per-day`); this is separate from source tests and does not affect current main production.
+- Physical Android/iOS/Safari cold-start + airplane-mode acceptance remains outstanding; CI/browser simulation is not equivalent.
