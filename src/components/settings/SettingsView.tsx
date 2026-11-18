@@ -37,8 +37,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, ReciterId } from '../../types/quran';
 import { ALL_SURAHS } from '../../data/quranMeta';
-import { RECITERS, resolveApprovedOfflineReciterId } from '../../services/audioService';
-import { FALLBACK_QURAN_RECITERS } from '../../services/ruqyahAudioService';
+import { OFFLINE_DOWNLOADABLE_RECITERS, RECITERS, resolveApprovedOfflineReciterId } from '../../services/audioService';
 import {
   buildJuzAudioRanges,
   estimateAudioDownloadBytes,
@@ -63,7 +62,9 @@ import { importBackupFile } from '../../services/backupPersistence';
 import { loadDemoDataJournaled } from '../../services/demoDataPersistence';
 import { getWirdOfflinePackageStatus, prepareWirdForOffline, type OfflinePackageStatus, type OfflinePreparationProgress } from '../../services/offlinePreparationService';
 import { getOfflineStorageStatus, requestOfflineStoragePersistence, type OfflineStorageStatus } from '../../services/offlineStorageService';
+import { clearMushafOfflinePackage, downloadMushafOfflinePackage, getMushafOfflinePackageStatus, type MushafOfflinePackageProgress, type MushafOfflinePackageStatus } from '../../services/mushafFacsimileOfflineLibrary';
 import { PWAInstallAction } from '../shared/OfflineStatusControls';
+import { TafsirOfflineDownloadPanel } from '../library/TafsirOfflineDownloadPanel';
 import { WirdAvatar } from '../brand/WirdAvatar';
 import { BrandDesignShowcase } from '../brand/BrandDesignShowcase';
 
@@ -395,11 +396,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [offlinePackageStatus, setOfflinePackageStatus] = useState<OfflinePackageStatus | null>(null);
   const [isCheckingOfflineStatus, setIsCheckingOfflineStatus] = useState(false);
   const [offlineStorageStatus, setOfflineStorageStatus] = useState<OfflineStorageStatus | null>(null);
+  const [mushafPackageStatus, setMushafPackageStatus] = useState<MushafOfflinePackageStatus | null>(null);
+  const [mushafPackageProgress, setMushafPackageProgress] = useState<MushafOfflinePackageProgress | null>(null);
+  const [isDownloadingMushafPackage, setIsDownloadingMushafPackage] = useState(false);
+  const [isCheckingMushafPackage, setIsCheckingMushafPackage] = useState(false);
+  const mushafDownloadControllerRef = useRef<AbortController | null>(null);
 
   // Offline Audio Library State
   const profileApprovedReciter = resolveApprovedOfflineReciterId(profile.preferredReciter);
   const [audioDownloadReciter, setAudioDownloadReciter] = useState<string>(
-    () => profileApprovedReciter || FALLBACK_QURAN_RECITERS[0].id
+    () => profileApprovedReciter || OFFLINE_DOWNLOADABLE_RECITERS[0].id
   );
   const [audioScopeKind, setAudioScopeKind] = useState<OfflineAudioJobScopeKind>('surah');
   const [audioSurahNumber, setAudioSurahNumber] = useState<number>(67);
@@ -504,7 +510,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       const result = await prepareWirdForOffline(setOfflineProgress);
       const status = await getWirdOfflinePackageStatus();
       setOfflinePackageStatus(status);
-      onToast?.(`اكتمل تنزيل ${result.completed} ملفًا. تم التحقق من حفظ ${status.cached} من أصل ${status.total} ملفًا برمجيًا. ${storageStatus.persisted ? 'حماية التخزين الدائم مفعّلة.' : 'قد يحذف المتصفح بعض الملفات عند ضغط المساحة؛ احتفظ بنسخة احتياطية من بياناتك.'}`, status.missing === 0 ? 'success' : 'info');
+      onToast?.(`اكتمل تنزيل ${result.completed} ملفًا. تم التحقق من حفظ ${status.cached} من أصل ${status.total} ملفًا برمجيًا. ${storageStatus.persisted ? 'حماية التخزين الدائم مفعّلة.' : 'قد يحذف المتصفح بعض الملفات عند ضغط المساحة؛ احتفظ بنسخة احتياطية من بياناتك.'}`, 'info');
     } catch (error) {
       onToast?.(error instanceof Error ? error.message : 'تعذر إكمال التجهيز المحلي؛ يمكنك إعادة المحاولة وسيُستكمل ما تم تنزيله.', 'error');
     } finally {
@@ -529,6 +535,75 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       onToast?.(error instanceof Error ? error.message : 'تعذر فحص حالة الملفات المحلية.', 'error');
     } finally {
       setIsCheckingOfflineStatus(false);
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+    void getMushafOfflinePackageStatus().then(status => {
+      if (active) setMushafPackageStatus(status);
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
+
+  const handleCheckMushafPackage = async () => {
+    if (isCheckingMushafPackage) return;
+    setIsCheckingMushafPackage(true);
+    try {
+      const status = await getMushafOfflinePackageStatus();
+      setMushafPackageStatus(status);
+      onToast?.(
+        status.missing === 0
+          ? 'عُثر على ملفات الصفحات الـ604 محليًا؛ اضغط «إعادة التحقق» لفحص سلامة المحتوى.'
+          : `المحفوظ ${status.cached} من 604 صفحات؛ المتبقي ${status.missing} صفحة.`,
+        status.missing === 0 ? 'success' : 'info'
+      );
+    } catch (error) {
+      onToast?.(error instanceof Error ? error.message : 'تعذر فحص صفحات المصحف المصوّر.', 'error');
+    } finally {
+      setIsCheckingMushafPackage(false);
+    }
+  };
+
+  const handleDownloadMushafPackage = async () => {
+    if (isDownloadingMushafPackage || (!isOnline && mushafPackageStatus?.missing !== 0)) return;
+    const wasCompleteBeforeAction = mushafPackageStatus?.missing === 0;
+    setIsDownloadingMushafPackage(true);
+    setMushafPackageProgress(null);
+    const controller = new AbortController();
+    mushafDownloadControllerRef.current = controller;
+    try {
+      const storageStatus = await requestOfflineStoragePersistence();
+      setOfflineStorageStatus(storageStatus);
+      const status = await downloadMushafOfflinePackage(setMushafPackageProgress, controller.signal);
+      setMushafPackageStatus(status);
+      onToast?.(wasCompleteBeforeAction
+        ? 'تم التحقق من سلامة صفحات المصحف المصوّر الـ604. أصبحت قابلة للفتح دون اتصال.'
+        : 'اكتمل تنزيل صفحات المصحف المصوّر الـ604 والتحقق منها. أصبحت قابلة للفتح دون اتصال.', 'success');
+    } catch (error) {
+      const status = await getMushafOfflinePackageStatus().catch(() => null);
+      if (status) setMushafPackageStatus(status);
+      onToast?.(
+        error instanceof Error && error.name === 'AbortError'
+          ? 'تم إيقاف التنزيل مؤقتًا؛ الصفحات المكتملة محفوظة ويمكنك الاستكمال لاحقًا.'
+          : error instanceof Error ? error.message : 'تعذر تنزيل صفحات المصحف المصوّر؛ يمكنك الاستكمال لاحقًا.',
+        error instanceof Error && error.name === 'AbortError' ? 'info' : 'error'
+      );
+    } finally {
+      mushafDownloadControllerRef.current = null;
+      setIsDownloadingMushafPackage(false);
+    }
+  };
+
+  const handleClearMushafPackage = async () => {
+    try {
+      await clearMushafOfflinePackage();
+      const status = await getMushafOfflinePackageStatus();
+      setMushafPackageStatus(status);
+      setMushafPackageProgress(null);
+      onToast?.('تم حذف صفحات المصحف المصوّر المحفوظة من هذا الجهاز فقط.', 'success');
+    } catch (error) {
+      onToast?.(error instanceof Error ? error.message : 'تعذر حذف حزمة المصحف المصوّر.', 'error');
     }
   };
 
@@ -670,14 +745,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           نزّل ملفات الشاشات والبيانات البرمجية المؤجلة إلى هذا الجهاز لتعمل الأقسام التي لم تفتحها من قبل دون اتصال. التنزيل اختياري ويُحفظ تدريجيًا؛ إذا انقطع الاتصال يمكنك إعادة المحاولة لاستكمال الملفات المتبقية.
         </p>
         <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-6">
-          هذا التجهيز لا ينزّل كامل مكتبة التلاوات أو التفاسير. عند تشغيل التلاوة متصلًا، يحفظ وِرد تلقائيًا مقطعًا قصيرًا من الآيات التالية، وليس السورة كاملة. يحتفظ التطبيق بالتفاسير التي سبق عرضها ضمن ذاكرة محلية محدودة؛ أما التفسير غير المحفوظ فيحتاج اتصالًا. كما يحتفظ بصفحات الأحاديث التي سبق عرضها بعد التحقق من مصدرها وصحتها، ضمن ذاكرة محلية محدودة. كذلك تُحفظ صفحات المصحف المصوّرة الخارجية عند عرضها بعدد محدود، وليس كامل الصفحات الـ604. قد يستهلك التخزين مساحة، وقد يحذف المتصفح الملفات إذا لم يمنح التخزين الدائم؛ لذلك لا يُعد نسخة احتياطية.
+          هذا التجهيز لا ينزّل مكتبة التلاوات كاملة؛ عند تشغيل التلاوة متصلًا يحفظ وِرد تلقائيًا مقطعًا قصيرًا من الآيات التالية، وليس السورة كاملة. يمكن تنزيل التفسير الميسر كاملًا اختياريًا من القسم التالي وحفظه على هذا الجهاز، بينما تبقى التفاسير الأخرى حسب التخزين المحلي المحدود أو الاتصال. كما يحتفظ التطبيق بصفحات الأحاديث التي سبق عرضها بعد التحقق من مصدرها وصحتها ضمن ذاكرة محلية محدودة. ويمكن تنزيل صفحات المصحف المصوّر الـ604 اختياريًا في الحزمة المنفصلة أعلاه. قد يستهلك التخزين مساحة، وقد يحذف المتصفح الملفات إذا لم يمنح التخزين الدائم؛ لذلك لا يُعد نسخة احتياطية.
         </p>
         {offlineStorageStatus && (
           <div className="rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 space-y-1" aria-live="polite">
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">حماية التخزين المحلي</span>
               <span className={offlineStorageStatus.persisted ? 'text-[#1C4E46] dark:text-[#E0A96D] font-bold' : 'text-[#9A7512] dark:text-[#E0A96D] font-bold'}>
-                {offlineStorageStatus.persisted === true ? 'حفظ دائم مفعّل' : offlineStorageStatus.supported ? 'قد يخضع التخزين للإزالة' : 'غير مدعوم في هذا المتصفح'}
+                {offlineStorageStatus.persisted === true ? 'حفظ دائم مفعّل' : offlineStorageStatus.persistenceSupported ? 'قد يحذف المتصفح الملفات عند ضغط المساحة' : 'المتصفح لا يتيح طلب حماية التخزين؛ يظل العمل دون اتصال متاحًا للملفات المحفوظة'}
               </span>
             </div>
             {offlineStorageStatus.usageBytes !== null && offlineStorageStatus.quotaBytes !== null && (
@@ -739,6 +814,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         )}
 
+        <div className="rounded-xl border border-[#C59B27]/25 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-bold text-[#142421] dark:text-[#F5F1E8]">المصحف المصوّر كاملًا دون إنترنت</h4>
+            <span className="text-[11px] font-bold text-[#5B6F6B] dark:text-[#CBD5E1]">604 صفحة</span>
+          </div>
+          <p className="text-[#5B6F6B] dark:text-[#CBD5E1] leading-6">
+            تنزيل اختياري منفصل لصور صفحات مصحف المدينة. قد يحتاج إلى مئات الميجابايت؛ يفحص وِرد عينة من الصفحات ويقدّر المساحة المتاحة مع الاحتفاظ باحتياطي قبل استكمال التنزيل. يُحفظ التقدم صفحة بصفحة، ويمكن إيقافه واستكماله لاحقًا. نص القرآن وإحداثيات الآيات يظلان من بيانات وِرد المحلية المعتمدة.
+          </p>
+          {mushafPackageStatus && (
+            <div className="text-[#5B6F6B] dark:text-[#CBD5E1] tabular-nums" aria-live="polite">
+              {mushafPackageStatus.cached} / 604 صفحة محفوظة · {mushafPackageStatus.missing} متبقية
+            </div>
+          )}
+          {mushafPackageProgress && (
+            <div className="space-y-1" aria-live="polite">
+              <div className="flex justify-between text-[#5B6F6B] dark:text-[#CBD5E1]">
+                <span>{mushafPackageProgress.currentPage ? `جارٍ حفظ الصفحة ${mushafPackageProgress.currentPage}` : 'جارٍ فحص الحزمة والمساحة'}</span>
+                <span className="tabular-nums">{mushafPackageProgress.cached} / 604</span>
+              </div>
+              <div role="progressbar" aria-label="تقدم تنزيل صفحات المصحف المصوّر" aria-valuemin={0} aria-valuemax={604} aria-valuenow={mushafPackageProgress.cached} className="h-2 rounded-full bg-[#F2EDE2] dark:bg-[#162744] overflow-hidden">
+                <div className="h-full bg-[#1C4E46] dark:bg-[#E0A96D]" style={{ width: `${mushafPackageProgress.cached / 604 * 100}%` }} />
+              </div>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={handleCheckMushafPackage} disabled={isCheckingMushafPackage || isDownloadingMushafPackage} className="min-h-10 rounded-lg border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 px-3 py-2 font-bold disabled:opacity-50">
+              {isCheckingMushafPackage ? 'جارٍ الفحص...' : 'فحص صفحات المصحف'}
+            </button>
+            <button type="button" onClick={handleDownloadMushafPackage} disabled={isDownloadingMushafPackage || (!isOnline && mushafPackageStatus?.missing !== 0)} className="min-h-10 rounded-lg bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] px-3 py-2 font-bold disabled:opacity-50">
+              {isDownloadingMushafPackage ? 'جارٍ فحص/تنزيل صفحات المصحف...' : mushafPackageStatus?.missing === 0 ? 'إعادة التحقق من صفحات المصحف' : mushafPackageStatus?.cached ? 'استكمال تنزيل المصحف' : 'تنزيل المصحف المصوّر كاملًا'}
+            </button>
+            {isDownloadingMushafPackage && (
+              <button type="button" onClick={() => mushafDownloadControllerRef.current?.abort()} className="min-h-10 rounded-lg border border-[#9A7512]/30 px-3 py-2 font-bold">إيقاف مؤقت</button>
+            )}
+            {mushafPackageStatus && mushafPackageStatus.cached > 0 && !isDownloadingMushafPackage && (
+              <button type="button" onClick={handleClearMushafPackage} className="min-h-10 rounded-lg border border-red-500/25 text-red-700 dark:text-red-300 px-3 py-2 font-bold">حذف الصفحات المحفوظة</button>
+            )}
+          </div>
+        </div>
+
+        <TafsirOfflineDownloadPanel />
+
         {/* PWA Install Prompt Card + Capability Matrix */}
         <PWAInstallAction
           variant="card"
@@ -751,10 +868,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 space-y-1.5">
             <div className="font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>يعمل دون إنترنت 100%</span>
+              <span>جاهز للعمل دون إنترنت بعد التجهيز</span>
             </div>
             <p className="text-[11px] text-[#5B6F6B] dark:text-[#CBD5E1] leading-5">
-              المصحف كاملاً بالنص المعتمد، جلسات الحفظ والربط التراكمي، مركز المراجعة والآيات المتعثرة، الاختبارات، خطط الحفظ، والتلاوات المحمّلة أدناه.
+              النص القرآني المحلي وجلسات الحفظ والمراجعة والاختبارات والخطط تعمل محليًا. يلزم تنزيل ملفات التطبيق والتلاوات والتفسير وصفحات المصحف المصوّر التي تريد استخدامها دون اتصال؛ ما لم يُنزّل منها قد يحتاج إلى الإنترنت.
             </p>
           </div>
           <div className="rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 space-y-1.5">
@@ -795,7 +912,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onChange={e => setAudioDownloadReciter(e.target.value)}
                 className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]"
               >
-                {FALLBACK_QURAN_RECITERS.map(r => (
+                {OFFLINE_DOWNLOADABLE_RECITERS.map(r => (
                   <option key={r.id} value={r.id}>
                     {r.name} ({r.bitrate} kbps)
                   </option>
@@ -919,7 +1036,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   job.status === 'partial' ? 'مكتمل جزئياً' :
                   job.status === 'failed' ? 'تعذر الاكتمال' :
                   job.status === 'cancelled' ? 'ملغى' : 'في الانتظار';
-                const reciterName = FALLBACK_QURAN_RECITERS.find(r => r.id === job.reciterId)?.name || job.reciterId;
+                const reciterName = OFFLINE_DOWNLOADABLE_RECITERS.find(r => r.id === job.reciterId)?.name || job.reciterId;
 
                 return (
                   <div
@@ -934,6 +1051,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
                           {statusLabel} · {job.completedItems}/{job.totalItems} آية ({percent}%) · {formatBytesLabel(job.totalBytes)}
                         </div>
+                        {job.lastError && (
+                          <p role="alert" className="mt-1 max-w-2xl text-[11px] leading-5 text-rose-700 dark:text-rose-300">
+                            سبب التعثر: {job.lastError}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5">

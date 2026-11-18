@@ -7,6 +7,33 @@ export const DESKTOP_SPREAD_BREAKPOINT_PX = 768;
 
 const SPREAD_MODE_STORAGE_PREFIX = 'wird:mushaf-spread-mode:v1:';
 const TAFSIR_LAYOUT_STORAGE_PREFIX = 'wird:mushaf-tafsir-layout:v1:';
+const TAFSIR_PAGE_MODE_STORAGE_PREFIX = 'wird:mushaf-tafsir-page-modes:v1:';
+
+export interface MushafTafsirPagePreferences {
+  sourcePages: Record<number, boolean>;
+  preferredSourcePage: number | null;
+}
+
+function normalizeMushafTafsirPagePreferences(value: unknown): MushafTafsirPagePreferences {
+  if (!value || typeof value !== 'object') return { sourcePages: {}, preferredSourcePage: null };
+  const raw = value as Record<string, unknown>;
+  const sourcePages: Record<number, boolean> = {};
+  if (raw.sourcePages && typeof raw.sourcePages === 'object') {
+    for (const [key, enabled] of Object.entries(raw.sourcePages as Record<string, unknown>)) {
+      const page = Number(key);
+      if (Number.isInteger(page) && page >= 1 && page <= TOTAL_MUSHAF_PAGES && enabled === true) {
+        sourcePages[page] = true;
+      }
+    }
+  }
+  const preferred = Number(raw.preferredSourcePage);
+  return {
+    sourcePages,
+    preferredSourcePage: Number.isInteger(preferred) && preferred >= 1 && preferred <= TOTAL_MUSHAF_PAGES && sourcePages[preferred]
+      ? preferred
+      : null
+  };
+}
 
 export function clampMushafPage(page: number): number {
   if (!Number.isFinite(page)) return 1;
@@ -90,6 +117,31 @@ export function saveMushafSpreadMode(
     }
   } catch {
     // Preference remains active in component state if storage fails.
+  }
+  return normalized;
+}
+
+export function getSavedMushafTafsirPagePreferences(surface: MushafSurfaceId): MushafTafsirPagePreferences {
+  try {
+    if (typeof localStorage === 'undefined') return { sourcePages: {}, preferredSourcePage: null };
+    const raw = localStorage.getItem(TAFSIR_PAGE_MODE_STORAGE_PREFIX + surface);
+    return raw ? normalizeMushafTafsirPagePreferences(JSON.parse(raw)) : { sourcePages: {}, preferredSourcePage: null };
+  } catch {
+    return { sourcePages: {}, preferredSourcePage: null };
+  }
+}
+
+export function saveMushafTafsirPagePreferences(
+  surface: MushafSurfaceId,
+  preferences: MushafTafsirPagePreferences
+): MushafTafsirPagePreferences {
+  const normalized = normalizeMushafTafsirPagePreferences(preferences);
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(TAFSIR_PAGE_MODE_STORAGE_PREFIX + surface, JSON.stringify(normalized));
+    }
+  } catch {
+    // Preferences remain active in component state if storage is unavailable.
   }
   return normalized;
 }

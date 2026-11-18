@@ -1,15 +1,17 @@
-# Current implementation status — 2026-11-13
+# Current implementation status — 2026-11-18
 
-> This is the current branch-aware status. The original PR #355-only status below is historical and must not be read as the latest work.
+> Current branch-aware status. The historical planning checkpoints below are retained for traceability and are not the current implementation status.
 
-- Main does not yet contain a complete persistent Offline Audio download feature.
-- PR #368 is OPEN/DRAFT at head `ffa55b1f9c378a5f50fa4eb3656c1aadf4a27710`. Its branch includes a unified metadata library, Cache Storage adapter, bounded HTTP downloader, and job lifecycle/retry/pause/resume/cancel work with tests. It is not merged or in Production.
-- PR #366 is a separate Offline/PWA shell/readiness change; it does not by itself complete the audio-download worker protocol or local playback integration.
-- Remaining #368 work: Service Worker message protocol/integration, download UI/library, playback from verified local files, real browser/device airplane-mode/restart/quota tests, and proof that audio stays excluded from Firebase and backups.
-- PRs #358/#359 are superseded by #368 and must not be merged independently.
-- See [CONTINUE_HERE.md](../CONTINUE_HERE.md) for current PR heads and [CHANGE_CONTROL.md](../CHANGE_CONTROL.md) for shared-file sequencing.
+- The unified explicit offline Quran-audio library is implemented in the PR #390 candidate branch, not merged to main or released. Users can download a complete Surah, Juz, or selected memorization plan using seven curated Al Quran Cloud reciter editions.
+- Audio download architecture: IndexedDB jobs/files/jobItems/locks/staging; Cache Storage bytes; exact ordered ayah-sequence fingerprints; schema v4 migration of legacy job fingerprints; bounded concurrency (2), quota preflight with 25 MiB reserve, exact HTTP/MIME/length checks, 8 MiB per-file cap, cross-tab leases, pause/abort, cancel, retry/resume, delete, startup reconciliation, and local-first playback.
+- EveryAyah remains stream-only. Opportunistic upcoming-ayah cache remains separate (up to 20 ayahs / 40 entries). Audio is device-local and excluded from Firebase sync/backups.
+- Al Quran Cloud official terms rechecked 2026-11-18 (terms page last updated 2026-11-13): streaming, embedding and downloading recitations are permitted for personal/educational use; copyright remains with reciters/estates; reciters may request removal if used in a commercial product. WIRD caches only user-selected audio locally and does not rehost/redistribute. Recheck before release and before any commercial use. Source: https://alquran.cloud/terms-and-conditions.
+- Latest completed exact application gate: #4604 / run `44236188421`, SHA `c69f6dc15b7067bcd7d40f266d5ab7dbe35e36fe`: 776 unit assertions, 31 Firestore Rules tests, 604 Mushaf coordinate maps, API/audio smoke, TypeScript, production build/server smoke, 186 Playwright passed / 0 failed / 2 intentional skips. Includes three-plan dashboard UI test on Desktop and Mobile.
+- Security audit remains failed on `picomatch@4.0.7` via Vite toolchain; no fixed upstream release. PR #390 is Draft/HOLD. The current Service Worker shell cache has now been bumped to v4 to isolate updates from the active worker; this newest cache-version change requires a fresh exact-head Quality Gate.
+- Physical device cold-restart/airplane-mode, storage eviction, and Preview/Production verification remain outstanding. No merge or production deployment.
 
 ---
+
 
 # WIRD — Offline Quran audio download plan
 
@@ -34,7 +36,7 @@
 # WIRD — Optional Offline Quran Audio Downloads
 
 ## Status
-Phased implementation in progress. PR #355 introduces only the pure, tested range planner; downloads, persistent manifest storage, worker protocol, UI, and offline playback are not implemented yet. Keep this feature separate from the existing opt-in application-shell preparation and opportunistic next-ayah cache.
+Implemented in the current PR #390 candidate branch as a user-initiated device-local library. It is separate from the app-shell preparation and the opportunistic next-ayah cache. It is not merged/released, and real-device airplane-mode acceptance remains outstanding.
 
 ## Source terms re-check — 2026-11-11
 - Official Al Quran Cloud terms explicitly permit streaming, embedding, and downloading recitations for personal and educational use at the published bitrates; copyright remains with the reciters or their estates: https://alquran.cloud/terms-and-conditions
@@ -104,3 +106,17 @@ Let a user explicitly download a chosen Quran reciter's surah or ayah range to t
 - New service tests cover cache key generations, invalid responses, byte-length mismatch, downloader success, retry, pause, cancel and bounded concurrency.
 - Exact-head #368 run 43275108775 / job 131381335018 ended failure with no steps/logs; no code-level diagnosis or test pass is available.
 - Still missing: Service Worker protocol, download UI, local-first playback, orphan-cache cleanup policy, actual browser integration, and real-device offline test. This is not a released feature.
+
+## Implementation status update — 2026-11-18 — PR #391
+
+The design above has now been integrated in the current release candidate (not yet merged to main):
+
+- IndexedDB jobs/items/verified file metadata plus generation-scoped Cache Storage; files are device-local and excluded from cloud sync/backups.
+- Approved reciter allowlist (7 editions), canonical local Quran coordinates/global ayah IDs, same-origin allowlisted /api/quran-audio-download relay for Cache Storage fetches, and a matching Express route for local/Node server execution.
+- Bounded concurrency, per-item abort controllers, quota preflight, resumable queue state, cross-tab Web Locks with IndexedDB lease fallback, BroadcastChannel status notifications, stale generation protection, interrupted-worker recovery, orphan cleanup and local-first playback.
+- Settings supports Surah/Juz/engine-plan scope, pause/resume/cancel/retry/delete, progress and quota messages. Quran Library, Mushaf page/spread and memorization session playback all resolve verified local audio before network fallback.
+- Automated coverage includes invalid edition/coordinates, HTML rejection, byte-length/MIME validation, quota failures, cross-tab locks, pause/cancel/resume, restart recovery and offline playback resolution.
+- E2E reload test verifies a failed ayah download resumes after reload and resolves from local Cache Storage while offline. App-shell E2E separately verifies the service worker serves durable audio while offline.
+- Historical CI chronology (do not combine separate runs): run 44307063505 had 803 aggregate tests pass but TypeScript failed; run 44312846261 later passed TypeScript/build/server smoke but was cancelled during Playwright after a new commit. Neither historical run is a complete green exact-head gate.
+- Latest completed exact-head run 44319128503 on SHA 10d5bebe772ba87a2289f559581fcb7de539838c: 804 aggregate tests, full audit 0/359, TypeScript/build/server smoke, 604-page coordinate validation, API import, CDN/range smoke 8/8 and Firestore Rules 31/31 passed. Playwright failed with 185 passed, 23 failed, 2 skipped. Triage and remediation are recorded in docs/CONTINUE_HERE.md; this candidate is not releasable until the next exact-head desktop/mobile suite passes.
+- Release blockers remain: full dependency audit on dev-only picomatch 4.0.7, current-head Playwright result, physical-device cold restart/airplane mode, and Vercel preview rate limit. No claim of production release.

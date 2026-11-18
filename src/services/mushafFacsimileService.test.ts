@@ -1,3 +1,4 @@
+import { estimateMushafOfflinePackageBytes, hasMushafOfflineQuota } from './mushafFacsimileOfflineLibrary';
 import {
   getMushafFacsimilePageUrls,
   matchMushafAyahAreas,
@@ -37,6 +38,21 @@ export function runMushafFacsimileServiceTests(): { passed: number; failed: numb
     expectThrow(() => getMushafFacsimilePageUrls(0), 'Page zero must be rejected');
     expectThrow(() => getMushafFacsimilePageUrls(605), 'Page 605 must be rejected');
     expectThrow(() => getMushafFacsimilePageUrls(1.5), 'Fractional page must be rejected');
+  });
+
+  test('Full Mushaf package quota estimate is conservative and scales with remaining pages', () => {
+    const full = estimateMushafOfflinePackageBytes([100_000, 200_000, 300_000]);
+    const partial = estimateMushafOfflinePackageBytes([100_000, 200_000, 300_000], 100);
+    assert(full > partial && partial > 0, 'Estimated bytes must scale with the number of pages still missing');
+    expectThrow(() => estimateMushafOfflinePackageBytes([]), 'An empty sample cannot produce a safe estimate');
+    expectThrow(() => estimateMushafOfflinePackageBytes([100_000], 605), 'More than 604 remaining pages must be rejected');
+  });
+
+  test('Full Mushaf package preflight preserves a storage reserve and rejects unsafe quota values', () => {
+    assert(hasMushafOfflineQuota(100_000_000, 100_000_000, 1_000_000_000), 'A package that fits with the storage reserve should pass');
+    assert(!hasMushafOfflineQuota(900_000_000, 100_000_000, 1_000_000_000), 'A package that consumes the reserve must be rejected');
+    assert(!hasMushafOfflineQuota(1, 2, 1), 'Usage beyond quota must be rejected');
+    assert(!hasMushafOfflineQuota(-1, 0, 100), 'Negative required bytes must be rejected');
   });
 
   test('SVG viewBox parser preserves publisher coordinates, including opening-spread origins', () => {

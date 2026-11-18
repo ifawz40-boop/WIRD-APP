@@ -109,7 +109,10 @@ test.describe('Memorization session audio repetition', () => {
     const audioStatus = page.getByRole('status').filter({ hasText: 'جارٍ تحميل التلاوة' });
     await expect(audioStatus).toHaveCount(0);
 
+    const previousAudioCount = await page.evaluate(() => (window as any).__wirdMockAudios.length);
     await page.getByRole('button', { name: 'استماع للآية' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__wirdMockAudios.length)).toBe(previousAudioCount + 1);
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__wirdMockAudios.at(-1).onerror)).toBe('function');
     await page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onerror?.());
     await expect(page.getByRole('button', { name: 'استماع للآية' })).toBeVisible();
     await expect(audioStatus).toHaveCount(0);
@@ -216,10 +219,10 @@ test('memorization and review share continuous segment playback with bounded rep
 
   const urls = await page.evaluate(() => (window as any).__wirdMockAudios.map((audio: { url: string }) => audio.url));
   expect(urls.map((url: string) => url.split('/').pop())).toEqual([
-    '067002.mp3',
-    '067003.mp3',
-    '067002.mp3',
-    '067003.mp3'
+    '5243.mp3',
+    '5244.mp3',
+    '5243.mp3',
+    '5244.mp3'
   ]);
   await expect(page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' })).toBeVisible();
 });
@@ -247,14 +250,14 @@ test('segment playback supports independent per-ayah and full-segment repeat cou
 
   const urls = await page.evaluate(() => (window as any).__wirdPlayedUrls.map((url: string) => url.split('/').pop()));
   expect(urls).toEqual([
-    '067002.mp3',
-    '067002.mp3',
-    '067003.mp3',
-    '067003.mp3',
-    '067002.mp3',
-    '067002.mp3',
-    '067003.mp3',
-    '067003.mp3',
+    '5243.mp3',
+    '5243.mp3',
+    '5244.mp3',
+    '5244.mp3',
+    '5243.mp3',
+    '5243.mp3',
+    '5244.mp3',
+    '5244.mp3',
   ]);
   await expect(page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' })).toBeVisible();
 });

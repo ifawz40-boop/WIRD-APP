@@ -161,3 +161,76 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - #359 overlaps #363 at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; preserve the #363 unified plan and reconcile any useful #359 detail explicitly.
 - Legacy #2 overlaps #363 at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`; do not merge #2 wholesale.
 - #373, #372, #371, #370, #369, #368, #367, #366, #365, #364 and #358 have no changed-path overlap with the current #363 changed-file list. This is a path snapshot only; re-fetch before action.
+
+
+## Master completion execution — 2026-11-18
+
+- Owner instruction: execute in large coherent phases without waiting for test jobs after every small change; complete implementation/integration first, then run the full matrix, fix failures, rerun, and release only after gates pass.
+- Persistent master plan: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md`.
+- Execution branch: `release/wird-completion-20261118`, created from `main` SHA `026a86bc5e26d8f27cafadbf1ddce3b155fe00d6`.
+- Existing offline candidate PR #390 is diverged (291 commits ahead, 2 behind; merge base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`). It must be reconciled file-by-file; do not merge blindly or overwrite UX changes.
+- Historical candidate tests are not exact-head proof. Latest observed attempt had a full dependency audit failure for dev-only `picomatch@4.0.7` (GHSA-fc5q-39xc-vjpf / CVE-2026-112366) and application tests cancelled before execution. No suppression or unreviewed patch is permitted.
+- Physical-device cold restart + airplane-mode acceptance remains outstanding.
+- No application source changes, merge, or deployment have been made in this kickoff. Latest plan commit: `6e69a64d5158737b0d038d46674463f16401a1fd`.
+- Next: refresh PR #390 exact head and CI state, inspect all changed files and reconcile current main with offline/hifz work surgically.
+
+
+### Integration checkpoint — 2026-11-18 (continuing)
+
+- Master plan updated: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md`.
+- Integration branch now contains candidate-only offline services, API relay, service worker/cache changes, offline Mushaf package, optional Tafsir Muyassar package, settings controls, E2E and regression tests.
+- Main UX preserved and reconciled with multi-plan due queue + exact `enginePlanId` / `enginePlanDate` routing and completion.
+- Local-first audio playback integrated in Quran Library, Mushaf reader (including two-page spread order), and memorization session; stale requests and object URL cleanup are guarded.
+- TafsirContentPane falls back only to the explicitly selected pinned Tafsir Muyassar edition when online fetch fails; Settings exposes the optional package download.
+- Current integration branch was 60+ commits ahead and 0 behind main at last compare. Latest implementation checkpoint commit before this documentation update: `80e9fb5f9678d22a01470ed69b48b2fcd54209d8`.
+- No application test suite has been run yet by design; do not claim tests pass. Continue implementation and review first, then run the full quality matrix on one exact SHA.
+
+### Latest continuation checkpoint — 2026-11-18
+
+- Active release branch: `release/wird-completion-20261118`.
+- Draft PR: https://github.com/xm8eslam-stack/WIRD-APP/pull/391 (base `main`; not merged).
+- Plan detail now forwards exact engine plan ID + scheduled date through the launch chain. Completion matcher fails closed on ambiguous legacy duplicate ranges instead of guessing.
+- Opposite-page Tafsir is now mounted in both Mushaf spread slots. The side selector maps to the opposite Quran source page, preserves page preference locally per surface, and navigates back to the actual printed page.
+- Tafsir full-page mode requires the complete validated QuranEnc Muyassar package; single-ayah pane checks the local package first before network.
+- Bun package manifest/lockfile were reconciled; Vite/Tailwind build tools are dev-only.
+- No full exact-head test result is claimed yet. CI is running from the draft PR while implementation/review continues. The full audit advisory remains a release blocker; do not waive it.
+
+### Current execution checkpoint — 2026-11-18 (after first CI remediation)
+
+- Active branch: `release/wird-completion-20261118`.
+- Draft PR: https://github.com/xm8eslam-stack/WIRD-APP/pull/391, base current `main`; do not merge while any required gate is red.
+- Current latest branch SHA when recorded: `ec01ab507a1036c5bec206c94f3bbf16d7917c6f`; latest workflow `44312458783` was still running.
+- Previous exact-head `44307063505` had 803/0 aggregate tests, API import pass, CDN smoke 8/8, Firestore Rules 31/0, but TypeScript failed. Fixes committed: narrow the blocked dashboard task before reading plan identity; move spread-mode computation before the audioAyahs expression.
+- Earlier stale Mushaf test assertion was corrected; 803/0 confirms the aggregate test suite now passes on the earlier exact SHA.
+- Full dependency audit remains red on unpatched dev-only picomatch 4.0.7; production-only audit passes. npm latest is still 4.0.7, so do not invent 4.0.8 or use a waiver.
+- Vercel preview is currently blocked by Free plan deployment-rate limit. Do not touch production settings/secrets or remote sync flags.
+- Next: inspect exact latest workflow; fix any remaining TS/build/E2E failures; continue source review and device acceptance plan. Only merge/publish after all required release gates are genuinely green.
+ 
+### Latest local-server correction — 2026-11-18
+
+- Registered `/api/quran-audio-download` in Express so local and production Node-server runs use the same allowlisted binary relay as Vercel.
+- Added API-import validation plus dev/production server smoke assertions for invalid reciter input (expected JSON 400). Exact-head workflow is required to verify this.
+
+### Latest code-review correction — 2026-11-18
+
+- Plan detail screens expose future scheduled tasks. The completion matcher now permits early completion only when the launch includes both exact plan ID and scheduled date; generic/legacy launches still cannot start or complete future work.
+- Regression test added for exact future plan/date versus missing date. Next exact-head Quality Gate must include this commit.
+- Current offline capability matrix and audio plan were refreshed with PR #391 implementation evidence and remaining release blockers.
+
+
+### Release checkpoint — 2026-11-18, Playwright result and remediation
+
+- Active PR: #391, branch `release/wird-completion-20261118`. It remains Draft/unmerged. Production `main` remains unchanged.
+- Last completed exact-head run before this remediation: `44319128503`, SHA `10d5bebe772ba87a2289f559581fcb7de539838c`.
+- This run passed 804 aggregate tests, the complete dependency audit (0 vulnerabilities across 359 dependencies), TypeScript, production build, server smoke, 604-page Mushaf coordinate validation, API import smoke, audio CDN/range smoke (8/8), and Firestore Rules Emulator (31/31).
+- Playwright did NOT pass: 185 passed, 23 failed, 2 skipped in 24.9 minutes. Do not describe this run as green or release-ready.
+- Failure clusters from uploaded diagnostics:
+  1. Dashboard E2E selectors still expected a removed `dashboard-multi-plan-due-title` region; current UI correctly renders the multi-plan queue inside `#dashboard-daily-wird`. Add accessible list semantics and assert the real current queue.
+  2. Mobile tests attempted desktop-only two-page printed Mushaf controls; mobile intentionally renders one page. Tests must verify the mobile single-page contract while desktop tests retain facing-spread assertions.
+  3. Offline-audio recovery test dynamically imported a TypeScript source URL from Vite production preview (`/src/services/offlineQuranAudioLibrary.ts`), which is not served by the production bundle. The CI build now has a test-only bridge gated by `VITE_WIRD_E2E_TEST_HOOKS=true`; normal production builds must not expose it.
+  4. Tafsir dialog focus restoration had a real mount-order race: focus was requested before the state-driven dialog content/close-button ref existed. Focus trapping now waits until `activeAyah` and the dialog DOM exist; opener focus is restored only on close.
+  5. Additional strict-mode duplicate locators were scoped to the intended page/navigation rather than weakening assertions.
+- The above corrections are being committed together with this checkpoint. The next exact-head CI run must prove the fixes; do not loosen coverage, skip mobile workflows wholesale, merge, or publish until all desktop/mobile browser gates pass.
+- Picomatch: the release branch vendors a downstream, MIT-licensed bounded-analysis fix based on upstream 4.0.7 as `4.0.8+wird.1` (downstream build identifier only, not an upstream release). Root Bun devDependency resolves to `file:vendor/picomatch`; lockfile is committed. Full `bun audit --audit-level=high` passed with 0 findings across 359 packages, without an audit waiver. Keep upstream provenance and replacement conditions documented in `vendor/picomatch/UPSTREAM.md`; replace the vendored fork when a verified official patched upstream version is published.
+- Vercel preview for an earlier SHA `d6fc588126a092aaf04f205ef9ad1058f82bd803` returned READY/HTTP 200; this is not the current candidate. No exact-head production deployment is verified. Vercel Hobby/Free preview rate limits remain external. Do not change production secrets, sync flags, or remote-sync settings.
+- Physical Android/iOS/Safari cold-start + airplane-mode acceptance remains outstanding and cannot be claimed from Playwright.

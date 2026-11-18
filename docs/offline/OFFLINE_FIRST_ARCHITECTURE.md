@@ -19,9 +19,14 @@ The offline package is resumable. A separate content cache keeps downloaded asse
 
 ## Audio behavior
 
-When a user starts Quran or ruqyah playback while online, WIRD asks the service worker to cache a short upcoming segment (up to 20 ayahs). The worker accepts only HTTPS URLs from the reviewed EveryAyah reciter folders and the curated Al Quran Cloud reciter editions. It validates the response type and content type, and keeps a bounded 40-entry audio cache.
+WIRD has two separate audio-storage paths:
 
-This is opportunistic segment caching, not a full-surah download or a complete offline recitation library. Playback is never blocked by a cache failure. Browser storage pressure may evict cached media.
+1. **Opportunistic playback cache:** when Quran/ruqyah playback starts online, the service worker may cache a short upcoming segment (up to 20 ayahs) in a bounded 40-entry cache. This is best-effort and may be evicted. EveryAyah remains stream-only; legacy entries are pruned.
+2. **Explicit offline audio library (PR #390 candidate, not yet released):** users can select a complete Surah, Juz, or memorization plan and one of seven curated Al Quran Cloud reciter editions. The downloader validates the exact HTTPS CDN host/path and reciter ID, HTTP 200, audio MIME, non-empty body, declared/actual length, and an 8 MiB per-file maximum. It uses default concurrency 2, quota preflight with a 25 MiB app-data reserve, IndexedDB job/file/item/lock/staging metadata, a dedicated Cache Storage namespace, cross-tab leases, generation-scoped writes with read-back verification, and startup reconciliation. Pause/abort, cancel, retry/resume, delete, and orphan cleanup are implemented. Local playback resolves verified cached audio before network fallback.
+
+The Service Worker shell cache is bumped from `wird-app-v3` to `wird-app-v4` for this release. The new worker installs into a separate shell cache, so a failed install cannot overwrite the currently active worker's shell. Activation removes the old shell cache only after the new worker is ready; `wird-app-content-v1` (the explicit offline app/content package) and dedicated audio/Mushaf caches are preserved.
+
+Both paths remain device-local; audio files are excluded from Firebase sync and account backups. Storage persistence is requested only after explicit user action and is never guaranteed. Automated tests do not replace real-device cold-restart/airplane-mode acceptance.
 
 ## Storage protection
 
@@ -152,3 +157,30 @@ This is **device-capability adaptation**, not subscription-tier entitlement. It 
 PR #367 currently keeps a safe 800,000-byte maximum for a single engine-plan Firestore document. The total size of a plan must not be confused with the maximum size of one Firestore document. Larger plans require versioned multi-document chunk storage, integrity verification, and atomic manifest publication. Do not raise the single-document limit beyond its reviewed envelope.
 
 Future plan storage should derive chunk count from actual UTF-8 serialized bytes and enforce a separately configured account entitlement only after real product tiers/quotas are defined. Until then, do not invent Free/Pro storage allowances. The proposed chunk protocol must use deterministic idempotent chunk IDs, per-version manifests (count/length/hash/schema), verified complete upload before pointer publication, optimistic revision checks, safe old-version retention, and conflict references rather than duplicating large plan bodies. No Firestore Rules or production changes are authorized by this design note.
+
+
+## Printed Mushaf spread assets — 2026-11-17
+
+- One-page mode remains the default. Optional facing-page mode is a device-local UI preference and introduces no network dependency.
+- A spread consists of the odd/lower page on the right and the following page on the left. Both facsimile assets must be present in the local app cache for offline use.
+- Each facsimile page is validated against WIRD's canonical local Quran ayah corpus; the SVG is a layout/selection surface only, never the source of Quran text.
+- Spread audio must wait for both pages' local ayah maps and play in reading order (right, then left). Automatic continuation advances to the next spread, not the next single page.
+- Offline E2E must verify both page assets after device preparation and while network is disabled.
+- Tafsir al-Muyassar is not yet part of the offline package. The current small per-ayah cache is insufficient. Task 4 must add a resumable 114-surah IndexedDB package with exact source text and footnotes, edition version, attribution and per-surah integrity validation.
+
+
+
+## Tafsir al-Muyassar offline package — 2026-11-17
+
+- Source: QuranEnc Arabic al-Muyassar, key arabic_moyassar, King Fahd Complex, catalogue version 1.0.1 dated 2026-11-09.
+- A user explicitly starts a sequential download of all 114 surahs while online. The app validates each surah's expected verse count, sequential surah/ayah coordinates and non-empty translation before saving.
+- The original source payload is stored unchanged in IndexedDB, including footnotes. Version metadata and download manifest are stored separately.
+- Each completed surah is durable before progress advances. A failed request or pause leaves verified surahs intact; resume skips current-version surahs already stored and continues from the first missing one.
+- The Tafsir page is displayed only when all 114 surahs are verified. After download, the reading path uses IndexedDB only and has no QuranEnc API dependency. The package is device-local and is not synced to Firestore.
+- Opposite-page display shows all Tafsir for the ayahs on the opposite Quran page, highlights and scrolls to the selected ayah, and preserves the opposite Quran page as the reading surface.
+- Attribution, publisher, version and source links are visible. The source payload is never edited; no AI-generated Tafsir is used.
+- E2E coverage in PR #386 mocks the official endpoint and checks full download, both page directions, offline reading, footnote display, invalid payload rejection and interrupted-download resume. Exact-head CI remains blocked by the upstream picomatch advisory; no local pass is claimed.
+
+
+- Audio behavior in the facing spread: if one side is Tafsir, the audio queue includes only the Quran page on the opposite side; with both pages set to Quran, it follows both pages in right-to-left reading order. Changing a side's content mode stops the old queue before recalculating the available ayahs.
+- If a saved Tafsir record fails integrity validation, it is removed from the current manifest so the resumable downloader can fetch and repair that surah instead of treating corrupt data as complete.

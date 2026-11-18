@@ -21,7 +21,7 @@ import { QURAN_PAGE_INDEX } from '../../data/quranPageIndex.generated';
 import { QURAN_JUZ_STARTS, QURAN_HIZB_QUARTER_STARTS } from '../../data/quranNavigationIndex.generated';
 import { loadSurahVerses } from '../../data/quranDataLoader';
 import { findSurahStartPage } from '../../data/quranNavigation';
-import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
+import { RECITERS, getLicensedAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
@@ -36,6 +36,7 @@ import {
 } from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
 import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import {
   DESKTOP_SPREAD_BREAKPOINT_PX,
   getSavedMushafSpreadMode,
@@ -48,6 +49,7 @@ import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { TafsirSheet } from './TafsirSheet';
 import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
+import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
 import { PrintedMushafSpread } from './PrintedMushafSpread';
@@ -186,17 +188,33 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   });
   const [showHizbPicker, setShowHizbPicker] = useState(false);
   const [printedAyahsByPage, setPrintedAyahsByPage] = useState<Record<number, Ayah[]>>({});
+  const isTwoPageSpreadActive = readerLayout === 'printed' &&
+    typeof window !== 'undefined' &&
+    resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
+    window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+
   const audioAyahs = readerLayout === 'printed'
-    ? (printedAyahsByPage[page] || [])
+    ? isTwoPageSpreadActive
+      ? [...(printedAyahsByPage[page] || []), ...(printedAyahsByPage[page + 1] || [])]
+      : (printedAyahsByPage[page] || [])
     : ayahs;
   const handlePrintedPageResolved = useRef((resolved: { page: number; ayahs: Ayah[] }) => {
     setPrintedAyahsByPage(prev => ({ ...prev, [resolved.page]: resolved.ayahs }));
   }).current;
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
+  const playbackRequestSeqRef = useRef(0);
+  const activeObjectUrlRevokersRef = useRef(new Set<() => void>());
   const autoPlayNextPageRef = useRef(false);
   const pendingTargetRef = useRef<{ surahNumber: number; ayahNumber: number } | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const revokeAllActiveAudioUrls = () => {
+    for (const revoke of activeObjectUrlRevokersRef.current) {
+      try { revoke(); } catch { /* Ignore stale object URL cleanup. */ }
+    }
+    activeObjectUrlRevokersRef.current.clear();
+  };
+
 
   const pageSegments = useMemo(() => PAGE_INDEX[String(page)] || [], [page]);
 
@@ -269,8 +287,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   }, [page, audioAyahs.length]);
 
   const stopAudio = () => {
+    playbackRequestSeqRef.current += 1;
     audioQueueRef.current?.stop();
     audioQueueRef.current = null;
+    revokeAllActiveAudioUrls();
     globalAudioCoordinator.releaseFocus('mushaf');
     setIsPlaying(false);
     setIsAudioPaused(false);
@@ -292,10 +312,12 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       unregCoordinator();
       audioQueueRef.current?.stop();
       audioQueueRef.current = null;
+      playbackRequestSeqRef.current += 1;
+      revokeAllActiveAudioUrls();
     };
   }, []);
 
-  const startAudioQueue = (
+  const startAudioQueue = async (
     queue: Ayah[],
     startIndex: number,
     endIndex: number,
@@ -305,11 +327,23 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   ) => {
     if (!queue.length || startIndex < 0 || endIndex < startIndex || endIndex >= queue.length) return;
     stopAudio();
+    const requestSeq = ++playbackRequestSeqRef.current;
     globalAudioCoordinator.claimFocus('mushaf');
-    const tracks = queue.map(ayah => ({
-      id: String(ayah.number),
-      url: formatAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter)
+    const resolvedTracks = await Promise.all(queue.map(async ayah => {
+      const descriptor = getLicensedAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter);
+      const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+        descriptor.approvedReciterId,
+        descriptor.globalAyahNumber,
+        descriptor.url
+      );
+      return { track: { id: String(ayah.number), url: resolved.src }, revoke: resolved.revoke };
     }));
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      resolvedTracks.forEach(item => item.revoke?.());
+      return;
+    }
+    resolvedTracks.forEach(item => { if (item.revoke) activeObjectUrlRevokersRef.current.add(item.revoke); });
+    const tracks = resolvedTracks.map(item => item.track);
     const cacheUpcoming = (index: number) => {
       requestOfflineAudioCache(tracks.slice(index, Math.min(endIndex + 1, index + 20)).map(track => track.url));
     };
@@ -334,12 +368,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsAudioPaused(false);
         setPlayingIndex(null);
         setSegmentPlaybackStatus(null);
-        if (continueAcrossPages && page < 604) {
+        revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('mushaf');
+        const nextPage = stepSpreadPage(page, 'next', isTwoPageSpreadActive);
+        if (continueAcrossPages && nextPage !== page && nextPage <= 604) {
           autoPlayNextPageRef.current = true;
           // Keep the next-page effect from seeing the previous page's ayahs
           // before the page loader has started and replaced them.
           setIsLoading(true);
-          setPage(page + 1);
+          setPage(nextPage);
         }
       },
       onError: error => {
@@ -350,6 +387,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsAudioPaused(false);
         setPlayingIndex(null);
         setSegmentPlaybackStatus(null);
+        revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('mushaf');
       }
     });
     audioQueueRef.current = controller;
@@ -372,6 +411,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setIsAudioPaused(false);
       setPlayingIndex(null);
       setSegmentPlaybackStatus(null);
+      revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('mushaf');
       console.warn('[WIRD Mushaf] Could not start Quran audio queue:', error);
     }
   };
@@ -382,7 +423,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setPlayingIndex(null);
       return;
     }
-    startAudioQueue(queue, index, queue.length - 1, 1, true, normalizeAyahSegmentRepeatCount(perAyahRepeatCount));
+    void startAudioQueue(queue, index, queue.length - 1, 1, true, normalizeAyahSegmentRepeatCount(perAyahRepeatCount));
   };
 
   useEffect(() => {
@@ -422,38 +463,37 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     setPage(nextPage);
   };
 
-  const jumpToNavigationPoint = (point: NavigationPoint) => {
+  const jumpToNavigationPoint = async (point: NavigationPoint): Promise<number | null> => {
     const target = { surahNumber: point.surahNumber, ayahNumber: point.ayahNumber };
     if (point.page === page && audioAyahs.length &&
         audioAyahs.some(ayah => ayah.surahNumber === target.surahNumber && ayah.numberInSurah === target.ayahNumber)) {
       document.getElementById('wird-ayah-' + point.surahNumber + '-' + point.ayahNumber)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       pendingTargetRef.current = null;
-      return;
+      return page;
     }
 
     if (readerLayout === 'printed') {
       const candidatePages = [point.page, point.page - 1, point.page + 1]
         .filter(candidate => candidate >= 1 && candidate <= 604);
-      void (async () => {
-        for (const candidate of candidatePages) {
-          try {
-            const data = await loadMushafFacsimilePage(candidate);
-            if (data.ayahAreas.some(area => area.surahNumber === target.surahNumber && area.ayahNumber === target.ayahNumber)) {
-              changePage(candidate);
-              pendingTargetRef.current = target;
-              return;
-            }
-          } catch {
-            // A neighboring page may be temporarily unavailable; try the next grounded candidate.
+      for (const candidate of candidatePages) {
+        try {
+          const data = await loadMushafFacsimilePage(candidate);
+          if (data.ayahAreas.some(area => area.surahNumber === target.surahNumber && area.ayahNumber === target.ayahNumber)) {
+            changePage(candidate);
+            pendingTargetRef.current = target;
+            return candidate;
           }
+        } catch {
+          // A neighboring page may be temporarily unavailable; try the next grounded candidate.
         }
-        setPageJumpError('تعذر تحديد صفحة الآية في تخطيط المصحف المطبوع؛ يمكنك استخدام العرض المرن للانتقال إليها.');
-      })();
-      return;
+      }
+      setPageJumpError('تعذر تحديد صفحة الآية في تخطيط المصحف المطبوع؛ يمكنك استخدام العرض المرن للانتقال إليها.');
+      return null;
     }
 
     changePage(point.page);
     pendingTargetRef.current = target;
+    return point.page;
   };
 
   const jumpToJuz = (juz: number) => {
@@ -464,6 +504,26 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const jumpToHizbQuarter = (quarter: number) => {
     const point = HIZB_INDEX[String(quarter)];
     if (point) jumpToNavigationPoint(point);
+  };
+
+  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number): Promise<number | null> => {
+    const targetPage = Object.entries(PAGE_INDEX).find(([, segments]) =>
+      segments.some(segment => segment.surahNumber === surahNumber && ayahNumber >= segment.startAyah && ayahNumber <= segment.endAyah)
+    );
+    if (!targetPage) return Promise.resolve(null);
+    return jumpToNavigationPoint({ surahNumber, ayahNumber, page: Number(targetPage[0]) });
+  };
+
+  const handleNavigateFromTafsir = async (surahNumber: number, ayahNumber: number): Promise<number | null> => {
+    const pageNumber = await handleNavigateToAyah(surahNumber, ayahNumber);
+    try {
+      const verses = await loadSurahVerses(surahNumber);
+      const targetAyah = verses.find(ayah => ayah.numberInSurah === ayahNumber);
+      if (targetAyah) setTafsirAyah(targetAyah);
+    } catch (error) {
+      console.warn('[WIRD Mushaf] Could not restore the selected local ayah after Tafsir navigation:', error);
+    }
+    return pageNumber;
   };
 
   const jumpToSurah = (surahNumber: number) => {
@@ -513,6 +573,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   };
 
   const currentBookmark = bookmarks.includes(page);
+  const lastNavigablePage = isTwoPageSpreadActive ? 603 : 604;
   const primarySurah = audioAyahs.length ? ALL_SURAHS.find(s => s.number === audioAyahs[0].surahNumber) : undefined;
   const currentJuz = audioAyahs.length ? audioAyahs[0].juz : Math.ceil(page / 20);
   const hasMultipleSurahsOnPage = useMemo(
@@ -521,11 +582,6 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   );
   const selectedStartAyah = audioAyahs[segmentStartIndex];
   const selectedEndAyah = audioAyahs[segmentEndIndex];
-
-  const isTwoPageSpreadActive = readerLayout === 'printed' &&
-    typeof window !== 'undefined' &&
-    resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
-    window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
@@ -948,6 +1004,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             selectedAyah={tafsirAyah}
             onSelectAyah={setTafsirAyah}
             onAyahsResolved={handlePrintedPageResolved}
+            onNavigateToAyah={handleNavigateFromTafsir}
             onFallback={() => selectReaderLayout('flow')}
             maxWidthClass={isFullWidth ? 'max-w-none' : 'max-w-7xl'}
           />
@@ -1086,6 +1143,42 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         )}
       </main>
 
+      {/* Persistent bottom page navigation for long Mushaf reading sessions */}
+      <nav
+        aria-label="التنقل بين صفحات المصحف"
+        className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-[#1C4E46]/15 bg-white/95 p-3 shadow-md dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+      >
+        <button
+          type="button"
+          aria-label="الصفحة السابقة"
+          disabled={page <= 1}
+          onClick={() => {
+            changePage(stepSpreadPage(page, 'prev', isTwoPageSpreadActive));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-[#1C4E46]/15 bg-[#F9F6EE] px-3 py-2 text-sm font-bold text-[#1C4E46] transition-colors hover:border-[#C59B27] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#E0A96D]/25 dark:bg-[#0B132B] dark:text-[#E0A96D]"
+        >
+          <ChevronRight className="h-5 w-5" />
+          <span>الصفحة السابقة</span>
+        </button>
+        <span aria-live="polite" aria-atomic="true" className="shrink-0 rounded-lg bg-[#F2EDE2] px-3 py-2 text-xs font-bold tabular-nums text-[#1C4E46] dark:bg-[#162744] dark:text-[#E0A96D]">
+          {page} / 604
+        </span>
+        <button
+          type="button"
+          aria-label="الصفحة التالية"
+          disabled={page >= lastNavigablePage}
+          onClick={() => {
+            changePage(stepSpreadPage(page, 'next', isTwoPageSpreadActive));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-[#1C4E46]/15 bg-[#F9F6EE] px-3 py-2 text-sm font-bold text-[#1C4E46] transition-colors hover:border-[#C59B27] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#E0A96D]/25 dark:bg-[#0B132B] dark:text-[#E0A96D]"
+        >
+          <span>الصفحة التالية</span>
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+      </nav>
+
       {/* Hizb Quarters Modal Picker */}
       {showHizbPicker && (
         <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4" onClick={() => setShowHizbPicker(false)}>
@@ -1136,6 +1229,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
           </div>
         </div>
       )}
+
+      {(() => {
+        const navigationAyah = tafsirAyah || audioAyahs[0] || ayahs[0];
+        return navigationAyah ? (
+          <div className="mx-auto mt-3 w-full max-w-4xl">
+            <AyahNavigationControls currentAyah={navigationAyah} onNavigate={handleNavigateToAyah} />
+          </div>
+        ) : null;
+      })()}
 
       {/* Helpful Hint */}
       <div className="text-center text-xs text-[#5B6F6B] dark:text-[#8B9E9B] flex items-center justify-center gap-1.5">

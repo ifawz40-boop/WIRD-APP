@@ -135,7 +135,7 @@ test.describe('WIRD Master UX Restructuring E2E', () => {
 
     // Open Tafsir on page 1 -> verify both slide-over panel & opposite-page replacement + return button
     await page.getByRole('button', { name: 'تفسير الآية 2 من سورة الفاتحة' }).click();
-    await expect(page.getByRole('button', { name: 'الآية التالية' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'التنقل بين الآيات' }).last().getByRole('button', { name: 'الآية التالية' })).toBeVisible();
 
     // Switch to slide-over side panel (keeps both facing pages visible)
     const panelBtn = page.getByRole('button', { name: 'لوحة جانبية' });

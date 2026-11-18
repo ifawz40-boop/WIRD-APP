@@ -68,8 +68,9 @@ export function runQuranMushafReaderTests(): { passed: number; failed: number } 
     assert(source.includes('MUSHAF_TEXT_SCALE_CLASSES') && source.includes('extraLarge'), 'Reader must offer adjustable Quran text sizes');
     assert(source.includes('توسيع مساحة القراءة') && source.includes('تقليل عرض الصفحة'), 'Reader must offer a wider or comfortable reading surface');
     assert(source.includes('ليس محاكاة مطابقة لأسطر المصحف المطبوع') && source.includes('بيانات تخطيط موثّقة'), 'Reader must clearly disclose the flexible non-line-matched layout');
-    assert(source.includes('autoPlayNextPageRef') && source.includes('setPage(page + 1)'), 'Page recitation must continue across page boundaries');
+    assert(source.includes('autoPlayNextPageRef') && source.includes("stepSpreadPage(page, 'next', isTwoPageSpreadActive)"), 'Page recitation must continue across page boundaries using the active spread step');
     assert(source.includes('PrintedMushafSpread') && source.includes("readerLayout === 'printed'"), 'Reader must offer an explicit printed-page spread mode');
+    assert(source.includes("stepSpreadPage(page, 'next', isTwoPageSpreadActive)"), 'Continuous recitation must advance by the active one-page or two-page spread step');
     assert(source.includes("selectReaderLayout('flow')"), 'Reader must preserve a direct fallback to local flexible text');
     const spread = fs.readFileSync(path.resolve(process.cwd(), 'src/components/library/PrintedMushafSpread.tsx'), 'utf8');
     assert(spread.includes('QuranMushafFacsimilePage'), 'Shared PrintedMushafSpread must render QuranMushafFacsimilePage');
@@ -83,6 +84,11 @@ export function runQuranMushafReaderTests(): { passed: number; failed: number } 
     assert(facsimileService.includes('ALLOWED_SVG_ELEMENTS') && facsimileService.includes('ALLOWED_SVG_ATTRIBUTES'), 'SVG must be sanitized by strict element and attribute allowlists');
     assert(facsimileService.includes('sanitizeMushafSvgMarkup(svgMarkup)'), 'Fetched SVG must pass through sanitization before rendering');
     assert(facsimileService.includes('matchMushafAyahAreas'), 'Every printed ayah must be checked against WIRD local data');
+    assert(facsimileService.includes('MUSHAF_OFFLINE_CACHE_NAME') && facsimileService.includes('cache.match(svgUrl)'), 'Printed Mushaf pages must load from the explicit offline package before using the network');
+    const offlineFacsimile = fs.readFileSync(path.resolve(process.cwd(), 'src/services/mushafFacsimileOfflineLibrary.ts'), 'utf8');
+    assert(offlineFacsimile.includes('MUSHAF_OFFLINE_PAGE_COUNT = 604') && offlineFacsimile.includes('PREFLIGHT_SAMPLE_PAGES'), 'The optional offline package must cover all 604 pinned pages and preflight a representative sample');
+    assert(offlineFacsimile.includes('hasMushafOfflineQuota') && offlineFacsimile.includes('await cache.put(svgUrl'), 'Every verified page must be stored only after quota preflight and page validation');
+    assert(offlineFacsimile.includes('validatePageAgainstLocalQuran') && offlineFacsimile.includes('matchMushafAyahAreas') && offlineFacsimile.includes('loadSurahVerses'), 'Every cached and newly downloaded SVG must match exact WIRD-local ayah coordinates before it counts as a valid package page');
     const audioControl = fs.readFileSync(path.resolve(process.cwd(), 'src/components/shared/AudioPlaybackRateControl.tsx'), 'utf8');
     assert(audioControl.includes('https://everyayah.com/'), 'Audio controls must provide a visible EveryAyah source link-back');
   });

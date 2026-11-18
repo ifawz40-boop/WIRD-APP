@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 import type {Plugin} from 'vite';
+import { listOfflinePublicAssets } from './scripts/offlinePublicAssets';
 
 function offlineShellManifestPlugin(): Plugin {
   return {
@@ -37,20 +38,24 @@ function offlineShellManifestPlugin(): Plugin {
       };
 
       visitStaticChunk(entry.fileName);
+      const bundleAssets = Object.values(bundle)
+        .filter(item => item.type === 'chunk' || (
+          item.type === 'asset' &&
+          /\.(?:mjs|wasm|css|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|json|webmanifest)$/i.test(item.fileName)
+        ))
+        .map(item => '/' + item.fileName);
+      const allAssets = [...new Set([...bundleAssets, ...listOfflinePublicAssets()])].sort();
+      if (allAssets.length > 2000) {
+        this.error(`WIRD offline package manifest has ${allAssets.length} assets; the service-worker safety limit is 2000.`);
+      }
+
       this.emitFile({
         type: 'asset',
         fileName: 'wird-precache-manifest.json',
         source: JSON.stringify({
           schemaVersion: 1,
           assets: [...assets].sort(),
-          allAssets: Object.values(bundle)
-            .filter(item => item.type === 'chunk' || (
-              item.type === 'asset' &&
-              /\.(?:css|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|json|webmanifest)$/i.test(item.fileName)
-            ))
-            .map(item => '/' + item.fileName)
-            .filter((asset, index, list) => list.indexOf(asset) === index)
-            .sort()
+          allAssets
         })
       });
     }

@@ -5,6 +5,17 @@ import { AuthGate } from './components/auth/AuthGate.tsx';
 import './index.css';
 import './wird-identity.css';
 
+// Expose a narrowly scoped browser test bridge only in the dedicated CI E2E build.
+// Normal local and production builds never publish this test-only surface.
+if (import.meta.env.VITE_WIRD_E2E_TEST_HOOKS === 'true') {
+  void import('./services/offlineQuranAudioLibrary').then(({ OfflineQuranAudioLibrary }) => {
+    Object.defineProperty(window, '__WIRD_E2E__', {
+      configurable: true,
+      value: Object.freeze({ OfflineQuranAudioLibrary })
+    });
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <AuthProvider>
     <AuthGate>

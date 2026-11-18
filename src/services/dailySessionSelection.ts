@@ -1,6 +1,6 @@
 import { ALL_SURAHS } from '../data/quranMeta';
 import type { MemorizationPlan, WeakVerseItem, WirdPortion } from '../types/quran';
-import type { EngineGeneratedPlan, ScheduledTaskUnit } from './planningEngine';
+import type { EngineGeneratedPlan, ScheduledDayPlan, ScheduledTaskUnit } from './planningEngine';
 import { findNextUnmemorizedRange, getPrioritizedRevisionQueue } from './unifiedPortionService';
 
 export interface DailyMemorizationRange {
@@ -54,6 +54,8 @@ export type DailySessionSelection =
       endAyah: number;
       label: string;
       planId?: string;
+      enginePlanId?: string;
+      enginePlanDate?: string;
     }
   | {
       kind: 'blocked';
@@ -66,22 +68,81 @@ export type DailySessionSelection =
  * Return only an engine-plan task due today or overdue.
  * Future tasks must never be started early by the dashboard quick-start.
  */
+/**
+ * Collect every incomplete memorization task due today or overdue across all
+ * active, non-paused engine plans. Completed day state is authoritative.
+ */
+export interface DueEngineTask {
+  planId: string;
+  planTitle: string;
+  date: string;
+  taskId: string;
+  task: ScheduledTaskUnit;
+}
+
+export function getDueEngineTasks(plans: EngineGeneratedPlan[], todayStr: string): DueEngineTask[] {
+  return plans.flatMap(plan => {
+    if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) return [];
+    return plan.schedule.flatMap(day => {
+      const task = day.memorizationTask;
+      if (typeof day.date !== 'string' || day.date > todayStr || day.status === 'completed' || !task || task.completed) return [];
+      return [{ planId: plan.id, planTitle: plan.input?.title || plan.title || 'خطة الحفظ', date: day.date, taskId: day.id, task }];
+    });
+  }).sort((a, b) =>
+    a.date.localeCompare(b.date) ||
+    a.planTitle.localeCompare(b.planTitle, 'ar') ||
+    a.planId.localeCompare(b.planId) ||
+    a.taskId.localeCompare(b.taskId)
+  );
+}
+
+export interface DueEnginePlanTaskMatch {
+  plan: EngineGeneratedPlan;
+  day: ScheduledDayPlan;
+  task: ScheduledTaskUnit;
+}
+
+/** Resolve completion to the exact plan and scheduled date that launched it. */
+export function findMatchingDueEnginePlanTask(
+  plans: EngineGeneratedPlan[],
+  todayStr: string,
+  target: { surahNumber: number; startAyah: number; endAyah: number; enginePlanId?: string | null; enginePlanDate?: string | null }
+): DueEnginePlanTaskMatch | null {
+  const matches = plans.flatMap(plan => {
+    if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) return [];
+    if (target.enginePlanId && plan.id !== target.enginePlanId) return [];
+    return plan.schedule.flatMap(day => {
+      const task = day.memorizationTask;
+      const hasExactScheduleIdentity = Boolean(target.enginePlanId && target.enginePlanDate);
+      if (
+        typeof day.date !== 'string' || (!hasExactScheduleIdentity && day.date > todayStr) ||
+        (target.enginePlanDate && day.date !== target.enginePlanDate) ||
+        day.status === 'completed' || !task || task.completed ||
+        task.surahNumber !== target.surahNumber ||
+        task.startAyah !== target.startAyah ||
+        task.endAyah !== target.endAyah
+      ) return [];
+      return [{ plan, day, task }];
+    });
+  }).sort((a, b) =>
+    a.day.date.localeCompare(b.day.date) ||
+    (a.plan.input?.title || a.plan.title || '').localeCompare(b.plan.input?.title || b.plan.title || '', 'ar') ||
+    a.plan.id.localeCompare(b.plan.id)
+  );
+
+  // Exact plan/date launches from a plan detail may complete future tasks early.
+  // Dashboard/legacy launches remain limited to due work. Never guess which
+  // plan owns a duplicate ayah range; ambiguous sessions fail closed instead.
+  return matches.length === 1 ? matches[0] : null;
+}
+
+/** Return the earliest due task for one plan; future work is never eligible. */
 export function getNextDueEngineTask(
   plan: EngineGeneratedPlan | null | undefined,
   todayStr: string
 ): ScheduledTaskUnit | null {
   if (!plan || !plan.isActive || plan.isPaused) return null;
-
-  const dueDay = plan.schedule
-    .filter(day =>
-      typeof day.date === 'string' &&
-      day.date <= todayStr &&
-      Boolean(day.memorizationTask) &&
-      !day.memorizationTask?.completed
-    )
-    .sort((a, b) => a.date.localeCompare(b.date))[0];
-
-  return dueDay?.memorizationTask || null;
+  return getDueEngineTasks([plan], todayStr)[0]?.task || null;
 }
 
 export function getAllActiveEngineTasks(
@@ -91,59 +152,36 @@ export function getAllActiveEngineTasks(
   dueItems: UnifiedEngineDueTaskItem[];
   completedTodayItems: UnifiedPlanCompletedTodayItem[];
 } {
-  const dueItems: UnifiedEngineDueTaskItem[] = [];
+  const dueItems: UnifiedEngineDueTaskItem[] = getDueEngineTasks(enginePlans, todayStr).map(item => ({
+    planId: item.planId,
+    planTitle: item.planTitle,
+    taskId: item.taskId,
+    scheduledDate: item.date,
+    isOverdue: item.date < todayStr,
+    task: item.task
+  }));
   const completedTodayItems: UnifiedPlanCompletedTodayItem[] = [];
 
   for (const plan of enginePlans) {
     if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) continue;
     const planTitle = plan.input?.title || plan.title || 'خطة حفظ ذكية';
-
-    const dueDays = plan.schedule
-      .filter(day =>
-        typeof day.date === 'string' &&
-        day.date <= todayStr &&
-        Boolean(day.memorizationTask) &&
-        !day.memorizationTask?.completed
-      )
-      .sort((a, b) => a.date.localeCompare(b.date));
-
-    if (dueDays[0]?.memorizationTask) {
-      dueItems.push({
-        planId: plan.id,
-        planTitle,
-        taskId: dueDays[0].id,
-        scheduledDate: dueDays[0].date,
-        isOverdue: dueDays[0].date < todayStr,
-        task: dueDays[0].memorizationTask
-      });
-    }
-
     for (const day of plan.schedule) {
       const task = day.memorizationTask;
       if (!task?.completed) continue;
-      const completedDate =
-        task.completedDate ||
+      const completedDate = task.completedDate ||
         (typeof task.completedAt === 'string' ? task.completedAt.slice(0, 10) : day.date);
-      if (completedDate === todayStr) {
-        const completionTiming =
-          task.completionTiming ||
-          (completedDate < day.date
-            ? 'completed_early'
-            : completedDate === day.date
-              ? 'completed_on_time'
-              : 'completed_late');
-        completedTodayItems.push({
-          planId: plan.id,
-          planTitle,
-          scheduledDate: day.date,
-          completionTiming,
-          task
-        });
-      }
+      if (completedDate !== todayStr) continue;
+      const completionTiming = task.completionTiming ||
+        (completedDate < day.date ? 'completed_early' : completedDate === day.date ? 'completed_on_time' : 'completed_late');
+      completedTodayItems.push({ planId: plan.id, planTitle, scheduledDate: day.date, completionTiming, task });
     }
   }
 
-  dueItems.sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
+  dueItems.sort((a, b) =>
+    a.scheduledDate.localeCompare(b.scheduledDate) ||
+    a.planTitle.localeCompare(b.planTitle, 'ar') ||
+    a.planId.localeCompare(b.planId)
+  );
   return { dueItems, completedTodayItems };
 }
 
@@ -184,20 +222,20 @@ export function getDailySessionSelection(
   todayStr: string
 ): DailySessionSelection {
   const activeEnginePlans = enginePlans.filter(plan => plan.isActive && !plan.isPaused);
-  for (const activeEnginePlan of activeEnginePlans) {
-    const engineTask = getNextDueEngineTask(activeEnginePlan, todayStr);
-    if (engineTask) {
-      return {
-        kind: 'session',
-        mode: 'memorize',
-        source: 'engine_plan',
-        surahNumber: engineTask.surahNumber,
-        startAyah: engineTask.startAyah,
-        endAyah: engineTask.endAyah,
-        label: `خطة: ${activeEnginePlan.input.title || activeEnginePlan.title || 'الحفظ الذكي'}`,
-        planId: activeEnginePlan.id
-      };
-    }
+  const nextDueEngineTask = getDueEngineTasks(activeEnginePlans, todayStr)[0];
+  if (nextDueEngineTask) {
+    return {
+      kind: 'session',
+      mode: 'memorize',
+      source: 'engine_plan',
+      surahNumber: nextDueEngineTask.task.surahNumber,
+      startAyah: nextDueEngineTask.task.startAyah,
+      endAyah: nextDueEngineTask.task.endAyah,
+      label: `خطة: ${nextDueEngineTask.planTitle}`,
+      planId: nextDueEngineTask.planId,
+      enginePlanId: nextDueEngineTask.planId,
+      enginePlanDate: nextDueEngineTask.date
+    };
   }
 
   const duePortion = getPrioritizedRevisionQueue(portions, { todayStr, maxDailyLimit: 20 }).queue[0];

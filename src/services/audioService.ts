@@ -1,6 +1,6 @@
 import { ALL_SURAHS } from '../data/quranMeta';
 import { ReciterId, ReciterInfo } from '../types/quran';
-import { buildQuranAyahAudioUrl } from './ruqyahAudioService';
+import { buildQuranAyahAudioUrl, FALLBACK_QURAN_RECITERS } from './ruqyahAudioService';
 
 export const RECITERS: ReciterInfo[] = [
   { id: 'alafasy', name: 'الشيخ مشاري راشد العفاسي', identifier: 'Alafasy_128kbps', subfolder: 'Alafasy_128kbps' },
@@ -16,6 +16,15 @@ export const OFFLINE_RECITER_MAP: Partial<Record<ReciterId, string>> = {
   minshawi: 'ar.minshawi',
   abdulbasit: 'ar.abdulbasit'
 };
+
+const OFFLINE_RECITER_ID_SET = new Set(
+  Object.values(OFFLINE_RECITER_MAP).filter((id): id is string => typeof id === 'string')
+);
+
+/** Only expose offline-download editions that the Quran reader can also select for playback. */
+export const OFFLINE_DOWNLOADABLE_RECITERS = FALLBACK_QURAN_RECITERS.filter(reciter =>
+  OFFLINE_RECITER_ID_SET.has(reciter.id)
+);
 
 export function resolveApprovedOfflineReciterId(reciterId: ReciterId): string | null {
   return OFFLINE_RECITER_MAP[reciterId] ?? null;

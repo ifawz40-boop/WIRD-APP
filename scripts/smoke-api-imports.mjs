@@ -1,15 +1,16 @@
-const [metadata, tafsir, ruqyah, hadithReferences] = await Promise.all([
+const [metadata, tafsir, ruqyah, hadithReferences, quranAudioDownload] = await Promise.all([
   import('../src/data/quranMeta.ts'),
   import('../api/tafsir.ts'),
   import('../api/ruqyah.ts'),
-  import('../api/hadith-references.ts')
+  import('../api/hadith-references.ts'),
+  import('../api/quran-audio-download.ts')
 ]);
 
 if (metadata.ALL_SURAHS.length !== 114) {
   throw new Error(`Expected 114 Quran surahs, received ${metadata.ALL_SURAHS.length}`);
 }
 
-for (const [name, route] of Object.entries({ tafsir, ruqyah, hadithReferences })) {
+for (const [name, route] of Object.entries({ tafsir, ruqyah, hadithReferences, quranAudioDownload })) {
   if (typeof route.default !== 'function') {
     throw new Error(`Expected ${name} route to export a handler`);
   }
@@ -32,7 +33,8 @@ async function request(route, query) {
 for (const [name, response] of [
   ['tafsir', await request(tafsir, { surah: '0', ayah: '0' })],
   ['ruqyah', await request(ruqyah, { type: 'unsupported' })],
-  ['hadith references', await request(hadithReferences, { surah: '0', ayah: '0' })]
+  ['hadith references', await request(hadithReferences, { surah: '0', ayah: '0' })],
+  ['Quran audio download', await request(quranAudioDownload, { reciter: 'unapproved', ayah: '1' })]
 ]) {
   if (response.statusCode !== 400) {
     throw new Error(`Expected ${name} route to return HTTP 400 for invalid input, received ${response.statusCode}`);

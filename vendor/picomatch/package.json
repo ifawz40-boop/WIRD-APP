@@ -1,0 +1,22 @@
+{
+  "name": "picomatch",
+  "version": "4.0.8+wird.1",
+  "description": "WIRD-maintained picomatch 4.0.7 with bounded repeated-extglob ambiguity validation.",
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "posix.js",
+    "lib"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=12"
+  },
+  "_wirdPatch": {
+    "upstream": "micromatch/picomatch@4.0.7",
+    "patchSource": "diegomors/picomatch PR #261; commits ac794fd86f1d3fd862993831daae783d7c316a23, ac0aeeb9022f3b4113e57f587a853f1e358efee2, b911986d9fb69c39ac203a1d08b7436057508058",
+    "advisory": "GHSA-fc5q-39xc-vjpf / CVE-2026-112366",
+    "note": "Downstream patched build; not an upstream picomatch release."
+  }
+}

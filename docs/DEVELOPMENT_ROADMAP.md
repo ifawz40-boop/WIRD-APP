@@ -1,5 +1,50 @@
 > **Roadmap scope note — 2026-11-14:** This file defines product direction and sequencing, not the live operational state. For current main/PR heads, CI, Vercel, Firebase, owner decisions and the next executable task, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). The dated implementation/status notes below are retained as history and must be revalidated before action.
 
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+**Priority:** active owner request. Execute only these tasks in order; do not expand product scope or introduce runtime network dependencies.
+
+1. **Multiple active memorization plans on Dashboard.** Aggregate every due/overdue incomplete memorization task from all active, non-paused engine plans. Sort deterministically; exclude future tasks, paused/inactive plans, completed tasks and completed days. Show originating plan and direct start action; completion updates the matching due plan.
+2. **Verse navigation controls.** Place accessible previous/next ayah controls directly beneath ayah displays in Quran reading interfaces. Support Surah boundaries and local navigation.
+3. **Printed Mushaf page layout.** Add one-page and facing two-page modes. Side-by-side on wide screens, with a usable one-page fallback on narrow screens; preserve bookmarks, current position and audio semantics.
+4. **Opposite-page Tafsir al-Muyassar.** Each side independently supports Quran or locally available Tafsir for the ayah selected on the opposite Quran page. Both sides default to Quran. Use a complete verified local corpus and preserve publisher/source/version metadata.
+
+**Release rules:** one narrow PR per task; unit/integration and desktop/mobile E2E coverage; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Preview or branch creation is not completion. No Firebase Rules/data, Production secrets/settings, sync flags, or user-data changes.
+
+**Current status:** #383 task 1 OPEN / Draft / CI blocked by frozen-lockfile mismatch. #384 task 2 OPEN / Draft / stacked on #382 and not yet verified. #382 is the lockfile prerequisite with Playwright timing failures under retest. Tasks 3–4 NOT STARTED. See docs/CONTINUE_HERE.md.
+
+---
+
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+Execute only these four tasks in order; no unrelated feature expansion or new always-online dependency.
+
+1. **Multiple active memorization plans on Dashboard:** show all due/overdue incomplete tasks across active non-paused plans, excluding future/completed work, with plan identity and direct start; completion updates the matching plan.
+2. **Verse navigation controls:** accessible previous/next controls directly beneath ayah displays in Quran reading interfaces, including Surah boundaries and local navigation.
+3. **Printed Mushaf display:** one-page default and optional facing two-page spread; lower page number on the right, next page on the left; odd-page spread alignment, two-page navigation, audio in reading order, locally persisted preference and narrow-screen horizontal scroll.
+4. **Opposite-page Tafsir al-Muyassar:** each side can show Quran or locally stored Tafsir for the opposite Quran page's selected ayah(s); both Quran by default. Source: QuranEnc key arabic_moyassar, King Fahd Complex edition, catalog V1.0.1 (2026-11-09). Preserve the source's aya/translation/footnotes unchanged and follow QuranEnc's republishing terms.
+
+**Release rules:** one narrow PR per task; tests for unit/integration, desktop/mobile and offline; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Never suppress a high-severity audit or merge with missing/failing checks. No Firebase Rules/data, Production secrets/settings, sync flags, or user-data changes.
+
+**Status:** #383 task 1, #384 task 2, #385 task 3 OPEN / Draft / NOT VERIFIED. #382 lockfile prerequisite currently fails bun audit on GHSA-fc5q-39xc-vjpf affecting picomatch@4.0.7; no fixed version is stated. Task 4 NOT STARTED pending complete, verified local Tafsir storage. See docs/CONTINUE_HERE.md.
+
+---
+
+## Owner-requested local/offline Quran usability work — 2026-11-17
+
+Execute only these four tasks in order; no unrelated feature expansion or always-online reading dependency.
+
+1. **Multiple active memorization plans on Dashboard:** show all due/overdue incomplete tasks across active non-paused plans, excluding future/completed work, with plan identity and direct start; completion updates the matching plan.
+2. **Verse navigation controls:** accessible previous/next controls directly beneath ayah displays in Quran reading interfaces, including Surah boundaries and local navigation.
+3. **Printed Mushaf display:** one-page default and optional facing two-page spread; lower page number on right, next page on left; odd-page alignment, two-page navigation, audio in reading order, locally persisted preference and narrow-screen horizontal scroll.
+4. **Opposite-page Tafsir al-Muyassar:** either side can show locally stored Tafsir for the opposite Quran page's ayahs; both Quran by default. QuranEnc Arabic key arabic_moyassar, King Fahd Complex, catalogue V1.0.1 (2026-11-09). User-initiated full 114-surah IndexedDB download, verse-count/coordinate validation, unchanged source payload and footnotes, attribution/version, pause/resume; reading uses local storage only.
+
+**Release rules:** one narrow PR per task; unit/integration and desktop/mobile/offline E2E; exact-head Quality Gate; update continuation queue, current-state snapshot, specialist docs and append-only work log. Never suppress high-severity audit or merge with missing/failing checks. No Firebase Rules/data, Production secrets/settings, sync flags or user-data changes.
+
+**Status:** #383 task 1, #384 task 2, #385 task 3, #386 task 4 OPEN / Draft / NOT VERIFIED. #382 lockfile prerequisite currently fails bun audit on GHSA-fc5q-39xc-vjpf affecting picomatch through 4.0.7; upstream PR #237 is open/unmerged and PR #238 is incomplete for all reported patterns. See docs/CONTINUE_HERE.md and docs/TAFSIR_OFFLINE_SOURCE.md.
+
+---
+
 ---
 
 # مسار منتجي جديد — Offline-first والتطبيق المستقبلي
@@ -445,3 +490,23 @@ Before building a substantial capability from scratch, search official standards
 For every proposed API, document official endpoint/schema, authentication, data provenance, terms/reuse rights, privacy/retention, rate limits, quotas, pricing, uptime/versioning, caching, attribution, failure modes and fallback/exit strategy. Prefer free/open options; no paid API becomes mandatory without explicit owner approval. Keep credentials server-side; validate/bound inputs and outputs; use timeouts, safe retries, idempotency and non-secret errors. Preserve offline behavior and avoid hard runtime dependence where practical.
 
 Religious-content restrictions remain absolute: verified local Quran text is authoritative; APIs may provide validated coordinates/identifiers or approved media transport only. Do not use APIs or AI as an authority for Quran, authenticated Hadith, Tafsir, Fiqh or publishable Seerah.
+
+
+### CI / security blocker reconciliation — 2026-11-17
+
+- #382 exact head e8ca61c: run #4461 passed frozen install but failed bun audit on picomatch@4.0.7 (GHSA-fc5q-39xc-vjpf).
+- #383 exact head 45acc719: run #4460 failed bun install --frozen-lockfile because main's lockfile is out of sync; #382 is the prerequisite lockfile alignment.
+- #384–#386 are stacked on feature branches and currently have no workflow runs. Do not treat absent checks as passing.
+- GitHub advisory reviewed/updated 2026-11-17, High CVSS 8.7, no fixed version stated; npm latest remains 4.0.7. Upstream candidate fixes remain open/unmerged. Keep all PRs Draft until safe remediation and exact-head CI.
+
+
+### Local/offline owner tasks — execution update 2026-11-17 22:45 +02:00
+
+- #383 multi-plan due queue: OPEN/Draft; exact Quality Gate #4460 fails frozen Bun install because committed lockfile needs alignment.
+- #384 adjacent-ayah navigation: OPEN/Draft; Vercel Preview READY on exact head, but GitHub Actions checks are absent. Controls cover Quran study and Mushaf surfaces; memorization session already includes its own controls.
+- #385 one-/two-page printed Mushaf: OPEN/Draft; Vercel Preview READY on exact head, but GitHub Actions checks are absent.
+- #386 offline Tafsir al-Muyassar: OPEN/Draft; Vercel Preview for the latest head was rejected by Vercel `build-rate-limit`; no GitHub Actions run. Includes a resumable, device-local 114-surah package, exact source version and coverage validation, unchanged source payload/footnotes, and either-direction opposite-page display.
+- #386 follow-up: corrected spread anchor behavior when navigating from Tafsir back to a Quran ayah on the Tafsir side; added E2E regression coverage. Completeness now requires exactly surahs 1–114.
+- #382 is the prerequisite security/lockfile PR. Its exact-head Quality Gate fails `bun audit` on picomatch@4.0.7, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. No fixed version was stated in the advisory as of 2026-11-17. Do not suppress audit or pin an unmerged partial patch.
+- No local tests/build are claimed. Keep all task PRs Draft until lockfile/security remediation and exact-head Quality Gate, desktop/mobile E2E, offline tests and printed-page coverage pass. See `docs/CONTINUE_HERE.md` for current heads and precise evidence.
+

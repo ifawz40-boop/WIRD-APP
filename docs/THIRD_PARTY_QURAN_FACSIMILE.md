@@ -6,7 +6,7 @@
 - Digitized edition represented by the vector archive: 1441H, as documented by the source archive.
 - Vector and ayah hit-region archive: [quran-ws/quran-svg](https://github.com/quran-ws/quran-svg).
 - Pinned release: `v1.1.1` (immutable source commit `3ff27b46cecb0c0519d77531d9c868a579d1f623`); page files are fetched from the documented, CORS-enabled GitHub raw path: `https://raw.githubusercontent.com/quran-ws/quran-svg/3ff27b46cecb0c0519d77531d9c868a579d1f623/mushafs/hafs/kfqc/svg/NNN.svg`.
-- One page is fetched on demand. The application does not download or bundle all 604 SVGs.
+- Default behavior fetches one page on demand. An explicit optional Settings action can download the complete 604-page package to device-local Cache Storage after quota preflight and sample validation; it is never bundled or downloaded automatically.
 - The release contains 604 Hafs/KFQPC pages and one transparent `.ayahPolygon` hit region per ayah on each page. The SVG is vector outlines, not selectable Quran text.
 
 ## Rights and attribution
@@ -36,10 +36,19 @@ Source release: https://github.com/quran-ws/quran-svg/releases/tag/v1.1.1
 ## Offline and performance behavior
 
 - A page is fetched only after the reader chooses **الصفحة المطبوعة**.
-- The service worker caches only the pinned Hafs/KFGQPC SVG host/path, on demand, in a dedicated cache bounded to 24 files (12 page pairs).
-- The cache is preserved across service-worker upgrades; old page entries are evicted by the bound.
+- The service worker maintains a small recent-page cache for ordinary browsing, bounded to 24 files (12 page pairs).
+- The separate full offline package uses a versioned Cache Storage name and may contain all 604 pages only after explicit opt-in, storage quota reserve checks, and validation of every page against WIRD-local Quran coordinates.
+- The full package is device-local, is not synced to Firebase, and can be deleted independently. It is not a backup; browser storage eviction remains possible.
 - If network, SVG parsing, sanitization, or local coordinate matching fails, the reader offers the existing local flexible-text view. It never substitutes remote Quran text.
 - The reader resolves the printed page's audio queue and ayah navigation from that page's exact local coordinate set, independent of flexible-layout page metadata. The reader mounts one page at a time rather than a long scrolling SVG document. This reduces the SVG performance cost, but real iOS/Android device testing remains a release gate.
+
+## Full offline package
+
+- Service: `src/services/mushafFacsimileOfflineLibrary.ts`.
+- Source identity is pinned by `MUSHAF_FACSIMILE_VERSION` and `MUSHAF_FACSIMILE_COMMIT`; the package is stored under the matching versioned cache name.
+- Before downloading, the service estimates page size from pages 1, 300 and 604, applies a safety factor, checks `navigator.storage.estimate()`, and retains a storage reserve. If the browser cannot estimate quota, it refuses to start a potentially space-exhausting full download.
+- Download is resumable page by page and supports abort/pause. Every page must pass SVG parsing, allowlist sanitization, coordinate validation and exact local ayah matching before it is stored.
+- The full package is independent from the bounded recent-page service-worker cache; the reader checks the full offline package first.
 
 ## Validation required before making this the default
 

@@ -77,3 +77,39 @@ Implementation rules:
 - A separate service-worker cache stores only recently viewed pinned Hafs/KFGQPC SVG pages, with a strict 24-file bound.
 
 The feature is not yet approved as the default reader mode. Required remaining gates: exact local coordinate coverage across all 604 pages, opening-spread and dense-page visual review, actual device testing on iPadOS/Android, and first-load/offline cache verification. Until those gates pass, the flexible local-text mode remains the default and permanent fallback.
+
+
+## 2026-11-17 — Printed Mushaf facing-page mode
+
+- The printed facsimile reader now has a local preference key: wird.quran.pageDisplayMode.v1.
+- Default mode is one page. Facing spread mode treats the odd/lower page as the right-hand page and the next page as the left-hand page; page 603 therefore pairs with page 604.
+- In spread mode, page jumps normalize to the correct right-hand spread start, navigation and touch swipes move by two pages, and page labels show both visible page numbers.
+- Both page SVGs are independently validated against WIRD's local ayah data through QuranMushafFacsimilePage; page art is never used as a Quran text source.
+- Audio queue order is right page then left page. Playback and auto-continue wait until the left page's ayah map is available. Switching display mode stops active playback to avoid stale queue semantics.
+- On narrow screens the spread remains side-by-side in a horizontally scrollable 640px minimum-width surface rather than shrinking Arabic text to unreadable columns.
+- E2E coverage was added for one/two-page switching, left/right order, two-page stepping, preference persistence and offline opening. No local run is claimed; see PR #385 and exact-head CI.
+- Opposite-page Tafsir is intentionally not implemented in this change. It must be a separate task with a complete, source-attributed local corpus and independently controlled Quran/Tafsir side modes.
+
+
+
+## 2026-11-17 — Opposite-page Tafsir mode
+
+- The facing Mushaf spread has separate content selectors for the left and right pages. Both default to Quran; selecting Tafsir on one side forces Quran on the opposite side so the user always has a Quran page to read.
+- Selecting an ayah on the Quran page updates the Tafsir page on the opposite side. The Tafsir page displays all ayahs from that source page and highlights/scrolls to the focused ayah. The direction can be reversed.
+- Tafsir display is backed only by the complete local QuranEnc Arabic al-Muyassar corpus; no online request is made while reading. An incomplete corpus is not displayed.
+- Source key: arabic_moyassar; publisher: King Fahd Complex; catalogue edition V1.0.1 (2026-11-09). See docs/TAFSIR_OFFLINE_SOURCE.md for endpoint, payload, terms and validation.
+- PR #386 adds the download/storage/display path; it remains Draft / NOT VERIFIED until exact-head CI and offline E2E pass.
+
+
+- Follow-up refinement: previous/next controls also appear directly beneath each Tafsir ayah. Navigating from a Tafsir ayah targets the canonical Quran page; if that page was the Tafsir side, the two page roles swap so Quran remains the reading surface.
+- When one spread side is Tafsir, audio is restricted to the opposite Quran page; when both sides are Quran, audio follows the full right-to-left spread order. Changing page roles stops the previous audio queue.
+
+
+## 2026-11-18 — Release integration correction
+
+- The integrated main reader mounts `TafsirMushafPage` in either side of `PrintedMushafSpread`. Each side can show Quran or the complete Tafsir for the opposite Quran page; the other side remains Quran, and only one Tafsir side is active in a visible spread.
+- Page-side preferences are device-local and keyed by source page, so navigating between pages restores the appropriate Tafsir side. The full 114-surah local package is required before complete-page Tafsir text is shown; partial packages offer resume rather than being advertised as complete.
+- Offline Tafsir fallback in the current integration is limited to the selected Tafsir Muyassar edition and requires the full 114-surah package to pass source-version/manifest validation. A partial package is resumable but is not advertised as complete or used as a full offline edition.
+- The selected printed-page source is pinned to `quran-ws/quran-svg` commit `3ff27b46cecb0c0519d77531d9c868a579d1f623`, edition `hafs-kfqc`. The upstream project states CC BY 4.0 for the ayah geometry/metadata (with product-use attribution waiver) and identifies the page artwork as King Fahd Complex material whose stated rights permit digital/software/web use; physical commercial Mushaf printing is outside this app's scope. See `docs/THIRD_PARTY_QURAN_FACSIMILE.md` and upstream licensing documentation.
+- The verification snapshot above is historical evidence for its own earlier SHA only. It is not evidence for the current integration branch. The current release must pass all exact-head checks and 604-page coverage validation before merge.
+- The latest integration preserves the flexible WIRD-local Quran text renderer as the fallback. Printed SVGs supply only page artwork and ayah hit regions; WIRD's canonical local Quran dataset remains the only Quran text source.

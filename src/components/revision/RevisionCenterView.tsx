@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QuranText } from '../shared/QuranText';
+import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 import { 
   Repeat, 
   CheckCircle2, 
@@ -1153,6 +1154,16 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   >
                     «<QuranText surahNumber={item.surahNumber} ayahNumber={item.ayahNumber}>{item.text}</QuranText>»
                   </div>
+
+                  {onStartSession && (
+                    <div className="mt-3">
+                      <AyahNavigationControls
+                        currentAyah={{ surahNumber: item.surahNumber, numberInSurah: item.ayahNumber }}
+                        onNavigate={(surahNumber, ayahNumber) => onStartSession(surahNumber, ayahNumber, ayahNumber, 'review')}
+                        compact
+                      />
+                    </div>
+                  )}
 
                   {item.notes && (
                     <div className="text-xs text-[#9A7415] dark:text-[#E0A96D] bg-[#C59B27]/10 dark:bg-[#E0A96D]/12 p-2.5 rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/25">

@@ -1,5 +1,7 @@
 import {
   getDailySessionSelection,
+  getDueEngineTasks,
+  findMatchingDueEnginePlanTask,
   getNextDueEngineTask,
   getNextPresetMemorizationRange,
   getAllActiveEngineTasks,
@@ -211,6 +213,87 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     const summary = getUnifiedDailyHubSummary([], [planA, planBCompletedEarly], [], [], '2026-11-05');
     assert(summary.dueEngineItems.length === 2, 'Unified daily hub must aggregate both active plans');
     assert(summary.dueEngineItems.every(item => item.scheduledDate <= '2026-11-05'), 'Future tasks must never surface as due today');
+  });
+
+
+  test('All-plan due queue includes every due task and excludes future, completed, paused, and inactive entries', () => {
+    const active = makeEnginePlan([
+      makeDay('2026-11-04', makeTask(2)),
+      makeDay('2026-11-05', makeTask(3)),
+      makeDay('2026-11-06', makeTask(4)),
+      { ...makeDay('2026-11-05', makeTask(5)), status: 'completed' },
+      makeDay('2026-11-05', makeTask(6, true))
+    ], { id: 'active' });
+    const paused = makeEnginePlan([makeDay('2026-11-05', makeTask(7))], { id: 'paused', isPaused: true });
+    const inactive = makeEnginePlan([makeDay('2026-11-05', makeTask(8))], { id: 'inactive', isActive: false });
+    const due = getDueEngineTasks([active, paused, inactive], '2026-11-05');
+    assert(due.length === 2, 'Both overdue and today tasks from the active plan should appear');
+    assert(due[0].task.surahNumber === 2 && due[1].task.surahNumber === 3, 'Due tasks should be ordered by scheduled date');
+    assert(due.every(item => item.date <= '2026-11-05'), 'Future tasks must never appear as due');
+  });
+
+  test('Session completion resolves duplicate ayah ranges to the exact originating plan', () => {
+    const first = makeEnginePlan([makeDay('2026-11-05', makeTask(67))], {
+      id: 'plan-a', title: 'الخطة الأولى', input: { title: 'الخطة الأولى' } as EngineGeneratedPlan['input']
+    });
+    const second = makeEnginePlan([makeDay('2026-11-05', makeTask(67))], {
+      id: 'plan-b', title: 'الخطة الثانية', input: { title: 'الخطة الثانية' } as EngineGeneratedPlan['input']
+    });
+    const target = { surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'plan-b' };
+    const exact = findMatchingDueEnginePlanTask([first, second], '2026-11-05', target);
+    assert(exact?.plan.id === 'plan-b', 'The originating plan ID must win when ranges are duplicated');
+    const missing = findMatchingDueEnginePlanTask([first, second], '2026-11-05', { ...target, enginePlanId: 'missing' });
+    assert(missing === null, 'Unknown plan IDs must not fall through and update another plan');
+    const ambiguous = findMatchingDueEnginePlanTask([first, second], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5
+    });
+    assert(ambiguous === null, 'Legacy sessions with duplicate ranges must fail closed rather than guess a plan');
+  });
+
+  test('Exact plan-detail launch can complete a future scheduled task early', () => {
+    const future = makeEnginePlan([
+      makeDay('2026-11-07', makeTask(67))
+    ], { id: 'future-plan' });
+    const explicit = findMatchingDueEnginePlanTask([future], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5,
+      enginePlanId: 'future-plan', enginePlanDate: '2026-11-07'
+    });
+    assert(explicit?.day.date === '2026-11-07', 'An exact plan-detail launch must be allowed to complete its future task early');
+    const unqualified = findMatchingDueEnginePlanTask([future], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5,
+      enginePlanId: 'future-plan'
+    });
+    assert(unqualified === null, 'Future tasks must remain ineligible without the exact scheduled date');
+  });
+
+  test('Session completion resolves repeated ranges to the exact originating schedule date', () => {
+    const repeated = makeEnginePlan([
+      makeDay('2026-11-04', makeTask(67)),
+      makeDay('2026-11-05', makeTask(67))
+    ], { id: 'repeat-plan' });
+    const exact = findMatchingDueEnginePlanTask([repeated], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5,
+      enginePlanId: 'repeat-plan', enginePlanDate: '2026-11-05'
+    });
+    assert(exact?.day.date === '2026-11-05', 'Completion must update the selected date, not an older identical task');
+    const ambiguousDate = findMatchingDueEnginePlanTask([repeated], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'repeat-plan'
+    });
+    assert(ambiguousDate === null, 'Plan ID without the scheduled date must not guess between repeated tasks');
+  });
+
+
+  test('Daily primary session retains exact originating plan ID and scheduled date', () => {
+    const planA = makeEnginePlan([
+      makeDay('2026-11-04', makeTask(2)),
+      makeDay('2026-11-05', makeTask(3))
+    ], { id: 'plan-a', title: 'الخطة الأولى', input: { title: 'الخطة الأولى' } as EngineGeneratedPlan['input'] });
+    const planB = makeEnginePlan([
+      makeDay('2026-11-05', makeTask(4))
+    ], { id: 'plan-b', title: 'الخطة الثانية', input: { title: 'الخطة الثانية' } as EngineGeneratedPlan['input'] });
+    const selection = getDailySessionSelection([], [planB, planA], [], '2026-11-05');
+    assert(selection.kind === 'session' && selection.enginePlanId === 'plan-a', 'Primary selection must keep the deterministic source plan');
+    assert(selection.kind === 'session' && selection.enginePlanDate === '2026-11-04', 'Primary selection must keep the exact overdue schedule date');
   });
 
   return { passed, failed };
