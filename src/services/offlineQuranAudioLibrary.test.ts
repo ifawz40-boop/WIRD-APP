@@ -146,6 +146,75 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     lib.close();
   });
 
+  await test('Version-3 audio jobs migrate legacy fingerprints to exact ayah sequences', async () => {
+    const factory = new IDBFactory();
+    const databaseName = `wird-audio-fingerprint-migration-${++dbCounter}`;
+    const request = factory.open(databaseName, 3);
+    const oldDb = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        const jobs = db.createObjectStore('jobs', { keyPath: 'jobId' });
+        jobs.createIndex('status', 'status', { unique: false });
+        jobs.createIndex('createdAtMs', 'createdAtMs', { unique: false });
+        jobs.createIndex('requestFingerprint', 'requestFingerprint', { unique: false });
+        const files = db.createObjectStore('files', { keyPath: 'fileKey' });
+        files.createIndex('reciterId', 'reciterId', { unique: false });
+        files.createIndex('available', 'available', { unique: false });
+        files.createIndex('deletionPending', 'deletionPending', { unique: false });
+        const items = db.createObjectStore('jobItems', { keyPath: 'itemKey' });
+        items.createIndex('jobId', 'jobId', { unique: false });
+        items.createIndex('fileKey', 'fileKey', { unique: false });
+        db.createObjectStore('locks', { keyPath: 'lockName' });
+        db.createObjectStore('staging', { keyPath: 'cacheKey' });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const tx = oldDb.transaction(['jobs', 'jobItems'], 'readwrite');
+    const legacyFingerprint = 'range:ar.alafasy:4:6:11';
+    for (const [jobId, ayahs] of [['legacy-a', [6, 7, 10, 11]], ['legacy-b', [6, 9, 10, 11]]] as const) {
+      tx.objectStore('jobs').put({
+        jobId, scopeKind: 'range', labelAr: jobId, reciterId: 'ar.alafasy', ranges: [],
+        status: 'paused', totalItems: 4, completedItems: 0, failedItems: 0, totalBytes: 0,
+        requestFingerprint: legacyFingerprint, createdAtMs: 1, updatedAtMs: 1, schemaVersion: 1
+      });
+      ayahs.forEach((globalAyahNumber, ordinal) => tx.objectStore('jobItems').put({
+        itemKey: `${jobId}:${globalAyahNumber}`, jobId, fileKey: `ar.alafasy:${globalAyahNumber}`,
+        reciterId: 'ar.alafasy', surahNumber: 2, ayahNumber: ordinal + 1, globalAyahNumber,
+        url: `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalAyahNumber}.mp3`,
+        ordinal, status: 'queued', schemaVersion: 1
+      }));
+    }
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('Legacy fixture transaction aborted'));
+    });
+    oldDb.close();
+
+    const lib = new OfflineQuranAudioLibrary({ indexedDBFactory: factory, databaseName });
+    const upgraded = await (lib as any).openDatabase() as IDBDatabase;
+    const read = upgraded.transaction(['jobs'], 'readonly');
+    const done = new Promise<void>((resolve, reject) => {
+      read.oncomplete = () => resolve();
+      read.onerror = () => reject(read.error);
+    });
+    const jobs = await new Promise<any[]>((resolve, reject) => {
+      const get = read.objectStore('jobs').getAll();
+      get.onsuccess = () => resolve(get.result);
+      get.onerror = () => reject(get.error);
+    });
+    await done;
+    const first = jobs.find(job => job.jobId === 'legacy-a');
+    const second = jobs.find(job => job.jobId === 'legacy-b');
+    assert(first?.requestFingerprint !== second?.requestFingerprint, 'Legacy active jobs with different disjoint ranges must receive distinct migrated fingerprints');
+    assert(first?.requestFingerprint.endsWith(':6,7,10,11'), 'First legacy job must migrate with its exact ordered ayah sequence');
+    assert(second?.requestFingerprint.endsWith(':6,9,10,11'), 'Second legacy job must migrate with its exact ordered ayah sequence');
+    assert(first?.status === 'paused' && second?.status === 'paused', 'Migration must preserve resumable job states');
+    upgraded.close();
+    lib.close();
+  });
+
   await test('Staged cache generation is removed after a simulated crash before metadata commit', async () => {
     const factory = new IDBFactory();
     const databaseName = `wird-audio-staging-crash-${++dbCounter}`;
