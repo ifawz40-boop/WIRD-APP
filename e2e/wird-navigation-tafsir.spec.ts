@@ -290,13 +290,14 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   test('completed offline Tafsir can recheck source version without redownloading stored surahs', async ({ page }) => {
     let catalogueRequests = 0;
     let surahRequests = 0;
+    let sourceVersion = '1.0.1';
     await page.route(/^https:\/\/quranenc\.com\/api\/v1\/translations\/list\/ar\/?(?:\?.*)?$/, async route => {
       catalogueRequests++;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         headers: { 'access-control-allow-origin': '*' },
-        body: JSON.stringify({ translations: [{ key: 'arabic_moyassar', version: '1.0.1', last_update: 1794182400 }] })
+        body: JSON.stringify({ translations: [{ key: 'arabic_moyassar', version: sourceVersion, last_update: 1794182400 }] })
       });
     });
     await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
@@ -353,6 +354,13 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     expect(catalogueRequests).toBe(1);
     expect(surahRequests).toBe(0);
     await expect(downloadPanel).toContainText('اكتمل تنزيل التفسير الميسر');
+
+    sourceVersion = '1.0.2';
+    await recheckButton.click();
+    await expect(downloadPanel.getByRole('alert')).toContainText('أصدر QuranEnc نسخة أحدث (1.0.2)');
+    await expect(downloadPanel).toContainText('114 / 114 سورة');
+    expect(catalogueRequests).toBe(2);
+    expect(surahRequests).toBe(0);
   });
 
   test('corrupted persisted surah is not counted as downloaded and is fetched again on resume', async ({ page }) => {
