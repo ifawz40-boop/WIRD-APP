@@ -74,7 +74,7 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
   const isComplete = status?.isComplete === true;
 
   return (
-    <section aria-label="تجهيز التفسير الميسر دون إنترنت" className={compact ? "rounded-xl border border-[#1C4E46]/15 bg-[#F8F5EC] px-3 py-2 text-right dark:border-[#E0A96D]/20 dark:bg-[#101D35]" : "rounded-2xl border border-[#C59B27]/30 bg-[#F8F5EC] p-4 text-right dark:border-[#E0A96D]/25 dark:bg-[#101D35]"} dir="rtl">
+    <section role="region" aria-label="تجهيز التفسير الميسر دون إنترنت" className={compact ? "rounded-xl border border-[#1C4E46]/15 bg-[#F8F5EC] px-3 py-2 text-right dark:border-[#E0A96D]/20 dark:bg-[#101D35]" : "rounded-2xl border border-[#C59B27]/30 bg-[#F8F5EC] p-4 text-right dark:border-[#E0A96D]/25 dark:bg-[#101D35]"} dir="rtl">
       {!compact && <div className="flex items-start gap-3">
         <div className="mt-0.5 rounded-xl bg-[#1C4E46]/10 p-2 text-[#1C4E46] dark:bg-[#E0A96D]/10 dark:text-[#E0A96D]">
           <span aria-hidden="true" className="text-lg">📖</span>
