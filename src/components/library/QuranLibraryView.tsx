@@ -233,6 +233,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const handleNavigateToAyah = (surahNumber: number, ayahNumber: number) => {
     const surah = ALL_SURAHS[surahNumber - 1];
     if (!surah || ayahNumber < 1 || ayahNumber > surah.versesCount) return;
+    stopAudioRef.current();
     const position = { surahNumber, ayahNumber };
     setLastReadingPosition(position);
     setResumeTarget(position);
