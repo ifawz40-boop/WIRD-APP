@@ -310,7 +310,7 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
   - Ayah 1 remains verified and is not fetched again.
   - Only the interrupted ayah 2 is fetched twice (initial aborted request + one retry).
   - Ayah 3 is fetched once; all three files end available and the job completes.
-- The test is added to the existing `runOfflineQuranAudioLibraryTests()` suite, so it is included by the existing aggregate test runner if that runner imports this suite as expected.
-- **Verification pending:** the connector did not expose a new GitHub Actions run for the latest branch commit at the time of this checkpoint. Do not report this new test as passing until an exact-head Quality Gate completes.
+- Confirmed: `src/tests/runAllTests.ts` imports and executes `runOfflineQuranAudioLibraryTests()`, so this regression is part of the normal `bun run test` aggregate suite.
+- **Verification pending:** exact-head Quality Gate #4687 / run `44269753267` is now queued/in progress for the updated PR head `c2a60843d59aceaa16c57a387648973481895083`. The application and full dependency-audit jobs are both in progress. Do not report new tests as passing until the run completes.
 - New Playwright reload-recovery tests for Tafsir and 604-page Mushaf are also present in `e2e/offline-restart-recovery.spec.ts` (commits `c52470c4dba00c71fd80a35a9c3345825efdc99d`, `b2dd84b8a78ca99532c71aa00db0af91e4259608`). They too remain unverified pending exact-head CI.
 - Latest source commit: `95c74d808195a675d54338f87e7705bc33b319cd`. Latest documentation checkpoint will be recorded by a subsequent docs commit.
