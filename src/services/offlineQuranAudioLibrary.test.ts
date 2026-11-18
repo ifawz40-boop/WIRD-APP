@@ -897,10 +897,12 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     const completed = await restartedTab.startOrResumeJob(job.jobId);
     assert(completed?.status === 'completed' && completed.completedItems === 3,
       'The recovered job must finish after a fresh library instance resumes it');
-    assert(callsByUrl.size === 2, 'Only the two unfinished ayah URLs may be requested after restart');
-    assert(!callsByUrl.has(firstItem.url), 'The already verified first ayah must never be downloaded again');
-    assert(callsByUrl.get(interruptedItem.url) === 1, 'Only the interrupted second ayah must be downloaded once after restart');
-    assert(callsByUrl.get(remainingItem.url) === 1, 'The third ayah must be downloaded once after restart');
+    const relayUrlFor = (item: typeof firstItem) =>
+      '/api/quran-audio-download?reciter=' + encodeURIComponent(item.reciterId) + '&ayah=' + String(item.globalAyahNumber);
+    assert(callsByUrl.size === 2, 'Only the two unfinished ayah relay URLs may be requested after restart');
+    assert(!callsByUrl.has(relayUrlFor(firstItem)), 'The already verified first ayah must never be downloaded again');
+    assert(callsByUrl.get(relayUrlFor(interruptedItem)) === 1, 'Only the interrupted second ayah must be downloaded once after restart');
+    assert(callsByUrl.get(relayUrlFor(remainingItem)) === 1, 'The third ayah must be downloaded once after restart');
     assert((await restartedTab.getStats()).availableFilesCount === 3,
       'All three verified audio files must be available in the persistent cache after recovery');
     restartedTab.close();
