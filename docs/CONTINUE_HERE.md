@@ -478,3 +478,42 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Application job PASS: Playwright 186 passed / 0 failed / 2 intentional viewport skips; 604 Mushaf coordinate maps; API import and approved Quran audio CDN/range smoke; Firestore Rules Emulator; TypeScript; production build; production server startup smoke. Dashboard multi-plan regression and offline Mushaf sanitized-cache/download/resume/offline-open checks passed on desktop and mobile. Offline Muyassar download/resume/corruption checks passed.
 - Dependency security audit FAIL remains solely `picomatch@4.0.7` through Vite toolchain (GHSA-fc5q-39xc-vjpf, High ReDoS). No override/suppression. No merge/deploy.
 - PR #390 remains Draft/HOLD. Physical Android/iOS/Safari cold restart + airplane mode and storage quota/eviction acceptance are outstanding. Exact-head app gate is green but overall release gate is not.
+
+
+## 2026-11-18 — WIRD offline readiness continuation (PR #390)
+
+### Active candidate and safety boundary
+- Repository: `xm8eslam-stack/WIRD-APP`; candidate branch: `feat/offline-mushaf-package-20261117`.
+- Integrated candidate PR: [#390](https://github.com/xm8eslam-stack/WIRD-APP/pull/390), still **Draft/HOLD**.
+- Exact current candidate SHA at this checkpoint: `b9cfaabc8e7e884549f27508bb517f5de6064bdf`.
+- `main` remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; no merge, production deployment, secret/environment change, Firebase/Vercel configuration change, or remote-sync flag activation.
+- PR #390 is the integration candidate for the preceding offline/hifz work. Do not merge the older draft PRs #382–#389 independently; compare content first to avoid duplicate/conflicting integration.
+
+### Changes added during this continuation
+- Due-task identity now carries both plan ID and scheduled date from dashboard selections through the session route. Repeated identical ranges on different days no longer resolve to the wrong occurrence. The header “جلسة اليوم” action now passes the same date identity; navigation away/bare session links clear stale plan identity.
+- Mushaf cache status now distinguishes key-presence from content validation. At 604/604, the action remains available as “إعادة التحقق من صفحات المصحف”, including offline when all pages are present. A corrupt cached SVG is removed and can be repaired when online. Added a Playwright regression for a 604-entry cache with one malformed page, then a second full verification offline.
+- Durable offline audio is now wired across the normal Mushaf reader, Surah library, and memorization session. Approved reciters use `getLicensedAyahAudioUrl()`; stream-only reciters remain network-only. The Service Worker maps an approved CDN URL to the exact local IndexedDB file record and generation-keyed Cache Storage response before network fallback. Added an E2E that seeds one durable file and fetches it through the controlled worker with network disabled.
+- The settings “check Mushaf cache” message no longer claims it verified the contents of all 604 files; it reports presence only.
+
+### Exact-head Quality Gate
+- Run #4639 / GitHub run `44241511583`, exact head `b9cfaabc8e7e884549f27508bb517f5de6064bdf`.
+- Completed successfully so far: frozen Bun lockfile install, automated test suites, all 604 Mushaf coordinate maps, native API import smoke, approved Quran audio CDN/range smoke, Firestore Rules Emulator, TypeScript, production build, and production server startup smoke.
+- Desktop/Mobile Playwright is still running at this checkpoint. Do not claim the new Service Worker audio test or the complete application job has passed until the run terminates and its logs are reviewed.
+- The separate security audit job fails on High `GHSA-fc5q-39xc-vjpf` for `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`. Frozen lockfile installation itself passes; there is no current lockfile mismatch.
+
+### Security remediation watch
+- Official npm latest/release remains `picomatch@4.0.7`; no fixed upstream release is available at this checkpoint.
+- Upstream PR #237 is approved but open/unmerged; review discussion identifies additional multi-branch patterns not covered. PR #238 is incomplete. PR #269 is newer but open without maintainer review/approval and changes complex-pattern behavior.
+- Do not silence audit, add an arbitrary override, or vendor an unreviewed patch. Security remains a hard release blocker.
+
+### Deployment state
+- Vercel refused a new preview deployment due to its 24-hour deployment creation limit. The last available preview points to an older commit (`d0f5bd...`) and is **not** the current candidate.
+- No production deployment occurred.
+
+### Remaining release gates / next actions
+1. Poll #4639 until Desktop/Mobile Playwright finishes; inspect any failures and rerun on the exact final SHA.
+2. Verify the new durable-audio Service Worker E2E and both daily-plan entry points (header quick-start and dashboard due-task cards).
+3. Add/perform cold-start offline acceptance: close the tab, reopen a new tab while offline, verify app shell, local Quran, all three plans, tafsir, printed Mushaf, and downloaded audio.
+4. Physical acceptance remains required on Android Chrome, iOS Safari, and desktop Safari/Chromium, including airplane mode, storage quota pressure, eviction, resume, and app restart.
+5. Keep PR #390 Draft/HOLD until the High dependency audit is resolved by an official maintainer-reviewed upstream release and exact-head Quality Gate is fully green.
+6. Only after release gates pass: request/perform merge to `main`, then production deployment when Vercel quota permits. Never activate remote-sync flags as part of this offline-only release.
