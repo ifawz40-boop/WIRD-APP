@@ -301,6 +301,10 @@ export default function App() {
             enginePlanDate: route.tab === 'session' ? (route.enginePlanDate ?? null) : null
           }));
         }
+      } else {
+        // A bare session/deep link or navigation away from a plan session must
+        // not retain stale plan identity from the previously opened session.
+        setSessionParams(prev => ({ ...prev, enginePlanId: null, enginePlanDate: null }));
       }
     };
 
