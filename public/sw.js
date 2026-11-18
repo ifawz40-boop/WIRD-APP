@@ -15,6 +15,8 @@ const QURAN_FONT_URL = 'https://verses.quran.foundation/fonts/quran/hafs/uthmani
 
 const OFFLINE_ASSET_CONTENT_TYPES = {
   '.js': ['application/javascript', 'text/javascript', 'application/ecmascript', 'text/ecmascript'],
+  '.mjs': ['application/javascript', 'text/javascript', 'application/ecmascript', 'text/ecmascript'],
+  '.wasm': ['application/wasm'],
   '.css': ['text/css'],
   '.svg': ['image/svg+xml'],
   '.png': ['image/png'],
