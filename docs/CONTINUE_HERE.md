@@ -407,3 +407,10 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Changed downloads and existing cached records to store the sanitized SVG response, remove stale content-length/encoding headers, and calculate byte estimates from the safe payload. Added an E2E malicious-attribute fixture (`onload`, unknown `data-*`) and assertions that cached SVG contains neither attribute.
 - Commits: `588d4b63568ced30de83eaca1275a8bb020d237f`, `c90b9dae9bc03e1704c232caca4f9c3bfca6446d`.
 - Latest PR #390 head: `c90b9dae9bc03e1704c232caca4f9c3bfca6446d`. Run #4582 was triggered before these commits; exact-head validation required. PR remains Draft/HOLD; audit remains unresolved.
+
+
+## Offline audio and capability docs refreshed — 2026-11-18
+- Verified Settings exposes user-initiated full Surah, Juz, and memorization-plan downloads using the curated Al Quran Cloud reciter allowlist. Pause, resume/retry, cancel and delete controls are present. The library is separate from opportunistic 20-ayah/40-entry playback cache, and EveryAyah remains stream-only.
+- Updated `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`, `docs/offline/OFFLINE_CAPABILITY_MATRIX_AR.md`, and `docs/offline/OFFLINE_FIRST_ARCHITECTURE.md` to remove stale statements that audio downloads were not implemented and that the 604-page Mushaf package was unavailable. The docs explicitly retain Draft/HOLD and real-device acceptance caveats.
+- Documentation commits on PR #390 branch: `f9a52b5c03abdaafb353d25855e33cd77b975a08`, `88bf374f483b4a64811c5f70f53adc52eddc2896`, `7010ef67812f382e9e81569094a2b3e46d1e72a3`.
+- Latest PR head now `7010ef67812f382e9e81569094a2b3e46d1e72a3`. The currently running #4585 was triggered before the last code and documentation updates; require a fresh exact-head Quality Gate.
