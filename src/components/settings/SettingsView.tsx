@@ -567,6 +567,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const handleDownloadMushafPackage = async () => {
     if (isDownloadingMushafPackage || (!isOnline && mushafPackageStatus?.missing !== 0)) return;
+    const wasCompleteBeforeAction = mushafPackageStatus?.missing === 0;
     setIsDownloadingMushafPackage(true);
     setMushafPackageProgress(null);
     const controller = new AbortController();
@@ -576,7 +577,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setOfflineStorageStatus(storageStatus);
       const status = await downloadMushafOfflinePackage(setMushafPackageProgress, controller.signal);
       setMushafPackageStatus(status);
-      onToast?.('اكتمل تنزيل صفحات المصحف المصوّر الـ604 والتحقق منها. أصبحت قابلة للفتح دون اتصال.', 'success');
+      onToast?.(wasCompleteBeforeAction
+        ? 'تم التحقق من سلامة صفحات المصحف المصوّر الـ604. أصبحت قابلة للفتح دون اتصال.'
+        : 'اكتمل تنزيل صفحات المصحف المصوّر الـ604 والتحقق منها. أصبحت قابلة للفتح دون اتصال.', 'success');
     } catch (error) {
       const status = await getMushafOfflinePackageStatus().catch(() => null);
       if (status) setMushafPackageStatus(status);
