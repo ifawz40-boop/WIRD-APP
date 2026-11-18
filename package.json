@@ -17,7 +17,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx src/tests/runAllTests.ts",
+    "test": "tsx src/tests/runAllTests.ts && node scripts/test-picomatch-security.mjs",
     "smoke:server": "node scripts/smoke-server.mjs",
     "smoke:api-imports": "node scripts/smoke-api-imports.mjs",
     "test:firestore-rules": "bunx firebase-tools@15.0.0 emulators:exec --only firestore --project demo-wird \"tsx scripts/firestoreRules.test.ts\"",
@@ -54,7 +54,8 @@
     "@playwright/test": "1.56.1",
     "vite": "^8.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "@tailwindcss/vite": "^4.3.3"
+    "@tailwindcss/vite": "^4.3.3",
+    "picomatch": "file:vendor/picomatch"
   },
   "trustedDependencies": [
     "@firebase/util",
