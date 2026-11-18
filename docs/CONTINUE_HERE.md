@@ -612,3 +612,10 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Root cause: AuthGate had already initialized an empty guest Engine Plan archive head in IndexedDB. The test then wrote only the legacy `wird_engine_plans` localStorage key; on reload, the verified archive head correctly took precedence over the legacy bytes, so the test's fixture was never imported.
 - Corrected the E2E setup to clear only the three Engine Plan archive stores in the isolated test browser context, seed the legacy localStorage archive, and reload through AuthGate's actual copy/verify migration path. No production application code changed for this fixture correction.
 - Exact-head run for SHA `029495d3cd76ce8396b5957fe340259a7219d126` is running (run #4671 expected). Verify the dashboard now displays all three tasks before marking this regression covered.
+
+
+### Tafsir recheck regression — failed run diagnosed and corrected — 2026-11-18
+- Run #4677 (`44248132284`) completed with 190 Playwright passed, 2 skipped, and 2 failures. Both failures were the same new E2E case on desktop and mobile: the test looked for the compact Tafsir download panel as an implicit named region before the asynchronous local Tafsir pane had settled. No unrelated Playwright failures were reported.
+- Follow-up fix on PR #390: wait for the completed-state recheck button, use a stable section locator, and explicitly expose the compact download panel as `role="region"` for accessible discovery. Commits: `4bdf0506...` and `89e13885...`.
+- New exact-head Quality Gate #4678 (`44266490225`) is running on `89e13885e4ad9074aeab62fbd8dc5b8dfd3c50cf`. Do not claim the fix passes until this run completes.
+- Security audit distinction confirmed in #4678: production dependency audit PASS (0 vulnerabilities across 241 packages); all-groups audit FAIL only because dev/build chain `vite > tinyglobby > fdir > picomatch@4.0.7` is still flagged by GHSA-fc5q-39xc-vjpf. No arbitrary override or audit suppression applied.
