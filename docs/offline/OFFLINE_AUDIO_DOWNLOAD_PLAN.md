@@ -106,3 +106,16 @@ Let a user explicitly download a chosen Quran reciter's surah or ayah range to t
 - New service tests cover cache key generations, invalid responses, byte-length mismatch, downloader success, retry, pause, cancel and bounded concurrency.
 - Exact-head #368 run 43275108775 / job 131381335018 ended failure with no steps/logs; no code-level diagnosis or test pass is available.
 - Still missing: Service Worker protocol, download UI, local-first playback, orphan-cache cleanup policy, actual browser integration, and real-device offline test. This is not a released feature.
+
+## Implementation status update — 2026-11-18 — PR #391
+
+The design above has now been integrated in the current release candidate (not yet merged to main):
+
+- IndexedDB jobs/items/verified file metadata plus generation-scoped Cache Storage; files are device-local and excluded from cloud sync/backups.
+- Approved reciter allowlist (7 editions), canonical local Quran coordinates/global ayah IDs, same-origin allowlisted /api/quran-audio-download relay for Cache Storage fetches, and a matching Express route for local/Node server execution.
+- Bounded concurrency, per-item abort controllers, quota preflight, resumable queue state, cross-tab Web Locks with IndexedDB lease fallback, BroadcastChannel status notifications, stale generation protection, interrupted-worker recovery, orphan cleanup and local-first playback.
+- Settings supports Surah/Juz/engine-plan scope, pause/resume/cancel/retry/delete, progress and quota messages. Quran Library, Mushaf page/spread and memorization session playback all resolve verified local audio before network fallback.
+- Automated coverage includes invalid edition/coordinates, HTML rejection, byte-length/MIME validation, quota failures, cross-tab locks, pause/cancel/resume, restart recovery and offline playback resolution.
+- E2E reload test verifies a failed ayah download resumes after reload and resolves from local Cache Storage while offline. App-shell E2E separately verifies the service worker serves durable audio while offline.
+- Exact-head candidate run 44307063505 recorded 803 aggregate tests passing, CDN smoke 8/8, Firestore Rules 31/31, TypeScript/build/server smoke passing after the subsequent fixes; run 44312846261 was exercising desktop/mobile Playwright at the last checkpoint.
+- Release blockers remain: full dependency audit on dev-only picomatch 4.0.7, current-head Playwright result, physical-device cold restart/airplane mode, and Vercel preview rate limit. No claim of production release.
