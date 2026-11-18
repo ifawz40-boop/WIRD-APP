@@ -440,7 +440,12 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     const fetchFn: typeof fetch = async (input, init) => {
       assert(init?.redirect === 'error', 'Download fetch must fail closed on redirects (redirect: error)');
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-      assert(new URL(url).hostname === 'cdn.islamic.network', 'Download host must be cdn.islamic.network');
+      const parsedUrl = new URL(url, 'https://wird.test');
+      assert(parsedUrl.origin === 'https://wird.test' && parsedUrl.pathname === '/api/quran-audio-download',
+        'Audio bytes must be fetched through the same-origin WIRD relay to avoid upstream browser CORS restrictions');
+      assert(parsedUrl.searchParams.get('reciter') === 'ar.alafasy' &&
+        Number(parsedUrl.searchParams.get('ayah')) >= 1 && Number(parsedUrl.searchParams.get('ayah')) <= 7,
+        'Relay requests must contain only the approved reciter ID and canonical global ayah number');
       fetchedUrls.push(url);
       inFlight++;
       maxInFlight = Math.max(maxInFlight, inFlight);
