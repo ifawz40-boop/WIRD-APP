@@ -1413,7 +1413,8 @@ export class OfflineQuranAudioLibrary {
    * Startup / post-eviction reconciliation:
    * - Verifies every available canonical file still exists in Cache Storage.
    * - Marks evicted entries unavailable without silent data fabrication.
-   * - Re-queues evicted items for non-terminal jobs; retries pending orphan deletions.
+   * - Re-queues evicted items and recovers jobs interrupted by a closed/crashed tab.
+   * - Retries pending orphan deletions.
    */
   async reconcileLibrary(): Promise<{ evictedCount: number; cleanedOrphansCount: number }> {
     let evictedCount = 0;
@@ -1426,12 +1427,13 @@ export class OfflineQuranAudioLibrary {
     }> = [];
 
     const db = await this.openDatabase();
-    const txRead = db.transaction([STORE_AUDIO_FILES, STORE_AUDIO_STAGING, STORE_AUDIO_LOCKS], 'readonly');
+    const txRead = db.transaction([STORE_AUDIO_FILES, STORE_AUDIO_STAGING, STORE_AUDIO_LOCKS, STORE_AUDIO_JOBS], 'readonly');
     const filesDone = idbTx(txRead);
-    const [allFiles, allStaging, allLocks] = await Promise.all([
+    const [allFiles, allStaging, allLocks, allJobs] = await Promise.all([
       idbReq(txRead.objectStore(STORE_AUDIO_FILES).getAll()) as Promise<OfflineAudioFileRecord[]>,
       idbReq(txRead.objectStore(STORE_AUDIO_STAGING).getAll()) as Promise<OfflineAudioStagingRecord[]>,
-      idbReq(txRead.objectStore(STORE_AUDIO_LOCKS).getAll()) as Promise<OfflineAudioLockRecord[]>
+      idbReq(txRead.objectStore(STORE_AUDIO_LOCKS).getAll()) as Promise<OfflineAudioLockRecord[]>,
+      idbReq(txRead.objectStore(STORE_AUDIO_JOBS).getAll()) as Promise<OfflineAudioJob[]>
     ]);
     await filesDone;
 
@@ -1489,6 +1491,73 @@ export class OfflineQuranAudioLibrary {
           });
         }
         await idbTx(tx);
+      });
+    }
+
+    // A hard browser/tab close can leave a durable job in "downloading" with
+    // one item marked "downloading". Acquire that job's worker lock before
+    // normalizing it: this waits for a genuinely active tab to finish, while
+    // allowing a crashed worker's expired lease to be recovered safely.
+    const interruptedJobs = allJobs.filter(job => job.status === 'downloading');
+    for (const interruptedJob of interruptedJobs) {
+      const workerLockName = `wird-offline-audio-worker:${interruptedJob.jobId}`;
+      await this.runWithLock(workerLockName, async () => {
+        await this.runWithLock('wird-offline-audio-jobs', async () => {
+          const recoveryDb = await this.openDatabase();
+          const tx = recoveryDb.transaction([STORE_AUDIO_JOBS, STORE_AUDIO_JOB_ITEMS, STORE_AUDIO_FILES], 'readwrite');
+          const jobsStore = tx.objectStore(STORE_AUDIO_JOBS);
+          const itemsStore = tx.objectStore(STORE_AUDIO_JOB_ITEMS);
+          const filesStore = tx.objectStore(STORE_AUDIO_FILES);
+          const latestJob = (await idbReq(jobsStore.get(interruptedJob.jobId))) as OfflineAudioJob | undefined;
+          if (!latestJob || latestJob.status !== 'downloading') {
+            await idbTx(tx);
+            return;
+          }
+
+          const items = (await idbReq(itemsStore.index('jobId').getAll(
+            IDBKeyRange.only(interruptedJob.jobId)
+          ))) as OfflineAudioJobItem[];
+          let completedItems = 0;
+          let failedItems = 0;
+          let totalBytes = 0;
+
+          for (const item of items) {
+            if (item.status === 'downloading') {
+              itemsStore.put({ ...item, status: 'queued' });
+              continue;
+            }
+            if (item.status === 'failed') {
+              failedItems++;
+              continue;
+            }
+            if (item.status !== 'verified') continue;
+
+            const file = (await idbReq(filesStore.get(item.fileKey))) as OfflineAudioFileRecord | undefined;
+            if (file && file.available && !file.deletionPending) {
+              completedItems++;
+              totalBytes += file.byteLength;
+            } else {
+              itemsStore.put({ ...item, status: 'queued', cacheGenerationId: undefined });
+            }
+          }
+
+          let recoveredStatus: OfflineAudioJobStatus;
+          if (completedItems === items.length) recoveredStatus = 'completed';
+          else if (completedItems > 0) recoveredStatus = 'partial';
+          else if (failedItems === items.length) recoveredStatus = 'failed';
+          else recoveredStatus = 'queued';
+
+          jobsStore.put({
+            ...latestJob,
+            status: recoveredStatus,
+            completedItems,
+            failedItems,
+            totalBytes,
+            lastError: failedItems > 0 ? latestJob.lastError : undefined,
+            updatedAtMs: Date.now()
+          } satisfies OfflineAudioJob);
+          await idbTx(tx);
+        });
       });
     }
 
