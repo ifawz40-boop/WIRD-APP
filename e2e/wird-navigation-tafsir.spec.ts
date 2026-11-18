@@ -354,7 +354,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(recheckButton).toBeEnabled({ timeout: 30_000 });
     expect(catalogueRequests).toBe(1);
     expect(surahRequests).toBe(0);
-    await expect(downloadPanel).toContainText('اكتمل تنزيل التفسير الميسر');
+    await expect(downloadPanel).toContainText('التفسير محفوظ محليًا دون اتصال.');
 
     sourceVersion = '1.0.2';
     await recheckButton.click();
