@@ -113,8 +113,9 @@ export function findMatchingDueEnginePlanTask(
     if (target.enginePlanId && plan.id !== target.enginePlanId) return [];
     return plan.schedule.flatMap(day => {
       const task = day.memorizationTask;
+      const hasExactScheduleIdentity = Boolean(target.enginePlanId && target.enginePlanDate);
       if (
-        typeof day.date !== 'string' || day.date > todayStr ||
+        typeof day.date !== 'string' || (!hasExactScheduleIdentity && day.date > todayStr) ||
         (target.enginePlanDate && day.date !== target.enginePlanDate) ||
         day.status === 'completed' || !task || task.completed ||
         task.surahNumber !== target.surahNumber ||
@@ -129,8 +130,9 @@ export function findMatchingDueEnginePlanTask(
     a.plan.id.localeCompare(b.plan.id)
   );
 
-  // Never guess which plan owns a duplicate ayah range. Exact identity from
-  // the launch route wins; legacy/ambiguous sessions fail closed instead.
+  // Exact plan/date launches from a plan detail may complete future tasks early.
+  // Dashboard/legacy launches remain limited to due work. Never guess which
+  // plan owns a duplicate ayah range; ambiguous sessions fail closed instead.
   return matches.length === 1 ? matches[0] : null;
 }
 
