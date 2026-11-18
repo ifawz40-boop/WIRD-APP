@@ -465,3 +465,9 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Latest PR #390 head `c36d982e4b29385b56fecbbdd0fa82c0289a3e65`, 45 files (+3,822/-269), 211 commits ahead of main `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. #4604 predates cache v4 and doc changes; new exact-head Quality Gate required. Draft/HOLD, no merge/deploy.
 
 - Exact-head Quality Gate #4616 / run `44237566210` is now running on PR #390 SHA `c36d982e4b29385b56fecbbdd0fa82c0289a3e65`; security audit has already failed on picomatch@4.0.7, application job is installing Chromium before Playwright.
+
+
+## Upstream picomatch remediation watch — 2026-11-18
+- Focused candidate [micromatch/picomatch#254](https://github.com/micromatch/picomatch/pull/254) open, updated 2026-11-18 00:52 UTC. Author reports 2,001 upstream tests and 22,860 parity checks; however it is from a fork, unmerged, has no GitHub status checks, and no maintainer approval visible. It changes capture semantics for some patterns.
+- [#260](https://github.com/micromatch/picomatch/pull/260) is explicitly a partial mitigation with documented semantic tradeoffs and known limitations; unmerged and no GitHub status checks. #258 Draft; #261 unmerged proposal.
+- None is an official patched release. Do not cherry-pick/vendor/override/suppress; security hold remains until maintainer-reviewed upstream release and advisory update.
