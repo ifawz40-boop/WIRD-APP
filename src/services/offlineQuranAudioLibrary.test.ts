@@ -792,13 +792,16 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     let secondRequestStarted!: () => void;
     const secondStarted = new Promise<void>(resolve => { secondRequestStarted = resolve; });
     let blockSecondRequest = true;
+    const globalAyahOne = computeGlobalAyahNumber(112, 1);
+    const globalAyahTwo = computeGlobalAyahNumber(112, 2);
+    const globalAyahThree = computeGlobalAyahNumber(112, 3);
 
     const fetchFn: typeof fetch = async (input, init) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const count = (callsByUrl.get(url) || 0) + 1;
       callsByUrl.set(url, count);
 
-      if (url.endsWith('/2.mp3') && blockSecondRequest) {
+      if (url.endsWith(`/${globalAyahTwo}.mp3`) && blockSecondRequest) {
         blockSecondRequest = false;
         secondRequestStarted();
         await new Promise<void>((resolve, reject) => {
@@ -853,11 +856,11 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
       'A new library instance must resume and complete all remaining ayahs');
     const calls = [...callsByUrl.entries()];
     assert(calls.length === 3, 'Exactly three distinct ayah URLs must be requested');
-    assert(calls.filter(([url]) => url.endsWith('/1.mp3')).reduce((sum, [, count]) => sum + count, 0) === 1,
+    assert(calls.filter(([url]) => url.endsWith(`/${globalAyahOne}.mp3`)).reduce((sum, [, count]) => sum + count, 0) === 1,
       'The already verified first ayah must never be downloaded again after restart');
-    assert(calls.filter(([url]) => url.endsWith('/2.mp3')).reduce((sum, [, count]) => sum + count, 0) === 2,
+    assert(calls.filter(([url]) => url.endsWith(`/${globalAyahTwo}.mp3`)).reduce((sum, [, count]) => sum + count, 0) === 2,
       'Only the interrupted second ayah must be retried after restart');
-    assert(calls.filter(([url]) => url.endsWith('/3.mp3')).reduce((sum, [, count]) => sum + count, 0) === 1,
+    assert(calls.filter(([url]) => url.endsWith(`/${globalAyahThree}.mp3`)).reduce((sum, [, count]) => sum + count, 0) === 1,
       'The third ayah must be downloaded exactly once after restart');
     assert((await restartedTab.getStats()).availableFilesCount === 3,
       'All three verified audio files must be available in the persistent cache after recovery');
