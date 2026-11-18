@@ -124,6 +124,22 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     assert(missing === null, 'An unknown originating plan ID must not update a different plan');
   });
 
+  test('Session completion resolves repeated ranges to the exact originating schedule date', () => {
+    const repeated = makeEnginePlan([
+      makeDay('2026-11-04', makeTask(67)),
+      makeDay('2026-11-05', makeTask(67))
+    ], { id: 'repeat-plan' });
+    const exact = findMatchingDueEnginePlanTask([repeated], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5,
+      enginePlanId: 'repeat-plan', enginePlanDate: '2026-11-05'
+    });
+    assert(exact?.day.date === '2026-11-05', 'Completion must update the selected date, not an older identical task');
+    const legacy = findMatchingDueEnginePlanTask([repeated], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'repeat-plan'
+    });
+    assert(legacy?.day.date === '2026-11-04', 'Legacy deep links without a task date retain deterministic fallback');
+  });
+
   test('All-plan due queue excludes paused, inactive, completed tasks and completed days', () => {
     const active = makeEnginePlan([
       makeDay('2026-11-05', makeTask(2, true)),
