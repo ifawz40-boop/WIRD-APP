@@ -9,9 +9,10 @@ import {
 
 interface TafsirOfflineDownloadPanelProps {
   onComplete?: () => void;
+  compact?: boolean;
 }
 
-export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProps> = ({ onComplete }) => {
+export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProps> = ({ onComplete, compact = false }) => {
   const [status, setStatus] = useState<OfflineTafsirDownloadStatus | null>(null);
   const [progress, setProgress] = useState<OfflineTafsirDownloadProgress | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -73,8 +74,8 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
   const isComplete = status?.isComplete === true;
 
   return (
-    <section aria-label="تجهيز التفسير الميسر دون إنترنت" className="rounded-2xl border border-[#C59B27]/30 bg-[#F8F5EC] p-4 text-right dark:border-[#E0A96D]/25 dark:bg-[#101D35]" dir="rtl">
-      <div className="flex items-start gap-3">
+    <section aria-label="تجهيز التفسير الميسر دون إنترنت" className={compact ? "rounded-xl border border-[#1C4E46]/15 bg-[#F8F5EC] px-3 py-2 text-right dark:border-[#E0A96D]/20 dark:bg-[#101D35]" : "rounded-2xl border border-[#C59B27]/30 bg-[#F8F5EC] p-4 text-right dark:border-[#E0A96D]/25 dark:bg-[#101D35]"} dir="rtl">
+      {!compact && <div className="flex items-start gap-3">
         <div className="mt-0.5 rounded-xl bg-[#1C4E46]/10 p-2 text-[#1C4E46] dark:bg-[#E0A96D]/10 dark:text-[#E0A96D]">
           <span aria-hidden="true" className="text-lg">📖</span>
         </div>
@@ -84,24 +85,24 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
             نزّل التفسير كاملًا مرة واحدة. يُحفظ على هذا الجهاز فقط، ويمكن استكمال التنزيل إذا انقطع الاتصال.
           </p>
         </div>
-      </div>
+      </div>}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div className={compact ? "flex flex-wrap items-center justify-between gap-2 text-[10px]" : "mt-4 flex flex-wrap items-center justify-between gap-2 text-xs"}>
         <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">{downloaded} / {total} سورة</span>
         <span className="text-[#5B6F6B] dark:text-[#AAB8B4]">الإصدار V{OFFLINE_TAFSIR_SOURCE.version} · {OFFLINE_TAFSIR_SOURCE.releaseDate}</span>
       </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#E3DDCE] dark:bg-[#25334B]" role="progressbar" aria-label="تقدم تنزيل التفسير" aria-valuemin={0} aria-valuemax={total} aria-valuenow={downloaded}>
+      {!compact && <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#E3DDCE] dark:bg-[#25334B]" role="progressbar" aria-label="تقدم تنزيل التفسير" aria-valuemin={0} aria-valuemax={total} aria-valuenow={downloaded}>
         <div className="h-full rounded-full bg-[#1C4E46] transition-all dark:bg-[#E0A96D]" style={{ width: `${percent}%` }} />
-      </div>
-      {isDownloading && progress?.currentSurah && (
+      </div>}
+      {!compact && isDownloading && progress?.currentSurah && (
         <p className="mt-2 text-[11px] text-[#5B6F6B] dark:text-[#AAB8B4]" aria-live="polite">
           جارٍ تنزيل سورة {progress.currentSurah}…
         </p>
       )}
       {isComplete ? (
-        <div className="mt-3 space-y-2">
-          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" role="status">
-            اكتمل تنزيل التفسير الميسر. أصبح متاحًا محليًا دون اتصال.
+        <div className={compact ? "mt-2 flex flex-wrap items-center justify-between gap-2" : "mt-3 space-y-2"}>
+          <p className={compact ? "text-[10px] font-bold text-emerald-800 dark:text-emerald-300" : "rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"} role="status">
+            {compact ? "التفسير محفوظ محليًا دون اتصال." : "اكتمل تنزيل التفسير الميسر. أصبح متاحًا محليًا دون اتصال."}
           </p>
           <button type="button" onClick={startDownload} disabled={isDownloading} className="min-h-11 rounded-xl border border-[#1C4E46]/20 px-4 py-2 text-xs font-bold text-[#1C4E46] disabled:opacity-60 dark:border-[#E0A96D]/30 dark:text-[#E0A96D]">
             {isDownloading ? 'جارٍ التحقق من إصدار المصدر...' : 'التحقق من تحديث المصدر'}
@@ -122,10 +123,10 @@ export const TafsirOfflineDownloadPanel: React.FC<TafsirOfflineDownloadPanelProp
       )}
       {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs leading-5 text-red-800 dark:bg-red-950/30 dark:text-red-300" role="alert">{error}</p>}
 
-      <p className="mt-4 border-t border-[#1C4E46]/10 pt-3 text-[10px] leading-5 text-[#5B6F6B] dark:border-[#E0A96D]/15 dark:text-[#AAB8B4]">
+      {!compact && <p className="mt-4 border-t border-[#1C4E46]/10 pt-3 text-[10px] leading-5 text-[#5B6F6B] dark:border-[#E0A96D]/15 dark:text-[#AAB8B4]">
         الناشر: {OFFLINE_TAFSIR_SOURCE.publisher}. المصدر الرقمي: QuranEnc.com. يُحفظ المحتوى كما ورد من المصدر مع الحواشي وبيانات الإصدار.
         {' '}<a href="https://quranenc.com/ar/browse/arabic_moyassar/" target="_blank" rel="noreferrer" className="font-bold underline">المصدر الرسمي وشروط إعادة النشر</a>.
-      </p>
+      </p>}
     </section>
   );
 };
