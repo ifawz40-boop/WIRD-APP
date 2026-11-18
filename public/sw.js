@@ -329,7 +329,10 @@ function openOfflineAudioLibraryDatabase() {
       request.onerror = () => reject(request.error || new Error('Offline audio database could not be opened.'));
       request.onblocked = () => reject(new Error('Offline audio database is blocked by an upgrade.'));
     });
-  })().catch(error => {
+  })().then(database => {
+    if (!database) offlineAudioLibraryDbPromise = null;
+    return database;
+  }).catch(error => {
     offlineAudioLibraryDbPromise = null;
     throw error;
   });
@@ -339,8 +342,13 @@ function openOfflineAudioLibraryDatabase() {
 
 async function resolveOfflineLibraryAudioResponse(requestUrl) {
   const url = new URL(requestUrl);
-  const match = url.pathname.match(/^\\/quran\\/audio\\/(?:64|128|192)\\/([^/]+)\\/([1-6][0-9]{0,3})\\.mp3$/);
-  if (!match) return null;
+  const pathSegments = url.pathname.split('/');
+  if (pathSegments.length !== 6 || pathSegments[1] !== 'quran' || pathSegments[2] !== 'audio' ||
+      !['64', '128', '192'].includes(pathSegments[3])) return null;
+  const edition = pathSegments[4];
+  const ayahFile = pathSegments[5] || '';
+  const ayahDigits = ayahFile.endsWith('.mp3') ? ayahFile.slice(0, -4) : '';
+  if (!/^[1-6][0-9]{0,3}$/.test(ayahDigits)) return null;
 
   const reciterIdByEdition = {
     'ar.husary': 'ar.husary',
@@ -351,8 +359,8 @@ async function resolveOfflineLibraryAudioResponse(requestUrl) {
     'ar.ahmedajamy': 'ar.ajamy',
     'ar.alafasy': 'ar.alafasy'
   };
-  const reciterId = reciterIdByEdition[match[1]];
-  const globalAyahNumber = Number(match[2]);
+  const reciterId = reciterIdByEdition[edition];
+  const globalAyahNumber = Number(ayahDigits);
   if (!reciterId || !Number.isSafeInteger(globalAyahNumber) || globalAyahNumber < 1 || globalAyahNumber > 6236) return null;
 
   let database;
@@ -379,8 +387,8 @@ async function resolveOfflineLibraryAudioResponse(requestUrl) {
     const cacheKey = 'https://wird.local/offline-audio/' + encodeURIComponent(reciterId) + '/' + globalAyahNumber + '/' + encodeURIComponent(file.cacheGenerationId) + '.mp3';
     const response = await cache.match(cacheKey);
     if (!response || response.status !== 200 || response.type === 'opaque') return null;
-    const contentType = response.headers.get('content-type') || file.contentType || '';
-    if (!/^audio\\//i.test(contentType)) return null;
+    const contentType = (response.headers.get('content-type') || file.contentType || '').toLowerCase();
+    if (!contentType.startsWith('audio/')) return null;
     return response;
   } catch {
     return null;
