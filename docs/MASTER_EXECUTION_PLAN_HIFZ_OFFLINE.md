@@ -92,27 +92,27 @@ Do not mark a phase PASS until its acceptance criteria and evidence are recorded
 **Status: IMPLEMENTED IN PR #390 CANDIDATE / RELEASE HOLD — automated gates pass on prior exact SHA; real-device and latest-head acceptance remain incomplete**
 
 #### 2A. Source and rights validation
-- [ ] Verify official Al Quran Cloud documentation and applicable terms for the precise reciter/audio endpoint, permitted caching and offline storage, attribution, and redistribution restrictions.
-- [ ] Maintain an explicit allowlist of reciter IDs and source metadata; reject unknown/unverified reciters.
-- [ ] Confirm EveryAyah is used only for live online streaming and is never persisted for offline playback.
-- [ ] Document license/source evidence and a review date. No source is downloadable until this gate passes.
+- [x] Verify official Al Quran Cloud documentation and applicable terms for the precise reciter/audio endpoint, permitted caching and offline storage, attribution, and redistribution restrictions. Rechecked 2026-11-18: personal/educational download and local caching allowed; reciters retain copyright; commercial use may trigger removal request; no rehosting/redistribution.
+- [x] Maintain an explicit allowlist of reciter IDs and source metadata; reject unknown/unverified reciters.
+- [x] Confirm EveryAyah is used only for live online streaming and is never persisted for offline playback.
+- [x] Document license/source evidence and a review date. Recheck at release and before any commercial use.
 
 #### 2B. Unified audio repository
-- [ ] Consolidate on one IndexedDB repository with `jobs`, `files`, and `jobItems`; do not merge competing legacy audio stores.
-- [ ] Enforce unique canonical file identity `reciterId:globalAyahNumber`.
-- [ ] Store audio bytes in isolated Cache Storage cache `wird-offline-quran-audio-v1`; metadata records actual availability and `cacheGenerationId`.
-- [ ] Add cross-tab locking/coordination and a maximum of two simultaneous downloads.
-- [ ] Implement pause, resume, cancel, retry, progress, quota preflight, and safe cleanup with AbortController.
-- [ ] Reference-count shared ayah files across jobs/plans/manual pins; deleting one plan/job must not delete a still-referenced file.
-- [ ] Verify cache bytes on reads; handle cache eviction, stale generation, partial writes, orphan records, and interrupted transactions.
-- [ ] Keep the entire audio repository local to the device and outside Firestore/remote sync.
+- [x] Consolidate on one IndexedDB repository with `jobs`, `files`, and `jobItems`; do not merge competing legacy audio stores.
+- [x] Enforce unique canonical file identity `reciterId:globalAyahNumber`.
+- [x] Store audio bytes in isolated Cache Storage cache `wird-offline-quran-audio-v1`; metadata records actual availability and `cacheGenerationId`.
+- [x] Add cross-tab locking/coordination and a maximum of two simultaneous downloads.
+- [x] Implement pause, resume, cancel, retry, progress, quota preflight, and safe cleanup with AbortController.
+- [x] Reference-count shared ayah files across jobs/plans/manual pins; deleting one plan/job must not delete a still-referenced file.
+- [x] Verify cache bytes on reads; handle cache eviction, stale generation, partial writes, orphan records, and interrupted transactions.
+- [x] Keep the entire audio repository local to the device and outside Firestore/remote sync.
 
 #### 2C. Offline readiness center and PWA
-- [ ] Build a clear readiness center for text/app shell preparation and per-surah/per-plan audio downloads.
-- [ ] Show estimated required space vs `navigator.storage.estimate()`, safety headroom, persistence status, actual used space, and recoverable storage.
-- [ ] Provide selective deletion and clear distinction between downloaded audio and transient browser cache.
-- [ ] Verify PWA install behavior and hide the install CTA when already installed; include a concise Safari/iOS manual-install guide.
-- [ ] Enumerate features as fully offline, partially offline, or online-only; do not label the whole app “100% offline” while any core feature still requires a service.
+- [x] Build a clear readiness center for text/app shell preparation and per-surah/per-plan audio downloads.
+- [x] Show estimated required space vs `navigator.storage.estimate()`, safety headroom, persistence status, actual used space, and recoverable storage.
+- [x] Provide selective deletion and clear distinction between downloaded audio and transient browser cache.
+- [x] Verify PWA install behavior and hide the install CTA when already installed; include a concise Safari/iOS manual-install guide.
+- [x] Enumerate features as fully offline, partially offline, or online-only; do not label the whole app “100% offline” while any core feature still requires a service.
 - [ ] Verify shell and local Quran/tafsir routes after cold restart in airplane mode; keep live-only features graceful and explicit.
 
 **Acceptance:** approved reciter files download, pause/resume/cancel, deduplicate, and play after restart without network; shared references survive selective deletion; account changes cannot expose or delete another account's data; quota/cache failures recover safely; PWA shell and verified local text remain usable offline; all limitations are accurately disclosed.
