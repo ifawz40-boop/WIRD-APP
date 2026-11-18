@@ -314,3 +314,12 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - **Verification pending:** exact-head Quality Gate #4687 / run `44269753267` is now queued/in progress for the updated PR head `c2a60843d59aceaa16c57a387648973481895083`. The application and full dependency-audit jobs are both in progress. Do not report new tests as passing until the run completes.
 - New Playwright reload-recovery tests for Tafsir and 604-page Mushaf are also present in `e2e/offline-restart-recovery.spec.ts` (commits `c52470c4dba00c71fd80a35a9c3345825efdc99d`, `b2dd84b8a78ca99532c71aa00db0af91e4259608`). They too remain unverified pending exact-head CI.
 - Latest source commit: `95c74d808195a675d54338f87e7705bc33b319cd`. Latest documentation checkpoint will be recorded by a subsequent docs commit.
+
+
+## 2026-11-18 — offline audio reciter-choice consistency fix
+
+- Review found a real UX mismatch: Settings exposed all seven Al Quran Cloud offline-download editions, but the main Quran reader only had four corresponding selectable reciters; Ghamdi is stream-only.
+- Fixed by exporting `OFFLINE_DOWNLOADABLE_RECITERS` from `audioService.ts`, derived from the reader's approved `OFFLINE_RECITER_MAP`, and using it for Settings download selection and job labels. This leaves the three reader-unavailable editions out of the download UI and keeps Ghamdi stream-only.
+- Added a regression in `audioService.test.ts` proving every offline download choice is selectable in the reader, no unsupported edition appears, and Ghamdi remains stream-only.
+- Commits: `349779154409ac21dea39aa85132420de4bee94b`, `bb298d1f8fe4926edf88f8b4542cf7d4ece9fcbf`, `408d06ec5013143df298caed08b5f075ec293a2a`.
+- Exact-head Quality Gate #4689 / run `44269949230` was started for prior head `c28b36d962ff0000cb91f2b267ad752356a89ff1`: aggregate tests, 604-page coordinate validation, API import smoke, approved audio CDN/range smoke, Firestore Rules, TypeScript, production build, and production server smoke all passed; desktop/mobile Playwright was still running at last inspection. Production dependency audit passed (0 advisories / 241 packages); full audit failed on dev-only `picomatch@4.0.7` GHSA-fc5q-39xc-vjpf. The reciter-choice fix commits were added after that run began and still need exact-head validation.
