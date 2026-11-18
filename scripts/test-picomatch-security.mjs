@@ -23,7 +23,7 @@ for (const pattern of ['(+(a))+b', '(+(a))*b', 'x(+(a))+b']) {
 }
 const safeCases = [
   ['foobar', '+(foo|bar)', true], ['jsjsx', '+(js|jsx)', true],
-  ['some/path', '+(*)', true], ['ba', '+(*a)', true], ['aaa', '+(a*)', true],
+  ['some-file', '+(*)', true], ['ba', '+(*a)', true], ['aaa', '+(a*)', true],
   ['ba', '*(*a)', true],
   ['foofoo', '*(foo|bar)', true], ['src/components/App.tsx', '**/*.{ts,tsx}', true],
   ['src/main.js', '**/*.js', true], ['file.jsx', '*.+(js|jsx)', true]
