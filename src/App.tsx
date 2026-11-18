@@ -423,7 +423,7 @@ export default function App() {
       showToast(selection.messageAr, 'warn');
       return;
     }
-    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode, selection.enginePlanId);
+    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode, selection.enginePlanId, selection.source === 'engine_plan' ? selection.enginePlanDate : undefined);
   };
 
   // Commit session progress, activity, streak, and matching smart-plan task together.
