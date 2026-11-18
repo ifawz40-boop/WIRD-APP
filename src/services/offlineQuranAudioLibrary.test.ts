@@ -3,6 +3,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import {
   OfflineQuranAudioLibrary,
   STORE_AUDIO_FILES,
+  STORE_AUDIO_JOB_ITEMS,
   STORE_AUDIO_JOBS,
   STORE_AUDIO_LOCKS,
   STORE_AUDIO_STAGING,
@@ -818,7 +819,9 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
       autoStart: false
     });
     const [firstItem, interruptedItem, remainingItem] = await firstTab.getJobItems(job.jobId);
-    assert(Boolean(firstItem && interruptedItem && remainingItem), 'The recovery fixture must contain exactly three ayah items');
+    if (!firstItem || !interruptedItem || !remainingItem) {
+      throw new Error('The recovery fixture must contain exactly three ayah items');
+    }
 
     // Seed the durable state left by a process killed mid-download:
     // ayah 1 is fully committed; ayah 2 and the job still say "downloading".
