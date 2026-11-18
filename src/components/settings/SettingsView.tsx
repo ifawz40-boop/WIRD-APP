@@ -37,8 +37,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, ReciterId } from '../../types/quran';
 import { ALL_SURAHS } from '../../data/quranMeta';
-import { RECITERS, resolveApprovedOfflineReciterId } from '../../services/audioService';
-import { FALLBACK_QURAN_RECITERS } from '../../services/ruqyahAudioService';
+import { OFFLINE_DOWNLOADABLE_RECITERS, RECITERS, resolveApprovedOfflineReciterId } from '../../services/audioService';
 import {
   buildJuzAudioRanges,
   estimateAudioDownloadBytes,
@@ -405,7 +404,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   // Offline Audio Library State
   const profileApprovedReciter = resolveApprovedOfflineReciterId(profile.preferredReciter);
   const [audioDownloadReciter, setAudioDownloadReciter] = useState<string>(
-    () => profileApprovedReciter || FALLBACK_QURAN_RECITERS[0].id
+    () => profileApprovedReciter || OFFLINE_DOWNLOADABLE_RECITERS[0].id
   );
   const [audioScopeKind, setAudioScopeKind] = useState<OfflineAudioJobScopeKind>('surah');
   const [audioSurahNumber, setAudioSurahNumber] = useState<number>(67);
@@ -910,7 +909,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onChange={e => setAudioDownloadReciter(e.target.value)}
                 className="min-h-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]"
               >
-                {FALLBACK_QURAN_RECITERS.map(r => (
+                {OFFLINE_DOWNLOADABLE_RECITERS.map(r => (
                   <option key={r.id} value={r.id}>
                     {r.name} ({r.bitrate} kbps)
                   </option>
@@ -1034,7 +1033,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   job.status === 'partial' ? 'مكتمل جزئياً' :
                   job.status === 'failed' ? 'تعذر الاكتمال' :
                   job.status === 'cancelled' ? 'ملغى' : 'في الانتظار';
-                const reciterName = FALLBACK_QURAN_RECITERS.find(r => r.id === job.reciterId)?.name || job.reciterId;
+                const reciterName = OFFLINE_DOWNLOADABLE_RECITERS.find(r => r.id === job.reciterId)?.name || job.reciterId;
 
                 return (
                   <div
