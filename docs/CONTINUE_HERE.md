@@ -173,3 +173,14 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - Physical-device cold restart + airplane-mode acceptance remains outstanding.
 - No application source changes, merge, or deployment have been made in this kickoff. Latest plan commit: `6e69a64d5158737b0d038d46674463f16401a1fd`.
 - Next: refresh PR #390 exact head and CI state, inspect all changed files and reconcile current main with offline/hifz work surgically.
+
+
+### Integration checkpoint — 2026-11-18 (continuing)
+
+- Master plan updated: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md`.
+- Integration branch now contains candidate-only offline services, API relay, service worker/cache changes, offline Mushaf package, optional Tafsir Muyassar package, settings controls, E2E and regression tests.
+- Main UX preserved and reconciled with multi-plan due queue + exact `enginePlanId` / `enginePlanDate` routing and completion.
+- Local-first audio playback integrated in Quran Library, Mushaf reader (including two-page spread order), and memorization session; stale requests and object URL cleanup are guarded.
+- TafsirContentPane falls back only to the explicitly selected pinned Tafsir Muyassar edition when online fetch fails; Settings exposes the optional package download.
+- Current integration branch was 60+ commits ahead and 0 behind main at last compare. Latest implementation checkpoint commit before this documentation update: `80e9fb5f9678d22a01470ed69b48b2fcd54209d8`.
+- No application test suite has been run yet by design; do not claim tests pass. Continue implementation and review first, then run the full quality matrix on one exact SHA.
