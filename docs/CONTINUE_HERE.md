@@ -453,3 +453,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - The run includes a new UI-level three-plan dashboard regression and selected-plan deep-link assertion. Security audit has already failed on the unresolved picomatch@4.0.7 advisory.
 
 - Master execution tracker refreshed with the 2026-11-18 candidate state, exact #4599 evidence, #4604 in-progress UI regression, current security hold, and revised Phase 0/2/5 statuses. Commit: `e7af48be4ddcbe22f3c63248e84a0d87f4a73a19`.
+
+- Master plan Phase 2 checklist updated: source terms/allowlist/EveryAyah boundary, unified IndexedDB audio repository, exact cache verification/recovery, cross-tab/concurrency controls, user controls, storage/readiness center, selective deletion, PWA install/Safari guide, and offline capability matrix are checked as implemented. Cold-restart/airplane-mode physical acceptance remains unchecked. Latest master-plan commit: `3450c951db1dd8e5780da426682ca26074551cf7`.
