@@ -554,3 +554,7 @@ PR #390 adds an explicit optional full-604-page Hafs/KFGQPC facsimile download t
 - The first cumulative browser run confirmed the QuranEnc version-fixture race was fixed, but found the previously recorded weak-verse E2E locator failure on both viewport sizes. The selector correction from PR #387 was ported into PR #390.
 - Added a dedicated Playwright test for a partial 604-page facsimile download, interrupted/retried page, verified resume without redownloading page 1, and printed-page rendering after switching the browser offline.
 - Latest PR #390 exact SHA `5b953e3a47bf75ea33607abe5a62af8ca4aa6e65`; Quality Gate #4560 (`44187977275`) pending. Previous run #4558 was cancelled after the E2E follow-up. No deployment or merge.
+
+
+## Dependency remediation watch — 2026-11-18
+- Upstream picomatch PR #254 is a focused candidate from a fork, author reports tests/parity, but it is unmerged, has no GitHub status checks or maintainer approval visible, and changes capture semantics in some cases. PR #260 is explicitly partial with known limitations; #258 Draft and #261 unmerged. None is a release. Do not integrate any patch; retain security hold until official maintainer-reviewed release and advisory update.
