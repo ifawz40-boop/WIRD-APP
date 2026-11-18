@@ -205,3 +205,8 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - Full dependency audit remains red on unpatched dev-only picomatch 4.0.7; production-only audit passes. npm latest is still 4.0.7, so do not invent 4.0.8 or use a waiver.
 - Vercel preview is currently blocked by Free plan deployment-rate limit. Do not touch production settings/secrets or remote sync flags.
 - Next: inspect exact latest workflow; fix any remaining TS/build/E2E failures; continue source review and device acceptance plan. Only merge/publish after all required release gates are genuinely green.
+ 
+### Latest local-server correction — 2026-11-18
+
+- Registered `/api/quran-audio-download` in Express so local and production Node-server runs use the same allowlisted binary relay as Vercel.
+- Added API-import validation plus dev/production server smoke assertions for invalid reciter input (expected JSON 400). Exact-head workflow is required to verify this.
