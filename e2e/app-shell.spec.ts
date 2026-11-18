@@ -125,6 +125,7 @@ test('dashboard displays due memorization tasks from all active plans and preser
   await expect(dueSection).toContainText('03 خطة ثالثة');
   await expect(dueSection.getByRole('button', { name: 'ابدأ' })).toHaveCount(2);
 
+  await page.goto('/#/revision');
   const headerDailySession = page.getByRole('button', { name: 'جلسة اليوم' });
   await expect(headerDailySession).toBeVisible();
   await headerDailySession.click();
