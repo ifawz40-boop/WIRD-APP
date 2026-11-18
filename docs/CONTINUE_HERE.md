@@ -1,3 +1,43 @@
+# WIRD — Live continuation checkpoint (2026-11-18 10:35 +02:00)
+
+## PR #390 latest verified state
+
+- Working branch: `feat/offline-mushaf-package-20261117`
+- Latest code commit verified: `89e13885e4ad9074aeab62fbd8dc5b8dfd3c50cf` (compact Tafsir panel accessibility region). PR merge-test commit: `63aff32`.
+- Exact-head Quality Gate #4678 / run `44266490225` completed:
+  - Application job: PASS.
+  - Unit/integration aggregation: **780 passed / 0 failed**.
+  - Firestore Rules Emulator: **31 passed / 0 failed**.
+  - All **604** printed Mushaf page coordinate maps validated against WIRD's local Quran data (6,236 unique ayahs).
+  - Native API import checks, approved Quran audio CDN smoke (8/8), TypeScript, production build, production server smoke: PASS.
+  - Desktop + mobile Playwright: **194 passed / 2 intentional skips / 0 failed**.
+  - This includes Mushaf partial-download retry (simulated HTTP 503), full 604-page cache repair/recheck, offline-open, Tafsir full/partial download-resume, and offline navigation.
+- Dependency audit:
+  - Production graph: **0 advisories across 241 packages**.
+  - Full graph: **FAIL** on GitHub-reviewed High GHSA-fc5q-39xc-vjpf / CVE-2026-112366 for dev-only `picomatch@4.0.7` through `vite > tinyglobby > fdir > picomatch`.
+  - No override, suppression, threshold reduction, or unreviewed upstream patch was applied. The package is not fixed by this run.
+- PR #390 remains **Draft / HOLD**. No merge, production deployment, or production settings/secrets changes.
+
+## Next engineering actions (continue without waiting for test jobs)
+
+1. Add true reload/closed-tab recovery coverage, not only same-page resume:
+   - Tafsir: interrupt after one or more valid surahs, reload the page, reopen the panel, and prove persisted surahs are not downloaded again while the first missing surah resumes.
+   - Audio: interrupt an in-flight job, close/recreate the library instance against the same IndexedDB + Cache Storage, reconcile, and prove verified files survive while unfinished items resume exactly once.
+   - Mushaf: current E2E covers a 503 interruption and same-page resume; add a reload between failure and resume and prove cached valid pages are reused.
+2. Re-run Quality Gate on the final exact branch head after these additions. Keep production-only audit and complete dependency audit separate and visible.
+3. Physical Android/iOS/Safari cold-restart + airplane-mode acceptance remains mandatory; Playwright is not a substitute.
+4. Offline-only production boundary is not currently confirmed: the last read-only Vercel inspection reported `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` on Production. Do not change either without explicit owner approval; verify both are false before any offline-only Production release.
+5. Keep the PR Draft/HOLD until the full security gate has an evidence-based resolution or the owner explicitly authorizes a documented risk exception. No such exception is currently authorized.
+
+## Confirmed additional integrity findings already addressed
+
+- Exact plan-date identity now accompanies `enginePlanId` through both dashboard card and header quick-start session routing.
+- Approved durable audio now resolves across Mushaf, Surah library, memorization session, and service-worker local-first playback; stream-only reciters remain network-only.
+- Mushaf 604/604 repair action stays enabled and revalidates SVG content rather than trusting key count; quota preflight is skipped for a read-only full-cache recheck.
+- Tafsir compact panel now exposes a named region; the prior desktop/mobile async-selector test failures are fixed and the latest Playwright run passes.
+
+---
+
 # Latest continuation checkpoint — 2026-11-18 05:00 +02:00
 
 - Current release candidate: PR #390, branch `feat/offline-mushaf-package-20261117`, current code/test head before this documentation checkpoint: `b84b62b00e618a02784eed0fb502e55b413cc5c0`. Main remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; nothing has been merged or deployed.
