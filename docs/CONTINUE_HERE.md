@@ -335,3 +335,13 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - Dependency audit: production graph PASS with 0 advisories across 241 packages. Full graph FAIL remains on dev-only `picomatch@4.0.7`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. Official npm/upstream release listings still show 4.0.7 as latest; no official patched release is available. No override, suppression, threshold reduction, or risk waiver.
 - Vercel check remains blocked by account build/deployment rate limit; this is not an application build failure. Production sync flags were last read as `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true`; do not change them without explicit owner approval and do not release offline-only until both are confirmed false.
 - PR #390 remains Draft/HOLD. No merge, deployment, secrets/settings changes, or production sync changes.
+
+
+## 2026-11-18 — exact-head Playwright result and security hold
+
+- Exact-head Quality Gate #4696 / run [44270988631](https://github.com/xm8eslam-stack/WIRD-APP/actions/runs/44270988631) completed on PR head `c66eebe54696863b27a89bd25defa54d6e36c044`.
+- Application job: **PASS**. Playwright Desktop + Mobile Chromium: **198 passed / 0 failed / 2 skipped** (4.9 minutes). This includes three-plan due-task dashboard coverage, preserving plan ID/date on quick-start, offline Mushaf/Tafsir reload flows, audio library, and responsive settings/navigation. One desktop full-offline cold-start test passed; its mobile counterpart was skipped by the test's platform condition. Do not treat skipped tests as passes.
+- Other application gates: aggregate tests, all 604 Mushaf coordinate maps, native API imports, approved audio CDN/range smoke, Firestore Rules Emulator, TypeScript, production build, and production server startup smoke all passed.
+- Full dependency audit: **FAIL** on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. Production dependency audit: **PASS**, 0 advisories across 241 packages. Current upstream review shows the security-fix PR #235 closed unmerged and upstream issue #247 still open; no maintainer-approved published fix exists. Do not cherry-pick unmerged patches, override, suppress, or waive the finding.
+- PR #390 remains Draft/HOLD. No merge, deployment, secrets/settings changes, or production sync changes. Vercel Free-plan deployment limit and physical device cold-restart/airplane-mode acceptance remain separate release gates.
+- Latest verified code SHA at this checkpoint: `74072bf80f01589f74abfd40549e7d28810e4314`; latest docs-only PR head before this checkpoint: `c66eebe54696863b27a89bd25defa54d6e36c044`.
