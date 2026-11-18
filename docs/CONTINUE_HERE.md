@@ -226,3 +226,38 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - #359 overlaps #363 at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; preserve the #363 unified plan and reconcile any useful #359 detail explicitly.
 - Legacy #2 overlaps #363 at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`; do not merge #2 wholesale.
 - #373, #372, #371, #370, #369, #368, #367, #366, #365, #364 and #358 have no changed-path overlap with the current #363 changed-file list. This is a path snapshot only; re-fetch before action.
+
+
+## Current continuation checkpoint — 2026-11-18 07:58 +02:00
+
+### Candidate / branch state
+- PR #390 remains OPEN / Draft / HOLD: https://github.com/xm8eslam-stack/WIRD-APP/pull/390
+- Feature branch: `feat/offline-mushaf-package-20261117`.
+- Latest code+CI change SHA at time of verified run: `74c6552e5dfc386128c62d4c5fb17c5e52de063d`.
+- Main remains unchanged at `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. No merge, promotion or production deployment was performed.
+
+### Exact Quality Gate evidence
+- Run #4652: `44246969500`, exact head SHA `74c6552e5dfc386128c62d4c5fb17c5e52de063d`.
+- Verify job PASS: 190 Playwright tests passed, 2 skipped, 0 failed; Firestore Rules Emulator 31 passed / 0 failed; full 604-page map validation passed with 6,236 unique local Quran ayahs mapped exactly once; TypeScript, production build, API import smoke, approved audio CDN/range smoke, and production server startup smoke all passed.
+- Security job FAIL only at full dependency audit. The newly separated production audit passed with 0 vulnerabilities across 241 production-reachable packages. Full graph audit still reports one High advisory: `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`.
+- Vite, `@vitejs/plugin-react`, and `@tailwindcss/vite` are now devDependencies; `server.ts` only dynamically imports Vite in non-production mode. Frozen lockfile install passed.
+- GitHub-reviewed GHSA-fc5q-39xc-vjpf / CVE-2026-112366 remains active; upstream PR #238 is open/unmerged. No patched published version verified. Do not suppress, override to an unmerged commit, or approve risk without explicit owner decision.
+
+### Code review conclusions
+- Multi-plan daily queue now collects due/overdue incomplete tasks across every active non-paused engine plan, sorts deterministically, and displays all remaining tasks under the primary daily card. Completion resolves by plan ID and schedule date, preventing duplicate ayah ranges from updating the wrong plan. Unit tests cover three plans, overdue/today/future, paused/inactive/completed, duplicate ranges and exact originating date.
+- Explicit offline audio library uses IndexedDB jobs/items/locks/staging plus generation-scoped Cache Storage entries, read-back byte verification, quota preflight, cross-tab leases, pause/cancel, resumable downloads, and orphan reconciliation. Dedicated automated tests cover crash recovery, stale leases, cross-tab control, quota failure, cache eviction, and local-first playback.
+- Printed Mushaf package uses a separate versioned cache (not the 24-page opportunistic SW cache), validates/sanitizes each SVG and maps every ayah coordinate against WIRD's local Quran. Source pinned to Quran.ws commit `3ff27b46cecb0c0519d77531d9c868a579d1f623`; exact LICENSE/NOTICE checked. Quran.ws polygon metadata is CC BY 4.0 with product-use attribution waived; underlying Hafs/KFQC artwork terms are reproduced from the King Fahd Complex and permit digital/web/software use. This is a source-terms check, not an accuracy warranty.
+- Offline Muyassar is stored locally per-surah in IndexedDB; source-version and full ayah coordinate coverage are validated. Reading stored surahs does not require network; fetching/updating the package does.
+
+### Release blockers / not verified
+- Production flags `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` were observed on Production in read-only Vercel inspection. No values changed. Owner approval is required before changing them; offline-only release should not proceed while the production configuration conflicts with that boundary.
+- Latest Vercel preview observed earlier was stale (SHA `6d3c8f...`), not the current candidate. Feature branch deployment is disabled in `vercel.json`; no preview for SHA `74c6552...` was established. Do not treat old Preview as verification.
+- No physical-device cold restart / airplane-mode acceptance has been performed. Playwright browser offline tests do not replace a real Android/iOS acceptance test.
+- Do not mark app as 100% offline: APIs, auth/account actions, live external sources and uncached optional resources remain network-dependent. Distinguish bundled, explicitly downloaded, previously cached, opportunistic and network-only content.
+
+### Next actions
+1. Keep PR #390 Draft/HOLD until upstream publishes a fix for the full-graph advisory, or the owner explicitly accepts a documented, time-boxed dev-tool-only risk exception after reviewing exposure.
+2. Re-run Quality Gate on the exact latest SHA after this checkpoint documentation commit; verify frozen install, production audit, full audit, tests, build, 604-page coverage and Playwright results.
+3. Obtain explicit owner approval before changing either Production sync flag. Do not modify Vercel settings or secrets otherwise.
+4. Once code/security gates pass, verify the exact current preview SHA, then test install → prepare offline package → download audio/Mushaf/Tafsir → close app → enable airplane mode → reopen and use on a real device.
+5. Only then consider removing Draft and merging. Production deploy is a separate step and may be blocked by Vercel Hobby daily deployment limits.
