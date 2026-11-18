@@ -463,3 +463,5 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - After #4604, bumped Service Worker shell cache `wird-app-v3` → `wird-app-v4` so a failed SW install cannot overwrite the currently active shell cache. Activation cleans the old shell only after new worker readiness; explicit content cache `wird-app-content-v1` and dedicated audio/Mushaf caches remain preserved. Updated PWA unit and E2E assertions.
 - Refreshed official Al Quran Cloud terms in the audio plan: personal/educational recitation downloads allowed; reciters retain copyright; commercial products may receive removal requests; no rehosting/redistribution assumed.
 - Latest PR #390 head `c36d982e4b29385b56fecbbdd0fa82c0289a3e65`, 45 files (+3,822/-269), 211 commits ahead of main `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`. #4604 predates cache v4 and doc changes; new exact-head Quality Gate required. Draft/HOLD, no merge/deploy.
+
+- Exact-head Quality Gate #4616 / run `44237566210` is now running on PR #390 SHA `c36d982e4b29385b56fecbbdd0fa82c0289a3e65`; security audit has already failed on picomatch@4.0.7, application job is installing Chromium before Playwright.
