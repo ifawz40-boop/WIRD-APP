@@ -385,3 +385,11 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Run #4563 diagnostic: unit suite 774 passed / 0 failed; Firestore Rules 31 passed / 0 failed; 604-page validator, TypeScript, production build and server smoke passed. Desktop new offline Mushaf package E2E passed in 5.4s. Mobile test timed out before opening Settings because it attempted a direct Settings button; on mobile Settings is inside the More drawer. Fixed test to open More then Settings under 768px; no app runtime navigation change. New exact-head run required for latest branch.
 
 - Latest PR #390 head `3708e76432e89e00ce27f12cad8b64a1224aa9f1`; exact Quality Gate #4574 / run `44190087671` is in progress. The new run already passed the automated suite and all-604 Mushaf coordinate validator; Firestore Rules tests are running. Previous run #4563 desktop package test passed; mobile selector was corrected to navigate through the More drawer before Settings.
+
+
+## Quality Gate #4574 completed — 2026-11-18
+- Exact PR #390 head `3708e76432e89e00ce27f12cad8b64a1224aa9f1`; run `44190087671` completed. Application/test job SUCCESS; security audit job FAILURE only on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch` (GHSA-fc5q-39xc-vjpf / CVE-2026-112366).
+- Unit suite: 774 passed / 0 failed. Firestore Rules Emulator: 31 passed / 0 failed. All 604 Mushaf coordinate maps, API module import smoke, approved Quran audio CDN/range smoke, TypeScript, production build, production server startup smoke all passed.
+- Playwright: 184 passed / 0 failed / 2 intentional skips. Offline 604-page Mushaf partial-download/resume/open-while-offline passed on desktop and mobile. The two skips are complementary viewport-only tests: full offline app-shell asset download is desktop-only, while mobile settings reachability is mobile-only; both have separate coverage in the same run.
+- Audit remains unresolved: official npm latest and official GitHub releases still show picomatch 4.0.7, no fixed version. No override, suppression, threshold reduction, or risk acceptance. Keep PR #390 Draft/HOLD; do not merge or deploy.
+- PR #390 currently 44 changed files, 3,576 additions / 249 deletions, 190 commits ahead of main. Full review of the cumulative diff and integration scope remains required before promotion.
