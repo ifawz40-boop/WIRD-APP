@@ -48,8 +48,9 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(fs.existsSync(swPath), 'sw.js must exist in /public');
 
     const swContent = fs.readFileSync(swPath, 'utf8');
-    assert(swContent.includes("CACHE_NAME = 'wird-app-v3'"), 'SW must declare the upgraded shell cache version');
+    assert(swContent.includes("CACHE_NAME = 'wird-app-v4'"), 'SW must declare the upgraded shell cache version');
     assert(swContent.includes("AUDIO_CACHE_NAME = 'wird-app-audio-v1'"), 'Session audio must use a separate persistent cache');
+    assert(swContent.includes("CONTENT_CACHE_NAME = 'wird-app-content-v1'") && swContent.includes('name !== CONTENT_CACHE_NAME'), 'The explicit offline package cache must survive shell cache version upgrades');
     assert(swContent.includes("MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-v1'"), 'Printed Mushaf pages must use a dedicated cache');
     assert(swContent.includes("url.hostname === 'raw.githubusercontent.com'"), 'Only the pinned Quran.ws Mushaf asset host may enter the page cache');
     assert(swContent.includes("url.protocol === 'https:'"), 'Mushaf page cache must reject insecure HTTP');
@@ -85,6 +86,9 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(swContent.includes("req.mode === 'navigate'"), 'SW must implement SPA navigation fallback');
     assert(swContent.includes("cache.match('/index.html')"), 'SW must fall back to /index.html offline');
     assert(swContent.includes("PRECACHE_MANIFEST_URL = '/wird-precache-manifest.json'"), 'SW must load the build-generated app-shell manifest');
+    assert(swContent.includes('OFFLINE_NAVIGATION_REQUEST_TIMEOUT_MS = 6000'), 'SPA navigation must time out quickly before falling back to the cached shell');
+    assert(swContent.includes('getAdaptiveOfflineCacheLimits'), 'Optional audio and Mushaf caches must adapt to available storage quota');
+    assert(swContent.includes('trimMushafPageCache(cache)'), 'Mushaf runtime cache must use the adaptive quota bound');
     assert(swContent.includes('precacheApplicationShell'), 'SW must precache the generated static dependency graph');
     assert(swContent.includes('cache.addAll(safeAssets)'), 'SW must cache entry JS/CSS atomically before activation');
     assert(swContent.includes('const manifestForCache = response.clone()'), 'SW must preserve the manifest response before consuming its JSON body');
@@ -101,6 +105,16 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     const viteConfig = fs.readFileSync(path.resolve('./vite.config.ts'), 'utf8');
     assert(viteConfig.includes('offlineShellManifestPlugin'), 'Vite must install the offline shell manifest plugin');
     assert(viteConfig.includes('wird-precache-manifest.json'), 'Vite must emit a generated precache manifest');
+    const settingsSource = fs.readFileSync(path.resolve('./src/components/settings/SettingsView.tsx'), 'utf8');
+    assert(settingsSource.includes('تنزيل المصحف المصوّر كاملًا') && settingsSource.includes('استكمال تنزيل المصحف') && settingsSource.includes('إيقاف مؤقت'), 'Settings must expose full Mushaf download, resume and pause controls');
+    assert(!settingsSource.includes('يعمل دون إنترنت 100%'), 'Offline readiness UI must not claim 100% offline support for optional external assets');
+
+    assert(viteConfig.includes('listOfflinePublicAssets'), 'Vite must include recursive public assets in the explicit offline package manifest');
+    assert(viteConfig.includes('allAssets.length > 2000'), 'Vite must fail safely if the offline package exceeds the service-worker asset limit');
+    const publicAssetScript = fs.readFileSync(path.resolve('./scripts/offlinePublicAssets.ts'), 'utf8');
+    assert(publicAssetScript.includes('fs.readdirSync') && publicAssetScript.includes("relativePath === 'sw.js'"), 'Public asset enumeration must recurse while excluding the service worker script');
+    assert(publicAssetScript.includes('js|mjs|wasm'), 'Public JavaScript and WebAssembly assets must be included in the explicit offline package');
+
     assert(viteConfig.includes('item.imports'), 'Static chunk dependencies must be traversed recursively');
     assert(viteConfig.includes('importedCss'), 'Imported CSS dependencies must be included');
     assert(!viteConfig.includes('dynamicImports'), 'Lazy routes and large Quran datasets must not be force-preloaded');
@@ -125,6 +139,8 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(worker.includes('isSupportedOfflineAssetPath'), 'Worker must restrict offline assets to supported static file extensions');
     assert(worker.includes('image/svg+xml'), 'Worker must validate SVG content types before caching');
     assert(worker.includes('font/woff2'), 'Worker must validate font content types before caching');
+    assert(worker.includes("'.mjs': ['application/javascript'") && worker.includes("'.wasm': ['application/wasm']"), 'Worker must validate MJS and WebAssembly content types before caching');
+    assert(viteConfig.includes('mjs|wasm|css'), 'Build manifest must include emitted MJS and WebAssembly assets');
     assert(viteConfig.includes('woff2?'), 'Build manifest must include local font assets');
 
     assert(worker.includes('offlinePackagePreparationInProgress'), 'Concurrent full-package downloads must be rejected safely');
