@@ -1,7 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ALL_SURAHS } from '../src/data/quranMeta';
+import { MUSHAF_OFFLINE_CACHE_NAME } from '../src/services/mushafFacsimileService';
 
-const MUSHAF_CACHE_NAME = 'wird-mushaf-facsimile-offline-v1';
+const MUSHAF_CACHE_NAME = MUSHAF_OFFLINE_CACHE_NAME;
 const MUSHAF_PATTERN = /^https:\/\/raw\.githubusercontent\.com\/quran-ws\/quran-svg\/3ff27b46cecb0c0519d77531d9c868a579d1f623\/mushafs\/hafs\/kfqc\/svg\/\d{3}\.svg$/;
 
 function makeValidSvg(): string {
