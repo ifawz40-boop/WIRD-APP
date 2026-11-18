@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { PlanningEngine } from '../src/services/planningEngine';
+import { buildCacheGenerationKey, buildCanonicalAudioFileKey, OFFLINE_AUDIO_CACHE_NAME, OFFLINE_AUDIO_DB_NAME, OFFLINE_AUDIO_DB_VERSION, STORE_AUDIO_FILES } from '../src/services/offlineQuranAudioLibrary';
+import { buildQuranAyahAudioUrl } from '../src/services/ruqyahAudioService';
 
 test('production app shell renders without uncaught runtime errors', async ({ page }) => {
   const pageErrors: string[] = [];
@@ -235,3 +237,78 @@ test('physical KeyB shortcut works with Arabic keyboard layout and mobile drawer
   await expect(page.getByRole('button', { name: 'فتح الشريط الجانبي' })).toHaveAttribute('aria-expanded', 'false');
   await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
 });
+test('service worker serves durably downloaded Quran audio while offline', async ({ page, context }) => {
+  const reciterId = 'ar.alafasy';
+  const globalAyahNumber = 1;
+  const url = buildQuranAyahAudioUrl(reciterId, globalAyahNumber);
+  const generationId = 'e2e-offline-audio-generation';
+  const fileKey = buildCanonicalAudioFileKey(reciterId, globalAyahNumber);
+  const cacheKey = buildCacheGenerationKey(reciterId, globalAyahNumber, generationId);
+
+  await page.goto('/');
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.reload();
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+
+  await page.evaluate(async ({ dbName, dbVersion, storeName, cacheName, url, fileKey, cacheKey, reciterId, globalAyahNumber, generationId }) => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open(dbName, dbVersion);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName, { keyPath: 'fileKey' });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction([storeName], 'readwrite');
+      transaction.objectStore(storeName).put({
+        fileKey,
+        reciterId,
+        surahNumber: 1,
+        ayahNumber: 1,
+        globalAyahNumber,
+        url,
+        cacheGenerationId: generationId,
+        byteLength: 21,
+        contentType: 'audio/mpeg',
+        available: true,
+        pinned: false,
+        deletionPending: false,
+        verifiedAtMs: Date.now(),
+        schemaVersion: 1
+      });
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+    });
+    database.close();
+
+    const cache = await caches.open(cacheName);
+    await cache.put(cacheKey, new Response('offline-audio-payload', {
+      status: 200,
+      headers: { 'content-type': 'audio/mpeg', 'access-control-allow-origin': '*' }
+    }));
+  }, {
+    dbName: OFFLINE_AUDIO_DB_NAME,
+    dbVersion: OFFLINE_AUDIO_DB_VERSION,
+    storeName: STORE_AUDIO_FILES,
+    cacheName: OFFLINE_AUDIO_CACHE_NAME,
+    url,
+    fileKey,
+    cacheKey,
+    reciterId,
+    globalAyahNumber,
+    generationId
+  });
+
+  await context.setOffline(true);
+  const result = await page.evaluate(async audioUrl => {
+    const response = await fetch(audioUrl);
+    return { status: response.status, body: await response.text() };
+  }, url);
+  expect(result).toEqual({ status: 200, body: 'offline-audio-payload' });
+  await context.setOffline(false);
+});
+
+
