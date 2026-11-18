@@ -219,10 +219,10 @@ test('memorization and review share continuous segment playback with bounded rep
 
   const urls = await page.evaluate(() => (window as any).__wirdMockAudios.map((audio: { url: string }) => audio.url));
   expect(urls.map((url: string) => url.split('/').pop())).toEqual([
-    '067002.mp3',
-    '067003.mp3',
-    '067002.mp3',
-    '067003.mp3'
+    '5243.mp3',
+    '5244.mp3',
+    '5243.mp3',
+    '5244.mp3'
   ]);
   await expect(page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' })).toBeVisible();
 });
@@ -250,14 +250,14 @@ test('segment playback supports independent per-ayah and full-segment repeat cou
 
   const urls = await page.evaluate(() => (window as any).__wirdPlayedUrls.map((url: string) => url.split('/').pop()));
   expect(urls).toEqual([
-    '067002.mp3',
-    '067002.mp3',
-    '067003.mp3',
-    '067003.mp3',
-    '067002.mp3',
-    '067002.mp3',
-    '067003.mp3',
-    '067003.mp3',
+    '5243.mp3',
+    '5243.mp3',
+    '5244.mp3',
+    '5244.mp3',
+    '5243.mp3',
+    '5243.mp3',
+    '5244.mp3',
+    '5244.mp3',
   ]);
   await expect(page.getByRole('button', { name: 'تشغيل المقطع الصوتي المحدد' })).toBeVisible();
 });
