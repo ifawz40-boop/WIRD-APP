@@ -592,11 +592,13 @@ const parse = (input, options) => {
       // Match the final token renderer, including deferred POSIX/class rewrites.
       const generatedBody = tokens.slice(token.tokensIndex + 2).map(part =>
         (part.output != null ? part.output : part.value) + (part.suffix || '')).join('');
-      // With one star and fixed ASCII text, every repeated copy is absorbed by
-      // that star. Capture mode has an inner star capture whose last-iteration
+      // A single leading or trailing star with fixed ASCII text absorbs repeated
+      // copies. An interior star (for example a*b) does not. Capture mode has an inner star capture whose last-iteration
       // value cannot be changed. Bash globstars also constrain dot segments.
       // Unknown/ambiguous bodies fail closed.
-      collapse = body === '' || (!opts.capture && !opts.contains &&
+      const starIndex = body.indexOf('*');
+      const absorbableStar = starIndex === 0 || starIndex === body.length - 1;
+      collapse = body === '' || (!opts.capture && !opts.contains && absorbableStar &&
         /^[a-zA-Z0-9_. *-]+$/.test(body) && body.split('*').length === 2 &&
         (opts.bash !== true || !body.includes('.')));
       if (!collapse && !hasSafeRepetition(generatedBody)) {

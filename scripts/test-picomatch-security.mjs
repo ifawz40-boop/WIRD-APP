@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 const require = createRequire(import.meta.url);
 const picomatch = require('picomatch');
-const unsafe = ["+(*)","+(*a)","+(a*)","*(*a)","*(a*|b)","+(ab|abab)","+(a|aa)","+(+(a))","*(!(foo))"];
+const unsafe = ["+(a*b)","*(a*|b)","+(ab|abab)","+(a|aa)","+(+(a))","*(!(foo))"];
 for (const pattern of unsafe) {
   for (const options of [{}, { maxExtglobRecursion: false }, { maxExtglobRecursion: 100 }]) {
     assert.throws(() => picomatch.makeRe(pattern, options),
@@ -16,6 +16,8 @@ for (const pattern of ['(+(a))+b', '(+(a))*b', 'x(+(a))+b']) {
 }
 const safeCases = [
   ['foobar', '+(foo|bar)', true], ['jsjsx', '+(js|jsx)', true],
+  ['some/path', '+(*)', true], ['ba', '+(*a)', true], ['aaa', '+(a*)', true],
+  ['ba', '*(*a)', true],
   ['foofoo', '*(foo|bar)', true], ['src/components/App.tsx', '**/*.{ts,tsx}', true],
   ['src/main.js', '**/*.js', true], ['file.jsx', '*.+(js|jsx)', true]
 ];
