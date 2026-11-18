@@ -47,7 +47,7 @@ Source release: https://github.com/quran-ws/quran-svg/releases/tag/v1.1.1
 - Service: `src/services/mushafFacsimileOfflineLibrary.ts`.
 - Source identity is pinned by `MUSHAF_FACSIMILE_VERSION` and `MUSHAF_FACSIMILE_COMMIT`; the package is stored under the matching versioned cache name.
 - Before downloading, the service estimates page size from pages 1, 300 and 604, applies a safety factor, checks `navigator.storage.estimate()`, and retains a storage reserve. If the browser cannot estimate quota, it refuses to start a potentially space-exhausting full download.
-- Download is resumable page by page and supports abort/pause. Every page must pass SVG parsing, allowlist sanitization, coordinate validation and exact local-ay ah matching before it is stored.
+- Download is resumable page by page and supports abort/pause. Every page must pass SVG parsing, allowlist sanitization, coordinate validation and exact local ayah matching before it is stored.
 - The full package is independent from the bounded recent-page service-worker cache; the reader checks the full offline package first.
 
 ## Validation required before making this the default
