@@ -579,3 +579,9 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Found a lifecycle gap: once the 114-surah local package was complete, the panel hid the download action, so the user could not manually recheck the live source version. Added a visible `التحقق من تحديث المصدر` action in the completed state; it reuses the existing fail-closed version check, does not redownload surahs when the version matches, and leaves the previous verified copy intact if QuranEnc reports a newer version (which requires a reviewed app metadata update first).
 - Added Desktop/Mobile E2E coverage to seed all 114 valid stored surahs, verify a same-version check performs no surah downloads, then simulate a newer version and verify the existing 114/114 local package remains intact while WIRD reports that its pinned source metadata must be updated. This change awaits the exact-head CI run.
 - Official terms: https://quranenc.com/en/home (Terms and Policies panel); official API schema: https://quranenc.com/en/home/api/.
+
+
+### Exact-head rerun after Tafsir version-check E2E — 2026-11-18
+- Feature PR #390 current head at this checkpoint: `a728f1aae7d25a73c6f26c7f00ba989b5e4f8b22`.
+- Quality Gate run #4664 (`44248132284`) is running against that exact head. The security audit remains expected to fail on the full dependency graph unless upstream changes; production audit is separately expected to pass. Do not report tests as passed until this exact run completes.
+- The prior exact run #4652 (`44246969500`, SHA `74c6552...`) verified 190 Playwright passed / 2 skipped, 31 Firestore Rules passed, 604/604 Mushaf maps, and build/type checks. The new run adds the completed-Tafsir source-version recheck regression test and reruns the full matrix.
