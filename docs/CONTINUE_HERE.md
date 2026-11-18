@@ -427,3 +427,9 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Exact request fingerprints now use the ordered global-ayah sequence. Added IndexedDB DB v3→v4 migration that recalculates fingerprints from persisted job items in the versionchange transaction, preserving paused/queued states. Regression test seeds two v3 jobs with the old colliding count/endpoint key and verifies distinct migrated fingerprints.
 - Commits: `17bf9b9301f9edd5dde3aadc149d85a66ae753de`, `dccf42f0e0b253fe83b24ead95285f5816d55709`, `e3f328e4c17f96f24592f33141c88a824f14aff0`.
 - Latest PR #390 head: `e3f328e4c17f96f24592f33141c88a824f14aff0`. Run #4592 predates this migration; require a fresh exact-head gate. Security audit remains unresolved.
+
+
+## Latest exact-head Quality Gate #4599 — in progress
+- Current PR #390 SHA: `eb7394e5f86c5d9b2d3a155df04861bb8e634bea`; run `44235296378` / #4599 is running on this exact SHA.
+- Automated unit suites, 604-page Mushaf coordinate validator, API import smoke, approved audio CDN/range smoke, Firestore Rules Emulator, TypeScript, production build and server startup smoke all passed. Desktop/mobile Playwright is in progress.
+- Security audit failed on `picomatch@4.0.7` via Vite toolchain. Do not merge/deploy.
