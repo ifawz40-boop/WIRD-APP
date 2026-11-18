@@ -124,6 +124,7 @@ export default function App() {
     endAyah: number;
     mode: 'memorize' | 'review';
     enginePlanId: string | null;
+    enginePlanDate: string | null;
   }>(() => {
     const surahNumber = initialRoute.surahNumber || 67;
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
@@ -135,7 +136,8 @@ export default function App() {
       startAyah,
       endAyah,
       mode: initialRoute.mode || 'memorize',
-      enginePlanId: initialRoute.enginePlanId ?? null
+      enginePlanId: initialRoute.enginePlanId ?? null,
+      enginePlanDate: initialRoute.enginePlanDate ?? null
     };
   });
 
@@ -295,7 +297,8 @@ export default function App() {
             startAyah: nextStart,
             endAyah: nextEnd,
             mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode,
-            enginePlanId: route.tab === 'session' ? (route.enginePlanId ?? null) : null
+            enginePlanId: route.tab === 'session' ? (route.enginePlanId ?? null) : null,
+            enginePlanDate: route.tab === 'session' ? (route.enginePlanDate ?? null) : null
           }));
         }
       }
@@ -360,21 +363,23 @@ export default function App() {
     startAyah: number = 1,
     endAyah?: number,
     mode: 'memorize' | 'review' = 'memorize',
-    enginePlanId?: string
+    enginePlanId?: string,
+    enginePlanDate?: string
   ) => {
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
     const safeStart = Math.min(Math.max(1, startAyah), surahMeta.versesCount);
     const safeEnd = Math.min(Math.max(safeStart, endAyah ?? surahMeta.versesCount), surahMeta.versesCount);
     sessionRunIdRef.current = createSecureId();
     sessionCompletionAttemptRef.current = null;
-    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode, enginePlanId: enginePlanId || null });
+    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode, enginePlanId: enginePlanId || null, enginePlanDate: enginePlanDate || null });
     navigateTo({
       tab: 'session',
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
       mode,
-      enginePlanId: enginePlanId || undefined
+      enginePlanId: enginePlanId || undefined,
+      enginePlanDate: enginePlanDate || undefined
     });
   };
 
@@ -391,7 +396,8 @@ export default function App() {
       startAyah: safeStart,
       endAyah: safeEnd,
       mode: prev.mode,
-      enginePlanId: null
+      enginePlanId: null,
+      enginePlanDate: null
     }));
     navigateTo({
       tab: 'session',
@@ -432,7 +438,8 @@ export default function App() {
         surahNumber: sessionParams.surahNumber,
         startAyah: sessionParams.startAyah,
         endAyah: sessionParams.endAyah,
-        enginePlanId: sessionParams.enginePlanId
+        enginePlanId: sessionParams.enginePlanId,
+        enginePlanDate: sessionParams.enginePlanDate
       });
       if (matchingEntry) {
         const { plan, day, task } = matchingEntry;
