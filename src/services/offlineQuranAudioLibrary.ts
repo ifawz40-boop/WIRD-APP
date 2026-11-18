@@ -257,9 +257,10 @@ function buildRequestFingerprint(
   reciterId: string,
   items: Array<{ globalAyahNumber: number }>
 ): string {
-  const first = items[0]?.globalAyahNumber ?? 0;
-  const last = items[items.length - 1]?.globalAyahNumber ?? 0;
-  return `${scopeKind}:${reciterId}:${items.length}:${first}:${last}`;
+  // A count + first/last tuple is not unique for disjoint ranges. Persist the
+  // exact ordered global-ayah sequence so two different plans cannot collide.
+  const exactAyahSequence = items.map(item => item.globalAyahNumber).join(',');
+  return `${scopeKind}:${reciterId}:${exactAyahSequence}`;
 }
 
 function idbReq<T>(req: IDBRequest<T>): Promise<T> {
