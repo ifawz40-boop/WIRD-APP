@@ -524,3 +524,11 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - The three-plan Playwright fixture currently seeds all three plans with the same start date. Strengthen it to use distinct start dates (two-days-overdue, yesterday, today), verify the selected `planDate` for each, click the dashboard primary CTA, the header quick-start, and both additional plan cards. This matches the original user scenario more closely.
 - Add a cold-tab offline acceptance test: after the app shell and offline audio are cached, close the page, open a new tab in the same browser context while offline, and verify app shell + durable audio still work.
 - Audio UX follow-up: the offline downloader lists seven Al Quran Cloud reciters while the main player maps four approved editions plus Ghamdi as stream-only. Align the selectable lists or explicitly mark stream-only / non-playable download options before broad release.
+
+
+### 2026-11-18 — #4639 completed; corrective round #4645 running
+- Run #4639 (`44241511583`, SHA `b9cfaabc8e7e884549f27508bb517f5de6064bdf`) completed **FAIL**: 182 passed, 8 failed, 2 skipped across Desktop/Mobile (9.9 minutes). The new durable-audio Service Worker E2E passed.
+- The 8 failures were four duplicated browser regressions: old EveryAyah filename expectations after the deliberate approved-CDN migration (global ayah filenames are correct), and a timing-sensitive Mushaf “button disabled” assertion because the repaired page fetch completed before the assertion.
+- Corrective code now updates the audio expectations to Al Quran Cloud canonical global-ayah URLs; delays the one mocked repair response to assert loading state deterministically; distinguishes “verified existing 604-page package” from “download completed”; and skips the full-package quota reserve check when no pages are missing, allowing integrity-only verification on nearly-full storage.
+- Added a low-quota 604/604 offline revalidation assertion to the Mushaf E2E.
+- New exact-head run #4645: GitHub run `44243189810`, SHA `6e28979549d6e0bbaef442b9b409426e99504571`; application job is running. The separate dependency audit still fails on the same High `picomatch@4.0.7` advisory. Do not merge until exact-head browser tests pass and the security audit is resolved.
