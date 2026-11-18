@@ -6,6 +6,52 @@
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
+## Active continuation note — Google AI Studio UX work (2026-11-18)
+
+**Owner's latest instruction:** Google AI Studio is currently working on the comprehensive WIRD UX restructuring prompt. The user expects the AI Studio usage/quota limit may run out before the work is complete. When the user returns and says **"كمل" / "فكّرك" / asks to continue WIRD**, resume this exact work rather than starting a new feature track or asking the user to repeat the brief.
+
+### What is in progress
+- The user has submitted the previously prepared **WIRD | وِرد — MASTER UX RESTRUCTURING & QURAN EXPERIENCE PROMPT** to Google AI Studio.
+- AI Studio is actively implementing/reviewing the requested UI/UX changes; completion is NOT yet confirmed.
+- The prompt was based on a read-only review of the then-current GitHub `main` source, including the Mushaf reader/facsimile page, memorization session, plans, shared audio preferences, daily session selection, and plan lifecycle services.
+- **Important:** AI Studio workspace may contain uncommitted changes that are not present on GitHub. Do not assume its workspace and `main` are synchronized. Inspect both before deciding what remains to be done.
+
+### Confirmed UX/product decisions from the user's answers
+1. **Printed Mushaf interpretation on desktop:** support both layouts — a sliding side panel beside the selected printed page, or temporarily replace the opposite page with tafsir and provide a clear return action. Remember the user's preferred layout per screen/context where practical.
+2. **Default memorization-session ayah presentation:** continuous connected ayah display, clearly highlighting the current ayah and placing its controls close to it. Keep the printed Mushaf available as an alternate view; do not force a single-ayah card as the default.
+3. **Reciter/audio preferences:** changing the reciter from the Mushaf, memorization session, or revision should synchronize the global reciter preference across the app. Synchronize global speed/repeat preferences where appropriate, BUT preserve exercise-/ayah-/session-specific repeat and playback settings; global preferences must not overwrite a deliberately configured local exercise.
+4. **Multiple active memorization plans on Home:** one unified **"وردك اليوم"** view aggregating today's tasks from every active plan and revision queue. Each task must retain its source/plan identity, offer navigation to its plan/details, and never disappear merely because another plan is active. Avoid a clutter of separate plan cards.
+
+### Full scope of the active UX brief
+- Make the Qur'an experience coherent across reader, session, revision, tafsir, and audio controls.
+- **Printed Mushaf:** desktop/tablet spread should show two facing pages together; on narrow mobile screens use a readable responsive fallback (normally one page at a time), not a cramped miniature spread. Keep page order, RTL direction, page navigation, and current-page state correct.
+- **Tafsir:** allow interpretation of either page in the spread, with a clear way back to the same spread/page state. Reuse verified local Qur'an text and trusted tafsir sources; never substitute untrusted/generated scripture.
+- **Memorization session:** reduce visual crowding and excessive nested boxes; make ayat the visual focus; group related controls; place previous/next navigation directly below the ayat/content they control rather than detached at the bottom of the screen. Preserve existing useful session functionality instead of rebuilding it needlessly.
+- **Cumulative linking (الربط التراكمي):** make the workflow clearer and easier to operate, while preserving progress, correct ayah boundaries/order, and existing free-memorization/linking modes.
+- **Audio:** unify the reciter selector across app surfaces and avoid divergent selectors/preferences. Preserve local session/exercise state where it is intentionally specific.
+- **Plans and daily scheduling:** verify multiple active plans remain independent; Home aggregates today's tasks from all plans. Review late/missed sessions, early completion, rescheduling/rebalancing, light recovery days, revision, weak ayat, and cumulative linking. Reuse and improve existing `planLifecycle.ts` and `dailySessionSelection.ts` logic rather than replacing it without evidence/tests.
+- **Visual system:** calm, polished, consistent Islamic product UI; responsive desktop/tablet/mobile; accessibility and touch targets; reduce unnecessary cards/containers and visual noise.
+- **Quality:** add/update unit, integration, and Playwright coverage for the actual flows and responsive states. Do not remove existing tests to make the suite green.
+
+### Resume procedure — do this before changing code
+1. Ask no broad recap question. Start by checking the latest Google AI Studio workspace state if it is accessible, and inspect its diff/status/build/test output. Identify exactly what AI Studio completed, what is partially implemented, and what remains.
+2. Re-fetch GitHub `main` HEAD and the current `docs/CONTINUE_HERE.md`; compare the repository state with the workspace. The last SHA recorded elsewhere in prior conversation may be stale.
+3. If the AI Studio workspace is not accessible in this session, inspect the latest GitHub branches/PRs/commits and this note, then clearly distinguish confirmed repository changes from unverified AI Studio-only work. Do not pretend to see an unavailable workspace.
+4. Continue from the first incomplete item in the UX scope above. Prioritize functional correctness and coherent responsive UI, not superficial restyling.
+5. Run the relevant checks, record exact command/results and exact commit/PR SHA. Separate local checks, GitHub CI, Preview deployment, and real-device/live verification.
+6. Update this file and `docs/DEVELOPMENT_ROADMAP.md` with completed items, remaining items, test evidence, blockers, and next action so another chat can resume without relying on chat history.
+
+### Guardrails
+- Do not overwrite or discard AI Studio workspace changes. Inspect and preserve them first.
+- Do not assume changes are pushed to GitHub just because AI Studio reports implementation complete.
+- Do not push directly to `main`; use a focused feature branch/PR and exact-head quality gates unless the user explicitly changes this instruction.
+- Do not merge or deploy Production without explicit user approval. Preview testing may proceed only within the previously authorized scope and current deployment constraints.
+- Do not modify production secrets, Firebase production data/rules, Vercel project settings, or the production sync flags `VITE_WIRD_REVISIONED_SYNC_ENABLED` / `VITE_WIRD_REMOTE_PROJECTION_ENABLED` without explicit approval.
+- Preserve local-first/offline behavior, user data, verified Qur'an text, and trusted-source requirements.
+- The user's expectation is that work continues autonomously as far as tools/access allow; do not stop merely to wait for a test that can be polled. If a tool/session/quota boundary prevents further work, leave a precise checkpoint here.
+
+---
+
 ## Verified AI Studio workspace state — 2026-11-17
 
 - **Deployment & GitHub status:** Workspace edits live in Google AI Studio only. **NOT committed/pushed to GitHub** and **NOT deployed to Vercel** (explicit owner directive; Vercel Production sync flags remain unchanged).
