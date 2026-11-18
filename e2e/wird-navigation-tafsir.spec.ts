@@ -290,7 +290,7 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
   test('completed offline Tafsir can recheck source version without redownloading stored surahs', async ({ page }) => {
     let catalogueRequests = 0;
     let surahRequests = 0;
-    await page.route(/^https:\/\/quranenc\\.com\/api\/v1\/translations\/list\/ar\/?(?:\\?.*)?$/, async route => {
+    await page.route(/^https:\/\/quranenc\.com\/api\/v1\/translations\/list\/ar\/?(?:\?.*)?$/, async route => {
       catalogueRequests++;
       await route.fulfill({
         status: 200,
