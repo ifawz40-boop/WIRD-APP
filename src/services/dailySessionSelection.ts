@@ -18,6 +18,7 @@ export type DailySessionSelection =
       startAyah: number;
       endAyah: number;
       enginePlanId?: string;
+      enginePlanDate?: string;
       label: string;
     }
   | {
@@ -82,7 +83,7 @@ export interface DueEnginePlanTaskMatch {
 export function findMatchingDueEnginePlanTask(
   plans: EngineGeneratedPlan[],
   todayStr: string,
-  target: { surahNumber: number; startAyah: number; endAyah: number; enginePlanId?: string | null }
+  target: { surahNumber: number; startAyah: number; endAyah: number; enginePlanId?: string | null; enginePlanDate?: string | null }
 ): DueEnginePlanTaskMatch | null {
   return plans.flatMap(plan => {
     if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) return [];
@@ -91,6 +92,7 @@ export function findMatchingDueEnginePlanTask(
       const task = day.memorizationTask;
       if (
         typeof day.date !== 'string' || day.date > todayStr ||
+        (target.enginePlanDate && day.date !== target.enginePlanDate) ||
         day.status === 'completed' || !task || task.completed ||
         task.surahNumber !== target.surahNumber ||
         task.startAyah !== target.startAyah ||
@@ -157,6 +159,7 @@ export function getDailySessionSelection(
       mode: 'memorize',
       source: 'engine_plan',
       enginePlanId: nextDueEngineTask.planId,
+      enginePlanDate: nextDueEngineTask.date,
       surahNumber: task.surahNumber,
       startAyah: task.startAyah,
       endAyah: task.endAyah,
