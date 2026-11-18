@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { PlanningEngine } from '../src/services/planningEngine';
 
 test('production app shell renders without uncaught runtime errors', async ({ page }) => {
   const pageErrors: string[] = [];
@@ -77,6 +78,57 @@ test('dashboard shows the daily session action once and no hard-coded monthly pr
   await expect(page.getByRole('button', { name: /بدء جلسة الحفظ التفاعلية|بدء جلسة المراجعة التفاعلية/ })).toBeVisible();
 });
 
+
+test('dashboard displays due memorization tasks from all active plans and preserves the selected plan on quick start', async ({ page }) => {
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const createPlan = (id: string, title: string, surahNumber: number) => {
+    const plan = PlanningEngine.generatePlan({
+      title,
+      startSurah: surahNumber,
+      startAyah: 1,
+      endSurah: surahNumber,
+      endAyah: 3,
+      startDate: today,
+      level: 'intermediate',
+      dailyAvailableMinutes: 30,
+      dailyRevisionMinutes: 15,
+      paceType: 'verses_per_day',
+      paceQuantity: 3,
+      activeDays: [0, 1, 2, 3, 4, 5, 6],
+      restDays: [],
+      schedulePreference: 'single_session'
+    });
+    plan.id = id;
+    plan.title = title;
+    plan.input.title = title;
+    plan.isActive = true;
+    plan.isPaused = false;
+    return plan;
+  };
+  const plans = [
+    createPlan('plan-a', '01 خطة أولى', 67),
+    createPlan('plan-b', '02 خطة ثانية', 68),
+    createPlan('plan-c', '03 خطة ثالثة', 69)
+  ];
+
+  await page.addInitScript((enginePlans) => {
+    localStorage.setItem('wird_engine_plans', JSON.stringify(enginePlans));
+  }, plans);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
+
+  const dueSection = page.locator('section[aria-labelledby="dashboard-multi-plan-due-title"]');
+  await expect(dueSection).toBeVisible();
+  await expect(page.getByText('01 خطة أولى')).toBeVisible();
+  await expect(dueSection).toContainText('02 خطة ثانية');
+  await expect(dueSection).toContainText('03 خطة ثالثة');
+  await expect(dueSection.getByRole('button', { name: 'ابدأ' })).toHaveCount(2);
+
+  const secondPlanCard = dueSection.locator('div.grid > div').filter({ hasText: '02 خطة ثانية' });
+  await secondPlanCard.getByRole('button', { name: 'ابدأ' }).click();
+  await expect(page).toHaveURL(/#\\/session\\?.*plan=plan-b/);
+});
 
 test('tablet portrait keeps compact navigation and opens the full section drawer', async ({ page }) => {
   await page.setViewportSize({ width: 820, height: 1180 });
