@@ -558,3 +558,10 @@ PR #390 adds an explicit optional full-604-page Hafs/KFGQPC facsimile download t
 
 ## Dependency remediation watch — 2026-11-18
 - Upstream picomatch PR #254 is a focused candidate from a fork, author reports tests/parity, but it is unmerged, has no GitHub status checks or maintainer approval visible, and changes capture semantics in some cases. PR #260 is explicitly partial with known limitations; #258 Draft and #261 unmerged. None is a release. Do not integrate any patch; retain security hold until official maintainer-reviewed release and advisory update.
+
+
+## Exact-head Quality Gate #4616 — 2026-11-18
+- Candidate PR #390 SHA `c36d982e4b29385b56fecbbdd0fa82c0289a3e65`; run `44237566210`.
+- Application job PASS: Playwright 186 passed / 0 failed / 2 intentional viewport skips; 604 Mushaf coordinate maps; API import and approved Quran audio CDN/range smoke; Firestore Rules Emulator; TypeScript; production build; production server startup smoke. Dashboard multi-plan regression and offline Mushaf sanitized-cache/download/resume/offline-open checks passed on desktop and mobile. Offline Muyassar download/resume/corruption checks passed.
+- Dependency security audit FAIL remains solely `picomatch@4.0.7` through Vite toolchain (GHSA-fc5q-39xc-vjpf, High ReDoS). No override/suppression. No merge/deploy.
+- PR #390 remains Draft/HOLD. Physical Android/iOS/Safari cold restart + airplane mode and storage quota/eviction acceptance are outstanding. Exact-head app gate is green but overall release gate is not.
