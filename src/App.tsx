@@ -11,7 +11,7 @@ import { CheckCircle2, AlertTriangle, Info, X, Loader2 } from 'lucide-react';
 import { parseRoute, navigateTo, buildRouteHash } from './services/router';
 import { persistJournaledSessionCompletion } from './services/sessionPersistence';
 import { resetAllDataJournaled } from './services/backupPersistence';
-import { getDailySessionSelection } from './services/dailySessionSelection';
+import { findMatchingDueEnginePlanTask, getDailySessionSelection } from './services/dailySessionSelection';
 import { buildWeakVerseFailureTransaction } from './services/weakVerseRecording';
 import { getLocalDateString } from './services/unifiedPortionService';
 import { createSecureId } from './services/secureId';
@@ -146,6 +146,8 @@ export default function App() {
     startAyah: number;
     endAyah: number;
     mode: 'memorize' | 'review';
+    enginePlanId: string | null;
+    enginePlanDate: string | null;
   }>(() => {
     const surahNumber = initialRoute.surahNumber || 67;
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
@@ -156,7 +158,9 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah,
       endAyah,
-      mode: initialRoute.mode || 'memorize'
+      mode: initialRoute.mode || 'memorize',
+      enginePlanId: initialRoute.enginePlanId ?? null,
+      enginePlanDate: initialRoute.enginePlanDate ?? null
     };
   });
 
@@ -315,7 +319,9 @@ export default function App() {
             surahNumber: surahMeta.number,
             startAyah: nextStart,
             endAyah: nextEnd,
-            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode
+            mode: route.tab === 'session' ? (route.mode || prev.mode) : prev.mode,
+            enginePlanId: route.tab === 'session' ? (route.enginePlanId ?? null) : null,
+            enginePlanDate: route.tab === 'session' ? (route.enginePlanDate ?? null) : null
           }));
         }
       }
@@ -379,20 +385,24 @@ export default function App() {
     surahNumber: number = 67,
     startAyah: number = 1,
     endAyah?: number,
-    mode: 'memorize' | 'review' = 'memorize'
+    mode: 'memorize' | 'review' = 'memorize',
+    enginePlanId?: string,
+    enginePlanDate?: string
   ) => {
     const surahMeta = ALL_SURAHS[surahNumber - 1] || ALL_SURAHS[66];
     const safeStart = Math.min(Math.max(1, startAyah), surahMeta.versesCount);
     const safeEnd = Math.min(Math.max(safeStart, endAyah ?? surahMeta.versesCount), surahMeta.versesCount);
     sessionRunIdRef.current = createSecureId();
     sessionCompletionAttemptRef.current = null;
-    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode });
+    setSessionParams({ surahNumber: surahMeta.number, startAyah: safeStart, endAyah: safeEnd, mode, enginePlanId: enginePlanId ?? null, enginePlanDate: enginePlanDate ?? null });
     navigateTo({
       tab: 'session',
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode
+      mode,
+      enginePlanId,
+      enginePlanDate
     });
   };
 
@@ -408,7 +418,9 @@ export default function App() {
       surahNumber: surahMeta.number,
       startAyah: safeStart,
       endAyah: safeEnd,
-      mode: prev.mode
+      mode: prev.mode,
+      enginePlanId: null,
+      enginePlanDate: null
     }));
     navigateTo({
       tab: 'session',
@@ -430,7 +442,7 @@ export default function App() {
       showToast(selection.messageAr, 'warn');
       return;
     }
-    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode);
+    handleStartSession(selection.surahNumber, selection.startAyah, selection.endAyah, selection.mode, selection.enginePlanId, selection.enginePlanDate);
   };
 
   // Commit session progress, activity, streak, and matching smart-plan task together.
@@ -446,34 +458,29 @@ export default function App() {
       const currentEnginePlans = StorageService.getEnginePlans();
       const completedDateStr = getLocalDateString();
       const completedTimestamp = new Date().toISOString();
-      let didUpdateAnyPlan = false;
-
-      const mappedPlans = currentEnginePlans.map(plan => {
-        if (!plan.isActive || plan.isPaused) return plan;
-        const matchingDay = plan.schedule.find(day =>
-          day.memorizationTask && !day.memorizationTask.completed &&
-          day.memorizationTask.surahNumber === sessionParams.surahNumber &&
-          day.memorizationTask.startAyah === sessionParams.startAyah &&
-          day.memorizationTask.endAyah === sessionParams.endAyah
-        );
-        if (!matchingDay?.memorizationTask) return plan;
-
-        didUpdateAnyPlan = true;
-        return PlanLifecycle.updateTask(plan, matchingDay.id, {
-          status: ((matchingDay.minorRevisionTask && !matchingDay.minorRevisionTask.completed) ||
-            (matchingDay.majorRevisionTask && !matchingDay.majorRevisionTask.completed))
-            ? 'partially_completed' : 'completed',
-          memorizationTask: {
-            ...matchingDay.memorizationTask,
-            completed: true,
-            completedAt: completedTimestamp,
-            completedDate: completedDateStr
-          }
-        }, completedDateStr);
+      const matchingTask = findMatchingDueEnginePlanTask(currentEnginePlans, completedDateStr, {
+        surahNumber: sessionParams.surahNumber,
+        startAyah: sessionParams.startAyah,
+        endAyah: sessionParams.endAyah,
+        enginePlanId: sessionParams.enginePlanId,
+        enginePlanDate: sessionParams.enginePlanDate
       });
 
-      if (didUpdateAnyPlan) {
-        updatedEnginePlans = mappedPlans;
+      if (matchingTask) {
+        updatedEnginePlans = currentEnginePlans.map(plan => {
+          if (plan.id !== matchingTask.plan.id) return plan;
+          return PlanLifecycle.updateTask(plan, matchingTask.day.id, {
+            status: ((matchingTask.day.minorRevisionTask && !matchingTask.day.minorRevisionTask.completed) ||
+              (matchingTask.day.majorRevisionTask && !matchingTask.day.majorRevisionTask.completed))
+              ? 'partially_completed' : 'completed',
+            memorizationTask: {
+              ...matchingTask.task,
+              completed: true,
+              completedAt: completedTimestamp,
+              completedDate: completedDateStr
+            }
+          }, completedDateStr);
+        });
       }
     }
 
