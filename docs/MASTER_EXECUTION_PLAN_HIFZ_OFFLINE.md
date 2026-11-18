@@ -159,3 +159,13 @@ Fix all failures in coherent batches and rerun affected checks plus the full sui
 - Current execution branch is 60+ commits ahead of main and 0 behind at last compare. No merge or production deployment has occurred.
 - Full tests have intentionally NOT been run yet, per the agreed batch workflow; implementation/reconciliation continues first.
 - Remaining Phase 1 review items: inspect all changed-file imports and dependency assumptions; ensure no unused or disconnected offline UI paths; confirm exact current PR security advisory status; review PWA and data recovery boundaries. Then proceed through the remaining planned implementation phases before the full test matrix.
+
+### Phase 1/2/3 integration addendum — 2026-11-18
+
+- Individual plan-detail launches now pass the active plan ID and exact scheduled date through `PlanningEngineWizard` → `MemorizationPlansView` → `App`, in addition to dashboard and quick-start launches.
+- Completion matching now fails closed if an old session has an ambiguous duplicate ayah range or a repeated range without its scheduled date. It will not guess and mark another plan's task complete.
+- The facing Mushaf now mounts the full opposite-page Tafsir view on either side. Each side has Quran/Tafsir selectors; only one visible side is Tafsir at a time; preferences are local per reader surface and keyed by source page. Navigation from Tafsir resolves the actual printed page before restoring the Tafsir side.
+- The single-ayah Tafsir pane now checks the complete pinned local Muyassar corpus before making a network request.
+- Package manifest and Bun lock were reconciled with the current declared overrides; Vite/Tailwind build tooling was moved to devDependencies (not runtime). This addresses the prior stale lock resolution for esbuild and the declared gRPC override.
+- Draft PR opened for continuous CI: https://github.com/xm8eslam-stack/WIRD-APP/pull/391. It targets current main and remains unmerged.
+- The GitHub-reviewed high-severity picomatch advisory still has no official patched release in the upstream package at last check. The advisory is disputed by the upstream maintainer, but it remains present in the full audit; do not suppress or waive it. Keep production merge blocked until official remediation or explicit release decision.
