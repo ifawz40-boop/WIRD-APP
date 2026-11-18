@@ -6,6 +6,7 @@ import { GoogleGenAI } from '@google/genai';
 import tafsirHandler from './api/tafsir';
 import ruqyahHandler from './api/ruqyah';
 import quranAudioHandler from './api/quran-audio';
+import quranAudioDownloadHandler from './api/quran-audio-download';
 import hadithReferencesHandler from './api/hadith-references';
 
 dotenv.config();
@@ -37,6 +38,11 @@ app.all('/api/ruqyah', (req: Request, res: Response) => {
 // Read-only catalog proxy for Al Furqan's verified Quran reciter directory.
 app.all('/api/quran-audio', (req: Request, res: Response) => {
   void quranAudioHandler(req, res);
+});
+
+// Same-origin binary relay used by the resumable offline audio downloader.
+app.all('/api/quran-audio-download', (req: Request, res: Response) => {
+  void quranAudioDownloadHandler(req, res);
 });
 
 // In-memory rate limiter for Gemini Free Tier (15 requests/minute)
