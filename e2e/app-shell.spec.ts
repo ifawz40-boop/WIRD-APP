@@ -125,7 +125,13 @@ test('dashboard displays due memorization tasks from all active plans and preser
   await expect(dueSection).toContainText('03 خطة ثالثة');
   await expect(dueSection.getByRole('button', { name: 'ابدأ' })).toHaveCount(2);
 
-  const secondPlanCard = dueSection.locator('div.grid > div').filter({ hasText: '02 خطة ثانية' });
+  const headerDailySession = page.getByRole('button', { name: 'جلسة اليوم' });
+  await expect(headerDailySession).toBeVisible();
+  await headerDailySession.click();
+  await expect(page).toHaveURL(new RegExp(`plan=plan-a.*planDate=${today}`));
+
+  await page.goto('/#/dashboard');
+  const secondPlanCard = page.locator('section[aria-labelledby="dashboard-multi-plan-due-title"] div.grid > div').filter({ hasText: '02 خطة ثانية' });
   await secondPlanCard.getByRole('button', { name: 'ابدأ' }).click();
   await expect(page).toHaveURL(new RegExp(`plan=plan-b.*planDate=${today}`));
 });
