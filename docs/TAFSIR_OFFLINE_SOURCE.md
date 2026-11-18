@@ -57,6 +57,7 @@ WIRD stores the raw payload without editing translation or footnote fields, disp
 - `src/services/tafsirOfflineLibrary.ts`
 - `src/components/library/TafsirOfflineDownloadPanel.tsx`
 - `src/components/library/TafsirMushafPage.tsx`
+- `src/components/library/PrintedMushafSpread.tsx`
 - `src/components/library/QuranMushafReader.tsx`
 - `e2e/wird-navigation-tafsir.spec.ts`
 
