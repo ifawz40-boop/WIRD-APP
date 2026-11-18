@@ -161,3 +161,15 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - #359 overlaps #363 at `docs/offline/OFFLINE_AUDIO_DOWNLOAD_PLAN.md`; preserve the #363 unified plan and reconcile any useful #359 detail explicitly.
 - Legacy #2 overlaps #363 at `docs/DEVELOPMENT_CHECKPOINT.md` and `docs/engineering/FIRESTORE_SYNC_DESIGN.md`; do not merge #2 wholesale.
 - #373, #372, #371, #370, #369, #368, #367, #366, #365, #364 and #358 have no changed-path overlap with the current #363 changed-file list. This is a path snapshot only; re-fetch before action.
+
+
+## Master completion execution — 2026-11-18
+
+- Owner instruction: execute in large coherent phases without waiting for test jobs after every small change; complete implementation/integration first, then run the full matrix, fix failures, rerun, and release only after gates pass.
+- Persistent master plan: `docs/MASTER_EXECUTION_PLAN_HIFZ_OFFLINE.md`.
+- Execution branch: `release/wird-completion-20261118`, created from `main` SHA `026a86bc5e26d8f27cafadbf1ddce3b155fe00d6`.
+- Existing offline candidate PR #390 is diverged (291 commits ahead, 2 behind; merge base `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`). It must be reconciled file-by-file; do not merge blindly or overwrite UX changes.
+- Historical candidate tests are not exact-head proof. Latest observed attempt had a full dependency audit failure for dev-only `picomatch@4.0.7` (GHSA-fc5q-39xc-vjpf / CVE-2026-112366) and application tests cancelled before execution. No suppression or unreviewed patch is permitted.
+- Physical-device cold restart + airplane-mode acceptance remains outstanding.
+- No application source changes, merge, or deployment have been made in this kickoff. Latest plan commit: `6e69a64d5158737b0d038d46674463f16401a1fd`.
+- Next: refresh PR #390 exact head and CI state, inspect all changed files and reconcile current main with offline/hifz work surgically.
