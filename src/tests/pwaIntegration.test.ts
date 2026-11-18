@@ -48,8 +48,9 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(fs.existsSync(swPath), 'sw.js must exist in /public');
 
     const swContent = fs.readFileSync(swPath, 'utf8');
-    assert(swContent.includes("CACHE_NAME = 'wird-app-v3'"), 'SW must declare the upgraded shell cache version');
+    assert(swContent.includes("CACHE_NAME = 'wird-app-v4'"), 'SW must declare the upgraded shell cache version');
     assert(swContent.includes("AUDIO_CACHE_NAME = 'wird-app-audio-v1'"), 'Session audio must use a separate persistent cache');
+    assert(swContent.includes("CONTENT_CACHE_NAME = 'wird-app-content-v1'") && swContent.includes('name !== CONTENT_CACHE_NAME'), 'The explicit offline package cache must survive shell cache version upgrades');
     assert(swContent.includes("MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-v1'"), 'Printed Mushaf pages must use a dedicated cache');
     assert(swContent.includes("url.hostname === 'raw.githubusercontent.com'"), 'Only the pinned Quran.ws Mushaf asset host may enter the page cache');
     assert(swContent.includes("url.protocol === 'https:'"), 'Mushaf page cache must reject insecure HTTP');
