@@ -287,6 +287,74 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     expect(new Set(requestedSurahs).size).toBe(114);
   });
 
+  test('completed offline Tafsir can recheck source version without redownloading stored surahs', async ({ page }) => {
+    let catalogueRequests = 0;
+    let surahRequests = 0;
+    await page.route(/^https:\/\/quranenc\\.com\/api\/v1\/translations\/list\/ar\/?(?:\\?.*)?$/, async route => {
+      catalogueRequests++;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify({ translations: [{ key: 'arabic_moyassar', version: '1.0.1', last_update: 1794182400 }] })
+      });
+    });
+    await page.route('https://quranenc.com/api/v1/translation/sura/arabic_moyassar/**', async route => {
+      surahRequests++;
+      await route.abort();
+    });
+
+    await page.evaluate(async (verseCounts) => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('wird-offline-tafsir', 1);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains('surahs')) db.createObjectStore('surahs', { keyPath: 'surahNumber' });
+          if (!db.objectStoreNames.contains('metadata')) db.createObjectStore('metadata', { keyPath: 'key' });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      await new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction(['surahs', 'metadata'], 'readwrite');
+        const surahs = transaction.objectStore('surahs');
+        verseCounts.forEach((count, index) => {
+          const surahNumber = index + 1;
+          const payload = Array.from({ length: count }, (_, verseIndex) => ({
+            sura: surahNumber,
+            aya: verseIndex + 1,
+            translation: `تفسير محفوظ محليًا ${surahNumber}:${verseIndex + 1}`,
+            footnotes: []
+          }));
+          surahs.put({ surahNumber, sourceVersion: '1.0.1', savedAt: new Date().toISOString(), payload });
+        });
+        transaction.objectStore('metadata').put({
+          key: 'manifest', sourceVersion: '1.0.1', downloadedSurahs: verseCounts.map((_, index) => index + 1),
+          status: 'complete', updatedAt: new Date().toISOString()
+        });
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+        transaction.onabort = () => reject(transaction.error);
+      });
+      database.close();
+    }, []);
+
+    await page.getByRole('button', { name: /^(القرآن|القرآن والمصحف)$/ }).click();
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة', exact: true }).click();
+    await page.getByRole('button', { name: 'صفحتان متقابلتان' }).click();
+    await page.getByRole('group', { name: 'محتوى الصفحة اليسرى' }).getByRole('button', { name: 'التفسير الميسر' }).click();
+
+    const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
+    await expect(downloadPanel).toContainText('114 / 114 سورة');
+    const recheckButton = downloadPanel.getByRole('button', { name: 'التحقق من تحديث المصدر' });
+    await recheckButton.click();
+    await expect(recheckButton).toBeEnabled({ timeout: 30_000 });
+    expect(catalogueRequests).toBe(1);
+    expect(surahRequests).toBe(0);
+    await expect(downloadPanel).toContainText('اكتمل تنزيل التفسير الميسر');
+  });
+
   test('corrupted persisted surah is not counted as downloaded and is fetched again on resume', async ({ page }) => {
     const requestedSurahs: number[] = [];
     await mockQuranEncVersion(page);
