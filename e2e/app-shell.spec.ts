@@ -127,7 +127,7 @@ test('dashboard displays due memorization tasks from all active plans and preser
 
   const secondPlanCard = dueSection.locator('div.grid > div').filter({ hasText: '02 خطة ثانية' });
   await secondPlanCard.getByRole('button', { name: 'ابدأ' }).click();
-  await expect(page).toHaveURL(/#\\/session\\?.*plan=plan-b/);
+  await expect(page).toHaveURL(/#\/session\?.*plan=plan-b/);
 });
 
 test('tablet portrait keeps compact navigation and opens the full section drawer', async ({ page }) => {
