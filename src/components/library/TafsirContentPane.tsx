@@ -20,6 +20,7 @@ import type { Ayah } from '../../types/quran';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { getAyahDisplayText, loadSurahVerses } from '../../data/quranDataLoader';
 import { getTafsir, TAFSIR_EDITIONS } from '../../services/tafsirService';
+import { getOfflineTafsirForAyah, OFFLINE_TAFSIR_SOURCE } from '../../services/tafsirOfflineLibrary';
 import { parseTafsirToSegments, sanitizeTafsirToPlainText } from '../../utils/tafsirSanitizer';
 import type { MushafTafsirDesktopLayout } from '../../services/mushafSpreadService';
 import { RelatedHadithPanel } from '../shared/RelatedHadithPanel';
@@ -166,9 +167,26 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         setCurrentAuthor(result.author || '');
         setIsCached(result.source === 'cache');
       })
-      .catch(reason => {
+      .catch(async reason => {
+        if (controller.signal.aborted) return;
+        // Offline fallback is deliberately limited to the pinned Tafsir Muyassar edition.
+        if (selectedBookId === 16) {
+          try {
+            const offlineRow = await getOfflineTafsirForAyah(ayah.surahNumber, ayah.numberInSurah);
+            if (!controller.signal.aborted && offlineRow?.translation?.trim()) {
+              setRawText(offlineRow.translation);
+              setCurrentBookName('التفسير الميسر — نسخة محلية');
+              setCurrentAuthor(OFFLINE_TAFSIR_SOURCE.publisher);
+              setIsCached(true);
+              setError(null);
+              return;
+            }
+          } catch (offlineError) {
+            console.warn('[WIRD Tafsir] Local Tafsir fallback unavailable:', offlineError);
+          }
+        }
         if (!controller.signal.aborted) {
-          setError(reason?.message || 'تعذر تحميل التفسير من المصدر.');
+          setError(reason?.message || 'تعذر تحميل التفسير من المصدر، ولم تتوفر نسخة محلية لهذه الآية.');
         }
       })
       .finally(() => {
@@ -514,9 +532,9 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
 
         {/* Footer */}
         <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
-          <span>{isCached ? 'محفوظ محلياً للرجوع إليه دون إنترنت' : 'تم الجلب مباشرة من Quran.com API v4'}</span>
+          <span>{currentBookName.includes('نسخة محلية') ? 'من نسخة التفسير الميسر المحفوظة على هذا الجهاز' : isCached ? 'محفوظ محلياً للرجوع إليه دون إنترنت' : 'تم الجلب مباشرة من Quran.com API v4'}</span>
           <a
-            href="https://quran.com/ar/developers"
+            href={currentBookName.includes('نسخة محلية') ? "https://quranenc.com/ar/browse/arabic_moyassar/" : "https://quran.com/ar/developers"}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 font-semibold text-[#1C4E46] dark:text-[#E0A96D] hover:underline"
