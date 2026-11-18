@@ -26,9 +26,9 @@
    - These new tests are **NOT YET VERIFIED**; no exact-head GitHub Actions run has been observed for the new commits. The latest Vercel status is blocked by the account build/deployment rate limit, not an application build result.
 2. Still add audio close/recreate recovery coverage: interrupt an in-flight job, create a new library instance against the same IndexedDB + Cache Storage, reconcile, and prove verified files survive while unfinished items resume exactly once.
 3. Re-run Quality Gate on the final exact branch head after these additions. Keep production-only audit and complete dependency audit separate and visible.
-3. Physical Android/iOS/Safari cold-restart + airplane-mode acceptance remains mandatory; Playwright is not a substitute.
-4. Offline-only production boundary is not currently confirmed: the last read-only Vercel inspection reported `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` on Production. Do not change either without explicit owner approval; verify both are false before any offline-only Production release.
-5. Keep the PR Draft/HOLD until the full security gate has an evidence-based resolution or the owner explicitly authorizes a documented risk exception. No such exception is currently authorized.
+4. Physical Android/iOS/Safari cold-restart + airplane-mode acceptance remains mandatory; Playwright is not a substitute.
+5. Offline-only production boundary is not currently confirmed: the last read-only Vercel inspection reported `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` on Production. Do not change either without explicit owner approval; verify both are false before any offline-only Production release.
+6. Keep the PR Draft/HOLD until the full security gate has an evidence-based resolution or the owner explicitly authorizes a documented risk exception. No such exception is currently authorized.
 
 ## Confirmed additional integrity findings already addressed
 
