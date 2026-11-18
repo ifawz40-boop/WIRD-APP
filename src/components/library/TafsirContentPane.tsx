@@ -532,7 +532,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
 
         {/* Footer */}
         <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
-          <span>{currentBookName.includes('نسخة محلية') ? 'من نسخة التفسير الميسر المحفوظة على هذا الجهاز' : isCached ? 'محفوظ محلياً للرجوع إليه دون إنترنت' : 'تم الجلب مباشرة من Quran.com API v4'}</span>
+          <span>{currentBookName.includes('نسخة محلية') ? `نسخة التفسير الميسر المحلية · QuranEnc.com · الإصدار ${OFFLINE_TAFSIR_SOURCE.version}` : isCached ? 'محفوظ محلياً للرجوع إليه دون إنترنت' : 'تم الجلب مباشرة من Quran.com API v4'}</span>
           <a
             href={currentBookName.includes('نسخة محلية') ? "https://quranenc.com/ar/browse/arabic_moyassar/" : "https://quran.com/ar/developers"}
             target="_blank"
