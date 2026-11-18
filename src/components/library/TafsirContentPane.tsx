@@ -159,42 +159,43 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
     setIsCached(false);
     setIsLoading(true);
 
-    getTafsir(ayah.surahNumber, ayah.numberInSurah, selectedBookId, controller.signal)
-      .then(result => {
+    const loadTafsir = async () => {
+      try {
+        // Prefer the complete pinned local corpus before making any network request.
+        if (selectedBookId === 16) {
+          try {
+            const offlineStatus = await getOfflineTafsirDownloadStatus();
+            if (offlineStatus.isComplete) {
+              const offlineRow = await getOfflineTafsirForAyah(ayah.surahNumber, ayah.numberInSurah);
+              if (!controller.signal.aborted && offlineRow?.translation?.trim()) {
+                setRawText(offlineRow.translation);
+                setCurrentBookName('التفسير الميسر — نسخة محلية');
+                setCurrentAuthor(OFFLINE_TAFSIR_SOURCE.publisher);
+                setIsCached(true);
+                return;
+              }
+            }
+          } catch (offlineError) {
+            console.warn('[WIRD Tafsir] Local Tafsir lookup unavailable; trying the selected online edition:', offlineError);
+          }
+        }
+
+        const result = await getTafsir(ayah.surahNumber, ayah.numberInSurah, selectedBookId, controller.signal);
         if (controller.signal.aborted) return;
         setRawText(result.text);
         setCurrentBookName(result.bookName);
         setCurrentAuthor(result.author || '');
         setIsCached(result.source === 'cache');
-      })
-      .catch(async reason => {
-        if (controller.signal.aborted) return;
-        // Offline fallback is deliberately limited to the pinned Tafsir Muyassar edition.
-        if (selectedBookId === 16) {
-          try {
-            const offlineStatus = await getOfflineTafsirDownloadStatus();
-            if (!offlineStatus.isComplete) throw new Error('حزمة التفسير الميسر المحلية لم تكتمل بعد.');
-            const offlineRow = await getOfflineTafsirForAyah(ayah.surahNumber, ayah.numberInSurah);
-            if (!controller.signal.aborted && offlineRow?.translation?.trim()) {
-              setRawText(offlineRow.translation);
-              setCurrentBookName('التفسير الميسر — نسخة محلية');
-              setCurrentAuthor(OFFLINE_TAFSIR_SOURCE.publisher);
-              setIsCached(true);
-              setError(null);
-              return;
-            }
-          } catch (offlineError) {
-            console.warn('[WIRD Tafsir] Local Tafsir fallback unavailable:', offlineError);
-          }
-        }
+      } catch (reason: any) {
         if (!controller.signal.aborted) {
           setError(reason?.message || 'تعذر تحميل التفسير من المصدر، ولم تتوفر نسخة محلية لهذه الآية.');
         }
-      })
-      .finally(() => {
+      } finally {
         if (!controller.signal.aborted) setIsLoading(false);
-      });
+      }
+    };
 
+    void loadTafsir();
     return () => controller.abort();
   }, [ayah.surahNumber, ayah.numberInSurah, selectedBookId, retry]);
 
