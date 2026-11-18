@@ -36,6 +36,7 @@ import {
 } from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
 import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import {
   DESKTOP_SPREAD_BREAKPOINT_PX,
   getSavedMushafSpreadMode,
@@ -197,9 +198,18 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   }).current;
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
+  const playbackRequestSeqRef = useRef(0);
+  const activeObjectUrlRevokersRef = useRef(new Set<() => void>());
   const autoPlayNextPageRef = useRef(false);
   const pendingTargetRef = useRef<{ surahNumber: number; ayahNumber: number } | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const revokeAllActiveAudioUrls = () => {
+    for (const revoke of activeObjectUrlRevokersRef.current) {
+      try { revoke(); } catch { /* Ignore stale object URL cleanup. */ }
+    }
+    activeObjectUrlRevokersRef.current.clear();
+  };
+
 
   const pageSegments = useMemo(() => PAGE_INDEX[String(page)] || [], [page]);
 
@@ -272,8 +282,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   }, [page, audioAyahs.length]);
 
   const stopAudio = () => {
+    playbackRequestSeqRef.current += 1;
     audioQueueRef.current?.stop();
     audioQueueRef.current = null;
+    revokeAllActiveAudioUrls();
     globalAudioCoordinator.releaseFocus('mushaf');
     setIsPlaying(false);
     setIsAudioPaused(false);
@@ -295,10 +307,12 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       unregCoordinator();
       audioQueueRef.current?.stop();
       audioQueueRef.current = null;
+      playbackRequestSeqRef.current += 1;
+      revokeAllActiveAudioUrls();
     };
   }, []);
 
-  const startAudioQueue = (
+  const startAudioQueue = async (
     queue: Ayah[],
     startIndex: number,
     endIndex: number,
@@ -308,11 +322,23 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   ) => {
     if (!queue.length || startIndex < 0 || endIndex < startIndex || endIndex >= queue.length) return;
     stopAudio();
+    const requestSeq = ++playbackRequestSeqRef.current;
     globalAudioCoordinator.claimFocus('mushaf');
-    const tracks = queue.map(ayah => ({
-      id: String(ayah.number),
-      url: getLicensedAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter).url
+    const resolvedTracks = await Promise.all(queue.map(async ayah => {
+      const descriptor = getLicensedAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter);
+      const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+        descriptor.approvedReciterId,
+        descriptor.globalAyahNumber,
+        descriptor.url
+      );
+      return { track: { id: String(ayah.number), url: resolved.src }, revoke: resolved.revoke };
     }));
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      resolvedTracks.forEach(item => item.revoke?.());
+      return;
+    }
+    resolvedTracks.forEach(item => { if (item.revoke) activeObjectUrlRevokersRef.current.add(item.revoke); });
+    const tracks = resolvedTracks.map(item => item.track);
     const cacheUpcoming = (index: number) => {
       requestOfflineAudioCache(tracks.slice(index, Math.min(endIndex + 1, index + 20)).map(track => track.url));
     };
@@ -337,6 +363,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsAudioPaused(false);
         setPlayingIndex(null);
         setSegmentPlaybackStatus(null);
+        revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('mushaf');
         if (continueAcrossPages && page < 604) {
           autoPlayNextPageRef.current = true;
           // Keep the next-page effect from seeing the previous page's ayahs
@@ -353,6 +381,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setIsAudioPaused(false);
         setPlayingIndex(null);
         setSegmentPlaybackStatus(null);
+        revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('mushaf');
       }
     });
     audioQueueRef.current = controller;
@@ -375,6 +405,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setIsAudioPaused(false);
       setPlayingIndex(null);
       setSegmentPlaybackStatus(null);
+      revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('mushaf');
       console.warn('[WIRD Mushaf] Could not start Quran audio queue:', error);
     }
   };
@@ -385,7 +417,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
       setPlayingIndex(null);
       return;
     }
-    startAudioQueue(queue, index, queue.length - 1, 1, true, normalizeAyahSegmentRepeatCount(perAyahRepeatCount));
+    void startAudioQueue(queue, index, queue.length - 1, 1, true, normalizeAyahSegmentRepeatCount(perAyahRepeatCount));
   };
 
   useEffect(() => {
