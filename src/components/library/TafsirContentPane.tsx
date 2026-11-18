@@ -20,7 +20,7 @@ import type { Ayah } from '../../types/quran';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { getAyahDisplayText, loadSurahVerses } from '../../data/quranDataLoader';
 import { getTafsir, TAFSIR_EDITIONS } from '../../services/tafsirService';
-import { getOfflineTafsirForAyah, OFFLINE_TAFSIR_SOURCE } from '../../services/tafsirOfflineLibrary';
+import { getOfflineTafsirDownloadStatus, getOfflineTafsirForAyah, OFFLINE_TAFSIR_SOURCE } from '../../services/tafsirOfflineLibrary';
 import { parseTafsirToSegments, sanitizeTafsirToPlainText } from '../../utils/tafsirSanitizer';
 import type { MushafTafsirDesktopLayout } from '../../services/mushafSpreadService';
 import { RelatedHadithPanel } from '../shared/RelatedHadithPanel';
@@ -172,6 +172,8 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         // Offline fallback is deliberately limited to the pinned Tafsir Muyassar edition.
         if (selectedBookId === 16) {
           try {
+            const offlineStatus = await getOfflineTafsirDownloadStatus();
+            if (!offlineStatus.isComplete) throw new Error('حزمة التفسير الميسر المحلية لم تكتمل بعد.');
             const offlineRow = await getOfflineTafsirForAyah(ayah.surahNumber, ayah.numberInSurah);
             if (!controller.signal.aborted && offlineRow?.translation?.trim()) {
               setRawText(offlineRow.translation);
