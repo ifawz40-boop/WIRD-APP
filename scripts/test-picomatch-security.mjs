@@ -7,7 +7,7 @@ const unsafe = ["+(a*b)","*(a*|b)","+(ab|abab)","+(a|aa)","+(+(a))","*(!(foo))"]
 const advisoryPatterns = ["+(*)","+(*a)","+(a*)","*(*a)"];
 for (const pattern of advisoryPatterns) {
   const regex = picomatch.makeRe(pattern);
-  assert.doesNotMatch(regex.source, /\\)\\+/,
+  assert.doesNotMatch(regex.source, /\)\+/,
     `single-branch repeated wildcard must be reduced to one linear wildcard: ${pattern}`);
 }
 for (const pattern of unsafe) {
