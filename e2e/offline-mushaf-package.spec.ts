@@ -90,4 +90,72 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     await expect(page.locator('#wird-ayah-1-1')).toBeVisible();
     expect(requestCounts.get(1)).toBe(1);
   });
+
+  test('revalidates a complete Mushaf cache and repairs a malformed page, including offline verification', async ({ page, context }) => {
+    test.setTimeout(120_000);
+    const validSvg = makeValidTestPageSvg();
+    const invalidSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g></g></svg>';
+    const pageUrls = Array.from({ length: 604 }, (_, index) =>
+      `https://raw.githubusercontent.com/quran-ws/quran-svg/3ff27b46cecb0c0519d77531d9c868a579d1f623/mushafs/hafs/kfqc/svg/${String(index + 1).padStart(3, '0')}.svg`
+    );
+    await page.evaluate(async ({ cacheName, urls, valid, invalid }) => {
+      const cache = await caches.open(cacheName);
+      for (const url of urls) {
+        await cache.put(url, new Response(url.endsWith('/004.svg') ? invalid : valid, {
+          status: 200,
+          headers: { 'content-type': 'image/svg+xml; charset=utf-8' }
+        }));
+      }
+      Object.defineProperty(navigator.storage, 'estimate', {
+        configurable: true,
+        value: async () => ({ usage: 0, quota: 1024 * 1024 * 1024 })
+      });
+    }, { cacheName: MUSHAF_OFFLINE_CACHE_NAME, urls: pageUrls, valid: validSvg, invalid: invalidSvg });
+
+    const requestCounts = new Map<number, number>();
+    await page.route(MUSHAF_SVG_PATTERN, async route => {
+      const pageNumber = Number(new URL(route.request().url()).pathname.split('/').pop()?.replace('.svg', ''));
+      requestCounts.set(pageNumber, (requestCounts.get(pageNumber) || 0) + 1);
+      await route.fulfill({
+        status: 200,
+        contentType: 'image/svg+xml; charset=utf-8',
+        headers: { 'access-control-allow-origin': '*' },
+        body: validSvg
+      });
+    });
+
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      const quickNavigation = page.getByRole('navigation', { name: 'التنقل السريع' });
+      await quickNavigation.getByRole('button', { name: 'المزيد من الأقسام' }).click();
+      await page.getByRole('navigation', { name: 'القائمة الرئيسية' }).getByRole('button', { name: 'الإعدادات' }).click();
+    } else {
+      await page.getByRole('button', { name: 'الإعدادات', exact: true }).click();
+    }
+
+    const offlinePackage = page.getByRole('heading', { name: 'المصحف المصوّر كاملًا دون إنترنت' }).locator('xpath=../..');
+    await expect(offlinePackage).toContainText('604 / 604 صفحة محفوظة');
+    const verifyButton = offlinePackage.getByRole('button', { name: 'إعادة التحقق من صفحات المصحف' });
+    await expect(verifyButton).toBeEnabled();
+    await verifyButton.click();
+    await expect(verifyButton).toBeDisabled();
+    await expect(verifyButton).toBeEnabled({ timeout: 90_000 });
+    expect(requestCounts.get(4)).toBe(1);
+
+    await context.setOffline(true);
+    await expect.poll(() => page.evaluate(() => navigator.onLine)).toBe(false);
+    await expect(verifyButton).toBeEnabled();
+    await verifyButton.click();
+    await expect(verifyButton).toBeDisabled();
+    await expect(verifyButton).toBeEnabled({ timeout: 90_000 });
+    expect(requestCounts.get(4)).toBe(1);
+
+    const repairedSvg = await page.evaluate(async ({ cacheName, url }) => {
+      const cache = await caches.open(cacheName);
+      return (await cache.match(url))?.text() || '';
+    }, { cacheName: MUSHAF_OFFLINE_CACHE_NAME, url: pageUrls[3] });
+    expect(repairedSvg).toContain('ayahPolygon');
+    expect(repairedSvg).not.toContain('onload=');
+    await context.setOffline(false);
+  });
+
 });
