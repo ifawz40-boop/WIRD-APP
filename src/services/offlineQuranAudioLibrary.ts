@@ -1144,7 +1144,7 @@ export class OfflineQuranAudioLibrary {
           const response = await this.fetchFn!(downloadUrl, {
             method: 'GET',
             redirect: 'error',
-            credentials: 'omit',
+            credentials: 'same-origin',
             cache: 'no-store',
             signal: controller.signal
           });
