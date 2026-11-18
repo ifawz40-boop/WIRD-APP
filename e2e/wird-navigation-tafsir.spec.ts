@@ -353,11 +353,13 @@ test.describe('WIRD navigation and memorization tafsir UX', () => {
     await expect(leftContent.getByRole('button', { name: 'التفسير الميسر' })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('main', { name: 'صفحتا المصحف 1 و2' })).toBeVisible();
 
-    const downloadPanel = page.getByRole('region', { name: 'تجهيز التفسير الميسر دون إنترنت' });
-    await expect(downloadPanel).toBeVisible();
-    await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible();
+    // The Tafsir pane resolves its IndexedDB read asynchronously after the tab is selected.
+    // Wait for the completed-state action rather than racing the initial loading placeholder.
+    const recheckButton = page.getByRole('button', { name: 'التحقق من تحديث المصدر' });
+    await expect(recheckButton).toBeVisible({ timeout: 30_000 });
+    const downloadPanel = page.locator('section[aria-label="تجهيز التفسير الميسر دون إنترنت"]');
     await expect(downloadPanel).toContainText('114 / 114 سورة');
-    const recheckButton = downloadPanel.getByRole('button', { name: 'التحقق من تحديث المصدر' });
+    await expect(page.getByText('التفسير متاح محليًا دون اتصال.')).toBeVisible();
     await recheckButton.click();
     await expect(downloadPanel.getByRole('button', { name: 'جارٍ التحقق من إصدار المصدر...' })).toBeVisible();
     await expect(recheckButton).toBeEnabled({ timeout: 30_000 });
