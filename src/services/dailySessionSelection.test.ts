@@ -244,6 +244,10 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     assert(exact?.plan.id === 'plan-b', 'The originating plan ID must win when ranges are duplicated');
     const missing = findMatchingDueEnginePlanTask([first, second], '2026-11-05', { ...target, enginePlanId: 'missing' });
     assert(missing === null, 'Unknown plan IDs must not fall through and update another plan');
+    const ambiguous = findMatchingDueEnginePlanTask([first, second], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5
+    });
+    assert(ambiguous === null, 'Legacy sessions with duplicate ranges must fail closed rather than guess a plan');
   });
 
   test('Session completion resolves repeated ranges to the exact originating schedule date', () => {
