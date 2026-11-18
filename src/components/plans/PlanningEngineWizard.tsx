@@ -40,7 +40,7 @@ import { getLocalDateString } from '../../services/unifiedPortionService';
 interface PlanningEngineWizardProps {
   enginePlans: EngineGeneratedPlan[];
   onUpdateEnginePlans: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
-  onStartSession: (surahNumber: number, startAyah: number, endAyah: number) => void;
+  onStartSession: (surahNumber: number, startAyah: number, endAyah: number, enginePlanId?: string, enginePlanDate?: string) => void;
   onOpenAdvisor?: () => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
@@ -1554,7 +1554,9 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                               onStartSession(
                                 day.memorizationTask!.surahNumber,
                                 day.memorizationTask!.startAyah,
-                                day.memorizationTask!.endAyah
+                                day.memorizationTask!.endAyah,
+                                activePlan.id,
+                                day.date
                               )
                             }
                             className="wird-btn-primary min-h-11 flex items-center gap-1.5 px-4 py-2 text-xs whitespace-nowrap"
