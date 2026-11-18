@@ -1137,7 +1137,11 @@ export class OfflineQuranAudioLibrary {
         const controller = new AbortController();
         controllers.add(controller);
         try {
-          const response = await this.fetchFn!(item.url, {
+          // Read audio through WIRD's same-origin relay. The upstream CDN is suitable for
+          // <audio> streaming, but browser fetch() may be blocked when CORS headers are absent.
+          const downloadUrl = '/api/quran-audio-download?reciter=' +
+            encodeURIComponent(item.reciterId) + '&ayah=' + String(item.globalAyahNumber);
+          const response = await this.fetchFn!(downloadUrl, {
             method: 'GET',
             redirect: 'error',
             credentials: 'omit',
