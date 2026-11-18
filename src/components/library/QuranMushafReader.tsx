@@ -21,7 +21,7 @@ import { QURAN_PAGE_INDEX } from '../../data/quranPageIndex.generated';
 import { QURAN_JUZ_STARTS, QURAN_HIZB_QUARTER_STARTS } from '../../data/quranNavigationIndex.generated';
 import { loadSurahVerses } from '../../data/quranDataLoader';
 import { findSurahStartPage } from '../../data/quranNavigation';
-import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
+import { RECITERS, getLicensedAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
@@ -48,6 +48,7 @@ import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { TafsirSheet } from './TafsirSheet';
 import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
+import { AyahNavigationControls } from '../shared/AyahNavigationControls';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
 import { PrintedMushafSpread } from './PrintedMushafSpread';
@@ -187,7 +188,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const [showHizbPicker, setShowHizbPicker] = useState(false);
   const [printedAyahsByPage, setPrintedAyahsByPage] = useState<Record<number, Ayah[]>>({});
   const audioAyahs = readerLayout === 'printed'
-    ? (printedAyahsByPage[page] || [])
+    ? isTwoPageSpreadActive
+      ? [...(printedAyahsByPage[page] || []), ...(printedAyahsByPage[page + 1] || [])]
+      : (printedAyahsByPage[page] || [])
     : ayahs;
   const handlePrintedPageResolved = useRef((resolved: { page: number; ayahs: Ayah[] }) => {
     setPrintedAyahsByPage(prev => ({ ...prev, [resolved.page]: resolved.ayahs }));
@@ -308,7 +311,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     globalAudioCoordinator.claimFocus('mushaf');
     const tracks = queue.map(ayah => ({
       id: String(ayah.number),
-      url: formatAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter)
+      url: getLicensedAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter).url
     }));
     const cacheUpcoming = (index: number) => {
       requestOfflineAudioCache(tracks.slice(index, Math.min(endIndex + 1, index + 20)).map(track => track.url));
@@ -464,6 +467,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const jumpToHizbQuarter = (quarter: number) => {
     const point = HIZB_INDEX[String(quarter)];
     if (point) jumpToNavigationPoint(point);
+  };
+
+  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number) => {
+    const targetPage = Object.entries(PAGE_INDEX).find(([, segments]) =>
+      segments.some(segment => segment.surahNumber === surahNumber && ayahNumber >= segment.startAyah && ayahNumber <= segment.endAyah)
+    );
+    if (!targetPage) return;
+    jumpToNavigationPoint({ surahNumber, ayahNumber, page: Number(targetPage[0]) });
+    setTafsirAyah(null);
   };
 
   const jumpToSurah = (surahNumber: number) => {
@@ -1136,6 +1148,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
           </div>
         </div>
       )}
+
+      {(() => {
+        const navigationAyah = tafsirAyah || audioAyahs[0] || ayahs[0];
+        return navigationAyah ? (
+          <div className="mx-auto mt-3 w-full max-w-4xl">
+            <AyahNavigationControls currentAyah={navigationAyah} onNavigate={handleNavigateToAyah} />
+          </div>
+        ) : null;
+      })()}
 
       {/* Helpful Hint */}
       <div className="text-center text-xs text-[#5B6F6B] dark:text-[#8B9E9B] flex items-center justify-center gap-1.5">
