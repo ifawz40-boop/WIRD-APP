@@ -565,3 +565,9 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Upstream status checked through GitHub repository: fix PR #238 for master and #246 for v2 are still OPEN/unmerged; do not consume unmerged upstream code or invent an override. GitHub-reviewed GHSA remains active and no released fixed version verified. Keep full audit visible and release blocked pending upstream release or explicitly approved risk exception.
 - Current feature PR #390 remains OPEN + Draft. Run #4650 (`44244747430`, SHA `037aeb8...`) had 190 Playwright tests passed, 2 skipped; full verify job was successful. New run #4652 (`44246969500`, SHA `74c6552...`) is rerunning after dependency/workflow changes; its production audit passed, full audit failed for the same advisory, and verify job is still running at Chromium installation at last check.
 - Do not merge, promote, or change production env flags. Production flags remain true pending explicit owner decision; no Vercel values were changed.
+
+
+### Mushaf SVG source/license review — 2026-11-18
+- Inspected the exact pinned upstream `quran-ws/quran-svg` commit `3ff27b46cecb0c0519d77531d9c868a579d1f623`, including its `LICENSE` and `NOTICE.md`.
+- Quran.ws states its own ayah-polygon geometry and page metadata are CC BY 4.0, with attribution waived when used inside an application/product. The underlying Hafs/KFQC Mushaf artwork remains third-party material from the King Fahd Complex; the NOTICE reproduces the Complex's free digital-use terms for software/web/digital publishing. The physical printing-for-commercial-sale restriction does not apply to WIRD's digital app use.
+- This is a source-terms check, not a guarantee of the source's accuracy. PR code independently sanitizes SVG to a strict svg/g/path element allowlist and validates all 604 pages' ayah coordinates against WIRD's local Quran text. Continue to preserve source commit pin and do not republish the artwork/data as a standalone dataset.
