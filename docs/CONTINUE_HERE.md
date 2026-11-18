@@ -544,3 +544,9 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Read-only Vercel environment inspection found `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` on the **production** target (not shown on preview). This conflicts with the offline-only release boundary recorded earlier.
 - No Vercel environment values were changed. Do not toggle either flag without explicit product-owner approval, even though the previous project decision was to keep remote sync/projection disabled until release gates pass.
 - Before any production release, owner must confirm whether these flags should be set to `false` for the offline-only phase. This is a separate production configuration action, not part of the current PR/code changes.
+
+
+### Vercel preview reconciliation — 2026-11-18
+- Read-only Vercel inspection shows the latest READY deployment is preview SHA `6d3c8f41596d7cf80896a2b6a0b57505982831c3` on `feat/offline-mushaf-package-20261117` (deployment `dpl_CRuv1GaQDDsuN5SXWjjaFBzJG9fH`).
+- Current candidate head is `6e28979549d6e0bbaef442b9b409426e99504571`; therefore the available preview is stale by the subsequent test/settings fixes. Do not use it as live verification for the current candidate.
+- No deployment was created or promoted during this continuation.
