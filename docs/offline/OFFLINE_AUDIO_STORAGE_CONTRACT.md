@@ -224,3 +224,66 @@ Targeted isolated Node/tsx sandbox tests now pass:
 - Total: 29/29 PASS.
 
 These are targeted isolated tests, not GitHub Actions or the full repository suite. The exact PR #368 GitHub Actions run still fails before steps/logs. Cross-tab ownership, complete orphan-deletion orchestration, Cache Storage quota UX, reader playback integration, and physical-device recovery remain outstanding.
+
+
+---
+
+## Authoritative source audit — 2026-11-17 (supersedes earlier PR #368 descriptions)
+
+The current `main` source was re-fetched and inspected on 2026-11-17. Earlier text above describing PR #368 as the current audio foundation is historical; it is not an accurate description of the present `main` implementation. The current main branch already contains a more complete, separately evolved offline audio manager and storage pipeline. Do **not** merge PR #368 as a second store or downloader without a specific missing capability and a reviewed migration.
+
+### Verified in current main source
+- Settings UI exposes a local audio download manager and job controls.
+- `offlineQuranAudioLibrary.ts` stores jobs, job items, and canonical file metadata in IndexedDB.
+- Approved reciter/range planning, deduplicated request fingerprints, quota preflight, and a maximum of two download workers are present.
+- Downloaded bytes are stored in a dedicated generation-scoped Cache Storage namespace, read back/verified, and referenced by IndexedDB metadata.
+- Deletion is reference-aware and uses a pending-deletion/finalization pattern; reconciliation verifies metadata-referenced cache entries and handles pending deletions.
+- The reader resolves a verified local audio source first and uses a local ObjectURL when available; online playback is the fallback.
+- Audio metadata and bytes remain local and are not part of Firebase sync/backup.
+
+### Remaining reliability gaps confirmed in current main
+1. **Worker ownership across tabs:** the current Web Locks helper protects individual database mutations, but the worker-running map is instance-local and the full job worker is not held under a job-scoped cross-tab lock. Two tabs can both process the same job. Browsers without Web Locks currently fall back to running the task without any cross-tab lock.
+2. **Cross-tab pause/cancel:** pause/cancel updates durable job state but abort controllers and worker flags are instance-local. A worker in another tab does not reliably stop before the next item when another tab pauses/cancels.
+3. **Crash between Cache Storage write and metadata commit:** immediate error paths attempt cleanup, but there is no durable staging record that lets startup reconciliation safely recover a tab/browser crash between writing bytes and committing the IndexedDB file record.
+4. **Unknown Cache Storage orphans:** `reconcileLibrary()` verifies metadata-referenced entries and pending deletions, but does not enumerate the owned Cache Storage namespace and discover keys that have no metadata row. Add a conservative generation-aware orphan sweep with a grace period and reference checks.
+5. **Cold restart/airplane proof:** no verified real-device evidence yet demonstrates downloaded audio playback after full browser/app termination and airplane-mode restart.
+
+### PR #388 — in-progress cross-tab fix
+- Draft PR #388: `Offline audio: cross-tab worker leases and recovery`, head branch `feat/offline-audio-complete-20261117`, base cumulative PR #387.
+- Adds a job-scoped Web Lock around the full worker, IndexedDB lease fallback for browsers without Web Locks, a database schema migration from v1 to v2, heartbeat/expiry/takeover behavior, and tests for two-tab duplicate-download prevention and expired-lock recovery.
+- Exact-head Quality Gate #4520 was running when this note was written; the security audit separately failed on the unresolved picomatch advisory. Re-fetch its final result before claiming the lock fix passes.
+- PR #388 does not yet implement durable cache staging/orphan sweep or cross-tab pause/cancel synchronization; those remain separate required changes.
+
+### PR #368 status
+PR #368 is a stale alternative implementation based on an older main. Its Cache Storage adapter/downloader should not be merged wholesale because current main already has its own library, manager, cache generation, quota, and playback implementation. Only port a narrowly identified capability if source comparison proves it is still missing; avoid duplicate database/cache namespaces.
+
+### Updated release gates
+- Job worker lock across tabs + no-Web-Locks fallback: covered by PR #388; await exact-head CI.
+- Durable staging and orphan sweep: not implemented yet.
+- Cross-tab pause/cancel and UI refresh: not implemented yet.
+- Cold restart + airplane-mode playback on desktop/mobile real devices: not verified.
+- Full audio quota exhaustion, interrupted download, resume, corruption, cache eviction and deletion/replacement generation tests: required before release.
+
+
+### PR #388 exact-head test follow-up — 2026-11-17
+- Run #4520 on initial PR #388 head `06b0b5f98fab89ee6509f67816ecf2c67c9edd4e`: **768 unit assertions passed**, including the new cross-tab lease and database-upgrade tests. TypeScript then failed only on TS2774 because the DOM type marks `navigator.locks.request` as always defined.
+- Corrected feature detection by structurally treating `navigator.locks` as optional at runtime; commit `271d886945a7c98a3441e6ff75543df47bb6f972`.
+- A new exact-head Quality Gate is required. Run #4520 does not validate the correction and did not reach production build/Playwright. The separate picomatch security audit remains blocked.
+
+
+### PR #389 staging/cross-tab follow-up — 2026-11-17
+- Draft PR #389 extends PR #388 with durable Cache Storage staging, a v3 IndexedDB migration, conservative orphan-key grace records, BroadcastChannel pause/cancel signals, and durable job-status checks before each ayah and before commit.
+- First run #4530 (`44183047731`) completed the unit suite with 770 passed / 1 failed. All new migration/staging/orphan/lease tests passed; the sole failure was a test using nonexistent `getJob()` instead of public `listJobs()`. Corrected in commit `00313ec2b42b0f9bd0e700a8a4b2d7cc29dc222d`.
+- New exact-head run pending. #4530 did not reach TypeScript/build/Playwright. PR #389 remains Draft/HOLD; full dependency audit remains blocked by picomatch.
+
+
+### PR #389 expanded to full offline shell — 2026-11-17
+- PR #389 now targets `main` directly and is the cumulative release candidate: PR #387 reader/Dashboard/Tafsir work + PR #388 job lock + PR #389 staging/cross-tab controls + app-shell public-asset coverage.
+- Added recursive allowlisted public asset enumeration (`scripts/offlinePublicAssets.ts`) and merged it into Vite's full offline manifest, with a build-time 2,000-asset cap. This includes public static assets such as the 604 Mushaf SVG pages, not just Vite bundle chunks.
+- Added 6-second SPA navigation timeout and quota-adaptive optional audio/Mushaf runtime cache bounds to the Service Worker.
+- Added `persistenceSupported` to storage diagnostics so lack of `StorageManager.persist()` is not confused with offline capability; Settings copy now explains that already-saved files remain usable offline.
+- Current PR #389 head `6bec8fbabd260d3abcfd6e9f9ca1bbf960504057`. Quality Gate #4543 (`44184224319`): audit job failed separately on picomatch; application job was at the 604-page Mushaf coverage step when last polled. Continue polling the exact SHA through all app gates.
+
+
+### Correction: external Mushaf SVG pages are not in publicDir — 2026-11-17
+The public-asset manifest change includes files physically under `public/`; it does **not** include the 604 printed Mushaf SVG pages. `mushafFacsimileService.ts` fetches those pages from the pinned external `raw.githubusercontent.com/quran-ws/quran-svg/<commit>/...` source. The Service Worker caches pages after viewing in a separate bounded runtime cache (adaptive cap), but the explicit offline package does not yet download all 604 pages. A separate optional full-Mushaf package with quota preflight, progress/resume, source validation and explicit storage management remains a release follow-up. WIRD's local Quran text/ayah coordinates are independent of the facsimile artwork and remain local.
