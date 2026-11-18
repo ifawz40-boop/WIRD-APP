@@ -44,6 +44,7 @@ import {
 } from '../../services/audioPreferences';
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
 import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { QuranMushafReader } from './QuranMushafReader';
 import { QURAN_JUZ_STARTS } from '../../data/quranNavigationIndex.generated';
@@ -145,9 +146,18 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const [segmentStatus, setSegmentStatus] = useState<{ ayahNumber: number; cycle: number; ayahIteration: number } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const segmentQueueRef = useRef<QuranAudioQueueController | null>(null);
+  const playbackRequestSeqRef = useRef(0);
+  const activeObjectUrlRevokersRef = useRef(new Set<() => void>());
   const currentRepeatCountRef = useRef(1);
   const repeatTargetRef = useRef<number | null>(repeatTarget === -1 ? null : repeatTarget);
   const stopAudioRef = useRef<() => void>(() => {});
+  const revokeAllActiveAudioUrls = () => {
+    for (const revoke of activeObjectUrlRevokersRef.current) {
+      try { revoke(); } catch { /* Ignore stale object URL cleanup. */ }
+    }
+    activeObjectUrlRevokersRef.current.clear();
+  };
+
 
   // Filter surahs
   const filteredSurahs = useMemo(() => {
@@ -233,7 +243,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   };
 
   // Audio playback uses refs for event-driven repeat state; React state is UI-only.
-  const handlePlayAyah = (ayahNumberInSurah: number) => {
+  const handlePlayAyah = async (ayahNumberInSurah: number) => {
     rememberReadingPosition(ayahNumberInSurah);
     segmentQueueRef.current?.stop();
     segmentQueueRef.current = null;
@@ -250,32 +260,60 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         audioRef.current.play().then(() => setIsPlaying(true)).catch(error => {
           console.warn('Audio resume failed', error);
           setIsPlaying(false);
+          globalAudioCoordinator.releaseFocus('library');
         });
       }
       return;
     }
 
-    const audioUrl = getLicensedAyahAudioUrl(selectedSurah.number, ayahNumberInSurah, activeReciter).url;
-    requestOfflineAudioCache(
-      currentAyahs.filter(ayah => ayah.numberInSurah >= ayahNumberInSurah).slice(0, 20)
-        .map(ayah => getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url)
-    );
+    const requestSeq = ++playbackRequestSeqRef.current;
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
       audioRef.current.pause();
+      audioRef.current = null;
     }
-
+    revokeAllActiveAudioUrls();
     globalAudioCoordinator.claimFocus('library');
     currentRepeatCountRef.current = 1;
     repeatTargetRef.current = repeatTarget === -1 ? null : repeatTarget;
     setCurrentRepeatCount(1);
+    setPlayingAyah(ayahNumberInSurah);
+    setIsPlaying(false);
 
-    const audio = new Audio(audioUrl);
+    const descriptor = getLicensedAyahAudioUrl(selectedSurah.number, ayahNumberInSurah, activeReciter);
+    requestOfflineAudioCache(
+      currentAyahs.filter(ayah => ayah.numberInSurah >= ayahNumberInSurah).slice(0, 20)
+        .map(ayah => getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url)
+    );
+    const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+      descriptor.approvedReciterId,
+      descriptor.globalAyahNumber,
+      descriptor.url
+    );
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      resolved.revoke?.();
+      return;
+    }
+    if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
+
+    const audio = new Audio(resolved.src);
     audio.playbackRate = getSavedPlaybackRate();
     audioRef.current = audio;
-    setPlayingAyah(ayahNumberInSurah);
     setIsPlaying(true);
+
+    const resetFailedPlayback = () => {
+      if (requestSeq !== playbackRequestSeqRef.current) return;
+      if (audioRef.current === audio) audioRef.current = null;
+      audio.onended = null;
+      audio.onerror = null;
+      currentRepeatCountRef.current = 1;
+      setCurrentRepeatCount(1);
+      setIsPlaying(false);
+      setPlayingAyah(null);
+      revokeAllActiveAudioUrls();
+      globalAudioCoordinator.releaseFocus('library');
+    };
 
     attachAyahRepeatHandler(
       audio,
@@ -286,11 +324,13 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         const nextAyah = ayahNumberInSurah + 1;
         const hasNext = currentAyahs.some(a => a.numberInSurah === nextAyah);
         if (hasNext) {
-          handlePlayAyah(nextAyah);
+          void handlePlayAyah(nextAyah);
         } else {
           audioRef.current = null;
           setIsPlaying(false);
           setPlayingAyah(null);
+          revokeAllActiveAudioUrls();
+          globalAudioCoordinator.releaseFocus('library');
         }
       },
       () => {
@@ -300,29 +340,20 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         setCurrentRepeatCount(1);
         setIsPlaying(false);
         setPlayingAyah(null);
+        revokeAllActiveAudioUrls();
+        globalAudioCoordinator.releaseFocus('library');
       }
     );
 
     audio.onerror = () => {
-      audio.onended = null;
-      audioRef.current = null;
-      currentRepeatCountRef.current = 1;
-      setCurrentRepeatCount(1);
-      setIsPlaying(false);
-      setPlayingAyah(null);
+      console.warn('[WIRD Library] Audio playback failed:', audio.error);
+      resetFailedPlayback();
     };
-
     audio.play().catch(error => {
       console.warn('Audio play prevented or unavailable', error);
-      audio.onended = null;
-      audioRef.current = null;
-      currentRepeatCountRef.current = 1;
-      setCurrentRepeatCount(1);
-      setIsPlaying(false);
-      setPlayingAyah(null);
+      resetFailedPlayback();
     });
   };
-
   const handleNextAyah = () => {
     if (!currentAyahs.length) return;
     const current = playingAyah || 1;
@@ -364,12 +395,14 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   };
 
   const handleStopAudio = () => {
+    playbackRequestSeqRef.current += 1;
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
       audioRef.current.pause();
       audioRef.current = null;
     }
+    revokeAllActiveAudioUrls();
     segmentQueueRef.current?.stop();
     segmentQueueRef.current = null;
     currentRepeatCountRef.current = 1;
@@ -408,7 +441,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     };
   }, []);
 
-  const handleToggleStudySegmentAudio = () => {
+  const handleToggleStudySegmentAudio = async () => {
     const activeQueue = segmentQueueRef.current;
     if (activeQueue?.getState().active) {
       if (activeQueue.getState().paused) {
@@ -426,10 +459,22 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
     handleStopAudio();
     globalAudioCoordinator.claimFocus('library');
-    const tracks = currentAyahs.map(ayah => ({
-      id: String(ayah.number),
-      url: getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url
+    const requestSeq = ++playbackRequestSeqRef.current;
+    const resolvedTracks = await Promise.all(currentAyahs.map(async ayah => {
+      const descriptor = getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter);
+      const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+        descriptor.approvedReciterId,
+        descriptor.globalAyahNumber,
+        descriptor.url
+      );
+      return { track: { id: String(ayah.number), url: resolved.src }, revoke: resolved.revoke };
     }));
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      resolvedTracks.forEach(item => item.revoke?.());
+      return;
+    }
+    resolvedTracks.forEach(item => { if (item.revoke) activeObjectUrlRevokersRef.current.add(item.revoke); });
+    const tracks = resolvedTracks.map(item => item.track);
     requestOfflineAudioCache(
       tracks.slice(segmentStartIndex, Math.min(segmentEndIndex + 1, segmentStartIndex + 20)).map(track => track.url)
     );
@@ -460,6 +505,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         setPlayingAyah(null);
         setSegmentStatus(null);
         setCurrentRepeatCount(1);
+        revokeAllActiveAudioUrls();
         globalAudioCoordinator.releaseFocus('library');
       },
       onError: error => {
@@ -472,6 +518,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         setPlayingAyah(null);
         setSegmentStatus(null);
         setCurrentRepeatCount(1);
+        revokeAllActiveAudioUrls();
         globalAudioCoordinator.releaseFocus('library');
       }
     });
@@ -494,6 +541,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       setIsSegmentPlaying(false);
       setIsSegmentPaused(false);
       setIsPlaying(false);
+      revokeAllActiveAudioUrls();
       globalAudioCoordinator.releaseFocus('library');
       console.warn('[WIRD Study] Could not start segment audio:', error);
     }
@@ -509,6 +557,8 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       }
       segmentQueueRef.current?.stop();
       segmentQueueRef.current = null;
+      playbackRequestSeqRef.current += 1;
+      revokeAllActiveAudioUrls();
       globalAudioCoordinator.releaseFocus('library');
     };
   }, []);
