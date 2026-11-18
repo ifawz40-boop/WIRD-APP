@@ -138,6 +138,8 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
     assert(worker.includes('isSupportedOfflineAssetPath'), 'Worker must restrict offline assets to supported static file extensions');
     assert(worker.includes('image/svg+xml'), 'Worker must validate SVG content types before caching');
     assert(worker.includes('font/woff2'), 'Worker must validate font content types before caching');
+    assert(worker.includes("'.mjs': ['application/javascript'") && worker.includes("'.wasm': ['application/wasm']"), 'Worker must validate MJS and WebAssembly content types before caching');
+    assert(viteConfig.includes('mjs|wasm|css'), 'Build manifest must include emitted MJS and WebAssembly assets');
     assert(viteConfig.includes('woff2?'), 'Build manifest must include local font assets');
 
     assert(worker.includes('offlinePackagePreparationInProgress'), 'Concurrent full-package downloads must be rejected safely');
