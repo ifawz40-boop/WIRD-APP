@@ -784,35 +784,16 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     assert(STORE_AUDIO_JOBS === 'jobs' && STORE_AUDIO_FILES === 'files', 'Store names valid');
   });
 
-  await test('A closed-tab audio worker recovers from the same IndexedDB + Cache Storage without re-downloading verified ayahs', async () => {
+  await test('A hard-crashed audio download is recovered from persisted IndexedDB and Cache Storage without re-downloading verified ayahs', async () => {
     const factory = new IDBFactory();
-    const databaseName = `wird-audio-restart-${++dbCounter}`;
+    const databaseName = `wird-audio-hard-restart-${++dbCounter}`;
     const mockCache = createMockCacheStorage();
     const callsByUrl = new Map<string, number>();
-    let secondRequestStarted!: () => void;
-    const secondStarted = new Promise<void>(resolve => { secondRequestStarted = resolve; });
-    let blockSecondRequest = true;
-    const globalAyahOne = computeGlobalAyahNumber(112, 1);
-    const globalAyahTwo = computeGlobalAyahNumber(112, 2);
-    const globalAyahThree = computeGlobalAyahNumber(112, 3);
 
-    const fetchFn: typeof fetch = async (input, init) => {
+    const fetchFn: typeof fetch = async input => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-      const count = (callsByUrl.get(url) || 0) + 1;
-      callsByUrl.set(url, count);
-
-      if (url.endsWith(`/${globalAyahTwo}.mp3`) && blockSecondRequest) {
-        blockSecondRequest = false;
-        secondRequestStarted();
-        await new Promise<void>((resolve, reject) => {
-          const signal = init?.signal;
-          const abort = () => reject(Object.assign(new Error('Simulated closed-tab abort'), { name: 'AbortError' }));
-          if (signal?.aborted) return abort();
-          signal?.addEventListener('abort', abort, { once: true });
-        });
-      }
-
-      return new Response(new Uint8Array([0xff, 0xfb, 0x90, count]).buffer, {
+      callsByUrl.set(url, (callsByUrl.get(url) || 0) + 1);
+      return new Response(new Uint8Array([0xff, 0xfb, 0x90, 0x01]).buffer, {
         status: 200,
         headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': '4' }
       });
@@ -831,42 +812,87 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     const firstTab = new OfflineQuranAudioLibrary(deps);
     const job = await firstTab.enqueueDownloadJob({
       scopeKind: 'range',
-      labelAr: 'اختبار استعادة تنزيل الصوت بعد إغلاق التطبيق',
+      labelAr: 'اختبار استعادة تنزيل الصوت بعد إغلاق مفاجئ',
       reciterId: 'ar.alafasy',
       ranges: [{ surahNumber: 112, startAyah: 1, endAyah: 3 }],
       autoStart: false
     });
+    const [firstItem, interruptedItem, remainingItem] = await firstTab.getJobItems(job.jobId);
+    assert(Boolean(firstItem && interruptedItem && remainingItem), 'The recovery fixture must contain exactly three ayah items');
 
-    const interruptedRun = firstTab.startOrResumeJob(job.jobId);
-    await secondStarted;
+    // Seed the durable state left by a process killed mid-download:
+    // ayah 1 is fully committed; ayah 2 and the job still say "downloading".
+    const generationId = 'persisted-before-hard-crash';
+    const cacheKey = buildCacheGenerationKey(firstItem.reciterId, firstItem.globalAyahNumber, generationId);
+    const cache = await mockCache.factory.open(OFFLINE_AUDIO_CACHE_NAME);
+    await cache.put(cacheKey, new Response(new Uint8Array([0xff, 0xfb, 0x90, 0x01]).buffer, {
+      status: 200,
+      headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': '4' }
+    }));
+
+    const db = await (firstTab as any).openDatabase() as IDBDatabase;
+    const tx = db.transaction([STORE_AUDIO_JOBS, STORE_AUDIO_JOB_ITEMS, STORE_AUDIO_FILES], 'readwrite');
+    tx.objectStore(STORE_AUDIO_FILES).put({
+      fileKey: firstItem.fileKey,
+      reciterId: firstItem.reciterId,
+      surahNumber: firstItem.surahNumber,
+      ayahNumber: firstItem.ayahNumber,
+      globalAyahNumber: firstItem.globalAyahNumber,
+      url: firstItem.url,
+      cacheGenerationId: generationId,
+      byteLength: 4,
+      contentType: 'audio/mpeg',
+      available: true,
+      pinned: false,
+      deletionPending: false,
+      verifiedAtMs: Date.now(),
+      schemaVersion: 1
+    });
+    tx.objectStore(STORE_AUDIO_JOB_ITEMS).put({
+      ...firstItem,
+      status: 'verified',
+      cacheGenerationId: generationId
+    });
+    tx.objectStore(STORE_AUDIO_JOB_ITEMS).put({ ...interruptedItem, status: 'downloading' });
+    tx.objectStore(STORE_AUDIO_JOBS).put({
+      ...job,
+      status: 'downloading',
+      completedItems: 1,
+      failedItems: 0,
+      totalBytes: 4,
+      updatedAtMs: Date.now()
+    });
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('Hard-crash fixture transaction aborted'));
+    });
+
+    // No worker is running now; closing the database simulates the browser process
+    // disappearing before it could execute worker cleanup/finally handlers.
     firstTab.close();
-    await interruptedRun;
 
     const restartedTab = new OfflineQuranAudioLibrary(deps);
     await restartedTab.reconcileLibrary();
-    const recoveredBeforeResume = (await restartedTab.listJobs()).find(entry => entry.jobId === job.jobId);
-    assert(
-      recoveredBeforeResume?.completedItems === 1 &&
-      (recoveredBeforeResume.status === 'partial' || recoveredBeforeResume.status === 'queued'),
-      'After restart, the first verified ayah must remain durable and the interrupted job must be resumable'
-    );
+    const recovered = (await restartedTab.listJobs()).find(entry => entry.jobId === job.jobId);
+    assert(recovered?.status === 'partial' && recovered.completedItems === 1,
+      'Startup reconciliation must turn an abandoned downloading job into a resumable partial job');
+
     const recoveredItems = await restartedTab.getJobItems(job.jobId);
-    assert(recoveredItems.find(item => item.globalAyahNumber === globalAyahOne)?.status === 'verified',
-      'The first ayah item must remain individually marked verified after a cold restart');
-    assert(recoveredItems.filter(item => item.status === 'verified').length === 1,
-      'No unfinished ayah may be reported verified after the interrupted request was aborted');
+    assert(recoveredItems.find(item => item.itemKey === firstItem.itemKey)?.status === 'verified',
+      'The first ayah must remain individually verified after a hard restart');
+    assert(recoveredItems.find(item => item.itemKey === interruptedItem.itemKey)?.status === 'queued',
+      'The in-flight ayah must be re-queued after a hard restart');
+    assert(recoveredItems.find(item => item.itemKey === remainingItem.itemKey)?.status === 'queued',
+      'The not-yet-started ayah must remain queued after a hard restart');
 
     const completed = await restartedTab.startOrResumeJob(job.jobId);
     assert(completed?.status === 'completed' && completed.completedItems === 3,
-      'A new library instance must resume and complete all remaining ayahs');
-    const calls = [...callsByUrl.entries()];
-    assert(calls.length === 3, 'Exactly three distinct ayah URLs must be requested');
-    assert(calls.filter(([url]) => url.endsWith(`/${globalAyahOne}.mp3`)).reduce((sum, [, count]) => sum + count, 0) === 1,
-      'The already verified first ayah must never be downloaded again after restart');
-    assert(calls.filter(([url]) => url.endsWith(`/${globalAyahTwo}.mp3`)).reduce((sum, [, count]) => sum + count, 0) === 2,
-      'Only the interrupted second ayah must be retried after restart');
-    assert(calls.filter(([url]) => url.endsWith(`/${globalAyahThree}.mp3`)).reduce((sum, [, count]) => sum + count, 0) === 1,
-      'The third ayah must be downloaded exactly once after restart');
+      'The recovered job must finish after a fresh library instance resumes it');
+    assert(callsByUrl.size === 2, 'Only the two unfinished ayah URLs may be requested after restart');
+    assert(!callsByUrl.has(firstItem.url), 'The already verified first ayah must never be downloaded again');
+    assert(callsByUrl.get(interruptedItem.url) === 1, 'Only the interrupted second ayah must be downloaded once after restart');
+    assert(callsByUrl.get(remainingItem.url) === 1, 'The third ayah must be downloaded once after restart');
     assert((await restartedTab.getStats()).availableFilesCount === 3,
       'All three verified audio files must be available in the persistent cache after recovery');
     restartedTab.close();
