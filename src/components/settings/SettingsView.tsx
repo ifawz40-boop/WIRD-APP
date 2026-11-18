@@ -1048,6 +1048,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
                           {statusLabel} · {job.completedItems}/{job.totalItems} آية ({percent}%) · {formatBytesLabel(job.totalBytes)}
                         </div>
+                        {job.lastError && (
+                          <p role="alert" className="mt-1 max-w-2xl text-[11px] leading-5 text-rose-700 dark:text-rose-300">
+                            سبب التعثر: {job.lastError}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5">
