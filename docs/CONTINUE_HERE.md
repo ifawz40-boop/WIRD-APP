@@ -393,3 +393,10 @@ Read [PR #386 browser diagnosis checkpoint](./checkpoints/2026-11-17-PR386-4486-
 - Playwright: 184 passed / 0 failed / 2 intentional skips. Offline 604-page Mushaf partial-download/resume/open-while-offline passed on desktop and mobile. The two skips are complementary viewport-only tests: full offline app-shell asset download is desktop-only, while mobile settings reachability is mobile-only; both have separate coverage in the same run.
 - Audit remains unresolved: official npm latest and official GitHub releases still show picomatch 4.0.7, no fixed version. No override, suppression, threshold reduction, or risk acceptance. Keep PR #390 Draft/HOLD; do not merge or deploy.
 - PR #390 currently 44 changed files, 3,576 additions / 249 deletions, 190 commits ahead of main. Full review of the cumulative diff and integration scope remains required before promotion.
+
+
+## MJS/WASM offline asset parity follow-up — 2026-11-18
+- After #4574 passed, code review found an extension mismatch: public asset enumeration accepted `.mjs`/`.wasm`, while Service Worker MIME allowlisting and Vite-emitted asset filtering did not. A manifest containing these types would fail closed at download time.
+- Updated `public/sw.js` to accept MJS JavaScript MIME variants and `application/wasm`; updated `vite.config.ts` emitted asset filter to include MJS/WASM; added regression assertions in `src/tests/pwaIntegration.test.ts`.
+- Commits: `2ca6b0944d9cc90f6cef6e80446ebeb7d7df8a47`, `2e13ce6049c88e524988362b8debdba02ac9da79`, `0942f625477b3d053f2934d387942771efef20c9`.
+- Latest PR #390 head is now `0942f625477b3d053f2934d387942771efef20c9`. Run #4574 validates only prior SHA `3708e76432e89e00ce27f12cad8b64a1224aa9f1`; a new exact-head Quality Gate is mandatory. PR remains Draft/HOLD; security audit remains unresolved.
