@@ -250,6 +250,22 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     assert(ambiguous === null, 'Legacy sessions with duplicate ranges must fail closed rather than guess a plan');
   });
 
+  test('Exact plan-detail launch can complete a future scheduled task early', () => {
+    const future = makeEnginePlan([
+      makeDay('2026-11-07', makeTask(67))
+    ], { id: 'future-plan' });
+    const explicit = findMatchingDueEnginePlanTask([future], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5,
+      enginePlanId: 'future-plan', enginePlanDate: '2026-11-07'
+    });
+    assert(explicit?.day.date === '2026-11-07', 'An exact plan-detail launch must be allowed to complete its future task early');
+    const unqualified = findMatchingDueEnginePlanTask([future], '2026-11-05', {
+      surahNumber: 67, startAyah: 1, endAyah: 5,
+      enginePlanId: 'future-plan'
+    });
+    assert(unqualified === null, 'Future tasks must remain ineligible without the exact scheduled date');
+  });
+
   test('Session completion resolves repeated ranges to the exact originating schedule date', () => {
     const repeated = makeEnginePlan([
       makeDay('2026-11-04', makeTask(67)),
