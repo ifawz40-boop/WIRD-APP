@@ -5,10 +5,12 @@ import {
   DESKTOP_SPREAD_BREAKPOINT_PX,
   getSavedMushafSpreadMode,
   getSavedMushafTafsirLayout,
+  getSavedMushafTafsirPagePreferences,
   getSpreadPairForPage,
   resolveEffectiveSpreadMode,
   saveMushafSpreadMode,
   saveMushafTafsirLayout,
+  saveMushafTafsirPagePreferences,
   type MushafSpreadMode,
   type MushafSurfaceId,
   type MushafTafsirDesktopLayout
@@ -54,8 +56,8 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   );
   const [resolvedByPage, setResolvedByPage] = useState<Record<number, Ayah[]>>({});
   const [activeTafsirPage, setActiveTafsirPage] = useState<number | null>(null);
-  const [pageTafsirPreferences, setPageTafsirPreferences] = useState<Record<number, boolean>>({});
-  const [preferredTafsirPage, setPreferredTafsirPage] = useState<number | null>(null);
+  const [pageTafsirPreferences, setPageTafsirPreferences] = useState<Record<number, boolean>>(() => getSavedMushafTafsirPagePreferences(surface).sourcePages);
+  const [preferredTafsirPage, setPreferredTafsirPage] = useState<number | null>(() => getSavedMushafTafsirPagePreferences(surface).preferredSourcePage);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -141,9 +143,19 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   );
 
   const handleSetSourcePageMode = (sourcePage: number, mode: 'quran' | 'tafsir') => {
-    setPageTafsirPreferences(prev => ({ ...prev, [sourcePage]: mode === 'tafsir' }));
+    const nextPreferred = mode === 'tafsir'
+      ? sourcePage
+      : preferredTafsirPage === sourcePage ? null : preferredTafsirPage;
+    setPageTafsirPreferences(prev => {
+      const nextPages = { ...prev, [sourcePage]: mode === 'tafsir' };
+      saveMushafTafsirPagePreferences(surface, {
+        sourcePages: nextPages,
+        preferredSourcePage: nextPreferred
+      });
+      return nextPages;
+    });
+    setPreferredTafsirPage(nextPreferred);
     if (mode === 'tafsir') {
-      setPreferredTafsirPage(sourcePage);
       setActiveTafsirPage(sourcePage);
       const sourceAyahs = resolvedByPage[sourcePage] || [];
       const current = [activeTafsirAyah, selectedAyah].find(candidate =>
@@ -153,12 +165,9 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
       );
       const target = current || sourceAyahs[0];
       if (target) setTafsirTarget(target);
-    } else {
-      setPreferredTafsirPage(current => current === sourcePage ? null : current);
-      if (activeTafsirPage === sourcePage) {
-        setActiveTafsirPage(null);
-        setTafsirTarget(null);
-      }
+    } else if (activeTafsirPage === sourcePage) {
+      setActiveTafsirPage(null);
+      setTafsirTarget(null);
     }
   };
 
@@ -172,7 +181,14 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   const handleNavigateFromTafsir = (surahNumber: number, ayahNumber: number) => {
     const targetPage = onNavigateToAyah?.(surahNumber, ayahNumber) ?? null;
     if (targetPage !== null) {
-      setPageTafsirPreferences(prev => ({ ...prev, [targetPage]: true }));
+      setPageTafsirPreferences(prev => {
+        const nextPages = { ...prev, [targetPage]: true };
+        saveMushafTafsirPagePreferences(surface, {
+          sourcePages: nextPages,
+          preferredSourcePage: targetPage
+        });
+        return nextPages;
+      });
       setPreferredTafsirPage(targetPage);
       setActiveTafsirPage(targetPage);
     }
