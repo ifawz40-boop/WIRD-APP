@@ -632,6 +632,18 @@ export async function runPhase3CoreRemediationTests(): Promise<{ passed: number;
 
     const constructedHash = buildRouteHash({ tab: 'session', mode: 'review', surahNumber: 1 });
     assert(constructedHash === '#/session?surah=1&mode=review', 'buildRouteHash constructs correct query string');
+
+    const planRoute = parseRoute('#/session?surah=67&start=1&end=5&mode=memorize&plan=plan-test-123');
+    assert(planRoute.enginePlanId === 'plan-test-123', 'parseRoute restores the originating engine plan ID from a session deep link');
+    const planHash = buildRouteHash({ tab: 'session', surahNumber: 67, startAyah: 1, endAyah: 5, mode: 'memorize', enginePlanId: 'plan-test-123' });
+    assert(parseRoute(planHash).enginePlanId === 'plan-test-123', 'buildRouteHash preserves engine plan identity across refresh');
+    const datedPlanRoute = parseRoute('#/session?surah=67&start=1&end=5&plan=plan-test-123&planDate=2026-11-18');
+    assert(datedPlanRoute.enginePlanDate === '2026-11-18', 'parseRoute restores the exact scheduled task date');
+    const datedPlanHash = buildRouteHash({ tab: 'session', surahNumber: 67, startAyah: 1, endAyah: 5, enginePlanId: 'plan-test-123', enginePlanDate: '2026-11-18' });
+    assert(parseRoute(datedPlanHash).enginePlanDate === '2026-11-18', 'buildRouteHash preserves the scheduled task date across refresh');
+    assert(!parseRoute('#/session?planDate=not-a-date').enginePlanDate, 'parseRoute rejects malformed scheduled task dates');
+    assert(!parseRoute('#/session?plan=bad%20plan').enginePlanId, 'parseRoute rejects malformed plan IDs');
+    assert(!buildRouteHash({ tab: 'library', enginePlanId: 'plan-test-123' }).includes('plan='), 'non-session routes never expose engine plan context');
   }
 
   const passed = results.filter(r => r.passed).length;
