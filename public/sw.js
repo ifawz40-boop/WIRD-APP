@@ -1,4 +1,5 @@
-const CACHE_NAME = 'wird-app-v3';
+// Bump the shell cache on SW install changes so a failed install never overwrites the active worker's cache.
+const CACHE_NAME = 'wird-app-v4';
 const AUDIO_CACHE_NAME = 'wird-app-audio-v1';
 const CONTENT_CACHE_NAME = 'wird-app-content-v1';
 const MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-v1';
