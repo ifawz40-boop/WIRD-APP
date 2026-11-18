@@ -63,7 +63,30 @@ test.describe('WIRD dashboard accessibility and responsive UX', () => {
       createdAt: new Date().toISOString()
     }));
 
-    await page.evaluate(plans => localStorage.setItem('wird_engine_plans', JSON.stringify(plans)), enginePlans);
+    await page.evaluate(async plans => {
+      // AuthGate has already created an empty guest archive in IndexedDB.
+      // Clear only the three archive stores so startup performs the real
+      // legacy-localStorage -> verified IndexedDB migration with our fixture.
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('wird-sync-journal');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const archiveStores = ['enginePlanArchiveHeads', 'enginePlanArchiveManifests', 'enginePlanArchiveRecords'];
+      if (!archiveStores.every(name => database.objectStoreNames.contains(name))) {
+        database.close();
+        throw new Error('Engine plan archive stores are missing from the guest database.');
+      }
+      await new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction(archiveStores, 'readwrite');
+        archiveStores.forEach(name => transaction.objectStore(name).clear());
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+        transaction.onabort = () => reject(transaction.error);
+      });
+      database.close();
+      localStorage.setItem('wird_engine_plans', JSON.stringify(plans));
+    }, enginePlans);
     await page.reload();
     await expect(page.getByRole('heading', { name: /السلام عليكم ورحمة الله/ })).toBeVisible();
 
