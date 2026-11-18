@@ -565,3 +565,21 @@ PR #390 adds an explicit optional full-604-page Hafs/KFGQPC facsimile download t
 - Application job PASS: Playwright 186 passed / 0 failed / 2 intentional viewport skips; 604 Mushaf coordinate maps; API import and approved Quran audio CDN/range smoke; Firestore Rules Emulator; TypeScript; production build; production server startup smoke. Dashboard multi-plan regression and offline Mushaf sanitized-cache/download/resume/offline-open checks passed on desktop and mobile. Offline Muyassar download/resume/corruption checks passed.
 - Dependency security audit FAIL remains solely `picomatch@4.0.7` through Vite toolchain (GHSA-fc5q-39xc-vjpf, High ReDoS). No override/suppression. No merge/deploy.
 - PR #390 remains Draft/HOLD. Physical Android/iOS/Safari cold restart + airplane mode and storage quota/eviction acceptance are outstanding. Exact-head app gate is green but overall release gate is not.
+
+
+## 2026-11-18 continuation delta — integrated PR #390
+
+### Implemented in candidate; exact-head browser verification pending
+- [x] Carry exact plan ID + scheduled date through dashboard due-task cards and header daily quick-start; prevent stale plan identity after navigation.
+- [x] Keep Mushaf 604/604 revalidation available; verify cached SVG contents and repair malformed pages; add offline verification path.
+- [x] Use approved Quran CDN URLs in Mushaf reader, Surah library, and memorization session fallback.
+- [x] Resolve durable downloaded audio in Service Worker from the offline audio IndexedDB `files` record and generation cache before network fallback.
+- [x] Add Playwright regressions for full Mushaf cache repair/offline revalidation and durable audio response with network disabled.
+- [ ] Complete exact-head Desktop/Mobile Playwright run #4639 (run `44241511583`, SHA `b9cfaabc8e7e884549f27508bb517f5de6064bdf`).
+
+### Hard release blockers
+- [ ] Resolve High `GHSA-fc5q-39xc-vjpf` for `picomatch@4.0.7` using an official maintainer-reviewed upstream release; do not suppress or override.
+- [ ] Perform cold-start offline acceptance on a new tab/browser restart and physical Android/iOS/Safari devices.
+- [ ] Validate storage quota/eviction, pause/resume, interrupted downloads, and persistence after app restart.
+- [ ] Obtain a fresh Vercel Preview for the final exact SHA after the 24-hour deployment limit resets; current available preview is stale.
+- [ ] Keep PR #390 Draft/HOLD and `main` unchanged until all gates pass.
