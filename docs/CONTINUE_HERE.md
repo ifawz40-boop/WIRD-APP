@@ -184,3 +184,13 @@ All 16 below were OPEN / DRAFT at the latest GitHub inventory. Re-fetch exact he
 - TafsirContentPane falls back only to the explicitly selected pinned Tafsir Muyassar edition when online fetch fails; Settings exposes the optional package download.
 - Current integration branch was 60+ commits ahead and 0 behind main at last compare. Latest implementation checkpoint commit before this documentation update: `80e9fb5f9678d22a01470ed69b48b2fcd54209d8`.
 - No application test suite has been run yet by design; do not claim tests pass. Continue implementation and review first, then run the full quality matrix on one exact SHA.
+
+### Latest continuation checkpoint — 2026-11-18
+
+- Active release branch: `release/wird-completion-20261118`.
+- Draft PR: https://github.com/xm8eslam-stack/WIRD-APP/pull/391 (base `main`; not merged).
+- Plan detail now forwards exact engine plan ID + scheduled date through the launch chain. Completion matcher fails closed on ambiguous legacy duplicate ranges instead of guessing.
+- Opposite-page Tafsir is now mounted in both Mushaf spread slots. The side selector maps to the opposite Quran source page, preserves page preference locally per surface, and navigates back to the actual printed page.
+- Tafsir full-page mode requires the complete validated QuranEnc Muyassar package; single-ayah pane checks the local package first before network.
+- Bun package manifest/lockfile were reconciled; Vite/Tailwind build tools are dev-only.
+- No full exact-head test result is claimed yet. CI is running from the draft PR while implementation/review continues. The full audit advisory remains a release blocker; do not waive it.
