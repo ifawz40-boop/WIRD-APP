@@ -1,3 +1,15 @@
+# Latest continuation checkpoint — 2026-11-18 05:00 +02:00
+
+- Current release candidate: PR #390, branch `feat/offline-mushaf-package-20261117`, current code/test head before this documentation checkpoint: `b84b62b00e618a02784eed0fb502e55b413cc5c0`. Main remains `f70bf5e0617b558dfba4663da2667fb5d6c3ce8a`; nothing has been merged or deployed.
+- Follow-up correctness fix added: a dashboard-started memorization session now carries both the originating engine-plan ID and exact schedule date (`planDate`) through its deep link and completion transaction. This prevents two identical ayah ranges repeated on different days in the same plan from completing the wrong day. Added a regression unit test and strengthened the dashboard Playwright URL assertion.
+- Latest observed Quality Gate run: #44239139339. Dependency security audit failed on `picomatch@4.0.7` via `vite > tinyglobby > fdir > picomatch`, GHSA-fc5q-39xc-vjpf / CVE-2026-112366. The verify job was still running through Playwright installation at last inspection. Its merge commit included the date-specific unit fix; the final E2E URL assertion commit was pushed after that run started and is not yet proven by that run.
+- Security handling: the official GitHub advisory lists affected versions through 4.0.7 and no patched version. Upstream candidate fixes #237/#238 are unmerged; do not pin either, suppress the audit, or weaken the gate. Re-check the official advisory/upstream status before making a dependency change.
+- Automated checks previously passed on this candidate: test suite, TypeScript, production build, Firestore Rules emulator, and Desktop/Mobile Playwright on earlier exact SHAs. These are not proof for the current head. Current exact-head CI is required.
+- Offline review: AuthGate can initialize guest scope locally; verified-user scope replays the local IndexedDB journal before mounting. Service worker explicit package includes all Vite bundle chunks and public assets; shell/content/audio/Mushaf caches remain separated. Cold browser restart + airplane-mode acceptance on a real device remains outstanding.
+- Next: collect final jobs/logs from #44239139339; ensure the latest Playwright assertion is covered by a fresh run when a run can be triggered; fix only evidence-backed failures; then complete exact-head desktop/mobile/offline tests. Do not merge/deploy while the security gate fails or real-device offline acceptance is missing.
+
+---
+
 # WIRD — Continuation Entry Point
 
 ## Latest integrity follow-up — 2026-11-17
