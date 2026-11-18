@@ -26,7 +26,7 @@ import { ALL_SURAHS } from '../../data/quranMeta';
 import { loadSurahVerses, getAyahWords, loadSimpleAyahText, loadSimpleAyahRange } from '../../data/quranDataLoader';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { Ayah, ReciterId, UserProfile } from '../../types/quran';
-import { RECITERS, computeGlobalAyahNumber, formatAyahAudioUrl, getLicensedAyahAudioUrl, resolveApprovedOfflineReciterId } from '../../services/audioService';
+import { RECITERS, computeGlobalAyahNumber, getLicensedAyahAudioUrl } from '../../services/audioService';
 import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import { createSecureId } from '../../services/secureId';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
@@ -551,9 +551,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
     globalAudioCoordinator.claimFocus('session');
     const requestSeq = ++playbackRequestSeqRef.current;
-    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
+    const audioDescriptor = getLicensedAyahAudioUrl(surahNumber, currentAyah.numberInSurah, activeReciter);
+    const approvedReciterId = audioDescriptor.approvedReciterId;
     const globalAyah = computeGlobalAyahNumber(surahNumber, currentAyah.numberInSurah);
-    const fallbackUrl = formatAyahAudioUrl(surahNumber, currentAyah.numberInSurah, activeReciter);
+    const fallbackUrl = audioDescriptor.url;
     const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
       approvedReciterId,
       globalAyah,
@@ -581,11 +582,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     audio.onplaying = () => {
       if (audioRef.current === audio) setIsAudioLoading(false);
     };
-    audio.onerror = () => {
-      if (audioRef.current !== audio) return;
-      console.warn('Audio playback failed to load', audio.error);
+    const resetFailedPlayback = () => {
+      // Use request sequence as source of truth: late mobile media errors must
+      // clear the active request, but stale errors must not stop newer playback.
+      if (requestSeq !== playbackRequestSeqRef.current) return;
+      if (audioRef.current === audio) audioRef.current = null;
       audio.onended = null;
-      audioRef.current = null;
+      audio.onerror = null;
+      audio.onplaying = null;
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
@@ -593,16 +597,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       globalAudioCoordinator.releaseFocus('session');
     };
 
-    audio.play().catch(e => {
-      if (audioRef.current !== audio) return;
-      console.warn("Audio playback error", e);
-      audio.onended = null;
-      audioRef.current = null;
-      playbackIterationRef.current = 1;
-      setIsPlaying(false);
-      setIsAudioLoading(false);
-      revokeAllActiveAudioUrls();
-      globalAudioCoordinator.releaseFocus('session');
+    audio.onerror = () => {
+      console.warn('Audio playback failed to load', audio.error);
+      resetFailedPlayback();
+    };
+
+    audio.play().catch(error => {
+      console.warn('Audio playback error', error);
+      resetFailedPlayback();
     });
 
     attachAyahRepeatHandler(
@@ -642,16 +644,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     handleStopAudio();
     globalAudioCoordinator.claimFocus('session');
     const requestSeq = ++playbackRequestSeqRef.current;
-    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
-
     const tracks = await Promise.all(
       sessionAyahs.map(async ayah => {
-        const fallbackUrl = formatAyahAudioUrl(surahNumber, ayah.numberInSurah, activeReciter);
+        const audioDescriptor = getLicensedAyahAudioUrl(surahNumber, ayah.numberInSurah, activeReciter);
         const globalAyah = computeGlobalAyahNumber(surahNumber, ayah.numberInSurah);
         const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
-          approvedReciterId,
+          audioDescriptor.approvedReciterId,
           globalAyah,
-          fallbackUrl
+          audioDescriptor.url
         );
         if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
         return { id: String(ayah.number), url: resolved.src };
