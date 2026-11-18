@@ -583,3 +583,10 @@ PR #390 adds an explicit optional full-604-page Hafs/KFGQPC facsimile download t
 - [ ] Validate storage quota/eviction, pause/resume, interrupted downloads, and persistence after app restart.
 - [ ] Obtain a fresh Vercel Preview for the final exact SHA after the 24-hour deployment limit resets; current available preview is stale.
 - [ ] Keep PR #390 Draft/HOLD and `main` unchanged until all gates pass.
+
+
+### Additional acceptance refinements discovered 2026-11-18
+- [ ] Allow integrity-only verification when the Mushaf package already has 604/604 entries, even when free quota is below the full-package reserve threshold; retain quota preflight when pages are missing and report repair failures honestly.
+- [ ] Strengthen multi-plan E2E data to use three distinct schedule start dates (overdue, yesterday, today) and assert the correct plan ID + date from the dashboard primary action, header quick-start, and each additional due-plan card.
+- [ ] Add cold-tab offline restart acceptance for the app shell and durable audio cache.
+- [ ] Align offline audio download reciter choices with the main playback selector; label stream-only reciters explicitly.
