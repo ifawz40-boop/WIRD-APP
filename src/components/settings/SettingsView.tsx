@@ -64,6 +64,7 @@ import { getWirdOfflinePackageStatus, prepareWirdForOffline, type OfflinePackage
 import { getOfflineStorageStatus, requestOfflineStoragePersistence, type OfflineStorageStatus } from '../../services/offlineStorageService';
 import { clearMushafOfflinePackage, downloadMushafOfflinePackage, getMushafOfflinePackageStatus, type MushafOfflinePackageProgress, type MushafOfflinePackageStatus } from '../../services/mushafFacsimileOfflineLibrary';
 import { PWAInstallAction } from '../shared/OfflineStatusControls';
+import { TafsirOfflineDownloadPanel } from '../library/TafsirOfflineDownloadPanel';
 import { WirdAvatar } from '../brand/WirdAvatar';
 import { BrandDesignShowcase } from '../brand/BrandDesignShowcase';
 
@@ -744,7 +745,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           نزّل ملفات الشاشات والبيانات البرمجية المؤجلة إلى هذا الجهاز لتعمل الأقسام التي لم تفتحها من قبل دون اتصال. التنزيل اختياري ويُحفظ تدريجيًا؛ إذا انقطع الاتصال يمكنك إعادة المحاولة لاستكمال الملفات المتبقية.
         </p>
         <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-6">
-          هذا التجهيز لا ينزّل كامل مكتبة التلاوات أو التفاسير. عند تشغيل التلاوة متصلًا، يحفظ وِرد تلقائيًا مقطعًا قصيرًا من الآيات التالية، وليس السورة كاملة. يحتفظ التطبيق بالتفاسير التي سبق عرضها ضمن ذاكرة محلية محدودة؛ أما التفسير غير المحفوظ فيحتاج اتصالًا. كما يحتفظ بصفحات الأحاديث التي سبق عرضها بعد التحقق من مصدرها وصحتها، ضمن ذاكرة محلية محدودة. كذلك تُحفظ صفحات المصحف المصوّرة الخارجية عند عرضها بعدد محدود، وليس كامل الصفحات الـ604. قد يستهلك التخزين مساحة، وقد يحذف المتصفح الملفات إذا لم يمنح التخزين الدائم؛ لذلك لا يُعد نسخة احتياطية.
+          هذا التجهيز لا ينزّل مكتبة التلاوات كاملة؛ عند تشغيل التلاوة متصلًا يحفظ وِرد تلقائيًا مقطعًا قصيرًا من الآيات التالية، وليس السورة كاملة. يمكن تنزيل التفسير الميسر كاملًا اختياريًا من القسم التالي وحفظه على هذا الجهاز، بينما تبقى التفاسير الأخرى حسب التخزين المحلي المحدود أو الاتصال. كما يحتفظ التطبيق بصفحات الأحاديث التي سبق عرضها بعد التحقق من مصدرها وصحتها ضمن ذاكرة محلية محدودة. ويمكن تنزيل صفحات المصحف المصوّر الـ604 اختياريًا في الحزمة المنفصلة أعلاه. قد يستهلك التخزين مساحة، وقد يحذف المتصفح الملفات إذا لم يمنح التخزين الدائم؛ لذلك لا يُعد نسخة احتياطية.
         </p>
         {offlineStorageStatus && (
           <div className="rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 space-y-1" aria-live="polite">
@@ -852,6 +853,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             )}
           </div>
         </div>
+
+        <TafsirOfflineDownloadPanel />
 
         {/* PWA Install Prompt Card + Capability Matrix */}
         <PWAInstallAction
