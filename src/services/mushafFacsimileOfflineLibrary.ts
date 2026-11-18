@@ -101,9 +101,20 @@ async function fetchValidatedPage(page: number, signal?: AbortSignal): Promise<{
   parseMushafViewBox(markup);
   const areas = parseMushafAyahCoordinates(markup);
   if (areas.length === 0) throw new Error(`صفحة المصحف رقم ${page} لا تحتوي على مواضع آيات.`);
-  sanitizeMushafSvgMarkup(markup);
+  const safeMarkup = sanitizeMushafSvgMarkup(markup);
   await validatePageAgainstLocalQuran(page, markup);
-  return { response, bytes: new TextEncoder().encode(markup).byteLength };
+  return {
+    response: createSanitizedSvgResponse(response, safeMarkup),
+    bytes: new TextEncoder().encode(safeMarkup).byteLength
+  };
+}
+
+function createSanitizedSvgResponse(original: Response, safeMarkup: string): Response {
+  const headers = new Headers(original.headers);
+  headers.set('content-type', 'image/svg+xml; charset=utf-8');
+  headers.delete('content-length');
+  headers.delete('content-encoding');
+  return new Response(safeMarkup, { status: 200, statusText: 'OK', headers });
 }
 
 async function openPackageCache(): Promise<Cache> {
@@ -146,9 +157,10 @@ export async function downloadMushafOfflinePackage(
         const markup = await existing.clone().text();
         parseMushafViewBox(markup);
         parseMushafAyahCoordinates(markup);
-        sanitizeMushafSvgMarkup(markup);
+        const safeMarkup = sanitizeMushafSvgMarkup(markup);
         await validatePageAgainstLocalQuran(page, markup);
-        sampleBytes.push(new TextEncoder().encode(markup).byteLength);
+        if (safeMarkup !== markup) await cache.put(svgUrl, createSanitizedSvgResponse(existing, safeMarkup));
+        sampleBytes.push(new TextEncoder().encode(safeMarkup).byteLength);
         continue;
       } catch {
         await cache.delete(svgUrl);
@@ -184,8 +196,9 @@ export async function downloadMushafOfflinePackage(
         const markup = await existing.clone().text();
         parseMushafViewBox(markup);
         parseMushafAyahCoordinates(markup);
-        sanitizeMushafSvgMarkup(markup);
+        const safeMarkup = sanitizeMushafSvgMarkup(markup);
         await validatePageAgainstLocalQuran(page, markup);
+        if (safeMarkup !== markup) await cache.put(svgUrl, createSanitizedSvgResponse(existing, safeMarkup));
         continue;
       } catch {
         await cache.delete(svgUrl);
