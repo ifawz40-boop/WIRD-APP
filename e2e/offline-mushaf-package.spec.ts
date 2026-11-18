@@ -116,6 +116,7 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     await page.route(MUSHAF_SVG_PATTERN, async route => {
       const pageNumber = Number(new URL(route.request().url()).pathname.split('/').pop()?.replace('.svg', ''));
       requestCounts.set(pageNumber, (requestCounts.get(pageNumber) || 0) + 1);
+      if (pageNumber === 4) await new Promise(resolve => setTimeout(resolve, 300));
       await route.fulfill({
         status: 200,
         contentType: 'image/svg+xml; charset=utf-8',
@@ -141,12 +142,16 @@ test.describe('WIRD full printed Mushaf offline package', () => {
     await expect(verifyButton).toBeEnabled({ timeout: 90_000 });
     expect(requestCounts.get(4)).toBe(1);
 
+    await page.evaluate(() => Object.defineProperty(navigator.storage, 'estimate', {
+      configurable: true,
+      value: async () => ({ usage: 1023 * 1024 * 1024, quota: 1024 * 1024 * 1024 })
+    }));
     await context.setOffline(true);
     await expect.poll(() => page.evaluate(() => navigator.onLine)).toBe(false);
     await expect(verifyButton).toBeEnabled();
     await verifyButton.click();
-    await expect(verifyButton).toBeDisabled();
-    await expect(verifyButton).toBeEnabled({ timeout: 90_000 });
+    await expect(page.getByText('تم التحقق من سلامة صفحات المصحف المصوّر الـ604. أصبحت قابلة للفتح دون اتصال.')).toBeVisible();
+    await expect(verifyButton).toBeEnabled();
     expect(requestCounts.get(4)).toBe(1);
 
     const repairedSvg = await page.evaluate(async ({ cacheName, url }) => {
