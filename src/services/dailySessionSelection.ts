@@ -108,7 +108,7 @@ export function findMatchingDueEnginePlanTask(
   todayStr: string,
   target: { surahNumber: number; startAyah: number; endAyah: number; enginePlanId?: string | null; enginePlanDate?: string | null }
 ): DueEnginePlanTaskMatch | null {
-  return plans.flatMap(plan => {
+  const matches = plans.flatMap(plan => {
     if (!plan.isActive || plan.isPaused || !Array.isArray(plan.schedule)) return [];
     if (target.enginePlanId && plan.id !== target.enginePlanId) return [];
     return plan.schedule.flatMap(day => {
@@ -127,7 +127,11 @@ export function findMatchingDueEnginePlanTask(
     a.day.date.localeCompare(b.day.date) ||
     (a.plan.input?.title || a.plan.title || '').localeCompare(b.plan.input?.title || b.plan.title || '', 'ar') ||
     a.plan.id.localeCompare(b.plan.id)
-  )[0] ?? null;
+  );
+
+  // Never guess which plan owns a duplicate ayah range. Exact identity from
+  // the launch route wins; legacy/ambiguous sessions fail closed instead.
+  return matches.length === 1 ? matches[0] : null;
 }
 
 /** Return the earliest due task for one plan; future work is never eligible. */
