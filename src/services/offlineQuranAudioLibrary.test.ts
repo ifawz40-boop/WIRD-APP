@@ -850,6 +850,11 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
       (recoveredBeforeResume.status === 'partial' || recoveredBeforeResume.status === 'queued'),
       'After restart, the first verified ayah must remain durable and the interrupted job must be resumable'
     );
+    const recoveredItems = await restartedTab.getJobItems(job.jobId);
+    assert(recoveredItems.find(item => item.globalAyahNumber === globalAyahOne)?.status === 'verified',
+      'The first ayah item must remain individually marked verified after a cold restart');
+    assert(recoveredItems.filter(item => item.status === 'verified').length === 1,
+      'No unfinished ayah may be reported verified after the interrupted request was aborted');
 
     const completed = await restartedTab.startOrResumeJob(job.jobId);
     assert(completed?.status === 'completed' && completed.completedItems === 3,
