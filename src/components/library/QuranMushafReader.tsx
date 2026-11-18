@@ -458,38 +458,37 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     setPage(nextPage);
   };
 
-  const jumpToNavigationPoint = (point: NavigationPoint) => {
+  const jumpToNavigationPoint = async (point: NavigationPoint): Promise<number | null> => {
     const target = { surahNumber: point.surahNumber, ayahNumber: point.ayahNumber };
     if (point.page === page && audioAyahs.length &&
         audioAyahs.some(ayah => ayah.surahNumber === target.surahNumber && ayah.numberInSurah === target.ayahNumber)) {
       document.getElementById('wird-ayah-' + point.surahNumber + '-' + point.ayahNumber)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       pendingTargetRef.current = null;
-      return;
+      return page;
     }
 
     if (readerLayout === 'printed') {
       const candidatePages = [point.page, point.page - 1, point.page + 1]
         .filter(candidate => candidate >= 1 && candidate <= 604);
-      void (async () => {
-        for (const candidate of candidatePages) {
-          try {
-            const data = await loadMushafFacsimilePage(candidate);
-            if (data.ayahAreas.some(area => area.surahNumber === target.surahNumber && area.ayahNumber === target.ayahNumber)) {
-              changePage(candidate);
-              pendingTargetRef.current = target;
-              return;
-            }
-          } catch {
-            // A neighboring page may be temporarily unavailable; try the next grounded candidate.
+      for (const candidate of candidatePages) {
+        try {
+          const data = await loadMushafFacsimilePage(candidate);
+          if (data.ayahAreas.some(area => area.surahNumber === target.surahNumber && area.ayahNumber === target.ayahNumber)) {
+            changePage(candidate);
+            pendingTargetRef.current = target;
+            return candidate;
           }
+        } catch {
+          // A neighboring page may be temporarily unavailable; try the next grounded candidate.
         }
-        setPageJumpError('تعذر تحديد صفحة الآية في تخطيط المصحف المطبوع؛ يمكنك استخدام العرض المرن للانتقال إليها.');
-      })();
-      return;
+      }
+      setPageJumpError('تعذر تحديد صفحة الآية في تخطيط المصحف المطبوع؛ يمكنك استخدام العرض المرن للانتقال إليها.');
+      return null;
     }
 
     changePage(point.page);
     pendingTargetRef.current = target;
+    return point.page;
   };
 
   const jumpToJuz = (juz: number) => {
@@ -502,24 +501,23 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     if (point) jumpToNavigationPoint(point);
   };
 
-  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number): number | null => {
+  const handleNavigateToAyah = (surahNumber: number, ayahNumber: number): Promise<number | null> => {
     const targetPage = Object.entries(PAGE_INDEX).find(([, segments]) =>
       segments.some(segment => segment.surahNumber === surahNumber && ayahNumber >= segment.startAyah && ayahNumber <= segment.endAyah)
     );
-    if (!targetPage) return null;
-    const pageNumber = Number(targetPage[0]);
-    jumpToNavigationPoint({ surahNumber, ayahNumber, page: pageNumber });
-    return pageNumber;
+    if (!targetPage) return Promise.resolve(null);
+    return jumpToNavigationPoint({ surahNumber, ayahNumber, page: Number(targetPage[0]) });
   };
 
-  const handleNavigateFromTafsir = (surahNumber: number, ayahNumber: number): number | null => {
-    const pageNumber = handleNavigateToAyah(surahNumber, ayahNumber);
-    void loadSurahVerses(surahNumber).then(verses => {
+  const handleNavigateFromTafsir = async (surahNumber: number, ayahNumber: number): Promise<number | null> => {
+    const pageNumber = await handleNavigateToAyah(surahNumber, ayahNumber);
+    try {
+      const verses = await loadSurahVerses(surahNumber);
       const targetAyah = verses.find(ayah => ayah.numberInSurah === ayahNumber);
       if (targetAyah) setTafsirAyah(targetAyah);
-    }).catch(error => {
+    } catch (error) {
       console.warn('[WIRD Mushaf] Could not restore the selected local ayah after Tafsir navigation:', error);
-    });
+    }
     return pageNumber;
   };
 
