@@ -1,15 +1,18 @@
-# Current implementation status — 2026-11-13
+# Current implementation status — 2026-11-18
 
-> This is the current branch-aware status. The original PR #355-only status below is historical and must not be read as the latest work.
+> Current branch-aware status. The historical planning checkpoints below are retained for traceability and are not the current implementation status.
 
-- Main does not yet contain a complete persistent Offline Audio download feature.
-- PR #368 is OPEN/DRAFT at head `ffa55b1f9c378a5f50fa4eb3656c1aadf4a27710`. Its branch includes a unified metadata library, Cache Storage adapter, bounded HTTP downloader, and job lifecycle/retry/pause/resume/cancel work with tests. It is not merged or in Production.
-- PR #366 is a separate Offline/PWA shell/readiness change; it does not by itself complete the audio-download worker protocol or local playback integration.
-- Remaining #368 work: Service Worker message protocol/integration, download UI/library, playback from verified local files, real browser/device airplane-mode/restart/quota tests, and proof that audio stays excluded from Firebase and backups.
-- PRs #358/#359 are superseded by #368 and must not be merged independently.
-- See [CONTINUE_HERE.md](../CONTINUE_HERE.md) for current PR heads and [CHANGE_CONTROL.md](../CHANGE_CONTROL.md) for shared-file sequencing.
+- The unified explicit offline Quran-audio library is implemented in the PR #390 candidate branch, not yet merged to main or released.
+- Latest candidate head at this checkpoint: `c90b9dae9bc03e1704c232caca4f9c3bfca6446d`; exact-head Quality Gate #4585 is running. Previous exact-head #4574 passed the application job (774 unit assertions, 31 Firestore Rules tests, 184 Playwright passed / 0 failed / 2 intentional viewport skips), but predates the newest cache-sanitization/MJS/WASM hardening.
+- Settings UI supports user-initiated downloads for a complete Surah, Juz, or selected memorization plan using seven curated Al Quran Cloud reciter editions. No automatic full-Quran download.
+- Downloads use exact HTTPS CDN URL validation, allowlisted reciter/edition IDs, HTTP 200 and audio MIME validation, declared/actual byte-size checks, an 8 MiB per-file cap, bounded concurrency (default 2), quota preflight and a 25 MiB application-storage reserve.
+- Jobs/files/items/locks/staging metadata live in IndexedDB; audio bytes live in a dedicated Cache Storage namespace. Progress is committed per verified ayah. Cross-tab leases, pause/abort, cancel, retry/resume, delete, startup reconciliation, staged-orphan cleanup and cache-generation verification are implemented.
+- Local playback resolves verified local audio first; online fallback remains available. EveryAyah is stream-only and legacy cache entries are pruned. Opportunistic next-ayah caching remains separate (up to 20 ayahs, bounded 40-entry cache).
+- Audio remains device-local and is excluded from Firebase sync and account backups. Persistent browser storage is requested only after explicit user action and is never guaranteed.
+- Release blockers: PR #390 remains Draft/HOLD; security audit still flags `picomatch@4.0.7` in the Vite toolchain with no patched upstream release; latest hardening needs exact-head CI; real-device cold-restart/airplane-mode and quota/eviction acceptance remain outstanding. No merge or production deploy.
 
 ---
+
 
 # WIRD — Offline Quran audio download plan
 
@@ -34,7 +37,7 @@
 # WIRD — Optional Offline Quran Audio Downloads
 
 ## Status
-Phased implementation in progress. PR #355 introduces only the pure, tested range planner; downloads, persistent manifest storage, worker protocol, UI, and offline playback are not implemented yet. Keep this feature separate from the existing opt-in application-shell preparation and opportunistic next-ayah cache.
+Implemented in the current PR #390 candidate branch as a user-initiated device-local library. It is separate from the app-shell preparation and the opportunistic next-ayah cache. It is not merged/released, and real-device airplane-mode acceptance remains outstanding.
 
 ## Source terms re-check — 2026-11-11
 - Official Al Quran Cloud terms explicitly permit streaming, embedding, and downloading recitations for personal and educational use at the published bitrates; copyright remains with the reciters or their estates: https://alquran.cloud/terms-and-conditions
