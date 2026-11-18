@@ -258,5 +258,19 @@ export function runDailySessionSelectionTests(): { passed: number; failed: numbe
     assert(exact?.day.date === '2026-11-05', 'Completion must update the selected date, not an older identical task');
   });
 
+
+  test('Daily primary session retains exact originating plan ID and scheduled date', () => {
+    const planA = makeEnginePlan([
+      makeDay('2026-11-04', makeTask(2)),
+      makeDay('2026-11-05', makeTask(3))
+    ], { id: 'plan-a', title: 'الخطة الأولى', input: { title: 'الخطة الأولى' } as EngineGeneratedPlan['input'] });
+    const planB = makeEnginePlan([
+      makeDay('2026-11-05', makeTask(4))
+    ], { id: 'plan-b', title: 'الخطة الثانية', input: { title: 'الخطة الثانية' } as EngineGeneratedPlan['input'] });
+    const selection = getDailySessionSelection([], [planB, planA], [], '2026-11-05');
+    assert(selection.kind === 'session' && selection.enginePlanId === 'plan-a', 'Primary selection must keep the deterministic source plan');
+    assert(selection.kind === 'session' && selection.enginePlanDate === '2026-11-04', 'Primary selection must keep the exact overdue schedule date');
+  });
+
   return { passed, failed };
 }
