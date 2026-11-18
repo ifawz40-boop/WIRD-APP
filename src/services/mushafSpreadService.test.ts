@@ -6,6 +6,8 @@ import {
   saveMushafSpreadMode,
   getSavedMushafTafsirLayout,
   saveMushafTafsirLayout,
+  getSavedMushafTafsirPagePreferences,
+  saveMushafTafsirPagePreferences,
   TOTAL_MUSHAF_PAGES
 } from './mushafSpreadService';
 
@@ -66,6 +68,27 @@ export function runMushafSpreadServiceTests(): { passed: number; failed: number 
       saveMushafTafsirLayout('session', 'panel');
       assert(getSavedMushafTafsirLayout('library') === 'replace_opposite', 'Library Tafsir layout mismatch');
       assert(getSavedMushafTafsirLayout('session') === 'panel', 'Session Tafsir layout mismatch');
+    } finally {
+      Object.defineProperty(globalThis, 'localStorage', { value: previousStorage, configurable: true });
+    }
+  });
+
+
+  test('Per-source-page Tafsir preferences persist locally and reject invalid page IDs', () => {
+    const previousStorage = globalThis.localStorage;
+    Object.defineProperty(globalThis, 'localStorage', { value: createMemoryStorage(), configurable: true });
+    try {
+      saveMushafTafsirPagePreferences('library', {
+        sourcePages: { 1: true, 2: true, 605: true, 0: true },
+        preferredSourcePage: 2
+      });
+      const saved = getSavedMushafTafsirPagePreferences('library');
+      assert(saved.sourcePages[1] === true && saved.sourcePages[2] === true, 'Valid source-page preferences must persist');
+      assert(saved.sourcePages[605] !== true && saved.sourcePages[0] !== true, 'Out-of-range page preferences must be rejected');
+      assert(saved.preferredSourcePage === 2, 'Most recently selected source page must persist');
+      saveMushafTafsirPagePreferences('session', { sourcePages: { 3: true }, preferredSourcePage: 3 });
+      assert(getSavedMushafTafsirPagePreferences('session').preferredSourcePage === 3, 'Session preference must be independent');
+      assert(getSavedMushafTafsirPagePreferences('library').preferredSourcePage === 2, 'Library preference must remain unchanged');
     } finally {
       Object.defineProperty(globalThis, 'localStorage', { value: previousStorage, configurable: true });
     }
