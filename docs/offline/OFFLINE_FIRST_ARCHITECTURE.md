@@ -19,9 +19,12 @@ The offline package is resumable. A separate content cache keeps downloaded asse
 
 ## Audio behavior
 
-When a user starts Quran or ruqyah playback while online, WIRD asks the service worker to cache a short upcoming segment (up to 20 ayahs). The worker accepts only HTTPS URLs from the reviewed EveryAyah reciter folders and the curated Al Quran Cloud reciter editions. It validates the response type and content type, and keeps a bounded 40-entry audio cache.
+WIRD has two separate audio-storage paths:
 
-This is opportunistic segment caching, not a full-surah download or a complete offline recitation library. Playback is never blocked by a cache failure. Browser storage pressure may evict cached media.
+1. **Opportunistic playback cache:** when Quran/ruqyah playback starts online, the service worker may cache a short upcoming segment (up to 20 ayahs) in a bounded 40-entry cache. This is best-effort and may be evicted. EveryAyah remains stream-only; legacy entries are pruned.
+2. **Explicit offline audio library (PR #390 candidate, not yet released):** users can select a complete Surah, Juz, or memorization plan and one of seven curated Al Quran Cloud reciter editions. The downloader validates the exact HTTPS CDN host/path and reciter ID, HTTP 200, audio MIME, non-empty body, declared/actual length, and an 8 MiB per-file maximum. It uses default concurrency 2, quota preflight with a 25 MiB app-data reserve, IndexedDB job/file/item/lock/staging metadata, a dedicated Cache Storage namespace, cross-tab leases, generation-scoped writes with read-back verification, and startup reconciliation. Pause/abort, cancel, retry/resume, delete, and orphan cleanup are implemented. Local playback resolves verified cached audio before network fallback.
+
+Both paths remain device-local; audio files are excluded from Firebase sync and account backups. Storage persistence is requested only after explicit user action and is never guaranteed. Automated tests do not replace real-device cold-restart/airplane-mode acceptance.
 
 ## Storage protection
 
