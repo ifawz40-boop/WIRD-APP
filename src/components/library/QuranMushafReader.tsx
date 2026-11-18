@@ -365,12 +365,13 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         setSegmentPlaybackStatus(null);
         revokeAllActiveAudioUrls();
         globalAudioCoordinator.releaseFocus('mushaf');
-        if (continueAcrossPages && page < 604) {
+        const nextPage = stepSpreadPage(page, 'next', isTwoPageSpreadActive);
+        if (continueAcrossPages && nextPage !== page && nextPage <= 604) {
           autoPlayNextPageRef.current = true;
           // Keep the next-page effect from seeing the previous page's ayahs
           // before the page loader has started and replaced them.
           setIsLoading(true);
-          setPage(page + 1);
+          setPage(nextPage);
         }
       },
       onError: error => {
