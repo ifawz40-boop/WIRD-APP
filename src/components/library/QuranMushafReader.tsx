@@ -526,6 +526,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     typeof window !== 'undefined' &&
     resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
     window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+  const lastNavigablePage = isTwoPageSpreadActive ? 603 : 604;
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
@@ -1085,6 +1086,42 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
           </div>
         )}
       </main>
+
+      {/* Persistent bottom page navigation for long Mushaf reading sessions */}
+      <nav
+        aria-label="التنقل بين صفحات المصحف"
+        className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-[#1C4E46]/15 bg-white/95 p-3 shadow-md dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+      >
+        <button
+          type="button"
+          aria-label="الصفحة السابقة"
+          disabled={page <= 1}
+          onClick={() => {
+            changePage(stepSpreadPage(page, 'prev', isTwoPageSpreadActive));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-[#1C4E46]/15 bg-[#F9F6EE] px-3 py-2 text-sm font-bold text-[#1C4E46] transition-colors hover:border-[#C59B27] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#E0A96D]/25 dark:bg-[#0B132B] dark:text-[#E0A96D]"
+        >
+          <ChevronRight className="h-5 w-5" />
+          <span>الصفحة السابقة</span>
+        </button>
+        <span aria-live="polite" aria-atomic="true" className="shrink-0 rounded-lg bg-[#F2EDE2] px-3 py-2 text-xs font-bold tabular-nums text-[#1C4E46] dark:bg-[#162744] dark:text-[#E0A96D]">
+          {page} / 604
+        </span>
+        <button
+          type="button"
+          aria-label="الصفحة التالية"
+          disabled={page >= lastNavigablePage}
+          onClick={() => {
+            changePage(stepSpreadPage(page, 'next', isTwoPageSpreadActive));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-[#1C4E46]/15 bg-[#F9F6EE] px-3 py-2 text-sm font-bold text-[#1C4E46] transition-colors hover:border-[#C59B27] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#E0A96D]/25 dark:bg-[#0B132B] dark:text-[#E0A96D]"
+        >
+          <span>الصفحة التالية</span>
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+      </nav>
 
       {/* Hizb Quarters Modal Picker */}
       {showHizbPicker && (
