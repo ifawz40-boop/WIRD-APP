@@ -581,11 +581,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     audio.onplaying = () => {
       if (audioRef.current === audio) setIsAudioLoading(false);
     };
-    audio.onerror = () => {
-      if (audioRef.current !== audio) return;
-      console.warn('Audio playback failed to load', audio.error);
+    const resetFailedPlayback = () => {
+      // Request sequence is authoritative: a late media error from an older
+      // element must not interrupt a newer playback request (especially on mobile).
+      if (requestSeq !== playbackRequestSeqRef.current) return;
+      if (audioRef.current === audio) audioRef.current = null;
       audio.onended = null;
-      audioRef.current = null;
+      audio.onerror = null;
+      audio.onplaying = null;
+      try { audio.pause(); } catch { /* the element may already be detached */ }
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
@@ -593,16 +597,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       globalAudioCoordinator.releaseFocus('session');
     };
 
-    audio.play().catch(e => {
-      if (audioRef.current !== audio) return;
-      console.warn("Audio playback error", e);
-      audio.onended = null;
-      audioRef.current = null;
-      playbackIterationRef.current = 1;
-      setIsPlaying(false);
-      setIsAudioLoading(false);
-      revokeAllActiveAudioUrls();
-      globalAudioCoordinator.releaseFocus('session');
+    audio.onerror = () => {
+      console.warn('Audio playback failed to load', audio.error);
+      resetFailedPlayback();
+    };
+
+    audio.play().catch(error => {
+      console.warn('Audio playback error', error);
+      resetFailedPlayback();
     });
 
     attachAyahRepeatHandler(
