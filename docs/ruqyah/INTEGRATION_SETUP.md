@@ -48,7 +48,7 @@ Without the secret, the external library displays a clear configuration message.
 - muslimpack/Ruqayyah is GPL-3.0 and contains content associated with a separately credited book. WIRD's repository has no project-level license grant for importing GPL code, so no source code or book content was copied. Its reading-session, resume, and accessibility ideas were reviewed as design references only.
 - mbougarne/roqia is MIT-licensed, but is a React Native application. Its content and code were not copied into WIRD.
 - kanglerian/api-ruqyah-syariyyah is not used as a production source: its dataset is Indonesian-focused and the reviewed JSON contains incomplete Quran text / inconsistent field naming.
-- islamicapi/ruqyah is used only through its documented API as a numeric Quran-locator source. No dataset or audio files are copied; the repository's public “Open Source” badge is not a substitute for an explicit license.
+- islamicapi/ruqyah is used through its documented hosted API for numeric Quran locators and the owner-approved educational topic library. WIRD does not copy or rehost its dataset or audio files; the repository's public “Open Source” badge is not a substitute for an explicit redistribution license.
 
 ## Religious-content safeguards
 
@@ -63,7 +63,7 @@ Without the secret, the external library displays a clear configuration message.
 - IslamicAPI index access requires the server secret `ISLAMICAPI_API_KEY`; the proxy exposes only validated numeric Quran coordinates.
 - The three external Quran locator lists are available only if the server key and provider endpoint work. Sunnah entries from the instant recitation endpoint remain disabled; topic article content is exposed only when `RUQYAH_TOPICS_ENABLED=true`.
 - Ruqyah Quran audio is verse-by-verse through the seven-reciter Al Quran Cloud allowlist. Complete Brief/Medium/Long MP3 recordings are not integrated.
-- Full program audio and any external religious content remain out of production until their exact contents, attribution, licensing, and source reliability are reviewed.
+- Full-program audio remains out of production until its exact contents, reciter attribution, licensing, and source reliability are reviewed. Topic articles are a separate owner-approved, attributed IslamicAPI integration.
 - Ruqyah progress is UID-scoped locally and has a journaled V2 sync model; production cross-device readiness remains subject to the global release gates.
 
 ## Ruqyah progress cloud sync (Phase 2)
