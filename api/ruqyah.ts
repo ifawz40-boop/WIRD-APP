@@ -257,9 +257,9 @@ async function readBoundedUpstreamText(response: Response): Promise<string | nul
 }
 
 /**
- * Server-side proxy for the external Quran locator only. The API key is never
- * sent to the browser. Provider-authored text is stripped; only validated
- * numeric Quran coordinates and item IDs are returned.
+ * Server-side IslamicAPI proxy. Quran locator responses are reduced to canonical
+ * numeric coordinates; topic articles use a bounded, allowlisted text-block schema.
+ * The API key is never sent to the browser.
  */
 async function handleRuqyahRequest(req: any, res: any) {
   // The proxy is consumed by WIRD through same-origin requests; do not grant cross-origin access.
