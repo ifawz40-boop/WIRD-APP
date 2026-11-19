@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Header } from './components/layout/Header';
 import { Sidebar, NavTabId } from './components/layout/Sidebar';
 import { DashboardView } from './components/dashboard/DashboardView';
@@ -83,9 +83,9 @@ export default function App() {
     }
   };
 
-  // Global Ctrl+B / Cmd+B shortcut. KeyboardEvent.code keeps the physical
-  // KeyB binding stable when the user switches to an Arabic keyboard layout.
-  useEffect(() => {
+  // Install the global shortcut before the first paint after the app shell mounts.
+  // This prevents a freshly authenticated/guest session from briefly missing the first key press.
+  useLayoutEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isToggleShortcut = (e.ctrlKey || e.metaKey) &&
         !e.altKey && !e.shiftKey &&
