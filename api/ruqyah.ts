@@ -274,6 +274,10 @@ async function handleRuqyahRequest(req: any, res: any) {
   const query = req.query || {};
   const type = readQueryValue(query.type);
   if (!isAllowedType(type)) return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
+  if ((type === 'topic' || type === 'topic-category') && process.env.RUQYAH_TOPICS_ENABLED !== 'true') {
+    res.setHeader('Cache-Control', 'no-store');
+    return send(res, 404, { error: 'RUQYAH_TOPICS_DISABLED' });
+  }
 
   const params = new URLSearchParams({ type, lang: 'ar' });
   if (type === 'instant') {
@@ -300,7 +304,7 @@ async function handleRuqyahRequest(req: any, res: any) {
     params.set('topic', topic);
     const id = readQueryValue(query.id);
     if (id) {
-      if (!/^[1-9]\\d{0,8}$/.test(id)) return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
+      if (!/^[1-9]\d{0,8}$/.test(id)) return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
       params.set('id', id);
     }
     const random = readQueryValue(query.random);
