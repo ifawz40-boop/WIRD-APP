@@ -9,7 +9,7 @@
 - The current UI calls only `type=instant` with `lang=ar`, one of the three allowlisted programs, and `source=from-quran` through `/api/ruqyah`.
 - The server proxy currently allowlists only `instant` + `from-quran`. It does **not** call `instant-category`, `from-sunnah`, `topic-category`, or `topic`; those endpoints are not implemented in WIRD.
 - The API requires an api_key query parameter. WIRD sends it only from the server-side proxy (api/ruqyah.ts); it is never placed in browser code or committed files.
-- The API documentation describes its Ruqyah dataset as free to access/download, but this implementation does not assume that every API key tier is free. Check the provider's current terms and pricing before enabling the key.
+- The provider documents its Ruqyah dataset as free to access/download. Keep usage behind the server proxy and monitor the provider dashboard for API-call and bandwidth limits.
 
 Set the secret as ISLAMICAPI_API_KEY:
 
@@ -29,7 +29,7 @@ Without the secret, the external library displays a clear configuration message.
 - The API route `/api/quran-audio?type=reciters` returns only this fixed allowlist. The browser cannot supply an arbitrary upstream URL or reciter ID.
 - Al Quran Cloud's published terms state that recitations are licensed by the reciters or their estates for free non-commercial redistribution at the published bitrates, and may be streamed/embedded for personal and educational use. Recheck the current terms before changing use or bundling audio.
 
-### Full-program Ruqyah recordings — not integrated
+### Educational topic articles — integrated behind a feature flag\n\n- Set `RUQYAH_TOPICS_ENABLED=true` in Vercel Preview and Production to expose the topic library; any other value keeps the endpoints disabled.\n- The server fetches Arabic categories and articles from IslamicAPI, validates the documented structure, enforces the known topic-slug allowlist, limits payload sizes, and strips unknown fields.\n- The UI renders article blocks as text (never as HTML), labels IslamicAPI as the source, and explains that the material is educational rather than a fatwa or medical diagnosis.\n- The API key remains server-only.\n\n### Full-program Ruqyah recordings — not integrated
 
 - IslamicAPI documents separate MP3 links for Brief, Medium, and Long programs, but WIRD does **not** currently wire those files into `RuqyahView`.
 - The current player queues Quran ayahs from WIRD's canonical local corpus and plays them individually through the approved Al Quran Cloud reciter allowlist. It does not play a complete recording containing both Quran and Sunnah supplications.
@@ -54,7 +54,7 @@ Without the secret, the external library displays a clear configuration message.
 ## Current limitations
 
 - IslamicAPI index access requires the server secret `ISLAMICAPI_API_KEY`; the proxy exposes only validated numeric Quran coordinates.
-- The three external Quran locator lists are available only if the server key and provider endpoint work. No Sunnah entry or topic-article content is currently exposed by this integration.
+- The three external Quran locator lists are available only if the server key and provider endpoint work. Sunnah entries from the instant recitation endpoint remain disabled; topic article content is exposed only when `RUQYAH_TOPICS_ENABLED=true`.
 - Ruqyah Quran audio is verse-by-verse through the seven-reciter Al Quran Cloud allowlist. Complete Brief/Medium/Long MP3 recordings are not integrated.
 - Full program audio and any external religious content remain out of production until their exact contents, attribution, licensing, and source reliability are reviewed.
 - Ruqyah progress is UID-scoped locally and has a journaled V2 sync model; production cross-device readiness remains subject to the global release gates.
