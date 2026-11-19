@@ -31,7 +31,7 @@ async function request<T>(params: Record<string, string>, signal: AbortSignal): 
     throw new Error('تعذر الاتصال بمكتبة موضوعات الرقية. تحقق من الإنترنت ثم أعد المحاولة.');
   }
   const raw = await response.text();
-  if (raw.trim().startsWith('<') || !/application\\/(?:[a-z0-9.+-]*\\+)?json/i.test(response.headers.get('content-type') || '')) {
+  if (raw.trim().startsWith('<') || !/application\/(?:[a-z0-9.+-]*\+)?json/i.test(response.headers.get('content-type') || '')) {
     throw new Error('استجابة مكتبة الرقية ليست JSON صالحة.');
   }
   let payload: unknown;
