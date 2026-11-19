@@ -21,6 +21,22 @@ permissions:
   contents: read
 
 jobs:
+  security-audit:
+    name: Dependency security audit (all dependency groups)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Setup Bun for the locked dependency graph
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Install dependencies from the committed lockfile
+        run: bun install --frozen-lockfile
+      - name: Audit the complete committed Bun dependency graph
+        run: bun audit --audit-level=high
+
   verify:
     name: Tests, TypeScript, and production build
     runs-on: ubuntu-24.04
@@ -41,8 +57,6 @@ jobs:
           bun-version: 1.4.4
       - name: Install dependencies from the committed lockfile
         run: bun install --frozen-lockfile
-      - name: Audit the committed Bun dependency graph
-        run: bun audit --audit-level=high
       - name: Run automated test suites
         run: bun run test
       - name: Verify all 604 printed Mushaf coordinate maps against WIRD local Quran data
