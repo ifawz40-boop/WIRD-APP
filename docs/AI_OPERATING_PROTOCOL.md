@@ -184,7 +184,7 @@ Ownership:
 - `docs/CONTINUE_HERE.md` is the central continuation entry point; coordinate its edits centrally.
 - Workstream-specific docs may be updated by the owning branch when ownership permits.
 - Update `docs/DEVELOPMENT_ROADMAP.md` only when roadmap scope/order/status materially changes.
-- Update `docs/CHAT_WORKSTREAMS_AR.md` only when ownership or concurrency boundaries change.
+- Update `docs/AI_COLLABORATION_SYSTEM_AR.md` when tool availability, collaboration roles, setup, or workstream ownership/concurrency changes.
 - Keep this protocol stable; change it only when the operating model changes.
 
 If repository write access is unavailable, provide the checkpoint in the conversation and clearly say GitHub documentation was not updated. Never claim a documentation commit that did not happen.
