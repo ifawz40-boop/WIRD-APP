@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 const viewSource = readFileSync(new URL('../components/ruqyah/RuqyahView.tsx', import.meta.url), 'utf8');
+const apiLibrarySource = readFileSync(new URL('../components/ruqyah/RuqyahApiLibrary.tsx', import.meta.url), 'utf8');
 
 export function runRuqyahViewAudioLockTests(): { passed: number; failed: number } {
   let passed = 0;
@@ -111,5 +112,24 @@ export function runRuqyahViewAudioLockTests(): { passed: number; failed: number 
       viewSource.includes('audio.load();')
   );
 
+  test(
+    'Ruqyah index requests have a bounded timeout, abort on unmount, and settle loading state',
+    apiLibrarySource.includes('RUQYAH_INDEX_REQUEST_TIMEOUT_MS = 10_000') &&
+      apiLibrarySource.includes('controller.abort()') &&
+      apiLibrarySource.includes('انتهت مهلة تحميل فهرس مواضع الآيات') &&
+      apiLibrarySource.includes('if (active) setLoading(false)')
+  );
+  test(
+    'External index entries are validated against canonical Quran coordinates before caching',
+    apiLibrarySource.includes('resolveApiQuranEntry(entry)') &&
+      apiLibrarySource.includes('writeRuqyahApiIndexCache(program, normalized)') &&
+      apiLibrarySource.includes('تعذر تحديث الفهرس الآن؛ نعرض آخر نسخة محفوظة')
+  );
+  test(
+    'Per-ayah pause and media failures release the global audio focus lock',
+    viewSource.includes("audioRef.current?.pause();") &&
+      viewSource.includes("globalAudioCoordinator.releaseFocus('ruqyah');") &&
+      viewSource.includes('تعذر تحميل ملف التلاوة. لم يتم استبداله بتسجيل من مصدر آخر.')
+  );
   return { passed, failed };
 }
