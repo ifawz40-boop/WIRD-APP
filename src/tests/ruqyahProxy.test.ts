@@ -365,22 +365,93 @@ export async function runRuqyahProxyTests(): Promise<{ passed: number; failed: n
         'Chunked provider response above the byte limit must be rejected');
     });
 
-    await test('All unreviewed educational topic endpoints remain hard-disabled even if an environment flag is set', async () => {
+    await test('Topic endpoints stay disabled unless the server-side feature flag is exactly true', async () => {
+      process.env.RUQYAH_TOPICS_ENABLED = 'false';
+      process.env.ISLAMICAPI_API_KEY = 'test-secret';
+      let called = false;
+      globalThis.fetch = (async () => { called = true; throw new Error('disabled topics must not call upstream'); }) as typeof fetch;
+      const res = new MockResponse();
+      await ruqyahHandler({
+        method: 'GET',
+        query: { type: 'topic-category' },
+        headers: { 'x-real-ip': '198.51.100.211' }
+      }, res);
+      assert(res.statusCode === 404 && res.body?.error === 'RUQYAH_TOPICS_DISABLED' && !called,
+        'Topic endpoints must remain closed unless the server flag is true');
+    });
+
+    await test('Topic category indexes and article blocks are exposed through the gated server proxy only', async () => {
+      process.env.RUQYAH_TOPICS_ENABLED = 'true';
+      process.env.ISLAMICAPI_API_KEY = 'private-topic-key';
+      let requestedCategory = false;
+      globalThis.fetch = (async (input: RequestInfo | URL) => {
+        const url = new URL(String(input));
+        if (url.searchParams.get('type') === 'topic-category') {
+          requestedCategory = true;
+          return new Response(JSON.stringify({
+            status: 'success',
+            data: [{
+              title: 'مقدمة في الرقية',
+              subcategories: [{
+                subcategory: 'مقدمة في الرقية',
+                'subcategory-slug': 'introduction-to-ruqyah',
+                ruqyah: [{ id: '1', title: 'تعريف الرقية' }]
+              }]
+            }]
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+        return new Response(JSON.stringify({
+          status: 'success',
+          data: [{
+            sub_id: 1,
+            title: 'ما هي الرقية؟',
+            section_title: 'التعريف',
+            category: 'مقدمة في الرقية',
+            content: [
+              { type: 'text', content: 'مقال تعليمي' },
+              { type: 'arabic', content: 'نص عربي من المصدر' },
+              { type: 'translation', content: 'ترجمة النص' },
+              { type: 'header', content: 'عنوان فرعي' }
+            ],
+            ignored_provider_field: 'must not leak'
+          }]
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }) as typeof fetch;
+
+      const categories = new MockResponse();
+      await ruqyahHandler({ method: 'GET', query: { type: 'topic-category' }, headers: { 'x-real-ip': '198.51.100.212' } }, categories);
+      assert(requestedCategory && categories.statusCode === 200, 'Enabled topic categories should be fetched from IslamicAPI');
+      assert(categories.body?.data?.[0]?.subcategories?.[0]?.['subcategory-slug'] === 'introduction-to-ruqyah',
+        'The allowlisted topic slug should be returned');
+      assert(!JSON.stringify(categories.body).includes('private-topic-key'), 'The API key must never reach the browser');
+
+      const article = new MockResponse();
+      await ruqyahHandler({
+        method: 'GET',
+        query: { type: 'topic', topic: 'introduction-to-ruqyah' },
+        headers: { 'x-real-ip': '198.51.100.213' }
+      }, article);
+      assert(article.statusCode === 200 && article.body?.data?.[0]?.content?.length === 4,
+        'Topic article content blocks should be returned');
+      assert(!JSON.stringify(article.body).includes('ignored_provider_field'),
+        'Unrecognized provider fields must be stripped');
+      assert(JSON.stringify(article.body).includes('نص عربي من المصدر'),
+        'Arabic article blocks should be preserved as provider-authored educational content');
+    });
+
+    await test('Topic endpoint rejects unknown topic slugs before contacting IslamicAPI', async () => {
       process.env.RUQYAH_TOPICS_ENABLED = 'true';
       process.env.ISLAMICAPI_API_KEY = 'test-secret';
       let called = false;
-      globalThis.fetch = (async () => { called = true; throw new Error('unreviewed topic endpoint must not be contacted'); }) as typeof fetch;
-      for (const type of ['topic', 'topic-category']) {
-        const res = new MockResponse();
-        await ruqyahHandler({
-          method: 'GET',
-          query: { type, topic: 'introduction-to-ruqyah' },
-          headers: { 'x-real-ip': type === 'topic' ? '198.51.100.211' : '198.51.100.212' }
-        }, res);
-        assert(res.statusCode === 400 && res.body?.error === 'INVALID_RUQYAH_QUERY',
-          type + ' must remain disabled until content is curated and reviewed');
-      }
-      assert(!called, 'No unreviewed educational content endpoint may reach the provider');
+      globalThis.fetch = (async () => { called = true; throw new Error('unknown topic must not call upstream'); }) as typeof fetch;
+      const res = new MockResponse();
+      await ruqyahHandler({
+        method: 'GET',
+        query: { type: 'topic', topic: 'made-up-topic' },
+        headers: { 'x-real-ip': '198.51.100.214' }
+      }, res);
+      assert(res.statusCode === 400 && res.body?.error === 'INVALID_RUQYAH_QUERY' && !called,
+        'Only documented topic slugs may reach IslamicAPI');
     });
 
     await test('Ruqyah proxy rejects HTML fallbacks and malformed upstream payloads', async () => {
