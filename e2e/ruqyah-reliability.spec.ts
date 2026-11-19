@@ -68,6 +68,44 @@ test.describe('W09 Ruqyah page reliability', () => {
     await expect(page.getByRole('button', { name: 'إعادة المحاولة' })).toBeVisible();
   });
 
+  test('manual retry recovers from a transient upstream outage', async ({ page }) => {
+    await openRuqyah(page);
+    let attempts = 0;
+    await page.route('**/api/ruqyah?*', route => {
+      attempts += 1;
+      if (attempts === 1) {
+        return route.fulfill({
+          status: 502,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'RUQYAH_SOURCE_UNAVAILABLE' })
+        });
+      }
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [{ id: 1, title: '1:1-7' }] })
+      });
+    });
+    await openIndex(page);
+    await expect(page.getByRole('alert')).toContainText('غير متاح مؤقتًا');
+    await page.getByRole('button', { name: 'إعادة المحاولة' }).click();
+    await expect(page.getByRole('heading', { name: 'سورة الفاتحة' })).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    expect(attempts).toBe(2);
+  });
+
+  test('a valid empty index has a distinct empty state, not an error', async ({ page }) => {
+    await openRuqyah(page);
+    await page.route('**/api/ruqyah?*', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: [] })
+    }));
+    await openIndex(page);
+    await expect(page.getByText('لا توجد مواضع قرآنية في هذا القسم من الفهرس.')).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveCount(0);
+  });
+
   test('index timeout settles loading and offers retry', async ({ page }) => {
     test.setTimeout(40_000);
     await page.addInitScript(() => {
@@ -82,6 +120,7 @@ test.describe('W09 Ruqyah page reliability', () => {
     });
     await openRuqyah(page);
     await openIndex(page);
+    await expect(page.getByText('جارٍ تحديث الفهرس', { exact: true })).toBeVisible();
     await expect(page.getByRole('alert')).toContainText('انتهت مهلة تحميل فهرس مواضع الآيات', { timeout: 32_000 });
     await expect(page.getByText('جارٍ تحديث الفهرس', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'إعادة المحاولة' })).toBeVisible();
