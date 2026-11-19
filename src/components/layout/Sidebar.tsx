@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { 
   Home, 
   BookOpen, 
@@ -73,7 +73,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     previousDesktopOpenRef.current = isDesktopOpen;
   }, [isDesktopOpen]);
 
-  useEffect(() => {
+  // Attach modal keyboard/focus behavior synchronously with the drawer commit so
+  // Escape is reliable immediately after the opening interaction.
+  useLayoutEffect(() => {
     if (!isOpenMobile) return;
     previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     mobileCloseButtonRef.current?.focus();
