@@ -377,7 +377,9 @@ async function handleRuqyahRequest(req: any, res: any) {
       return send(res, 502, { error: 'INVALID_RUQYAH_SOURCE_RESPONSE' });
     }
 
-    res.setHeader('Cache-Control', type === 'instant'\n      ? 'public, s-maxage=3600, stale-while-revalidate=86400'\n      : 'no-store');
+    res.setHeader('Cache-Control', type === 'instant'
+      ? 'public, s-maxage=3600, stale-while-revalidate=86400'
+      : 'no-store');
     return send(res, 200, {
       status: 'success',
       data: sanitizedData,
