@@ -2,8 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 async function openRuqyah(page: Page): Promise<void> {
   await page.goto('/');
-  const guest = page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' });
-  if (await guest.isVisible().catch(() => false)) await guest.click();
+  await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
   await page.goto('/#/ruqyah');
   await expect(page.getByRole('button', { name: 'المكتبة الموسعة' })).toBeVisible();
 }
@@ -139,6 +138,35 @@ test.describe('W09 Ruqyah page reliability', () => {
       await page.getByRole('button', { name: 'إيقاف', exact: true }).click();
       await expect(page.getByRole('button', { name: 'استكمال' })).toHaveCount(0);
     }
+  });
+
+  test('Ruqyah applies shared playback speed without overwriting session repeat preferences', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('wird.audio.playbackRate.v1', '1.5');
+      localStorage.setItem('wird.audio.repeatCount.v1', '3');
+      localStorage.setItem('wird.audio.segmentRepeatCount.v1', '5');
+      const media = HTMLMediaElement.prototype;
+      media.load = function () {};
+      media.play = function () {
+        (window as unknown as { __wirdRuqyahAudio?: HTMLMediaElement }).__wirdRuqyahAudio = this;
+        this.dispatchEvent(new Event('play'));
+        return Promise.resolve();
+      };
+      media.pause = function () { this.dispatchEvent(new Event('pause')); };
+    });
+    await openRuqyah(page);
+    await page.getByRole('button', { name: 'تشغيل آيات القسم' }).click();
+    await expect.poll(() => page.evaluate(() =>
+      (window as unknown as { __wirdRuqyahAudio?: HTMLMediaElement }).__wirdRuqyahAudio?.playbackRate
+    )).toBe(1.5);
+
+    await page.getByRole('combobox', { name: 'اختيار قارئ الرقية' }).selectOption('ar.husary');
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('wird.audio.ruqyahReciter.v1'))).toBe('ar.husary');
+    const repeatPreferences = await page.evaluate(() => ({
+      repeat: localStorage.getItem('wird.audio.repeatCount.v1'),
+      segmentRepeat: localStorage.getItem('wird.audio.segmentRepeatCount.v1')
+    }));
+    expect(repeatPreferences).toEqual({ repeat: '3', segmentRepeat: '5' });
   });
 
   test('Ruqyah follows the shared reciter preference from the memorization session', async ({ page }) => {
