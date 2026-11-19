@@ -185,6 +185,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       setAudioIsPlaying(false);
       setAudioIsLoading(false);
       setAudioError('تعذر تشغيل التلاوة من المصدر المعتمد. تحقق من الاتصال ثم أعد المحاولة.');
+      globalAudioCoordinator.releaseFocus('ruqyah');
     }
   };
 
@@ -277,6 +278,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
         setAudioIsPlaying(false);
         setAudioIsLoading(false);
         setAudioError('تعذر استكمال التلاوة. تحقق من الاتصال بالإنترنت.');
+        globalAudioCoordinator.releaseFocus('ruqyah');
       });
     }
   };
@@ -291,6 +293,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
     if (audioCurrentItemId === item.id && audioIsPlaying) {
       audioRef.current?.pause();
       setAudioIsPlaying(false);
+      globalAudioCoordinator.releaseFocus('ruqyah');
       return;
     }
     startRuqyahAudio(item);
@@ -360,6 +363,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       setAudioIsPlaying(false);
       setAudioIsLoading(false);
       setAudioError('تعذر تحميل ملف التلاوة. لم يتم استبداله بتسجيل من مصدر آخر.');
+      globalAudioCoordinator.releaseFocus('ruqyah');
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
