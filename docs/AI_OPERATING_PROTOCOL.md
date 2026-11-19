@@ -22,8 +22,10 @@ Prefer free/open solutions, but evaluate license, privacy, reliability, maintena
 ### ChatGPT — technical coordinator and reviewer
 Own planning, architecture, research, workstream coordination, GitHub/PR review, Vercel status checks, test strategy, integration oversight, and durable handoffs. Use connected tools directly when authorized. Do not ask the owner to perform actions that available tools can perform.
 
-### Google AI Studio — implementation partner
-Use for code generation and editing, UI implementation, feature work, integration setup, multimodal work, image generation, and its available Build/Playground/GitHub capabilities. Give it a bounded task, relevant context, acceptance criteria, and explicit repository/branch constraints. Ask for concise evidence, not verbose self-evaluation.
+### Google AI Studio — main-only implementation partner
+Google AI Studio can access **`main` only** in this project. Treat this as a hard platform constraint unless the owner explicitly confirms it has changed. It cannot be assigned a feature branch, inspect an unmerged feature branch/PR as its working source, or be expected to create/manage a PR. Its repository edits/syncs target `main`.
+
+Use AI Studio for bounded implementation, UI/code editing, integration setup, multimodal work, image generation, and available Build/Playground capabilities. Before editing, inspect the current `main` state and its own workspace changes; preserve unknown/uncommitted work and never overwrite it blindly. Do not ask it to create a feature branch or PR. If a task requires branch isolation, parallel work, or PR review, ChatGPT/another GitHub-capable agent must handle that work on a feature branch; AI Studio can work from it only after it is merged into `main`. Give it a bounded task, relevant context, acceptance criteria, protected-file constraints, and concise evidence requirements.
 
 ### Google Antigravity — autonomous engineering agent
 Use for substantial multi-file coding tasks, repository exploration, implementation, debugging, test execution, and review when its access and current capabilities fit the task. Keep work isolated on a dedicated branch/worktree where possible.
@@ -44,20 +46,21 @@ Key documents:
 - `docs/CHAT_WORKSTREAMS_AR.md` — workstream ownership and conflict boundaries.
 - `docs/AI_OPERATING_PROTOCOL.md` — this operating protocol.
 
-Before consequential repository work, refresh the current repository identity, default branch, HEAD SHA, relevant open PRs, changed paths, and exact-head CI. Treat documentation snapshots and chat memory as context, not proof of current state. AI Studio may contain uncommitted changes not present on GitHub; inspect both sides before syncing or overwriting anything.
+Before consequential repository work, refresh the current repository identity, default branch, HEAD SHA, relevant open PRs, changed paths, and exact-head CI. Treat documentation snapshots and chat memory as context, not proof of current state. AI Studio is main-only: it cannot see unmerged feature branches/PRs. Its workspace may also contain uncommitted changes not present on GitHub; inspect both workspace and GitHub `main` before syncing or overwriting anything.
 
 ## 4. Workstream ownership and concurrency
 
 The central conversation is **WIRD — Central Coordinator & Integration**. Specialized conversations own W01–W10 and S11–S16 according to `docs/CHAT_WORKSTREAMS_AR.md`.
 
-- Give each substantial workstream a focused feature branch and PR.
+- Give each substantial workstream handled through GitHub-capable agents a focused feature branch and PR.
+- **Exception: Google AI Studio is main-only.** It does not participate in the feature-branch/PR workflow; schedule its `main` edits so they do not overlap with merges or other direct `main` updates.
 - Do not let two agents/chats edit the same branch or overlapping files concurrently.
 - Before editing shared files, inspect open PRs and changed-file overlap.
 - Central coordination/state files and integration-sensitive files are coordinated by the central owner.
 - Keep PRs focused. Avoid unrelated cleanup bundled with feature work.
 - When integrating work, inspect the exact base/head, rebase/merge effects, and all changed paths.
 
-Do not push directly to `main` unless the owner explicitly changes the repository policy. Prefer a focused PR and exact-head quality gates.
+For ChatGPT and other GitHub-capable agents, do not push directly to `main`; use a focused PR and exact-head quality gates. Google AI Studio is the known main-only exception: do not instruct it to create a branch/PR, and do not sync its workspace changes until the diff is inspected and the owner-approved `main` workflow is clear.
 
 ## 5. Task execution protocol
 
@@ -78,15 +81,17 @@ Proceed autonomously through safe, in-scope steps. Pause for explicit owner appr
 
 ## 6. AI Studio / Antigravity task briefs
 
-Every substantial agent task should specify:
-- Repository and exact branch/base SHA.
+Every substantial task brief should specify the repository, goal, acceptance criteria, relevant files, non-goals, protected areas, and required checks. Then apply the correct workflow:
+
+**For ChatGPT / GitHub-capable agents:**
+- Exact feature branch and base SHA.
 - Goal and user-visible acceptance criteria.
 - Relevant files/modules and known dependencies.
 - Explicit non-goals and protected areas.
 - Required tests and commands.
 - Required output: changed files, commit/PR reference, exact SHA, test results, CI/Preview status, blockers, and next action.
 
-Instruct agents to:
+For GitHub-capable agents, instruct them to:
 - Inspect existing code before changing it.
 - Preserve uncommitted work; never discard or overwrite unknown workspace changes.
 - Avoid broad refactors unless necessary and approved.
@@ -95,7 +100,7 @@ Instruct agents to:
 - Keep reports concise and factual.
 - Stop before modifying protected production configuration or secrets.
 
-When AI Studio's workspace and GitHub differ, first establish which contains the latest work. Never assume workspace edits were pushed or that GitHub contains all current work. Export/sync only after inspecting the diff and target branch.
+When AI Studio's workspace and GitHub `main` differ, first establish which contains the latest work. Never assume workspace edits were pushed or that GitHub contains all current work. Export/sync only after inspecting the full diff against the current `main`. Do not attempt to target a feature branch from AI Studio.
 
 ## 7. Quota, context, and cost efficiency
 
@@ -138,7 +143,8 @@ A build passing does not prove tests, CI, deployment, or runtime behavior. A Pre
 
 ## 9. GitHub, Vercel, Firebase, and security boundaries
 
-- Use feature branches and focused PRs; verify the exact SHA before review or merge.
+- ChatGPT and GitHub-capable agents: use feature branches and focused PRs; verify the exact SHA before review or merge.
+- Google AI Studio: `main` only; never assume it can access or modify an unmerged branch/PR. Coordinate its direct-main editing/sync window to avoid collisions, and inspect its diff before syncing.
 - Merge only when the applicable quality gates pass and the merge is within the owner's standing authorization.
 - Do not change production secrets, Vercel/Firebase production settings, production environment variables, Firebase project configuration, Firestore Rules, or user data without explicit approval.
 - Do not enable, disable, or alter production sync flags without explicit approval. In particular, protect `VITE_WIRD_REVISIONED_SYNC_ENABLED` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED`.
