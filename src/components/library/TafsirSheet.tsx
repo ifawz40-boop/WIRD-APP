@@ -70,10 +70,10 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
 
   // Restore focus only after the dialog has actually closed and unmounted.
   useEffect(() => {
-    if (isOpen) return;
+    if (isOpen || activeAyah) return;
     previousFocusRef.current?.focus();
     previousFocusRef.current = null;
-  }, [isOpen]);
+  }, [isOpen, Boolean(activeAyah)]);
 
   if (!activeAyah) return null;
 
