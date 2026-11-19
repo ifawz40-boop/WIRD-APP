@@ -4,9 +4,7 @@ Last reviewed: 2026-11-07 — audio source review updated
 
 ## Non-negotiable rule
 
-WIRD must not publish a religious text, recitation, explanation, ruling, or treatment claim merely because it appears in an API, repository, app, social post, or search result.
-
-A source is eligible only after its exact content, attribution, evidence, grading, and usage rights have been reviewed. When the evidence is unclear or disputed, omit the material until qualified review is complete. Do not present this software as a mufti or a medical diagnostic tool.
+WIRD distinguishes its own curated religious corpus from attributed third-party educational material. The project owner has explicitly approved IslamicAPI as a trusted provider for the optional Ruqyah topic library, including its category labels and article blocks. Display that material with clear IslamicAPI attribution; do not describe it as independently verified or as a WIRD-authored fatwa. Do not turn provider text into medical diagnosis or guaranteed treatment claims. Do not present this software as a mufti or a medical diagnostic tool.
 
 ## Allowed source hierarchy
 
