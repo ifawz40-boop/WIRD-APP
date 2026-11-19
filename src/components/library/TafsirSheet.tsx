@@ -20,6 +20,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
   const [activeAyah, setActiveAyah] = useState<Ayah | null>(ayah);
   const dialogRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -27,11 +28,13 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
     setActiveAyah(ayah);
   }, [ayah]);
 
-  // Trap keyboard focus inside modal when opened; restore opener focus on close.
+  // Wait until activeAyah has rendered the dialog and its close button before focusing.
+  // On the first open, the incoming ayah prop updates one render before activeAyah.
   const isOpen = Boolean(ayah);
   useEffect(() => {
-    if (!isOpen) return;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (!isOpen || !activeAyah) return;
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeButtonRef.current?.focus();
 
     const handleDialogKeyDown = (event: KeyboardEvent) => {
@@ -62,11 +65,15 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
     };
 
     document.addEventListener('keydown', handleDialogKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleDialogKeyDown);
-      previousFocus?.focus();
-    };
-  }, [isOpen]);
+    return () => document.removeEventListener('keydown', handleDialogKeyDown);
+  }, [isOpen, Boolean(activeAyah)]);
+
+  // Restore focus only after the dialog has actually closed and unmounted.
+  useEffect(() => {
+    if (isOpen || activeAyah) return;
+    previousFocusRef.current?.focus();
+    previousFocusRef.current = null;
+  }, [isOpen, Boolean(activeAyah)]);
 
   if (!activeAyah) return null;
 
