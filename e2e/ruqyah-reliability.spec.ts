@@ -61,6 +61,14 @@ test.describe('W09 Ruqyah page reliability', () => {
     await expect(page.getByText('Vercel deployment error')).toHaveCount(0);
   });
 
+  test('index reports network failures and remains retryable', async ({ page }) => {
+    await openRuqyah(page);
+    await page.route('**/api/ruqyah?*', route => route.abort('failed'));
+    await openIndex(page);
+    await expect(page.getByRole('alert')).toContainText('تعذر الاتصال بمصدر الرقية');
+    await expect(page.getByRole('button', { name: 'إعادة المحاولة' })).toBeVisible();
+  });
+
   test('index timeout settles loading and offers retry', async ({ page }) => {
     test.setTimeout(30_000);
     await page.addInitScript(() => {
@@ -76,7 +84,7 @@ test.describe('W09 Ruqyah page reliability', () => {
     await openRuqyah(page);
     await openIndex(page);
     await expect(page.getByRole('alert')).toContainText('انتهت مهلة تحميل فهرس مواضع الآيات', { timeout: 15_000 });
-    await expect(page.getByRole('status', { name: /جارٍ تحديث الفهرس/ })).toHaveCount(0);
+    await expect(page.getByText('جارٍ تحديث الفهرس', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'إعادة المحاولة' })).toBeVisible();
   });
 
@@ -95,7 +103,7 @@ test.describe('W09 Ruqyah page reliability', () => {
     }));
     await openIndex(page);
     await expect(page.getByText('نسخة محفوظة')).toBeVisible();
-    await expect(page.getByRole('alert')).toContainText('نعرِض آخر نسخة محفوظة');
+    await expect(page.getByRole('alert')).toContainText('نعرض آخر نسخة محفوظة');
     await expect(page.getByRole('heading', { name: 'سورة الفاتحة' })).toBeVisible();
   });
 
