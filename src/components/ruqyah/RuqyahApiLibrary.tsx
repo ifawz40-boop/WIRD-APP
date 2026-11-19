@@ -82,8 +82,8 @@ export const RuqyahApiLibrary: React.FC = () => {
     const timeout = new Promise<never>((_, reject) => {
       timeoutId = window.setTimeout(() => {
         timedOut = true;
-        controller.abort();
         reject(new Error('انتهت مهلة تحميل فهرس مواضع الآيات. يمكنك استخدام آخر نسخة محفوظة أو إعادة المحاولة.'));
+        controller.abort();
       }, RUQYAH_INDEX_REQUEST_TIMEOUT_MS);
     });
 
