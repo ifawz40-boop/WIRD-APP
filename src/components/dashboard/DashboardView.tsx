@@ -26,7 +26,7 @@ import { PlanLifecycle } from '../../services/planLifecycle';
 import { loadAyahByCoordinate, getAyahDisplayText } from '../../data/quranDataLoader';
 import { getLocalDateString } from '../../services/unifiedPortionService';
 import { getDailySessionSelection, getUnifiedDailyHubSummary } from '../../services/dailySessionSelection';
-import { readReadingKhatma } from '../../services/readingKhatmaService';
+import { getReadingKhatmaProgress, readAllReadingKhatmas } from '../../services/readingKhatmaService';
 import { getPagesForAyahRange } from '../../services/pageProgressService';
 import { QuranText } from '../shared/QuranText';
 import { WirdIslamicPattern } from '../brand/WirdPattern';
@@ -42,6 +42,7 @@ interface DashboardViewProps {
   onNavigate: (tab: NavTabId) => void;
   onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
   onUpdateEnginePlans?: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
+  onResumeReadingKhatma?: (page: number, khatmaId?: string) => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
 
@@ -54,6 +55,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigate,
   onStartSession,
   onUpdateEnginePlans,
+  onResumeReadingKhatma,
   onToast
 }) => {
   const [dailyPreviewText, setDailyPreviewText] = useState('جارٍ تحميل نص الآية...');
@@ -86,7 +88,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   })();
   const hub = getUnifiedDailyHubSummary(plans, enginePlans, portions, weakVerses, todayStr);
   const selection = hub.primarySelection;
-  const readingKhatma = readReadingKhatma();
+  const readingKhatmaStore = readAllReadingKhatmas();
+  const activeReadingKhatmas = readingKhatmaStore.khatmas.filter(item => !item.completedAt);
+  const readingKhatma =
+    readingKhatmaStore.khatmas.find(item => item.id === readingKhatmaStore.activeKhatmaId) ||
+    activeReadingKhatmas[0] ||
+    null;
   const readingKhatmaPagesCount = readingKhatma ? new Set(readingKhatma.completedPages).size : 0;
   const masteredPortionsCount = retentionMetrics.statusBreakdown.stable;
 
@@ -232,6 +239,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ))}
         </HorizontalScrollRail>
       </div>
+
+      {/* 2B. Quick-Resume Multi-Khatma Reading Strip (renders active reading khatmas with 1-tap Mushaf resume) */}
+      {activeReadingKhatmas.length > 0 && (
+        <section aria-label="ختمات القراءة المتعددة والاستكمال السريع" className="wird-card p-5 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                ختمات القراءة والاستكمال السريع ({activeReadingKhatmas.length})
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('library')}
+              className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:underline"
+            >
+              إدارة الختمات
+            </button>
+          </div>
+          <div className="divide-y divide-[#1C4E46]/10 dark:divide-[#E0A96D]/15">
+            {activeReadingKhatmas.map(item => {
+              const itemProgress = getReadingKhatmaProgress(item);
+              const isSelectedKhatma = readingKhatma?.id === item.id;
+              return (
+                <div key={item.id} className="py-2.5 first:pt-1 last:pb-1 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                        {item.title || 'ختمة القراءة'}
+                      </span>
+                      {isSelectedKhatma && (
+                        <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">· نشطة</span>
+                      )}
+                      <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                        {itemProgress.completedPages} / {itemProgress.totalScopePages} صفحة ({itemProgress.percent}%) · ورد اليوم {itemProgress.pagesReadToday}/{itemProgress.pagesPerDay}
+                      </span>
+                    </div>
+                    <div className="w-full max-w-md bg-[#F2EDE2] dark:bg-[#0E1A2F] h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-[#1C4E46] dark:bg-[#E0A96D] h-full rounded-full" style={{ width: `${itemProgress.percent}%` }} />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onResumeReadingKhatma) onResumeReadingKhatma(itemProgress.resumePage, item.id);
+                      else onNavigate('library');
+                    }}
+                    className="min-h-11 px-3.5 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white font-bold text-xs transition-colors shrink-0 tabular-nums"
+                  >
+                    استكمال · ص {itemProgress.resumePage}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 1. Personalized Welcome & Daily Ayah Banner with Master Visual Identity */}
       <section aria-labelledby="dashboard-welcome-title" className="relative bg-gradient-to-l from-[#0B132B] via-[#0E1E38] to-[#1C4E46] text-white rounded-3xl p-6 md:p-8 shadow-md overflow-hidden border border-[#C59B27]/35">
@@ -649,6 +713,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 2B. Quick-Resume Multi-Khatma Reading Strip (renders active reading khatmas with 1-tap Mushaf resume) */}
+      {activeReadingKhatmas.length > 0 && (
+        <section aria-label="ختمات القراءة المتعددة والاستكمال السريع" className="wird-card p-5 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                ختمات القراءة والاستكمال السريع ({activeReadingKhatmas.length})
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('library')}
+              className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:underline"
+            >
+              إدارة الختمات
+            </button>
+          </div>
+          <div className="divide-y divide-[#1C4E46]/10 dark:divide-[#E0A96D]/15">
+            {activeReadingKhatmas.map(item => {
+              const itemProgress = getReadingKhatmaProgress(item);
+              const isSelectedKhatma = readingKhatma?.id === item.id;
+              return (
+                <div key={item.id} className="py-2.5 first:pt-1 last:pb-1 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                        {item.title || 'ختمة القراءة'}
+                      </span>
+                      {isSelectedKhatma && (
+                        <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">· نشطة</span>
+                      )}
+                      <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                        {itemProgress.completedPages} / {itemProgress.totalScopePages} صفحة ({itemProgress.percent}%) · ورد اليوم {itemProgress.pagesReadToday}/{itemProgress.pagesPerDay}
+                      </span>
+                    </div>
+                    <div className="w-full max-w-md bg-[#F2EDE2] dark:bg-[#0E1A2F] h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-[#1C4E46] dark:bg-[#E0A96D] h-full rounded-full" style={{ width: `${itemProgress.percent}%` }} />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onResumeReadingKhatma) onResumeReadingKhatma(itemProgress.resumePage, item.id);
+                      else onNavigate('library');
+                    }}
+                    className="min-h-11 px-3.5 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white font-bold text-xs transition-colors shrink-0 tabular-nums"
+                  >
+                    استكمال · ص {itemProgress.resumePage}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 3. Five Clearly Separated Metrics (New Memorized / Reviewed / Mastered / Weak / Reading Khatma Pages) */}
       <div id="dashboard-metrics-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 scroll-mt-20">

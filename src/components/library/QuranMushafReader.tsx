@@ -13,7 +13,9 @@ import {
   Search,
   Sparkles,
   Layers,
-  X
+  X,
+  Check,
+  RotateCcw
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { QURAN_DATA_SOURCE_INFO } from '../../data/quranDataInfo';
@@ -46,11 +48,14 @@ import { QuranAudioQueueController } from '../../services/audioQueueController';
 import type { Ayah, ReciterId } from '../../types/quran';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { TafsirSheet } from './TafsirSheet';
-import type { ReadingKhatma } from '../../services/readingKhatmaService';
+import {
+  getReadingKhatmaProgress,
+  type ReadingKhatma
+} from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
 import { QuranBasmala } from '../shared/QuranBasmala';
 import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
-import { PrintedMushafSpread } from './PrintedMushafSpread';
+import { PrintedMushafSpread, type PrintedMushafSpreadContext } from './PrintedMushafSpread';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 import { SurahPickerControl } from '../shared/SurahPickerControl';
 import { DisplaySettingsCollapsibleCard } from '../shared/DisplaySettingsMenu';
@@ -61,7 +66,13 @@ interface QuranMushafReaderProps {
   onBack: () => void;
   initialPage?: number;
   readingKhatma?: ReadingKhatma | null;
+  readingKhatmas?: ReadingKhatma[];
+  onSelectReadingKhatma?: (id: string) => void;
   onMarkPageRead?: (page: number) => void;
+  onMarkSpreadPagesRead?: (pages: number[]) => void;
+  onMarkUntilPageRead?: (upToPage: number) => void;
+  onUnmarkPagesRead?: (pages: number[]) => void;
+  onPageVisited?: (page: number) => void;
   readingKhatmaError?: string;
 }
 
@@ -153,7 +164,20 @@ function readBookmarks(): number[] {
   }
 }
 
-export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredReciter, onBack, initialPage, readingKhatma, onMarkPageRead, readingKhatmaError }) => {
+export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
+  preferredReciter,
+  onBack,
+  initialPage,
+  readingKhatma,
+  readingKhatmas,
+  onSelectReadingKhatma,
+  onMarkPageRead,
+  onMarkSpreadPagesRead,
+  onMarkUntilPageRead,
+  onUnmarkPagesRead,
+  onPageVisited,
+  readingKhatmaError
+}) => {
   const [page, setPage] = useState(() => Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage());
   const [pageInput, setPageInput] = useState(String(Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604 ? initialPage! : readLastPage()));
   const [pageJumpError, setPageJumpError] = useState('');
@@ -186,6 +210,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   });
   const [showHizbPicker, setShowHizbPicker] = useState(false);
   const [printedAyahsByPage, setPrintedAyahsByPage] = useState<Record<number, Ayah[]>>({});
+  const [printedSpreadContext, setPrintedSpreadContext] = useState<PrintedMushafSpreadContext | null>(null);
+  const [lastMarkedUndoPages, setLastMarkedUndoPages] = useState<number[]>([]);
   const audioAyahs = readerLayout === 'printed'
     ? (printedAyahsByPage[page] || [])
     : ayahs;
@@ -197,6 +223,14 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   const autoPlayNextPageRef = useRef(false);
   const pendingTargetRef = useRef<{ surahNumber: number; ayahNumber: number } | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const onPageVisitedRef = useRef(onPageVisited);
+  onPageVisitedRef.current = onPageVisited;
+
+  useEffect(() => {
+    if (Number.isInteger(initialPage) && initialPage! >= 1 && initialPage! <= 604) {
+      setPage(initialPage!);
+    }
+  }, [initialPage]);
 
   const pageSegments = useMemo(() => PAGE_INDEX[String(page)] || [], [page]);
 
@@ -241,6 +275,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
   useEffect(() => {
     setPageInput(String(page));
     try { localStorage.setItem(LAST_PAGE_KEY, String(page)); } catch { /* Reading remains available without persistence. */ }
+    onPageVisitedRef.current?.(page);
   }, [page]);
 
   useEffect(() => {
@@ -526,6 +561,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
     typeof window !== 'undefined' &&
     resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
     window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+  const isOppositeTafsirActive = readerLayout === 'printed' && Boolean(printedSpreadContext?.isOppositeTafsirActive);
+  const visibleSpreadPages = readerLayout === 'printed' && printedSpreadContext?.visiblePages.length
+    ? printedSpreadContext.visiblePages
+    : [page];
+  const activeReadingKhatmas = useMemo(
+    () => (readingKhatmas || []).filter(k => !k.completedAt),
+    [readingKhatmas]
+  );
+  const khatmaProgress = readingKhatma ? getReadingKhatmaProgress(readingKhatma) : null;
 
   return (
     <div className={`space-y-6 ${isFullWidth ? 'max-w-none' : 'max-w-7xl'} mx-auto pb-12`}>
@@ -683,18 +727,18 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
             <button
               type="button"
               disabled={page <= 1}
-              onClick={() => changePage(stepSpreadPage(page, 'prev', isTwoPageSpreadActive))}
+              onClick={() => changePage(stepSpreadPage(page, 'prev', isTwoPageSpreadActive, { isOppositeTafsirActive }))}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               <ChevronRight className="h-4 w-4" /> الصفحة السابقة
             </button>
             <span aria-live="polite" aria-atomic="true" className="text-xs font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#162744] px-3 py-1.5 rounded-lg border border-[#C59B27]/30">
-              {page} / 604
+              {visibleSpreadPages.length === 2 ? `${visibleSpreadPages[0]}–${visibleSpreadPages[1]} / 604` : `${page} / 604`}
             </span>
             <button
               type="button"
               disabled={page >= 604}
-              onClick={() => changePage(stepSpreadPage(page, 'next', isTwoPageSpreadActive))}
+              onClick={() => changePage(stepSpreadPage(page, 'next', isTwoPageSpreadActive, { isOppositeTafsirActive }))}
               className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
             >
               الصفحة التالية <ChevronLeft className="h-4 w-4" />
@@ -934,20 +978,144 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         </div>
       </DisplaySettingsCollapsibleCard>
 
+      {/* Unified Reading Khatma Progress & Instant Save Bar (Active in BOTH Printed and Flow Mushaf modes) */}
+      {readingKhatma && !readingKhatma.completedAt && khatmaProgress && (
+        <section
+          aria-label="متابعة ورد القراءة والختمة"
+          className="rounded-2xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white/95 dark:bg-[#111F36]/95 px-4 py-3 shadow-xs space-y-2.5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              {activeReadingKhatmas.length > 1 && onSelectReadingKhatma ? (
+                <select
+                  aria-label="اختيار الختمة النشطة داخل المصحف"
+                  value={readingKhatma.id}
+                  onChange={e => onSelectReadingKhatma(e.target.value)}
+                  className="min-h-10 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#0E1A2F] px-2.5 py-1 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]"
+                >
+                  {activeReadingKhatmas.map(item => (
+                    <option key={item.id} value={item.id}>
+                      {item.title || 'ختمة القراءة'} ({getReadingKhatmaProgress(item).percent}%)
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                  {readingKhatma.title || 'ختمة القراءة'}
+                </span>
+              )}
+              <span className="font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8]">
+                {khatmaProgress.completedPages} / {khatmaProgress.totalScopePages} صفحة ({khatmaProgress.percent}%)
+              </span>
+              <span className="text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                · ورد اليوم: {khatmaProgress.pagesReadToday}/{khatmaProgress.pagesPerDay}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLastMarkedUndoPages([page]);
+                  onMarkPageRead?.(page);
+                }}
+                disabled={readingKhatma.completedPages.includes(page)}
+                className="min-h-11 inline-flex items-center gap-1.5 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] px-3.5 py-2 text-xs font-bold text-white disabled:bg-[#F2EDE2] disabled:text-[#1C4E46] dark:disabled:bg-[#0E1A2F] dark:disabled:text-[#E0A96D] transition-colors"
+              >
+                {readingKhatma.completedPages.includes(page) && <Check className="w-3.5 h-3.5" />}
+                <span>{readingKhatma.completedPages.includes(page) ? 'تم تسجيل الصفحة كمقروءة' : 'تسجيل الصفحة كمقروءة'}</span>
+              </button>
+
+              {readerLayout === 'printed' &&
+                visibleSpreadPages.length === 2 &&
+                onMarkSpreadPagesRead &&
+                visibleSpreadPages.some(p => !readingKhatma.completedPages.includes(p)) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLastMarkedUndoPages(visibleSpreadPages);
+                      onMarkSpreadPagesRead(visibleSpreadPages);
+                    }}
+                    className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#162744] px-3 py-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] transition-colors tabular-nums"
+                  >
+                    تسجيل الصفحتين ({visibleSpreadPages[0]}–{visibleSpreadPages[1]})
+                  </button>
+                )}
+
+              {onMarkUntilPageRead &&
+                page > khatmaProgress.nextPage &&
+                page - khatmaProgress.nextPage <= 30 &&
+                !readingKhatma.completedPages.includes(page) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const batch: number[] = [];
+                      for (let p = khatmaProgress.nextPage; p <= page; p += 1) batch.push(p);
+                      setLastMarkedUndoPages(batch);
+                      onMarkUntilPageRead(page);
+                    }}
+                    className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#C59B27]/40 bg-[#C59B27]/12 px-3 py-2 text-xs font-bold text-[#8A6914] dark:text-[#E0A96D] hover:bg-[#C59B27]/20 transition-colors tabular-nums"
+                  >
+                    تسجيل حتى ص {page}
+                  </button>
+                )}
+
+              {onUnmarkPagesRead &&
+                (readingKhatma.completedPages.includes(page) || lastMarkedUndoPages.length > 0) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const targetUndo = lastMarkedUndoPages.length > 0 ? lastMarkedUndoPages : [page];
+                      onUnmarkPagesRead(targetUndo);
+                      setLastMarkedUndoPages([]);
+                    }}
+                    className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 bg-white dark:bg-[#0E1A2F] px-3 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:border-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>تراجع</span>
+                  </button>
+                )}
+
+              {page !== khatmaProgress.nextPage && !readingKhatma.completedPages.includes(khatmaProgress.nextPage) && (
+                <button
+                  type="button"
+                  onClick={() => changePage(khatmaProgress.nextPage)}
+                  className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 px-3 py-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] transition-colors tabular-nums"
+                >
+                  أول غير مقروءة (ص {khatmaProgress.nextPage})
+                </button>
+              )}
+            </div>
+          </div>
+          {readingKhatmaError && (
+            <p role="alert" className="rounded-lg bg-rose-50 p-2.5 text-xs font-semibold text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+              {readingKhatmaError}
+            </p>
+          )}
+        </section>
+      )}
+      {(!readingKhatma || readingKhatma.completedAt) && readingKhatmaError && (
+        <p role="alert" className="rounded-lg bg-rose-50 p-3 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+          {readingKhatmaError}
+        </p>
+      )}
+
       {/* Responsive page-style reading surface */}
-      <main key={page} style={{ zoom: uiScale / 100 }} onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={event => {
+      <main key={readerLayout === 'printed' ? 'printed-mushaf-surface' : page} style={{ zoom: uiScale / 100 }} onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={event => {
         const startX = touchStartX.current; touchStartX.current = null;
         if (startX === null || event.changedTouches.length === 0) return;
         const delta = event.changedTouches[0].clientX - startX;
-        if (Math.abs(delta) > 65) changePage(stepSpreadPage(page, delta > 0 ? 'prev' : 'next', isTwoPageSpreadActive));
+        if (Math.abs(delta) > 65) changePage(stepSpreadPage(page, delta > 0 ? 'prev' : 'next', isTwoPageSpreadActive, { isOppositeTafsirActive }));
       }} aria-label={`صفحة المصحف ${page}`} data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'} className={readerLayout === 'printed' ? `mx-auto w-full ${isFullWidth ? 'max-w-none' : 'max-w-7xl'}` : `mushaf-page-frame mx-auto ${isFullWidth ? 'max-w-none' : isWidePage ? 'max-w-6xl' : 'max-w-4xl'} rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#C59B27]/40 dark:border-[#E0A96D]/25 px-6 py-8 md:px-14 md:py-12 shadow-xl transition-colors animate-mushaf-page-${pageTurnDirection}`}>
         {readerLayout === 'printed' ? (
           <PrintedMushafSpread
             surface="library"
             anchorPage={page}
+            onAnchorPageChange={changePage}
             selectedAyah={tafsirAyah}
             onSelectAyah={setTafsirAyah}
             onAyahsResolved={handlePrintedPageResolved}
+            onSpreadContextChange={setPrintedSpreadContext}
             onFallback={() => selectReaderLayout('flow')}
             maxWidthClass={isFullWidth ? 'max-w-none' : 'max-w-7xl'}
           />
@@ -969,14 +1137,6 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({ preferredR
         <p className="mb-5 text-center text-xs text-[#5B6F6B] dark:text-[#8B9E9B]" role="note">
           عرض الآيات موزّع داخل صفحة مرنة، وليس محاكاة مطابقة لأسطر المصحف المطبوع. ستظل مطابقة الأسطر غير متاحة حتى تتوفر بيانات تخطيط موثّقة.
         </p>
-
-        {readingKhatma && !readingKhatma.completedAt && <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#1C4E46]/10 px-3 py-2 text-xs dark:bg-[#1E4A47]/40">
-          <span className="text-[#142421] dark:text-[#F5F1E8]">ختمة القراءة · {readingKhatma.completedPages.length} / 604 صفحة</span>
-          <button type="button" onClick={() => onMarkPageRead?.(page)} disabled={readingKhatma.completedPages.includes(page)} className="min-h-11 rounded-lg bg-[#1C4E46] px-3 py-2 font-bold text-white disabled:bg-[#F2EDE2] disabled:text-[#1C4E46] dark:bg-[#1E4A47] dark:disabled:bg-[#111F36] dark:disabled:text-[#E0A96D]">
-            {readingKhatma.completedPages.includes(page) ? 'تم تسجيل الصفحة كمقروءة' : 'تسجيل الصفحة كمقروءة'}
-          </button>
-        </div>}
-        {readingKhatmaError && <p role="alert" className="mb-4 rounded-lg bg-rose-50 p-3 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">{readingKhatmaError}</p>}
 
         {/* Loading State */}
         {isLoading && (

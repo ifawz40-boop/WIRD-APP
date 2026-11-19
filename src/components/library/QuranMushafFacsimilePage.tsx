@@ -15,6 +15,7 @@ interface QuranMushafFacsimilePageProps {
   onSelectAyah: (ayah: Ayah) => void;
   onFallback: () => void;
   maxWidthClass?: string;
+  sessionAyahKeys?: Set<string>;
 }
 
 interface MatchedAyahArea {
@@ -28,7 +29,8 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
   selectedAyah,
   onSelectAyah,
   onFallback,
-  maxWidthClass = 'max-w-3xl'
+  maxWidthClass = 'max-w-3xl',
+  sessionAyahKeys
 }) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [pageData, setPageData] = useState<MushafFacsimilePageData | null>(null);
@@ -102,8 +104,10 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
         setError('تعذر ربط أحد مواضع الرسم بنص وِرد المحلي.');
         return;
       }
+      const key = `${surahNumber}:${ayahNumber}`;
       const selected = selectedAyah?.surahNumber === surahNumber &&
         selectedAyah?.numberInSurah === ayahNumber;
+      const inSessionRange = sessionAyahKeys?.has(key) ?? false;
       const surah = ALL_SURAHS.find(item => item.number === surahNumber);
       path.setAttribute('id', `wird-ayah-${surahNumber}-${ayahNumber}`);
       path.setAttribute('class', 'ayahPolygon mushaf-ayah-hit-area');
@@ -111,8 +115,21 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
       path.setAttribute('tabindex', '0');
       path.setAttribute('aria-label', `تفسير الآية ${ayahNumber} من سورة ${surah?.name || surahNumber}`);
       path.setAttribute('aria-pressed', selected ? 'true' : 'false');
-      path.setAttribute('fill', '#c59b27');
-      path.setAttribute('fill-opacity', selected ? '0.34' : '0');
+      if (inSessionRange) {
+        path.setAttribute('data-session-ayah', 'true');
+      } else {
+        path.removeAttribute('data-session-ayah');
+      }
+      if (selected) {
+        path.setAttribute('fill', '#c59b27');
+        path.setAttribute('fill-opacity', '0.34');
+      } else if (inSessionRange) {
+        path.setAttribute('fill', '#1c4e46');
+        path.setAttribute('fill-opacity', '0.14');
+      } else {
+        path.setAttribute('fill', '#c59b27');
+        path.setAttribute('fill-opacity', '0');
+      }
       path.setAttribute('pointer-events', 'visiblePainted');
     }
 
@@ -156,7 +173,7 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
       host.removeEventListener('click', handleClick);
       host.removeEventListener('keydown', handleKeyDown);
     };
-  }, [page, pageData, matchedAreas, selectedAyah, onSelectAyah]);
+  }, [page, pageData, matchedAreas, selectedAyah, onSelectAyah, sessionAyahKeys]);
 
   if (error) {
     return (

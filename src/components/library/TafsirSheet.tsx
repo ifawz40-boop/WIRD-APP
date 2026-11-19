@@ -17,18 +17,20 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
   pageNumber,
   pageAyahs
 }) => {
-  const [activeAyah, setActiveAyah] = useState<Ayah | null>(ayah);
+  const [steppedAyah, setSteppedAyah] = useState<Ayah | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   useEffect(() => {
-    setActiveAyah(ayah);
+    setSteppedAyah(null);
   }, [ayah]);
 
+  const currentAyah = ayah ? (steppedAyah ?? ayah) : null;
+
   // Trap keyboard focus inside modal when opened; restore opener focus on close.
-  const isOpen = Boolean(ayah);
+  const isOpen = Boolean(currentAyah);
   useEffect(() => {
     if (!isOpen) return;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -68,10 +70,10 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
     };
   }, [isOpen]);
 
-  if (!activeAyah) return null;
+  if (!currentAyah) return null;
 
   const handleSelectAyah = (nextAyah: Ayah) => {
-    setActiveAyah(nextAyah);
+    setSteppedAyah(nextAyah);
     onSelectAyah?.(nextAyah);
   };
 
@@ -89,7 +91,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
         className="w-full sm:max-w-3xl max-h-[92vh] sm:max-h-[88vh] bg-[#F9F6EE] dark:bg-[#111F36] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 overflow-hidden flex flex-col"
       >
         <TafsirContentPane
-          ayah={activeAyah}
+          ayah={currentAyah}
           onSelectAyah={handleSelectAyah}
           onClose={onClose}
           closeButtonRef={closeButtonRef}

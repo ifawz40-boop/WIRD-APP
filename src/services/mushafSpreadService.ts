@@ -32,13 +32,18 @@ export function normalizeSpreadAnchorPage(page: number, isTwoPage: boolean): num
   return getSpreadPairForPage(safe)[0];
 }
 
+export interface StepSpreadOptions {
+  isOppositeTafsirActive?: boolean;
+}
+
 export function stepSpreadPage(
   currentPage: number,
   direction: 'next' | 'prev',
-  isTwoPage: boolean
+  isTwoPage: boolean,
+  options?: StepSpreadOptions
 ): number {
   const safe = clampMushafPage(currentPage);
-  if (!isTwoPage) {
+  if (!isTwoPage || options?.isOppositeTafsirActive) {
     return direction === 'next'
       ? clampMushafPage(safe + 1)
       : clampMushafPage(safe - 1);
@@ -47,6 +52,67 @@ export function stepSpreadPage(
   return direction === 'next'
     ? Math.min(TOTAL_MUSHAF_PAGES - 1, rightPage + 2)
     : Math.max(1, rightPage - 2);
+}
+
+export interface SpreadLayoutInput {
+  anchorPage: number;
+  isTwoPage: boolean;
+  isDesktopViewport: boolean;
+  desktopTafsirLayout: MushafTafsirDesktopLayout;
+  isTafsirOpen: boolean;
+}
+
+export interface SpreadLayoutResolution {
+  rightPage: number;
+  leftPage: number;
+  visiblePages: number[];
+  readingPage: number;
+  isOppositeTafsirActive: boolean;
+  replaceRightSlotWithTafsir: boolean;
+  replaceLeftSlotWithTafsir: boolean;
+  showSideSlideOverPanel: boolean;
+}
+
+/**
+ * Resolves visible facing pages and Tafsir placement for desktop spreads.
+ * When `replace_opposite` is active in 2-page mode, the active `readingPage`
+ * always remains visible in its natural RTL slot while Tafsir occupies the
+ * opposite slot—allowing +1/-1 stepping (`1 -> 2 -> 3`) without skipping pages.
+ */
+export function resolveSpreadLayout({
+  anchorPage,
+  isTwoPage,
+  isDesktopViewport,
+  desktopTafsirLayout,
+  isTafsirOpen
+}: SpreadLayoutInput): SpreadLayoutResolution {
+  const readingPage = clampMushafPage(anchorPage);
+  const [rightPage, leftPage] = getSpreadPairForPage(readingPage);
+  const isTafsirOpenDesktop = isDesktopViewport && isTafsirOpen;
+  const isOppositeTafsirActive =
+    isTafsirOpenDesktop && isTwoPage && desktopTafsirLayout === 'replace_opposite';
+  const visiblePages = isOppositeTafsirActive
+    ? [readingPage]
+    : isTwoPage
+      ? [rightPage, leftPage]
+      : [readingPage];
+  const replaceRightSlotWithTafsir =
+    isOppositeTafsirActive && readingPage === leftPage;
+  const replaceLeftSlotWithTafsir =
+    isOppositeTafsirActive && readingPage !== leftPage;
+  const showSideSlideOverPanel =
+    isTafsirOpenDesktop && (!isTwoPage || desktopTafsirLayout === 'panel');
+
+  return {
+    rightPage,
+    leftPage,
+    visiblePages,
+    readingPage,
+    isOppositeTafsirActive,
+    replaceRightSlotWithTafsir,
+    replaceLeftSlotWithTafsir,
+    showSideSlideOverPanel
+  };
 }
 
 export function resolveEffectiveSpreadMode(

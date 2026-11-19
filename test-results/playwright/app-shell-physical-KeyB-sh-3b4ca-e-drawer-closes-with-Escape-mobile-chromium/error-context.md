@@ -1,0 +1,261 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img "شعار وِرد الرسمي" [ref=e8]:
+            - img "شعار وِرد الرسمي" [ref=e9]
+          - generic [ref=e10]:
+            - generic [ref=e11]:
+              - generic [ref=e12]: وِرد
+              - generic [ref=e13]: WIRD
+            - generic [ref=e14]: رفيق القرآن والورد اليومي
+        - button "إغلاق الشريط الجانبي" [expanded] [ref=e16]:
+          - img [ref=e17]
+      - navigation "القائمة الرئيسية" [ref=e20]:
+        - generic [ref=e21]:
+          - paragraph [ref=e22]: ابدأ
+          - button "الرئيسية" [ref=e23]:
+            - generic [ref=e24]:
+              - img [ref=e25]
+              - generic [ref=e28]: الرئيسية
+          - button "القرآن والمصحف" [ref=e29]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e33]: القرآن والمصحف
+        - generic [ref=e34]:
+          - paragraph [ref=e35]: الحفظ والتثبيت
+          - button "جلسة الحفظ" [ref=e36]:
+            - generic [ref=e37]:
+              - img [ref=e38]
+              - generic [ref=e41]: جلسة الحفظ
+          - button "خطط الحفظ" [ref=e42]:
+            - generic [ref=e43]:
+              - img [ref=e44]
+              - generic [ref=e46]: خطط الحفظ
+          - button "المراجعة" [ref=e47]:
+            - generic [ref=e48]:
+              - img [ref=e49]
+              - generic [ref=e54]: المراجعة
+          - button "اختبارات الحفظ" [ref=e55]:
+            - generic [ref=e56]:
+              - img [ref=e57]
+              - generic [ref=e60]: اختبارات الحفظ
+        - generic [ref=e61]:
+          - paragraph [ref=e62]: المتابعة والمساندة
+          - button "التقدم والإنجاز" [ref=e63]:
+            - generic [ref=e64]:
+              - img [ref=e65]
+              - generic [ref=e67]: التقدم والإنجاز
+          - button "الرقية الشرعية" [ref=e68]:
+            - generic [ref=e69]:
+              - img [ref=e70]
+              - generic [ref=e73]: الرقية الشرعية
+          - button "الإعدادات" [ref=e74]:
+            - generic [ref=e75]:
+              - img [ref=e76]
+              - generic [ref=e79]: الإعدادات
+      - generic [ref=e81]:
+        - img "شعار وأفاتار وِرد الرسمي" [ref=e82]:
+          - img "شعار وأفاتار وِرد الرسمي" [ref=e83]
+        - generic [ref=e84]:
+          - heading "طالب القرآن" [level=4] [ref=e85]
+          - paragraph [ref=e86]: حفظ القرآن الكريم وتثبيته والعمل به
+    - generic [ref=e87]:
+      - banner [ref=e88]:
+        - generic [ref=e89]:
+          - button "إغلاق الشريط الجانبي" [expanded] [ref=e90]:
+            - img [ref=e91]
+          - heading "الرئيسية" [level=1] [ref=e92]
+        - generic [ref=e93]:
+          - button "محلي" [ref=e94]:
+            - img [ref=e95]
+            - generic [ref=e97]: محلي
+          - button "تبديل المظهر النهاري والليلي" [ref=e98]:
+            - img [ref=e99]
+      - main [ref=e101]:
+        - generic [ref=e102]:
+          - region "السلام عليكم ورحمة الله، طالب القرآن" [ref=e103]:
+            - generic:
+              - img
+            - generic [ref=e105]:
+              - generic [ref=e106]:
+                - img "شعار وِرد الرسمي" [ref=e108]:
+                  - img "شعار وِرد الرسمي" [ref=e109]
+                - generic [ref=e110]: وِردك القرآني اليومي رِفعةٌ لدرجاتك في الجنة
+              - heading "السلام عليكم ورحمة الله، طالب القرآن" [level=2] [ref=e111]
+              - paragraph [ref=e112]: «وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ» — استعن بالله وابدأ وِردك ليظل كتاب الله غضاً طرياً في صدرك.
+          - generic [ref=e113]:
+            - region "وردك اليوم" [ref=e114]:
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - generic [ref=e117]:
+                    - img [ref=e119]
+                    - generic [ref=e121]:
+                      - heading "وردك اليوم (الحفظ والخطط النشطة)" [level=3] [ref=e122]
+                      - paragraph [ref=e123]: المقطع التالي غير المسجل في محفوظك
+                  - generic [ref=e124]: مستهدف اليوم
+                - generic [ref=e125]:
+                  - generic [ref=e126]:
+                    - generic [ref=e127]:
+                      - generic [ref=e128]: السورة والآيات
+                      - generic [ref=e129]: سورة الفاتحة · الآيات (1 - 7)
+                    - generic [ref=e130]:
+                      - generic [ref=e131]: الكمية المقررة
+                      - generic [ref=e132]: 7 آيات · صفحة 1
+                  - generic [ref=e133]: «بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ»
+                - generic [ref=e134]:
+                  - generic [ref=e135]:
+                    - img [ref=e136]
+                    - generic [ref=e139]:
+                      - text: "المدة:"
+                      - strong [ref=e140]: تختلف حسب مقدار الورد وسرعة التسميع
+                  - generic [ref=e142]:
+                    - text: "طريقة الجلسة:"
+                    - strong [ref=e143]: التكرار 5 مرات مع الربط
+              - generic [ref=e144]:
+                - button "بدء جلسة الحفظ التفاعلية" [ref=e145]:
+                  - img [ref=e146]
+                  - generic [ref=e148]: بدء جلسة الحفظ التفاعلية
+                - button "سورة أخرى" [ref=e149]
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - generic [ref=e153]:
+                    - img [ref=e155]
+                    - generic [ref=e160]:
+                      - heading "المراجعة والتثبيت (التكرار المتباعد)" [level=3] [ref=e161]
+                      - paragraph [ref=e162]: المراجعة الصغرى (الحديثة) والكبرى (التراكمية) ومواضع التعثر
+                  - generic [ref=e163]: 0 مهام مستحقة
+                - generic [ref=e165]:
+                  - img [ref=e166]
+                  - paragraph [ref=e168]: أتممت جميع مهام المراجعة لليوم، بارك الله فيك!
+              - generic [ref=e169]:
+                - generic [ref=e170]: "صغرى: 0 · كبرى: 0"
+                - button "فتح مركز المراجعة الكامل" [ref=e171]:
+                  - generic [ref=e172]: فتح مركز المراجعة الكامل
+                  - img [ref=e173]
+          - generic [ref=e175]:
+            - generic [ref=e176]:
+              - generic [ref=e177]: الآيات المحفوظة (الجديد والتراكمي)
+              - generic [ref=e178]:
+                - generic [ref=e179]: "0"
+                - generic [ref=e180]: من 6236
+              - progressbar "نسبة الآيات المحفوظة" [ref=e181]
+              - generic [ref=e182]: "0.0% · المتقن الراسخ: 0 مقطع"
+            - generic [ref=e183]:
+              - generic [ref=e184]: الصفحات المحفوظة بالكامل
+              - generic [ref=e185]:
+                - generic [ref=e186]: "0"
+                - generic [ref=e187]: من 604 صفحة
+              - progressbar "نسبة الصفحات المحفوظة بالكامل" [ref=e188]
+              - generic [ref=e189]: "المراجعات المنجزة: 0 · الآيات الضعيفة: 0"
+            - generic [ref=e190]:
+              - generic [ref=e191]: نشاط الحفظ والمراجعة أسبوعياً
+              - generic [ref=e192]:
+                - generic [ref=e193]: "0"
+                - generic [ref=e194]: دقيقة حفظ ومراجعة
+              - generic [ref=e195]:
+                - text: "حفظ جديد:"
+                - strong [ref=e196]: 0 آية
+                - text: "· مراجعة:"
+                - strong [ref=e197]: 0 ص
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - generic [ref=e200]:
+                  - generic [ref=e201]: سلسلة الالتزام والختمة
+                  - img [ref=e202]
+                - generic [ref=e204]: 0 يوماً متواصلاً
+              - generic [ref=e205]:
+                - generic [ref=e206]:
+                  - text: "مستوى التثبيت:"
+                  - strong [ref=e207]: قيد البناء (0%)
+                - generic [ref=e208]:
+                  - text: "ختمة القراءة (منفصلة):"
+                  - strong [ref=e209]: 0 / 604 صفحة
+          - generic [ref=e210]:
+            - generic [ref=e211]:
+              - generic [ref=e212]:
+                - generic [ref=e213]:
+                  - heading "سجل النشاط الأسبوعي (الدقائق والآيات)" [level=3] [ref=e214]
+                  - paragraph [ref=e215]: انتظامك اليومي هو سر رسوخ المحفوظ في الصدر
+                - generic [ref=e216]: آخر 7 أيام
+              - list "النشاط الأسبوعي" [ref=e217]:
+                - 'listitem "الجمعة: 0 دقيقة، 0 آية" [ref=e218]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e219]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم الجمعة" [ref=e220]
+                  - generic [ref=e221]: الجمعة
+                - 'listitem "السبت: 0 دقيقة، 0 آية" [ref=e222]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e223]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم السبت" [ref=e224]
+                  - generic [ref=e225]: السبت
+                - 'listitem "الأحد: 0 دقيقة، 0 آية" [ref=e226]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e227]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم الأحد" [ref=e228]
+                  - generic [ref=e229]: الأحد
+                - 'listitem "الاثنين: 0 دقيقة، 0 آية" [ref=e230]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e231]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم الاثنين" [ref=e232]
+                  - generic [ref=e233]: الاثنين
+                - 'listitem "الثلاثاء: 0 دقيقة، 0 آية" [ref=e234]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e235]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم الثلاثاء" [ref=e236]
+                  - generic [ref=e237]: الثلاثاء
+                - 'listitem "الأربعاء: 0 دقيقة، 0 آية" [ref=e238]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e239]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم الأربعاء" [ref=e240]
+                  - generic [ref=e241]: الأربعاء
+                - 'listitem "الخميس: 0 دقيقة، 0 آية" [ref=e242]':
+                  - generic: 0د · 0 آيات
+                  - generic [ref=e243]: 0د
+                  - progressbar "دقائق الحفظ والمراجعة يوم الخميس" [ref=e244]
+                  - generic [ref=e245]: الخميس
+              - generic [ref=e246]:
+                - generic [ref=e249]: جلسات الحفظ والمراجعة (بالدقائق)
+                - button "عرض تفاصيل المصحف والتقارير" [ref=e250]:
+                  - generic [ref=e251]: عرض تفاصيل المصحف والتقارير
+                  - img [ref=e252]
+            - generic [ref=e255]:
+              - heading "إجراءات سريعة" [level=3] [ref=e256]
+              - paragraph [ref=e257]: أدوات تفاعلية لدعم رحلة حفظك
+              - generic [ref=e258]:
+                - button "اختبر حفظك الآن أكمل الآية، المتشابهات اللفظية" [ref=e259]:
+                  - generic [ref=e260]:
+                    - img [ref=e262]
+                    - generic [ref=e265]:
+                      - generic [ref=e266]: اختبر حفظك الآن
+                      - generic [ref=e267]: أكمل الآية، المتشابهات اللفظية
+                  - img [ref=e268]
+                - button "تصفح المصحف والمكتبة 114 سورة مع الاستماع والتفسير" [ref=e270]:
+                  - generic [ref=e271]:
+                    - img [ref=e273]
+                    - generic [ref=e275]:
+                      - generic [ref=e276]: تصفح المصحف والمكتبة
+                      - generic [ref=e277]: 114 سورة مع الاستماع والتفسير
+                  - img [ref=e278]
+                - button "إدارة خطط الحفظ إنشاء خطة مخصصة أو تفعيل نموذج" [ref=e280]:
+                  - generic [ref=e281]:
+                    - img [ref=e283]
+                    - generic [ref=e285]:
+                      - generic [ref=e286]: إدارة خطط الحفظ
+                      - generic [ref=e287]: إنشاء خطة مخصصة أو تفعيل نموذج
+                  - img [ref=e288]
+                - button "المستشار القرآني نصائح التثبيت وعلاج التفلت" [ref=e290]:
+                  - generic [ref=e291]:
+                    - img [ref=e293]
+                    - generic [ref=e296]:
+                      - generic [ref=e297]: المستشار القرآني
+                      - generic [ref=e298]: نصائح التثبيت وعلاج التفلت
+                  - img [ref=e299]
+  - iframe [ref=e301]:
+    
+```

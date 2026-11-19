@@ -278,32 +278,34 @@ test('reading khatma supports a daily plan, actual page progress, pause, resume,
 
   await page.getByLabel('مدة ختمة القراءة').selectOption('60');
   await page.getByLabel('عدد جلسات القراءة اليومية').selectOption('3');
-  await page.getByRole('button', { name: 'ابدأ ختمة القراءة' }).click();
+  await page.getByRole('button', { name: 'بدء ختمة جديدة' }).click();
 
-  await expect(page.getByText('الورد اليومي', { exact: true })).toBeVisible();
-  await expect(page.getByText('لكل جلسة')).toBeVisible();
-  await expect(page.getByText(/قسّم وردك إلى 3 جلسات يومية/)).toBeVisible();
+  await expect(page.getByText(/الهدف اليومي: 11 ص \(3 جلسات/)).toBeVisible();
+  await expect(page.getByText('ج1: 4ص · ج2: 4ص · ج3: 3ص')).toBeVisible();
 
-  await page.getByRole('button', { name: 'متابعة من صفحة 1' }).click();
+  await page.getByRole('button', { name: 'متابعة القراءة · ص 1' }).click();
   await expect(page.getByRole('main', { name: 'صفحة المصحف 1' })).toBeVisible();
   await page.getByRole('button', { name: 'تسجيل الصفحة كمقروءة' }).click();
   await expect(page.getByRole('button', { name: 'تم تسجيل الصفحة كمقروءة' })).toBeVisible();
   await page.getByRole('button', { name: 'العودة للفهرس' }).click();
 
-  await expect(page.getByText('أنجزت 1 من 604 صفحة')).toBeVisible();
-  await expect(page.getByText('قرأت اليوم')).toBeVisible();
+  await expect(page.getByText(/1 \/ 604 صفحة/)).toBeVisible();
+  await expect(page.getByText(/ورد اليوم: 1 \//)).toBeVisible();
+
+  await page.getByText('إعدادات هذه الختمة (تعديل الخطة أو الإيقاف المؤقت)').click();
   await page.getByRole('button', { name: 'إيقاف مؤقت' }).click();
-  await expect(page.getByRole('button', { name: 'متابعة من صفحة 2' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /متابعة القراءة · ص/ })).toBeDisabled();
   await page.getByRole('button', { name: 'استئناف الختمة' }).click();
-  await expect(page.getByRole('button', { name: 'متابعة من صفحة 2' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /متابعة القراءة · ص/ })).toBeEnabled();
 
   await page.getByLabel('تعديل مدة الختمة').selectOption('90');
   await page.getByLabel('تعديل عدد الجلسات').selectOption('4');
   await page.getByRole('button', { name: 'تحديث الخطة' }).click();
-  await expect(page.getByText(/قسّم وردك إلى 4 جلسات يومية/)).toBeVisible();
+  await expect(page.getByText(/الهدف اليومي:.*4 جلسات/)).toBeVisible();
   await expect.poll(() => page.evaluate(() => {
-    const value = JSON.parse(localStorage.getItem('wird.reading.khatma.v1') || 'null');
-    return [value?.plan?.durationDays, value?.plan?.sessionsPerDay];
+    const store = JSON.parse(localStorage.getItem('wird.reading.khatmas.v2') || 'null');
+    const active = store?.khatmas?.find((item: any) => item.id === store?.activeKhatmaId) || store?.khatmas?.[0];
+    return [active?.plan?.durationDays, active?.plan?.sessionsPerDay];
   })).toEqual([90, 4]);
 });
 

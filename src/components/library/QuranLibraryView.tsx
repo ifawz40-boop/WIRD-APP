@@ -49,14 +49,21 @@ import { QuranMushafReader } from './QuranMushafReader';
 import { QURAN_JUZ_STARTS } from '../../data/quranNavigationIndex.generated';
 import {
   clearReadingKhatma,
+  createReadingKhatma,
+  deleteReadingKhatmaById,
+  getReadingKhatmaProgress,
   markReadingPage,
+  markReadingPagesRange,
+  markReadingUntilPage,
   pauseReadingKhatma,
-  readReadingKhatma,
+  readAllReadingKhatmas,
   resumeReadingKhatma,
+  setActiveReadingKhatma,
   startReadingKhatma,
-  updateReadingKhatmaPlan
+  unmarkReadingPages,
+  updateReadingKhatmaPlan,
+  updateReadingKhatmaPosition
 } from '../../services/readingKhatmaService';
-import type { ReadingKhatma } from '../../services/readingKhatmaService';
 import { ReadingKhatmaPanel } from './ReadingKhatmaPanel';
 import { QuranText } from '../shared/QuranText';
 import { QuranBasmala } from '../shared/QuranBasmala';
@@ -69,6 +76,8 @@ import { READING_PAGE_WIDTH_CLASSES, formatAyahRangeOptionLabel } from '../../se
 interface QuranLibraryViewProps {
   onStartSession: (surahNumber: number, startAyah?: number, endAyah?: number) => void;
   preferredReciter: ReciterId;
+  pendingMushafResume?: { page: number; khatmaId?: string; nonce: number } | null;
+  onClearPendingMushafResume?: () => void;
 }
 
 type MainTab = 'surahs' | 'juz' | 'study';
@@ -91,7 +100,9 @@ function readLastReadingPosition(): QuranReadingPosition | null {
 
 export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   onStartSession,
-  preferredReciter: initialReciter
+  preferredReciter: initialReciter,
+  pendingMushafResume,
+  onClearPendingMushafResume
 }) => {
   const [activeTab, setActiveTab] = useState<MainTab>('surahs');
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,7 +135,9 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const [resumeTarget, setResumeTarget] = useState<QuranReadingPosition | null>(null);
   const [mushafInitialPage, setMushafInitialPage] = useState<number | undefined>(undefined);
   const [copiedAyahNumber, setCopiedAyahNumber] = useState<number | null>(null);
-  const [readingKhatma, setReadingKhatma] = useState<ReadingKhatma | null>(() => readReadingKhatma());
+  const [khatmaStore, setKhatmaStore] = useState(() => readAllReadingKhatmas());
+  const readingKhatma = khatmaStore.activeKhatma;
+  const refreshKhatmaStore = () => setKhatmaStore(readAllReadingKhatmas());
   const [readingKhatmaError, setReadingKhatmaError] = useState('');
 
   // Audio state (reconciled live across all audio views)
@@ -539,15 +552,83 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (!pendingMushafResume) return;
+    if (pendingMushafResume.khatmaId) {
+      try {
+        setActiveReadingKhatma(pendingMushafResume.khatmaId);
+        refreshKhatmaStore();
+      } catch {
+        // Continue opening the requested Mushaf page.
+      }
+    }
+    handleOpenMushafPage(pendingMushafResume.page);
+    onClearPendingMushafResume?.();
+  }, [pendingMushafResume?.nonce]);
+
   if (showMushafReader) {
     return (
       <QuranMushafReader
         preferredReciter={activeReciter}
         initialPage={mushafInitialPage}
-        onBack={() => setShowMushafReader(false)}
+        onBack={() => { setShowMushafReader(false); refreshKhatmaStore(); }}
         readingKhatma={readingKhatma}
+        readingKhatmas={khatmaStore.khatmas}
         readingKhatmaError={readingKhatmaError}
-        onMarkPageRead={page => { try { setReadingKhatma(markReadingPage(page)); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تسجيل الصفحة.'); } }}
+        onSelectReadingKhatma={id => {
+          try {
+            setActiveReadingKhatma(id);
+            refreshKhatmaStore();
+            setReadingKhatmaError('');
+          } catch (error) {
+            setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تبديل الختمة.');
+          }
+        }}
+        onMarkPageRead={page => {
+          try {
+            markReadingPage(page);
+            refreshKhatmaStore();
+            setReadingKhatmaError('');
+          } catch (error) {
+            setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تسجيل الصفحة.');
+          }
+        }}
+        onMarkSpreadPagesRead={pages => {
+          try {
+            markReadingPagesRange(pages);
+            refreshKhatmaStore();
+            setReadingKhatmaError('');
+          } catch (error) {
+            setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تسجيل الصفحتين.');
+          }
+        }}
+        onMarkUntilPageRead={upToPage => {
+          try {
+            markReadingUntilPage(upToPage);
+            refreshKhatmaStore();
+            setReadingKhatmaError('');
+          } catch (error) {
+            setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تسجيل الصفحات.');
+          }
+        }}
+        onUnmarkPagesRead={pages => {
+          try {
+            unmarkReadingPages(pages);
+            refreshKhatmaStore();
+            setReadingKhatmaError('');
+          } catch (error) {
+            setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر التراجع عن تسجيل الصفحات.');
+          }
+        }}
+        onPageVisited={visitedPage => {
+          if (!readingKhatma || readingKhatma.completedAt || readingKhatma.lastVisitedPage === visitedPage) return;
+          try {
+            updateReadingKhatmaPosition(visitedPage, readingKhatma.id, localStorage);
+            refreshKhatmaStore();
+          } catch {
+            // Position tracking does not interrupt reading.
+          }
+        }}
       />
     );
   }
@@ -583,12 +664,18 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       )}
       <ReadingKhatmaPanel
         khatma={readingKhatma}
+        khatmas={khatmaStore.khatmas}
+        activeKhatmaId={khatmaStore.activeKhatmaId}
+        completedCycles={khatmaStore.completedCycles}
         error={readingKhatmaError}
-        onStart={plan => { try { setReadingKhatma(startReadingKhatma(localStorage, new Date(), plan)); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر بدء الختمة.'); } }}
-        onReset={() => { try { clearReadingKhatma(); setReadingKhatma(null); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إعادة ضبط الختمة.'); } }}
-        onPause={() => { try { setReadingKhatma(pauseReadingKhatma()); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إيقاف الختمة مؤقتاً.'); } }}
-        onResume={() => { try { setReadingKhatma(resumeReadingKhatma()); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر استئناف الختمة.'); } }}
-        onUpdatePlan={plan => { try { setReadingKhatma(updateReadingKhatmaPlan(plan)); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديث خطة الختمة.'); } }}
+        onStart={plan => { try { startReadingKhatma(localStorage, new Date(), plan); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر بدء الختمة.'); } }}
+        onCreateKhatma={options => { try { createReadingKhatma(options); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إنشاء الختمة.'); } }}
+        onSelectKhatma={id => { try { setActiveReadingKhatma(id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديد الختمة.'); } }}
+        onDeleteKhatma={id => { try { deleteReadingKhatmaById(id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر حذف الختمة.'); } }}
+        onReset={() => { try { clearReadingKhatma(); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إعادة ضبط الختمة.'); } }}
+        onPause={id => { try { pauseReadingKhatma(localStorage, new Date(), id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إيقاف الختمة مؤقتاً.'); } }}
+        onResume={id => { try { resumeReadingKhatma(localStorage, new Date(), id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر استئناف الختمة.'); } }}
+        onUpdatePlan={(plan, id, title) => { try { updateReadingKhatmaPlan(plan, localStorage, new Date(), id, title); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديث خطة الختمة.'); } }}
         onContinue={page => handleOpenMushafPage(page)}
       />
       {/* 1. Hero Quran Header Banner */}
@@ -611,6 +698,16 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {readingKhatma && !readingKhatma.completedAt && (
+              <button
+                type="button"
+                onClick={() => handleOpenMushafPage(getReadingKhatmaProgress(readingKhatma).resumePage)}
+                className="min-h-12 inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-[#C59B27]/60 bg-white/10 hover:bg-white/20 text-[#F9F6EE] text-sm font-bold shadow-lg transition-colors tabular-nums"
+              >
+                <BookOpen className="w-4 h-4 text-[#E0A96D]" />
+                <span>استكمال ختمة القراءة · ص {getReadingKhatmaProgress(readingKhatma).resumePage}</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => handleOpenMushafPage(selectedSurah.pageStart)}

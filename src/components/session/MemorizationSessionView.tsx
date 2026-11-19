@@ -20,7 +20,9 @@ import {
   Repeat,
   AlertTriangle,
   Link2,
-  Check
+  Check,
+  Loader2,
+  X
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { loadSurahVerses, getAyahWords, loadSimpleAyahText, loadSimpleAyahRange } from '../../data/quranDataLoader';
@@ -47,7 +49,8 @@ import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { attachAyahRepeatHandler } from '../../services/audioRepeatController';
 import { SessionTafsirPanel } from './SessionTafsirPanel';
-import { PrintedMushafSpread } from '../library/PrintedMushafSpread';
+import { PrintedMushafSpread, type PrintedMushafSpreadContext } from '../library/PrintedMushafSpread';
+import { stepSpreadPage } from '../../services/mushafSpreadService';
 import {
   DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES,
   getMemorizationDisplayPreferences,
@@ -234,15 +237,51 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     () => Array.from(new Set(sessionAyahs.map(ayah => ayah.page))).sort((a, b) => a - b),
     [sessionAyahs]
   );
+  const sessionAyahKeys = useMemo(
+    () => new Set(sessionAyahs.map(ayah => `${ayah.surahNumber}:${ayah.numberInSurah}`)),
+    [sessionAyahs]
+  );
   const [printedPage, setPrintedPage] = useState<number>(() => currentAyah?.page || 1);
+  const [printedSpreadContext, setPrintedSpreadContext] = useState<PrintedMushafSpreadContext | null>(null);
+  const manualPrintedBrowseRef = useRef(false);
+  const lastSyncedAyahNumRef = useRef<number | null>(null);
   const [outOfRangeNotice, setOutOfRangeNotice] = useState<string | null>(null);
   const [printedTafsirAyah, setPrintedTafsirAyah] = useState<Ayah | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
+  const [awaitingFinalConfirm, setAwaitingFinalConfirm] = useState(false);
+  const modalConfirmButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    if (currentAyah?.page) {
+    if (!currentAyah?.page) return;
+    const ayahChanged = lastSyncedAyahNumRef.current !== currentAyah.number;
+    lastSyncedAyahNumRef.current = currentAyah.number;
+    if (!ayahChanged) return;
+    manualPrintedBrowseRef.current = false;
+    const alreadyVisible =
+      printedSpreadContext?.visiblePages?.includes(currentAyah.page) &&
+      !printedSpreadContext.isOppositeTafsirActive;
+    if (!alreadyVisible) {
       setPrintedPage(currentAyah.page);
     }
-  }, [currentAyah?.page]);
+  }, [currentAyah?.number, currentAyah?.page, printedSpreadContext]);
+
+  useEffect(() => {
+    if (!awaitingFinalConfirm) return;
+    const timer = window.setTimeout(() => {
+      modalConfirmButtonRef.current?.focus();
+    }, 30);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isCompleting) {
+        setAwaitingFinalConfirm(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [awaitingFinalConfirm, isCompleting]);
 
   useEffect(() => {
     if (
@@ -320,7 +359,6 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     )
   );
   const [masteryFeedback, setMasteryFeedback] = useState<string | null>(null);
-  const [awaitingFinalConfirm, setAwaitingFinalConfirm] = useState(false);
   const [isCumulativePlaying, setIsCumulativePlaying] = useState(false);
   const [weakMarkedAyahs, setWeakMarkedAyahs] = useState<Set<string>>(new Set());
   const [isCapturingWeakVerse, setIsCapturingWeakVerse] = useState(false);
@@ -904,6 +942,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     handleStopAudio();
     if (completionInProgressRef.current) return;
     completionInProgressRef.current = true;
+    setIsCompleting(true);
+    setCompletionError(null);
     const minutesSpent = Math.max(1, Math.round(secondsElapsed / 60));
     try {
       const saved = await onCompleteSession(
@@ -913,13 +953,30 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         `${mode === 'review' ? 'مراجعة' : 'إتمام حفظ'} سورة ${surahMeta.name} الآيات (${sessionAyahs[0]?.numberInSurah}-${sessionAyahs[sessionAyahs.length - 1]?.numberInSurah})`,
         mode
       );
-      if (!saved) { completionInProgressRef.current = false; return; }
+      if (!saved) {
+        completionInProgressRef.current = false;
+        setCompletionError('تعذر حفظ إتمام الجلسة في التخزين المحلي؛ راجع الإشعار أو أعد المحاولة.');
+        return;
+      }
       handleStopAudio();
       setIsCompleted(true);
     } catch (error) {
       completionInProgressRef.current = false;
       console.error('[WIRD Session] Completion persistence failed:', error);
+      setCompletionError('حدث خطأ أثناء حفظ تقدم الجلسة؛ لم يُفقد تقدمك ويمكنك إعادة المحاولة.');
+    } finally {
+      setIsCompleting(false);
     }
+  };
+
+  const handleRequestCompleteSession = async () => {
+    if (isCompleting) return;
+    setCompletionError(null);
+    if (studyMethod === 'cumulative_linking' && !cumulativeProgress.finalSegmentConfirmed) {
+      setAwaitingFinalConfirm(true);
+      return;
+    }
+    await finalizeSessionCompletion();
   };
 
   // Next / Previous Ayah (Semantic RTL: Next is on Left, Prev is on Right)
@@ -929,11 +986,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       setCurrentAyahIndex(prev => prev + 1);
       return;
     }
-    if (studyMethod === 'cumulative_linking' && !cumulativeProgress.finalSegmentConfirmed) {
-      setAwaitingFinalConfirm(true);
-      return;
-    }
-    await finalizeSessionCompletion();
+    await handleRequestCompleteSession();
   };
 
   const handlePrevAyah = () => {
@@ -949,8 +1002,20 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const handlePrintedPageStep = (direction: 'prev' | 'next') => {
+    manualPrintedBrowseRef.current = true;
+    setOutOfRangeNotice(null);
+    const next = stepSpreadPage(
+      printedPage,
+      direction,
+      Boolean(printedSpreadContext?.isTwoPage),
+      { isOppositeTafsirActive: printedSpreadContext?.isOppositeTafsirActive }
+    );
+    setPrintedPage(next);
+  };
+
   const handlePrintedAyahsResolved = useCallback(({ ayahs }: { page: number; ayahs: Ayah[] }) => {
-    if (!currentAyah) return;
+    if (!currentAyah || manualPrintedBrowseRef.current) return;
     const hasCurrent = ayahs.some(item => item.surahNumber === currentAyah.surahNumber && item.numberInSurah === currentAyah.numberInSurah);
     if (!hasCurrent && ayahs.length > 0 && printedPage === currentAyah.page) {
       const first = ayahs[0];
@@ -975,6 +1040,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       return;
     }
     setOutOfRangeNotice(null);
+    manualPrintedBrowseRef.current = false;
     if (matchIndex !== currentAyahIndex) {
       handleStopAudio();
       setCurrentAyahIndex(matchIndex);
@@ -1153,8 +1219,6 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     </>
   );
 
-  const activePrintedPageIdx = sessionPages.indexOf(printedPage);
-
   return (
     <div
       data-session-page-width={displayPreferences.pageWidth}
@@ -1199,27 +1263,39 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             </button>
           </div>
 
-          <button
-            ref={settingsToggleRef}
-            type="button"
-            onClick={() => setSettingsOpenPersist(prev => !prev)}
-            aria-expanded={isSettingsOpen}
-            aria-controls={settingsPanelId}
-            className={`min-h-11 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
-              isSettingsOpen
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
-                : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
-            }`}
-          >
-            <SlidersHorizontal className="w-4 h-4 shrink-0" />
-            <span>إعدادات العرض والصوت</span>
-            <span className={`hidden sm:inline text-[10px] font-mono tabular-nums ${
-              isSettingsOpen ? 'text-[#F5F1E8]/85' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
-            }`}>
-              {displayPreferences.uiScale}% · {displayPreferences.fontSize}px
-            </span>
-            {isSettingsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              disabled={isCompleting}
+              onClick={() => void handleRequestCompleteSession()}
+              className="min-h-11 inline-flex items-center gap-1.5 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white px-3.5 py-2 text-xs font-bold shadow-xs transition-colors disabled:opacity-60"
+            >
+              {isCompleting ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Check className="w-4 h-4 shrink-0" />}
+              <span>{isCompleting ? 'جارٍ الحفظ...' : 'إنهاء وإتمام الجلسة'}</span>
+            </button>
+
+            <button
+              ref={settingsToggleRef}
+              type="button"
+              onClick={() => setSettingsOpenPersist(prev => !prev)}
+              aria-expanded={isSettingsOpen}
+              aria-controls={settingsPanelId}
+              className={`min-h-11 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+                isSettingsOpen
+                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4 shrink-0" />
+              <span>إعدادات العرض والصوت</span>
+              <span className={`hidden sm:inline text-[10px] font-mono tabular-nums ${
+                isSettingsOpen ? 'text-[#F5F1E8]/85' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+              }`}>
+                {displayPreferences.uiScale}% · {displayPreferences.fontSize}px
+              </span>
+              {isSettingsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
 
         {isRangeEditorOpen && (
@@ -1629,30 +1705,47 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                {displayPreferences.mushafStyle === 'printed' && sessionPages.length > 1 && (
-                  <div className="inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white/80 dark:bg-[#111F36] p-1 text-xs">
+                {displayPreferences.mushafStyle === 'printed' && (
+                  <>
+                    <div className="inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white/80 dark:bg-[#111F36] p-1 text-xs">
+                      <button
+                        type="button"
+                        disabled={printedPage <= 1}
+                        onClick={() => handlePrintedPageStep('prev')}
+                        className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        aria-label="صفحة المصحف السابقة في الجلسة"
+                      >
+                        السابقة
+                      </button>
+                      <span className="px-2 font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                        ص {printedPage}
+                        {sessionPages.length > 1 ? ` · الورد (${sessionPages[0]}–${sessionPages[sessionPages.length - 1]})` : ''}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={printedPage >= 604}
+                        onClick={() => handlePrintedPageStep('next')}
+                        className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        aria-label="صفحة المصحف التالية في الجلسة"
+                      >
+                        التالية
+                      </button>
+                    </div>
+
                     <button
                       type="button"
-                      disabled={activePrintedPageIdx <= 0}
-                      onClick={() => activePrintedPageIdx > 0 && setPrintedPage(sessionPages[activePrintedPageIdx - 1])}
-                      className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
-                      aria-label="صفحة المصحف السابقة في الجلسة"
+                      aria-pressed={Boolean(printedTafsirAyah)}
+                      onClick={() => setPrintedTafsirAyah(prev => (prev ? null : currentAyah))}
+                      className={`min-h-11 px-3 py-1.5 rounded-xl border text-xs font-bold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${
+                        printedTafsirAyah
+                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                          : 'bg-white/90 dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                      }`}
                     >
-                      السابقة
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>{printedTafsirAyah ? 'إخفاء التفسير' : 'تفسير الآية الحالية'}</span>
                     </button>
-                    <span className="px-2 font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
-                      ص {printedPage}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={activePrintedPageIdx === -1 || activePrintedPageIdx >= sessionPages.length - 1}
-                      onClick={() => activePrintedPageIdx < sessionPages.length - 1 && setPrintedPage(sessionPages[activePrintedPageIdx + 1])}
-                      className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
-                      aria-label="صفحة المصحف التالية في الجلسة"
-                    >
-                      التالية
-                    </button>
-                  </div>
+                  </>
                 )}
 
                 <div role="group" aria-label="تبديل نمط عرض صفحة المصحف" className="wird-segmented-track inline-flex items-center gap-1 text-xs">
@@ -1689,9 +1782,43 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
             {displayPreferences.mushafStyle === 'printed' ? (
               <div className="space-y-4">
+                {(() => {
+                  const isCurrentVisible = printedSpreadContext?.visiblePages?.length
+                    ? printedSpreadContext.isOppositeTafsirActive
+                      ? printedSpreadContext.readingPage === currentAyah.page
+                      : printedSpreadContext.visiblePages.includes(currentAyah.page)
+                    : printedPage === currentAyah.page;
+                  if (isCurrentVisible) return null;
+                  return (
+                    <div
+                      role="status"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#C59B27]/45 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 px-3.5 py-2 text-xs"
+                    >
+                      <span className="font-semibold text-[#142421] dark:text-[#F5F1E8] tabular-nums">
+                        تصفح حر · ص {printedPage} (الآية الحالية في ص {currentAyah.page})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          manualPrintedBrowseRef.current = false;
+                          setOutOfRangeNotice(null);
+                          setPrintedPage(currentAyah.page);
+                        }}
+                        className="min-h-10 rounded-xl bg-[#1C4E46] dark:bg-[#1E4A47] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#143D36] transition-colors"
+                      >
+                        العودة إلى آية الجلسة (آية {currentAyah.numberInSurah})
+                      </button>
+                    </div>
+                  );
+                })()}
+
                 <PrintedMushafSpread
                   surface="session"
                   anchorPage={printedPage}
+                  onAnchorPageChange={nextPage => {
+                    manualPrintedBrowseRef.current = true;
+                    setPrintedPage(nextPage);
+                  }}
                   selectedAyah={currentAyah}
                   onSelectAyah={(ayah: Ayah | null) => {
                     if (ayah) handlePrintedSelectAyah(ayah);
@@ -1703,6 +1830,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   }}
                   onAyahsResolved={handlePrintedAyahsResolved}
                   onFallback={handlePrintedFallback}
+                  sessionAyahKeys={sessionAyahKeys}
+                  autoOpenTafsirOnSelect={false}
+                  onSpreadContextChange={setPrintedSpreadContext}
                 />
 
                 {outOfRangeNotice && (
@@ -2217,42 +2347,104 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       {/* 4. Collapsed Ayah Tafsir Accordion */}
       <SessionTafsirPanel ayah={currentAyah} />
 
-      {/* Explicit Final Segment Confirmation Banner when in Cumulative Linking Mode */}
-      {awaitingFinalConfirm && studyMethod === 'cumulative_linking' && !cumulativeProgress.finalSegmentConfirmed && (
-        <section
-          role="region"
-          aria-label="تأكيد إتمام المقطع المتصل"
-          className="wird-card rounded-2xl border border-[#C59B27]/50 dark:border-[#E0A96D]/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+      {completionError && (
+        <div
+          role="alert"
+          className="rounded-2xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/45 p-3.5 text-xs font-semibold text-rose-800 dark:text-rose-200 flex flex-wrap items-center justify-between gap-2"
         >
-          <div className="space-y-1">
-            <h4 className="font-bold text-[#142421] dark:text-[#F5F1E8]">
-              تأكيد الربط الختامي للورد ({sessionAyahs[0]?.numberInSurah ?? startAyah}–{sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah})
-            </h4>
-            <p className="text-[#5B6F6B] dark:text-[#8B9E9B]">
-              أكّد تسميع ومراجعة كامل مقطع الجلسة متصلاً قبل تسجيل إتمام جلسة الحفظ. (الآيات المثبتة: {masteredIndices.size}/{sessionAyahs.length})
+          <span>{completionError}</span>
+          <button
+            type="button"
+            onClick={() => void handleRequestCompleteSession()}
+            className="min-h-10 px-3 py-1.5 rounded-xl bg-rose-700 text-white font-bold"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      )}
+
+      {/* Focused Modal Confirmation Dialog when in Cumulative Linking Mode */}
+      {awaitingFinalConfirm && studyMethod === 'cumulative_linking' && !cumulativeProgress.finalSegmentConfirmed && (
+        <div
+          className="fixed inset-0 z-50 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => {
+            if (!isCompleting) setAwaitingFinalConfirm(false);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cumulative-confirm-dialog-title"
+            aria-label="تأكيد إتمام المقطع المتصل"
+            onClick={event => event.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-[#C59B27]/55 dark:border-[#E0A96D]/40 bg-[#F9F6EE] dark:bg-[#0B132B] p-6 shadow-2xl space-y-4 text-right"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                  الربط التراكمي والمنهجي
+                </span>
+                <h3
+                  id="cumulative-confirm-dialog-title"
+                  className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]"
+                >
+                  تأكيد الربط الختامي للورد ({sessionAyahs[0]?.numberInSurah ?? startAyah}–{sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah})
+                </h3>
+              </div>
+              <button
+                type="button"
+                disabled={isCompleting}
+                onClick={() => setAwaitingFinalConfirm(false)}
+                aria-label="إغلاق حوار التأكيد"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs leading-6 text-[#5B6F6B] dark:text-[#8B9E9B]">
+              أكّد تسميع ومراجعة كامل مقطع الجلسة متصلاً قبل تسجيل إتمام جلسة الحفظ في سجلك اليومي.
             </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setAwaitingFinalConfirm(false)}
-              className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 font-bold text-[#142421] dark:text-[#F5F1E8]"
-            >
-              مراجعة إضافية
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setCumulativeProgress(prev => confirmFinalSegmentMastery(prev));
-                setAwaitingFinalConfirm(false);
-                void finalizeSessionCompletion();
-              }}
-              className="min-h-11 px-4 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#E0A96D] dark:text-[#0B132B] text-white font-bold"
-            >
-              تأكيد إتمام كامل المقطع
-            </button>
-          </div>
-        </section>
+
+            <div className="rounded-2xl bg-white/80 dark:bg-[#111F36] border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 px-4 py-3 text-xs flex items-center justify-between">
+              <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">الآيات المثبتة في هذه الجلسة</span>
+              <span className="font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                {masteredIndices.size} / {sessionAyahs.length}
+              </span>
+            </div>
+
+            {completionError && (
+              <p role="alert" className="text-xs font-semibold text-rose-700 dark:text-rose-300">
+                {completionError}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={isCompleting}
+                onClick={() => setAwaitingFinalConfirm(false)}
+                className="min-h-11 px-4 py-2 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]"
+              >
+                مراجعة إضافية
+              </button>
+              <button
+                ref={modalConfirmButtonRef}
+                type="button"
+                disabled={isCompleting}
+                onClick={() => {
+                  setCumulativeProgress(prev => confirmFinalSegmentMastery(prev));
+                  setAwaitingFinalConfirm(false);
+                  void finalizeSessionCompletion();
+                }}
+                className="min-h-11 px-4 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#E0A96D] dark:text-[#0B132B] text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
+              >
+                {isCompleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                <span>تأكيد إتمام كامل المقطع</span>
+              </button>
+            </div>
+          </section>
+        </div>
       )}
 
       {/* 5. Sticky Session Navigation */}
@@ -2291,13 +2483,24 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         </select>
 
         <button
+          type="button"
+          disabled={isCompleting}
           onClick={handleNextAyah}
-          className="min-h-14 flex flex-[1.4] items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors active:scale-[0.98]"
+          className="min-h-14 flex flex-[1.4] items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors active:scale-[0.98] disabled:opacity-60"
         >
-          <span>
-            {currentAyahIndex === sessionAyahs.length - 1 ? 'إتمام الجلسة' : 'الآية التالية'}
-          </span>
-          <ChevronLeft className="w-4 h-4 shrink-0" />
+          {isCompleting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+              <span>جارٍ إتمام الجلسة...</span>
+            </>
+          ) : (
+            <>
+              <span>
+                {currentAyahIndex === sessionAyahs.length - 1 ? 'إتمام الجلسة' : 'الآية التالية'}
+              </span>
+              <ChevronLeft className="w-4 h-4 shrink-0" />
+            </>
+          )}
         </button>
       </div>
     </div>

@@ -12,7 +12,7 @@ const makePageSvg = (surah: number, ayahs: number[]) => {
 
 test.describe('WIRD Master UX Restructuring E2E', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    await page.addInitScript(({ p1, p2, seedUnifiedPlans }) => {
+    await page.addInitScript(({ p1, p2, p3, p4, seedUnifiedPlans }) => {
       if (seedUnifiedPlans) {
         const d = new Date();
         const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -93,6 +93,12 @@ test.describe('WIRD Master UX Restructuring E2E', () => {
         if (url.endsWith('/mushafs/hafs/kfqc/svg/002.svg')) {
           return new Response(p2, { status: 200, headers: { 'content-type': 'image/svg+xml' } });
         }
+        if (url.endsWith('/mushafs/hafs/kfqc/svg/003.svg')) {
+          return new Response(p3, { status: 200, headers: { 'content-type': 'image/svg+xml' } });
+        }
+        if (url.endsWith('/mushafs/hafs/kfqc/svg/004.svg')) {
+          return new Response(p4, { status: 200, headers: { 'content-type': 'image/svg+xml' } });
+        }
         if (url.includes('api.quran.com/api/v4/tafsirs/')) {
           return new Response(
             JSON.stringify({
@@ -109,6 +115,8 @@ test.describe('WIRD Master UX Restructuring E2E', () => {
     }, {
       p1: makePageSvg(1, [1, 2, 3, 4, 5, 6, 7]),
       p2: makePageSvg(2, [1, 2, 3, 4, 5]),
+      p3: makePageSvg(2, [6, 7, 8, 9, 10]),
+      p4: makePageSvg(2, [17, 18, 19, 20]),
       seedUnifiedPlans: testInfo.title.includes('unified وردك اليوم')
     });
 
@@ -219,5 +227,110 @@ test.describe('WIRD Master UX Restructuring E2E', () => {
     await expect(hubSection).toContainText('خطة سورة الملك الثانية');
     await expect(hubSection).not.toContainText('خطة مستقبلية مؤجلة');
     await expect(page.getByRole('progressbar')).toHaveCount(9);
+  });
+
+  test('opposite-page Tafsir navigation steps one page at a time (1 -> 2 -> 3 -> 2) without skipping page 2', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Two-page spread opposite Tafsir is desktop-only (>=768px)');
+    await page.goto('/#/library');
+    await page.getByRole('button', { name: 'فتح المصحف بالصفحات (604)' }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة' }).click();
+
+    await expect(page.getByRole('group', { name: 'صفحة المصحف المطبوعة رقم 1' })).toBeVisible();
+    await page.getByRole('button', { name: 'تفسير الآية 1 من سورة الفاتحة' }).click();
+    await page.getByRole('button', { name: 'استبدال المقابلة' }).click();
+    await expect(page.locator('section[aria-label="التفسير بدلاً من الصفحة المقابلة"]')).toBeVisible();
+    await expect(page.getByText('الصفحة 1 · التفسير مقابلها')).toBeVisible();
+
+    // Advance Next -> must reveal page 2 (NOT jump to page 3) and offer quick sync Tafsir for page 2
+    await page.getByRole('button', { name: 'الصفحة التالية' }).click();
+    await expect(page.getByRole('group', { name: 'صفحة المصحف المطبوعة رقم 2' })).toBeVisible();
+    await expect(page.getByText('الصفحة 2 · التفسير مقابلها')).toBeVisible();
+    const syncPage2Btn = page.locator('section[aria-label="التفسير بدلاً من الصفحة المقابلة"]').getByRole('button', { name: 'تفسير صفحة 2' });
+    await expect(syncPage2Btn).toBeVisible();
+
+    // Sync Tafsir to page 2 -> updates opposite slot cleanly while page 2 stays visible
+    await syncPage2Btn.click();
+    await expect(page.locator('section[aria-label="التفسير بدلاً من الصفحة المقابلة"]')).toContainText('البقرة');
+
+    // Advance Next again -> moves to page 3, and Previous returns to page 2
+    await page.getByRole('button', { name: 'الصفحة التالية' }).click();
+    await expect(page.getByRole('group', { name: 'صفحة المصحف المطبوعة رقم 3' })).toBeVisible();
+    await page.getByRole('button', { name: 'الصفحة السابقة' }).click();
+    await expect(page.getByRole('group', { name: 'صفحة المصحف المطبوعة رقم 2' })).toBeVisible();
+  });
+
+  test('memorization session completion button opens centered modal for cumulative linking and persists completion', async ({ page }) => {
+    await page.goto('/#/session?surah=1&start=1&end=2&mode=memorize');
+
+    // Enable Cumulative Linking and verify explicit top completion button opens accessible centered modal
+    await page.getByRole('button', { name: 'الربط التراكمي والمنهجي' }).click();
+    await page.getByRole('button', { name: 'إنهاء وإتمام الجلسة' }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText('تأكيد إتمام كامل المقطع');
+
+    await dialog.getByRole('button', { name: 'تأكيد إتمام كامل المقطع' }).click();
+    await expect(page.getByRole('heading', { name: /أتممت وِرد الحفظ اليومي بنجاح/ })).toBeVisible();
+  });
+
+  test('printed Mushaf in memorization session highlights range, navigates safely, and returns to active ayah', async ({ page, isMobile }) => {
+    await page.goto('/#/session?surah=1&start=1&end=5&mode=memorize');
+    await page.getByRole('button', { name: 'مصحف مطبوع' }).click();
+
+    // Highlighted session ayahs present; clicking ayah selects without forcing Tafsir panel open
+    await expect(page.locator('[data-session-ayah="true"]').first()).toBeVisible();
+    await page.getByRole('button', { name: 'تفسير الآية 3 من سورة الفاتحة' }).click();
+    await expect(page.locator('section[aria-label="التفسير بدلاً من الصفحة المقابلة"]')).toHaveCount(0);
+    await expect(page.getByRole('complementary', { name: 'لوحة التفسير الجانبية' })).toHaveCount(0);
+
+    // Explicit Tafsir button opens Tafsir for the active ayah
+    await page.getByRole('button', { name: 'تفسير الآية الحالية' }).click();
+    if (isMobile) {
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.getByRole('button', { name: 'إغلاق التفسير' }).click();
+    } else {
+      await expect(page.getByRole('complementary', { name: 'لوحة التفسير الجانبية' })).toBeVisible();
+      await page.getByRole('button', { name: 'إغلاق التفسير' }).click();
+    }
+
+    // Browse forward inside Printed Mushaf -> return banner brings user right back to session ayah
+    await page.getByRole('button', { name: 'صفحة المصحف التالية في الجلسة' }).click();
+    await expect(page.getByRole('button', { name: /العودة إلى آية الجلسة/ })).toBeVisible();
+    await page.getByRole('button', { name: /العودة إلى آية الجلسة/ }).click();
+    await expect(page.getByRole('group', { name: 'صفحة المصحف المطبوعة رقم 1' })).toBeVisible();
+  });
+
+  test('multi-Khatma creation, saving progress in Printed Mushaf, undo, and instant resume from Dashboard', async ({ page }) => {
+    await page.goto('/#/library');
+
+    // Create first reading khatma with defaults
+    await page.getByRole('button', { name: 'بدء ختمة جديدة' }).click();
+    await expect(page.getByRole('progressbar', { name: 'تقدم ختمة القراءة' })).toBeVisible();
+
+    // Create second reading khatma with custom name
+    await page.getByRole('button', { name: 'إنشاء ختمة جديدة' }).click();
+    await page.getByRole('textbox', { name: 'اسم ختمة القراءة' }).fill('ختمة التثبيت اليومي');
+    await page.getByRole('button', { name: 'بدء ختمة جديدة' }).click();
+    await expect(page.getByRole('tablist', { name: 'الختمات النشطة' }).getByRole('tab')).toHaveCount(2);
+
+    // Continue active khatma inside Mushaf -> Printed mode keeps save bar visible, marks & undoes cleanly
+    await page.getByRole('button', { name: /متابعة القراءة/ }).click();
+    await page.getByRole('button', { name: 'الصفحة المطبوعة' }).click();
+
+    await page.getByRole('button', { name: 'تسجيل الصفحة كمقروءة' }).click();
+    await expect(page.getByRole('button', { name: 'تم تسجيل الصفحة كمقروءة' })).toBeVisible();
+    await page.getByRole('button', { name: 'تراجع' }).click();
+    await expect(page.getByRole('button', { name: 'تسجيل الصفحة كمقروءة' })).toBeVisible();
+
+    // Navigate to page 2 and verify quick Dashboard resume returns straight to Mushaf reader
+    await page.getByRole('button', { name: 'الصفحة التالية' }).click();
+    await page.reload();
+
+    await page.goto('/#/dashboard');
+    const quickResumeBtn = page.getByRole('region', { name: 'ختمات القراءة المتعددة والاستكمال السريع' }).getByRole('button', { name: /استكمال · ص/ }).first();
+    await expect(quickResumeBtn).toBeVisible();
+    await quickResumeBtn.click();
+    await expect(page.getByRole('region', { name: 'متابعة ورد القراءة والختمة' })).toBeVisible();
   });
 });

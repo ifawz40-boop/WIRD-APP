@@ -5,8 +5,8 @@ import {
   DESKTOP_SPREAD_BREAKPOINT_PX,
   getSavedMushafSpreadMode,
   getSavedMushafTafsirLayout,
-  getSpreadPairForPage,
   resolveEffectiveSpreadMode,
+  resolveSpreadLayout,
   saveMushafSpreadMode,
   saveMushafTafsirLayout,
   type MushafSpreadMode,
@@ -17,9 +17,17 @@ import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
 import { TafsirContentPane } from './TafsirContentPane';
 import { TafsirSheet } from './TafsirSheet';
 
+export interface PrintedMushafSpreadContext {
+  isTwoPage: boolean;
+  isOppositeTafsirActive: boolean;
+  visiblePages: number[];
+  readingPage: number;
+}
+
 interface PrintedMushafSpreadProps {
   surface: MushafSurfaceId;
   anchorPage: number;
+  onAnchorPageChange?: (page: number) => void;
   selectedAyah: Ayah | null;
   onSelectAyah: (ayah: Ayah | null) => void;
   tafsirAyah?: Ayah | null;
@@ -27,18 +35,25 @@ interface PrintedMushafSpreadProps {
   onAyahsResolved?: (resolved: { page: number; ayahs: Ayah[] }) => void;
   onFallback: () => void;
   maxWidthClass?: string;
+  sessionAyahKeys?: Set<string>;
+  autoOpenTafsirOnSelect?: boolean;
+  onSpreadContextChange?: (context: PrintedMushafSpreadContext) => void;
 }
 
 export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   surface,
   anchorPage,
+  onAnchorPageChange,
   selectedAyah,
   onSelectAyah,
   tafsirAyah,
   onTafsirAyahChange,
   onAyahsResolved,
   onFallback,
-  maxWidthClass = 'max-w-5xl'
+  maxWidthClass = 'max-w-5xl',
+  sessionAyahKeys,
+  autoOpenTafsirOnSelect = true,
+  onSpreadContextChange
 }) => {
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1280
@@ -63,15 +78,40 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   const effectiveSpreadMode = resolveEffectiveSpreadMode(spreadModePref, viewportWidth);
   const isTwoPage = effectiveSpreadMode === 'double';
 
-  const [rightPage, leftPage] = useMemo(
-    () => getSpreadPairForPage(anchorPage),
-    [anchorPage]
+  const isControlledTafsir = tafsirAyah !== undefined;
+  const activeTafsirAyah = isControlledTafsir ? tafsirAyah : selectedAyah;
+
+  const spreadLayout = useMemo(
+    () =>
+      resolveSpreadLayout({
+        anchorPage,
+        isTwoPage,
+        isDesktopViewport,
+        desktopTafsirLayout,
+        isTafsirOpen: Boolean(activeTafsirAyah)
+      }),
+    [anchorPage, isTwoPage, isDesktopViewport, desktopTafsirLayout, activeTafsirAyah]
   );
 
-  const visiblePages = useMemo(
-    () => (isTwoPage ? [rightPage, leftPage] : [anchorPage]),
-    [isTwoPage, rightPage, leftPage, anchorPage]
-  );
+  const {
+    rightPage,
+    leftPage,
+    visiblePages,
+    readingPage,
+    isOppositeTafsirActive,
+    replaceRightSlotWithTafsir,
+    replaceLeftSlotWithTafsir,
+    showSideSlideOverPanel
+  } = spreadLayout;
+
+  useEffect(() => {
+    onSpreadContextChange?.({
+      isTwoPage,
+      isOppositeTafsirActive,
+      visiblePages,
+      readingPage
+    });
+  }, [onSpreadContextChange, isTwoPage, isOppositeTafsirActive, visiblePages, readingPage]);
 
   const handleAyahsResolved = useCallback(
     (resolved: { page: number; ayahs: Ayah[] }) => {
@@ -94,8 +134,6 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     setDesktopTafsirLayout(saved);
   };
 
-  const isControlledTafsir = tafsirAyah !== undefined;
-  const activeTafsirAyah = isControlledTafsir ? tafsirAyah : selectedAyah;
   const setTafsirTarget = useCallback(
     (next: Ayah | null) => {
       if (onTafsirAyahChange) {
@@ -109,18 +147,27 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
 
   const handleSelectAyahFromPage = useCallback(
     (ayah: Ayah, ownerPage: number) => {
-      setActiveTafsirPage(ownerPage);
+      if (ownerPage !== anchorPage) {
+        onAnchorPageChange?.(ownerPage);
+      }
       onSelectAyah(ayah);
-      if (onTafsirAyahChange) {
-        onTafsirAyahChange(ayah);
+      const shouldUpdateTafsir = autoOpenTafsirOnSelect || Boolean(activeTafsirAyah);
+      if (shouldUpdateTafsir) {
+        setActiveTafsirPage(ownerPage);
+        if (onTafsirAyahChange) {
+          onTafsirAyahChange(ayah);
+        }
       }
     },
-    [onSelectAyah, onTafsirAyahChange]
+    [anchorPage, onAnchorPageChange, onSelectAyah, autoOpenTafsirOnSelect, activeTafsirAyah, onTafsirAyahChange]
   );
 
   const handleOpenPageTafsir = (targetPage: number) => {
     const ayahs = resolvedByPage[targetPage];
     if (!ayahs?.length) return;
+    if (targetPage !== anchorPage) {
+      onAnchorPageChange?.(targetPage);
+    }
     setActiveTafsirPage(targetPage);
     setTafsirTarget(ayahs[0]);
   };
@@ -130,7 +177,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     setTafsirTarget(null);
   };
 
-  // Determine which page owns the currently inspected ayah for opposite-page replacement
+  // Determine which page owns the currently inspected ayah for index display & quick jump
   const inspectedOwnerPage = useMemo(() => {
     if (!activeTafsirAyah) return null;
     for (const pageNum of visiblePages) {
@@ -145,24 +192,25 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
         return pageNum;
       }
     }
-    return activeTafsirPage || anchorPage;
-  }, [activeTafsirAyah, visiblePages, resolvedByPage, activeTafsirPage, anchorPage]);
+    return activeTafsirPage || readingPage;
+  }, [activeTafsirAyah, visiblePages, resolvedByPage, activeTafsirPage, readingPage]);
 
   const activePageAyahs = inspectedOwnerPage ? resolvedByPage[inspectedOwnerPage] : undefined;
-  const isTafsirOpenDesktop = isDesktopViewport && Boolean(activeTafsirAyah);
-  const replaceRightSlotWithTafsir =
-    isTafsirOpenDesktop &&
-    isTwoPage &&
-    desktopTafsirLayout === 'replace_opposite' &&
-    inspectedOwnerPage === leftPage;
-  const replaceLeftSlotWithTafsir =
-    isTafsirOpenDesktop &&
-    isTwoPage &&
-    desktopTafsirLayout === 'replace_opposite' &&
-    inspectedOwnerPage !== leftPage;
-  const showSideSlideOverPanel =
-    isTafsirOpenDesktop &&
-    (!isTwoPage || desktopTafsirLayout === 'panel');
+  const readingPageAyahs = resolvedByPage[readingPage];
+  const syncReadingPageAction =
+    isOppositeTafsirActive &&
+    inspectedOwnerPage !== readingPage &&
+    Boolean(readingPageAyahs?.length)
+      ? {
+          pageNumber: readingPage,
+          onSync: () => handleOpenPageTafsir(readingPage)
+        }
+      : undefined;
+
+  const spreadSlots = useMemo(
+    () => (isTwoPage ? [rightPage, leftPage] : [readingPage]),
+    [isTwoPage, rightPage, leftPage, readingPage]
+  );
 
   return (
     <div className={`mx-auto w-full ${maxWidthClass} space-y-3`}>
@@ -170,7 +218,11 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#C59B27]/30 bg-[#F2EDE2]/70 dark:border-[#E0A96D]/25 dark:bg-[#111F36]/80 px-3 py-2 text-xs">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
-            {isTwoPage ? `الصفحتان ${rightPage} – ${leftPage}` : `الصفحة ${anchorPage}`}
+            {isOppositeTafsirActive
+              ? `الصفحة ${readingPage} · التفسير مقابلها`
+              : isTwoPage
+              ? `الصفحتان ${rightPage} – ${leftPage}`
+              : `الصفحة ${readingPage}`}
           </span>
           {visiblePages.map(pageNum => {
             const pageAyahs = resolvedByPage[pageNum];
@@ -228,7 +280,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
       {/* Main Facing Spread + Optional Desktop Side Panel */}
       <div className="flex flex-col lg:flex-row items-stretch gap-4" dir="rtl">
         <div className={`flex-1 min-w-0 grid gap-4 ${isTwoPage ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
-          {visiblePages.map(pageNum => {
+          {spreadSlots.map(pageNum => {
             const shouldReplaceThisSlot =
               (pageNum === rightPage && replaceRightSlotWithTafsir) ||
               (pageNum === leftPage && replaceLeftSlotWithTafsir);
@@ -252,6 +304,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                     pageAyahs={activePageAyahs}
                     desktopLayout={desktopTafsirLayout}
                     onChangeDesktopLayout={handleChangeTafsirLayout}
+                    syncReadingPageAction={syncReadingPageAction}
                     compactHeader
                   />
                 </section>
@@ -263,7 +316,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 {isTwoPage && (
                   <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
                     <span>صفحة {pageNum}</span>
-                    {pageNum === anchorPage && (
+                    {pageNum === readingPage && (
                       <span className="text-[#1C4E46] dark:text-[#E0A96D]">الصفحة الحالية</span>
                     )}
                   </div>
@@ -275,6 +328,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                   onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
                   onFallback={onFallback}
                   maxWidthClass="max-w-none"
+                  sessionAyahKeys={sessionAyahKeys}
                 />
               </div>
             );
@@ -294,7 +348,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 onSelectAyah(next);
               }}
               onClose={handleCloseTafsir}
-              pageNumber={inspectedOwnerPage || anchorPage}
+              pageNumber={inspectedOwnerPage || readingPage}
               pageAyahs={activePageAyahs}
               desktopLayout={isTwoPage ? desktopTafsirLayout : undefined}
               onChangeDesktopLayout={isTwoPage ? handleChangeTafsirLayout : undefined}
@@ -313,10 +367,11 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
             onSelectAyah(next);
           }}
           onClose={handleCloseTafsir}
-          pageNumber={inspectedOwnerPage || anchorPage}
+          pageNumber={inspectedOwnerPage || readingPage}
           pageAyahs={activePageAyahs}
         />
       )}
     </div>
   );
 };
+

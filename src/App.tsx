@@ -24,6 +24,7 @@ import {
   savePreferredReciter,
   subscribeAudioPreferences
 } from './services/audioPreferences';
+import { setActiveReadingKhatma } from './services/readingKhatmaService';
 
 // Lazy loaded views for optimal chunking and initial load performance
 const QuranLibraryView = React.lazy(() => import('./components/library/QuranLibraryView').then(m => ({ default: m.QuranLibraryView })));
@@ -167,6 +168,7 @@ export default function App() {
   // Track if active session has progress for exit confirmation
   const [sessionInProgress, setSessionInProgress] = useState<boolean>(false);
   const [pendingExitTab, setPendingExitTab] = useState<NavTabId | null>(null);
+  const [pendingMushafResume, setPendingMushafResume] = useState<{ page: number; khatmaId?: string; nonce: number } | null>(null);
   const currentTabRef = useRef(currentTab);
   currentTabRef.current = currentTab;
   const sessionInProgressRef = useRef(sessionInProgress);
@@ -372,6 +374,14 @@ export default function App() {
       return;
     }
     navigateTo(tab);
+  };
+
+  const handleResumeReadingKhatma = (page: number, khatmaId?: string) => {
+    if (khatmaId) {
+      try { setActiveReadingKhatma(khatmaId); } catch { /* Keep navigation active. */ }
+    }
+    setPendingMushafResume({ page, khatmaId, nonce: Date.now() });
+    handleNavigate('library');
   };
 
   // Start daily session handler with deep link URL
@@ -768,6 +778,7 @@ export default function App() {
                   onNavigate={handleNavigate}
                   onStartSession={handleStartSession}
                   onUpdateEnginePlans={handleUpdateEnginePlans}
+                  onResumeReadingKhatma={handleResumeReadingKhatma}
                   onToast={showToast}
                 />
               )}
@@ -776,6 +787,8 @@ export default function App() {
                 <QuranLibraryView
                   onStartSession={handleStartSession}
                   preferredReciter={profile.preferredReciter}
+                  pendingMushafResume={pendingMushafResume}
+                  onClearPendingMushafResume={() => setPendingMushafResume(null)}
                 />
               )}
 

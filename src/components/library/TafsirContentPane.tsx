@@ -37,6 +37,10 @@ export interface TafsirContentPaneProps {
   onChangeDesktopLayout?: (layout: MushafTafsirDesktopLayout) => void;
   returnToMushafLabel?: string;
   compactHeader?: boolean;
+  syncReadingPageAction?: {
+    pageNumber: number;
+    onSync: () => void;
+  };
 }
 
 const FONT_SIZE_KEY = 'wird_tafsir_font_size_v1';
@@ -86,7 +90,8 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
   desktopLayout,
   onChangeDesktopLayout,
   returnToMushafLabel,
-  compactHeader = false
+  compactHeader = false,
+  syncReadingPageAction
 }) => {
   const [selectedBookId, setSelectedBookId] = useState<number>(() => {
     try {
@@ -302,6 +307,17 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
+            {syncReadingPageAction && (
+              <button
+                type="button"
+                onClick={syncReadingPageAction.onSync}
+                className="min-h-11 inline-flex items-center gap-1.5 rounded-xl border border-[#C59B27]/50 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 px-3 py-1.5 font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] transition-colors whitespace-nowrap"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>تفسير صفحة {syncReadingPageAction.pageNumber}</span>
+              </button>
+            )}
+
             {pageAyahs && pageAyahs.length > 0 && (
               <button
                 type="button"
