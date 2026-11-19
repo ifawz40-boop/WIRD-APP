@@ -12,6 +12,8 @@ import { QuranText } from '../shared/QuranText';
 
 type ProgramId = 'brief-ruqya' | 'a-medium-ruqya' | 'a-long-ruqya';
 
+const RUQYAH_INDEX_REQUEST_TIMEOUT_MS = 10_000;
+
 const PROGRAMS: Array<{ id: ProgramId; label: string }> = [
   { id: 'brief-ruqya', label: 'فهرس مختصر' },
   { id: 'a-medium-ruqya', label: 'فهرس متوسط' },
@@ -30,6 +32,9 @@ export const RuqyahApiLibrary: React.FC = () => {
 
   useEffect(() => {
     const controller = new AbortController();
+    let active = true;
+    let timedOut = false;
+    let timeoutId: number | null = null;
     const cached = readRuqyahApiIndexCache(program);
     setLoading(true);
     setError(null);
@@ -37,47 +42,78 @@ export const RuqyahApiLibrary: React.FC = () => {
     setIsShowingCachedData(Boolean(cached));
     setCacheSavedAt(cached?.savedAt || null);
 
-    fetchRuqyahApiData<RuqyahApiEntry[]>({
+    const request = fetchRuqyahApiData<RuqyahApiEntry[] | RuqyahApiEntry>({
       type: 'instant',
       program,
       source: 'from-quran'
-    }, controller.signal)
-      .then(data => {
-        if (!Array.isArray(data) && (!data || typeof data !== 'object')) {
-          throw new Error('استجابة فهرس الآيات غير صالحة؛ لم يتم عرض أي محتوى منه.');
+    }, controller.signal).then(data => {
+      if (!active) return;
+      if (!Array.isArray(data) && (!data || typeof data !== 'object')) {
+        throw new Error('استجابة فهرس الآيات غير صالحة؛ لم يتم عرض أي محتوى منه.');
+      }
+      const normalized = Array.isArray(data) ? data : [data as RuqyahApiEntry];
+      if (normalized.length > 300 || normalized.some(entry => {
+        try {
+          resolveApiQuranEntry(entry);
+          return false;
+        } catch {
+          return true;
         }
-        const normalized = Array.isArray(data) ? data : [data as unknown as RuqyahApiEntry];
-        if (normalized.length > 300 || normalized.some(entry =>
-          !entry ||
-          (typeof entry.id !== 'number' && typeof entry.id !== 'string') ||
-          typeof entry.title !== 'string' ||
-          !/^[0-9]{1,3}:[0-9]{1,3}(?:-[0-9]{1,3})?$/.test(entry.title)
-        )) {
-          throw new Error('أعاد فهرس الآيات مواضع غير صالحة؛ لم يتم عرض أي محتوى منه.');
-        }
-        writeRuqyahApiIndexCache(program, normalized);
-        setEntries(normalized);
-        setCacheSavedAt(new Date().toISOString());
+      })) {
+        throw new Error('أعاد فهرس الآيات مواضع غير صالحة؛ لم يتم عرض أي محتوى منه.');
+      }
+      if (normalized.length === 0) {
+        setEntries([]);
+        setCacheSavedAt(null);
         setIsShowingCachedData(false);
         setError(null);
-      })
+        return;
+      }
+      const saved = writeRuqyahApiIndexCache(program, normalized);
+      setEntries(normalized);
+      setCacheSavedAt(saved ? new Date().toISOString() : null);
+      setIsShowingCachedData(false);
+      setError(null);
+    }).catch(reason => {
+      if (!active || (controller.signal.aborted && !timedOut)) return;
+      throw reason;
+    });
+
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = window.setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+        reject(new Error('انتهت مهلة تحميل فهرس مواضع الآيات. يمكنك استخدام آخر نسخة محفوظة أو إعادة المحاولة.'));
+      }, RUQYAH_INDEX_REQUEST_TIMEOUT_MS);
+    });
+
+    void Promise.race([request, timeout])
       .catch(reason => {
-        if (!controller.signal.aborted) {
-          const detail = reason instanceof Error ? reason.message : 'تعذر تحميل فهرس مواضع الآيات.';
-          if (cached) {
-            setEntries(cached.entries);
-            setIsShowingCachedData(true);
-            setCacheSavedAt(cached.savedAt);
-            setError('تعذر تحديث الفهرس الآن؛ نعرض آخر نسخة محفوظة بعد التحقق من مواضعها. ' + detail);
-          } else {
-            setError(detail);
-          }
+        if (!active) return;
+        const detail = reason instanceof Error ? reason.message : 'تعذر تحميل فهرس مواضع الآيات.';
+        const safeDetail = /HTTP (?:500|502)\\b/.test(detail)
+          ? 'خدمة فهرس المواضع تواجه عطلًا مؤقتًا (' + detail + ').'
+          : detail;
+        if (cached) {
+          setEntries(cached.entries);
+          setIsShowingCachedData(true);
+          setCacheSavedAt(cached.savedAt);
+          setError('تعذر تحديث الفهرس الآن؛ نعرض آخر نسخة محفوظة بعد التحقق من مواضعها. ' + safeDetail);
+        } else {
+          setEntries([]);
+          setError(safeDetail);
         }
       })
       .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        if (timeoutId !== null) window.clearTimeout(timeoutId);
+        if (active) setLoading(false);
       });
-    return () => controller.abort();
+
+    return () => {
+      active = false;
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [program, retryNonce]);
 
   const filteredEntries = entries.filter(entry => matchesApiQuranEntry(entry, searchQuery));
