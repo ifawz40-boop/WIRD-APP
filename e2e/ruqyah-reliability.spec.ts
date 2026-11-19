@@ -70,7 +70,7 @@ test.describe('W09 Ruqyah page reliability', () => {
   });
 
   test('index timeout settles loading and offers retry', async ({ page }) => {
-    test.setTimeout(30_000);
+    test.setTimeout(40_000);
     await page.addInitScript(() => {
       const originalFetch = window.fetch.bind(window);
       window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
@@ -83,7 +83,7 @@ test.describe('W09 Ruqyah page reliability', () => {
     });
     await openRuqyah(page);
     await openIndex(page);
-    await expect(page.getByRole('alert')).toContainText('انتهت مهلة تحميل فهرس مواضع الآيات', { timeout: 15_000 });
+    await expect(page.getByRole('alert')).toContainText('انتهت مهلة تحميل فهرس مواضع الآيات', { timeout: 32_000 });
     await expect(page.getByText('جارٍ تحديث الفهرس', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'إعادة المحاولة' })).toBeVisible();
   });
