@@ -41,7 +41,7 @@ Without the secret, the external library displays a clear configuration message.
 - IslamicAPI documents separate MP3 links for Brief, Medium, and Long programs, but WIRD does **not** currently wire those files into `RuqyahView`.
 - The current player queues Quran ayahs from WIRD's canonical local corpus and plays them individually through the approved Al Quran Cloud reciter allowlist. It does not play a complete recording containing both Quran and Sunnah supplications.
 - The UI correctly states that complete recordings containing supplications remain under verification. Do not remove that notice or enable full-program playback until the exact audio contents, reciter/source attribution, usage rights, and every non-Quran text/reference have been independently reviewed.
-- The public `islamicapi/ruqyah` repository README uses an “Open Source” badge but the reviewed repository root has no standard `LICENSE` file. IslamicAPI's [Ruqyah API documentation](https://islamicapi.com/doc/ruqyah/) says the dataset is free for any use, but it does not provide a standard license file or detailed terms for rehosting/redistributing the separate audio pack. WIRD therefore uses only the hosted API for sanitized numeric Quran locators and does not copy the dataset or audio; obtain clear written reuse/redistribution terms before rehosting or integrating full recordings. Provider-authored text from the instant Quran locator endpoint is stripped; topic article blocks are displayed with explicit IslamicAPI attribution.
+- The public `islamicapi/ruqyah` repository README uses an “Open Source” badge but the reviewed repository root has no standard `LICENSE` file. IslamicAPI's [Ruqyah API documentation](https://islamicapi.com/doc/ruqyah/) says the dataset is free for any use, but it does not provide a standard license file or detailed terms for rehosting/redistributing the separate audio pack. WIRD uses the hosted API for sanitized numeric Quran locators and owner-approved topic articles; it does not copy or rehost the dataset or audio. Obtain clear written reuse/redistribution terms before rehosting or integrating full recordings. Provider-authored text from the instant Quran locator endpoint is stripped; topic article blocks are displayed with explicit IslamicAPI attribution.
 
 ## Reuse and licensing decisions
 
@@ -60,7 +60,7 @@ Without the secret, the external library displays a clear configuration message.
 
 ## Current limitations
 
-- IslamicAPI index access requires the server secret `ISLAMICAPI_API_KEY`; the proxy exposes only validated numeric Quran coordinates.
+- IslamicAPI index access requires the server secret `ISLAMICAPI_API_KEY`; the instant Quran index proxy exposes only validated numeric Quran coordinates; the separately gated topic proxy returns bounded article text blocks.
 - The three external Quran locator lists are available only if the server key and provider endpoint work. Sunnah entries from the instant recitation endpoint remain disabled; topic article content is exposed only when `RUQYAH_TOPICS_ENABLED=true`.
 - Ruqyah Quran audio is verse-by-verse through the seven-reciter Al Quran Cloud allowlist. Complete Brief/Medium/Long MP3 recordings are not integrated.
 - Full-program audio remains out of production until its exact contents, reciter attribution, licensing, and source reliability are reviewed. Topic articles are a separate owner-approved, attributed IslamicAPI integration.
