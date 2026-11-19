@@ -114,7 +114,7 @@ export function runRuqyahViewAudioLockTests(): { passed: number; failed: number 
 
   test(
     'Ruqyah index requests have a bounded timeout, abort on unmount, and settle loading state',
-    apiLibrarySource.includes('RUQYAH_INDEX_REQUEST_TIMEOUT_MS = 10_000') &&
+    apiLibrarySource.includes('RUQYAH_INDEX_REQUEST_TIMEOUT_MS = 27_000') &&
       apiLibrarySource.includes('controller.abort()') &&
       apiLibrarySource.includes('انتهت مهلة تحميل فهرس مواضع الآيات') &&
       apiLibrarySource.includes('if (active) setLoading(false)')
