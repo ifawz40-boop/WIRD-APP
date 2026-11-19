@@ -91,7 +91,7 @@ export const RuqyahApiLibrary: React.FC = () => {
       .catch(reason => {
         if (!active) return;
         const detail = reason instanceof Error ? reason.message : 'تعذر تحميل فهرس مواضع الآيات.';
-        const safeDetail = /HTTP (?:500|502)\\b/.test(detail)
+        const safeDetail = /HTTP (?:500|502)\b/.test(detail)
           ? 'خدمة فهرس المواضع تواجه عطلًا مؤقتًا (' + detail + ').'
           : detail;
         if (cached) {
