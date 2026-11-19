@@ -67,7 +67,7 @@ test('Mushaf page jump rejects invalid pages and accepts a valid page', async ({
 
   await pageInput.fill('2');
   await page.getByRole('button', { name: 'انتقال إلى رقم الصفحة' }).click();
-  await expect(page.getByText('2 / 604')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'التنقل بين صفحات المصحف' }).getByText('2 / 604')).toBeVisible();
 });
 
 
@@ -78,8 +78,9 @@ test('Mushaf primary touch controls meet the 44px minimum target on phones', asy
   await page.goto('/#/library');
   await page.getByRole('button', { name: /فتح المصحف بالصفحات/ }).click();
 
-  await expect(page.getByRole('button', { name: 'الصفحة السابقة' })).toHaveCSS('min-height', '44px');
-  await expect(page.getByRole('button', { name: 'الصفحة التالية' })).toHaveCSS('min-height', '44px');
+  const bottomPageNavigation = page.getByRole('navigation', { name: 'التنقل بين صفحات المصحف' });
+  await expect(bottomPageNavigation.getByRole('button', { name: 'الصفحة السابقة' })).toHaveCSS('min-height', '56px');
+  await expect(bottomPageNavigation.getByRole('button', { name: 'الصفحة التالية' })).toHaveCSS('min-height', '56px');
   await expect(page.getByRole('button', { name: 'انتقال إلى رقم الصفحة' })).toHaveCSS('min-height', '44px');
   await expect(page.getByRole('button', { name: 'استماع للمقطع' })).toHaveCSS('min-height', '44px');
 });
