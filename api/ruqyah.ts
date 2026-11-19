@@ -8,7 +8,14 @@ const MAX_UPSTREAM_RESPONSE_BYTES = 2 * 1024 * 1024;
 const MAX_EXTERNAL_INDEX_ID = 999_999_999;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 
-const ALLOWED_TYPES = new Set(['instant']);
+const ALLOWED_TYPES = new Set(['instant', 'topic-category', 'topic']);
+const ALLOWED_TOPICS = new Set([
+  'introduction-to-ruqyah', 'protect-yourself-from-jinn', 'black-magic-sihr',
+  'evil-eye-and-envy', 'about-raqi', 'types-of-hijamah-bloodletting',
+  'ruqyah-materials', '7-day-detoxification-program', 'waswasah-whisperings',
+  'the-ruqyah-bath-against-sihr', 'other-diseases',
+  'treatment-for-general-problems', 'full-ruqyah-program'
+]);
 const ALLOWED_PROGRAMS = new Set(['brief-ruqya', 'a-medium-ruqya', 'a-long-ruqya']);
 // Only use the external API as an index for Quran references. Hadith/dua text
 // from third-party payloads is not trusted or rendered in WIRD.
@@ -76,6 +83,72 @@ function sanitizeQuranIndexData(data: unknown): unknown {
     return {
       id: record.id,
       title: `${surahNumber}:${startAyah}-${endAyah}`
+    };
+  });
+  return Array.isArray(data) ? sanitized : sanitized[0];
+}
+
+function isSafeProviderId(value: unknown): value is number | string {
+  return (typeof value === 'number' && Number.isSafeInteger(value) && value > 0 && value <= MAX_EXTERNAL_INDEX_ID) ||
+    (typeof value === 'string' && /^[1-9][0-9]{0,8}$/.test(value));
+}
+
+function boundedText(value: unknown, maxLength: number): value is string {
+  return typeof value === 'string' && value.length <= maxLength;
+}
+
+function sanitizeTopicCategories(data: unknown): unknown[] {
+  if (!Array.isArray(data) || data.length > 13) throw new Error('Invalid topic categories');
+  return data.map(category => {
+    if (!isRecord(category) || !boundedText(category.title, 160) || !Array.isArray(category.subcategories) ||
+        category.subcategories.length > 2) throw new Error('Invalid topic category');
+    return {
+      title: category.title,
+      subcategories: category.subcategories.map(subcategory => {
+        if (!isRecord(subcategory) || !boundedText(subcategory.subcategory, 160) ||
+            typeof subcategory['subcategory-slug'] !== 'string' ||
+            !ALLOWED_TOPICS.has(subcategory['subcategory-slug']) || !Array.isArray(subcategory.ruqyah) ||
+            subcategory.ruqyah.length > 100) throw new Error('Invalid topic subcategory');
+        return {
+          subcategory: subcategory.subcategory,
+          'subcategory-slug': subcategory['subcategory-slug'],
+          ruqyah: subcategory.ruqyah.map(article => {
+            if (!isRecord(article) || !isSafeProviderId(article.id) || !boundedText(article.title, 300)) {
+              throw new Error('Invalid topic article index');
+            }
+            return { id: article.id, title: article.title };
+          })
+        };
+      })
+    };
+  });
+}
+
+function sanitizeTopicArticles(data: unknown): unknown {
+  const rows = Array.isArray(data) ? data : [data];
+  if (rows.length > 100) throw new Error('Too many topic articles');
+  const sanitized = rows.map(article => {
+    if (!isRecord(article) || !isSafeProviderId(article.sub_id) || !boundedText(article.title, 300) ||
+        !boundedText(article.category, 160) ||
+        (article.section_title !== undefined && !boundedText(article.section_title, 300)) ||
+        !Array.isArray(article.content) || article.content.length > 100) {
+      throw new Error('Invalid topic article');
+    }
+    let totalTextLength = 0;
+    const content = article.content.map(block => {
+      if (!isRecord(block) ||
+          !['text', 'arabic', 'translation', 'header', 'transliteration'].includes(String(block.type)) ||
+          !boundedText(block.content, 12_000)) throw new Error('Invalid topic content block');
+      totalTextLength += block.content.length;
+      if (totalTextLength > 60_000) throw new Error('Topic article too large');
+      return { type: block.type, content: block.content };
+    });
+    return {
+      sub_id: article.sub_id,
+      title: article.title,
+      ...(article.section_title ? { section_title: article.section_title } : {}),
+      category: article.category,
+      content
     };
   });
   return Array.isArray(data) ? sanitized : sanitized[0];
@@ -221,6 +294,20 @@ async function handleRuqyahRequest(req: any, res: any) {
       return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
     }
     if (random) params.set('random', random);
+  } else if (type === 'topic') {
+    const topic = readQueryValue(query.topic);
+    if (!ALLOWED_TOPICS.has(topic)) return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
+    params.set('topic', topic);
+    const id = readQueryValue(query.id);
+    if (id) {
+      if (!/^[1-9]\\d{0,8}$/.test(id)) return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
+      params.set('id', id);
+    }
+    const random = readQueryValue(query.random);
+    if (random && random !== 'true' && random !== 'false') {
+      return send(res, 400, { error: 'INVALID_RUQYAH_QUERY' });
+    }
+    if (random) params.set('random', random);
   }
 
   const apiKey = process.env.ISLAMICAPI_API_KEY;
@@ -266,7 +353,22 @@ async function handleRuqyahRequest(req: any, res: any) {
       }
       return send(res, 502, { error: 'RUQYAH_SOURCE_UNAVAILABLE' });
     }
-    if (!validPayload(payload)) {
+    if (!isRecord(payload) || payload.status !== 'success' || !('data' in payload)) {
+      res.setHeader('Cache-Control', 'no-store');
+      return send(res, 502, { error: 'INVALID_RUQYAH_SOURCE_RESPONSE' });
+    }
+
+    let sanitizedData: unknown;
+    try {
+      if (type === 'instant') {
+        if (!validPayload(payload)) throw new Error('Invalid Quran locator payload');
+        sanitizedData = sanitizeQuranIndexData(payload.data);
+      } else if (type === 'topic-category') {
+        sanitizedData = sanitizeTopicCategories(payload.data);
+      } else {
+        sanitizedData = sanitizeTopicArticles(payload.data);
+      }
+    } catch {
       res.setHeader('Cache-Control', 'no-store');
       return send(res, 502, { error: 'INVALID_RUQYAH_SOURCE_RESPONSE' });
     }
@@ -274,9 +376,7 @@ async function handleRuqyahRequest(req: any, res: any) {
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     return send(res, 200, {
       status: 'success',
-      data: type === 'instant'
-        ? sanitizeQuranIndexData((payload as Record<string, unknown>).data)
-        : (payload as Record<string, unknown>).data,
+      data: sanitizedData,
       source: 'IslamicAPI',
       language: 'ar',
       type
