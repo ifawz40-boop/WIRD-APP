@@ -86,11 +86,9 @@ export const AuthService = {
       const code = popupError?.code || '';
       if (
         code === 'auth/popup-blocked' ||
-        code === 'auth/popup-closed-by-user' ||
-        code === 'auth/cancelled-popup-request' ||
         code === 'auth/operation-not-supported-in-this-environment'
       ) {
-        console.warn('[WIRD Auth] Popup blocked or failed, falling back to signInWithRedirect:', popupError);
+        console.warn('[WIRD Auth] Popup blocked or unsupported, falling back to signInWithRedirect:', popupError);
         try {
           await signInWithRedirect(auth, googleAuthProvider);
           return null;

@@ -196,16 +196,29 @@
 .mushaf-ayah-hit-area:focus-visible {
   stroke-width: 1.5;
 }
+.mushaf-ayah-hit-area[data-session-ayah='true']:not([aria-pressed='true']) {
+  fill: #1c4e46;
+  fill-opacity: 0.16;
+  stroke: rgba(28, 78, 70, 0.45);
+  stroke-width: 0.65;
+}
 .mushaf-ayah-hit-area[aria-pressed='true'] {
-  fill-opacity: 0.34;
+  fill: #c59b27;
+  fill-opacity: 0.36;
   stroke: #a87912;
-  stroke-width: 1.1;
+  stroke-width: 1.15;
 }
 
 /* Night Mode Printed Mushaf: crisp warm ivory script (#F5F1E8) over Midnight Navy (#0E1A2F). */
 .dark .mushaf-facsimile-svg svg {
   filter: invert(0.93) hue-rotate(180deg) sepia(0.14) saturate(1.1) contrast(1.06);
   mix-blend-mode: screen;
+}
+.dark .mushaf-facsimile-svg .mushaf-ayah-hit-area[data-session-ayah='true']:not([aria-pressed='true']) {
+  fill: #5a2d00;
+  fill-opacity: 0.24;
+  stroke: #4a2400;
+  stroke-width: 0.75;
 }
 .dark .mushaf-facsimile-svg .mushaf-ayah-hit-area:hover,
 .dark .mushaf-facsimile-svg .mushaf-ayah-hit-area:focus-visible {
@@ -216,7 +229,7 @@
 }
 .dark .mushaf-facsimile-svg .mushaf-ayah-hit-area[aria-pressed='true'] {
   fill: #6b3600;
-  fill-opacity: 0.44;
+  fill-opacity: 0.46;
   stroke: #3d1d00;
   stroke-width: 1.25;
 }

@@ -260,7 +260,10 @@ app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void>
     res.status(400).json({ success: false, code: validation.code, message: validation.message });
     return;
   }
-  const { message } = validation.body;
+  const { message, history } = validation.body as {
+    message?: unknown;
+    history?: unknown;
+  };
   if (!message || typeof message !== 'string' || !message.trim()) {
     res.status(400).json({ success: false, code: 'INVALID_PAYLOAD', message: 'الرسالة مطلوبة' });
     return;
@@ -276,17 +279,29 @@ app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  let historyContext = '';
+  if (Array.isArray(history) && history.length > 0) {
+    const recentTurns = history
+      .slice(-6)
+      .filter((item): item is { role?: unknown; text?: unknown } => Boolean(item && typeof item === 'object'))
+      .map(item => {
+        const roleLabel = item.role === 'model' ? 'المستشار' : 'الحافظ';
+        const text = typeof item.text === 'string' ? item.text.trim().slice(0, 300) : '';
+        return text ? `${roleLabel}: ${text}` : '';
+      })
+      .filter(Boolean);
+    if (recentTurns.length > 0) {
+      historyContext = `\n[سياق الحوار السابق]:\n${recentTurns.join('\n')}\n`;
+    }
+  }
+
   try {
-    const chat = ai.chats.create({
+    const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
+      contents: `${historyContext}\nسؤال المستخدم عن حفظ القرآن الكريم: ${message.trim()}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION
       }
-    });
-
-    // Provide context if history exists
-    const response = await chat.sendMessage({
-      message: `سؤال المستخدم عن حفظ القرآن الكريم: ${message}`
     });
 
     res.json({
