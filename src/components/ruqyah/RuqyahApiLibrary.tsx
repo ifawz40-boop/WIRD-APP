@@ -12,7 +12,7 @@ import { QuranText } from '../shared/QuranText';
 
 type ProgramId = 'brief-ruqya' | 'a-medium-ruqya' | 'a-long-ruqya';
 
-const RUQYAH_INDEX_REQUEST_TIMEOUT_MS = 10_000;
+const RUQYAH_INDEX_REQUEST_TIMEOUT_MS = 27_000;
 
 const PROGRAMS: Array<{ id: ProgramId; label: string }> = [
   { id: 'brief-ruqya', label: 'فهرس مختصر' },
