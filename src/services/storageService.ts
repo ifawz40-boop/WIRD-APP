@@ -46,6 +46,17 @@ export const STORAGE_KEYS = {
   SYNC_OUTBOX: 'wird_sync_outbox_v1'
 } as const;
 
+export const AUXILIARY_SCOPED_KEYS = [
+  'wird.reading.khatma.v1',
+  'wird.reading.khatmas.v2',
+  'wird.quran.pageBookmarks.v1',
+  'wird.quran.lastPage.v1',
+  'wird.quran.lastReadingPosition.v1',
+  'wird.adhkar.progress.v1',
+  'wird.seerah.progress.v1',
+  'wird.prayer.cache.v1'
+] as const;
+
 // In-memory fallback for test / Node / SSR environments where localStorage is not defined.
 const memoryStorage = new Map<string, string>();
 const STORAGE_SCOPE_PREFIX = 'wird_scope_v1';
@@ -171,7 +182,7 @@ function isUserStorageScope(scope: string): boolean {
 }
 
 function hasLegacyStorageData(): boolean {
-  return Object.values(STORAGE_KEYS)
+  return [...Object.values(STORAGE_KEYS), ...AUXILIARY_SCOPED_KEYS]
     .filter(key => key !== STORAGE_KEYS.SCHEMA_VERSION)
     .some(key => rawGetItem(key) !== null);
 }
@@ -233,7 +244,7 @@ function setStorageScope(scope: string, legacyChoice?: 'import' | 'keep-guest'):
   const owner = readRawStorageValue(STORAGE_OWNER_MARKER);
   if (owner === undefined) return false;
   if (!owner) {
-    const legacyKeys = Object.values(STORAGE_KEYS);
+    const legacyKeys = [...Object.values(STORAGE_KEYS), ...AUXILIARY_SCOPED_KEYS];
     const destinationKeys = legacyKeys.map(key => resolveStorageKey(key, normalized));
     const snapshotKeys = [...new Set([STORAGE_OWNER_MARKER, ...legacyKeys, ...destinationKeys])];
     const snapshot = new Map<string, string | null>();
@@ -1060,6 +1071,10 @@ export const StorageService = {
     return activeStorageScope;
   },
 
+  resolveScopedKey(key: string): string {
+    return resolveStorageKey(key);
+  },
+
   getRawItem(key: string): string | null {
     return getItem(key);
   },
@@ -1104,6 +1119,7 @@ export const StorageService = {
     hydratedEnginePlansCache = null;
     const keysToRemove = new Set<string>([
       ...Object.values(STORAGE_KEYS),
+      ...AUXILIARY_SCOPED_KEYS,
       STORAGE_OWNER_MARKER
     ]);
     try {

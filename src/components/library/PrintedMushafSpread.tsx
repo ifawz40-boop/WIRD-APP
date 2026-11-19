@@ -324,7 +324,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 <QuranMushafFacsimilePage
                   page={pageNum}
                   onAyahsResolved={handleAyahsResolved}
-                  selectedAyah={activeTafsirAyah || selectedAyah}
+                  selectedAyah={autoOpenTafsirOnSelect ? (activeTafsirAyah || selectedAyah) : (selectedAyah || activeTafsirAyah)}
                   onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
                   onFallback={onFallback}
                   maxWidthClass="max-w-none"

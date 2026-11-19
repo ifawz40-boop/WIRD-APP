@@ -1,7 +1,16 @@
 # WIRD — Application Architecture
 
-**Last reconciled:** 2026-11-14  
+**Last reconciled:** 2026-11-19 (Local Antigravity audit + Phase 1 stabilization)  
 **Source of truth:** current repository code and exact deployment metadata. Re-check both before changing architecture.
+
+## 0. Current vs Target Transformation Boundaries (2026-11-19)
+
+- **Verified Current Architecture:** React 19 + TypeScript + Vite 8 + Tailwind v4 SPA with hash router (`src/services/router.ts`), 11 lazy views (`dashboard`, `library`, `plans`, `session`, `revision`, `tests`, `progress`, `advisor`, `ruqyah`, `settings`, `showcase`), Express dev/prod server (`server.ts`), 5 Vercel-compatible API handlers (`api/advisor.ts`, `api/tafsir.ts`, `api/ruqyah.ts`, `api/quran-audio.ts`, `api/hadith-references.ts`), verified local Tanzil Uthmani + Simple 1.1 Quran corpus (114 lazy chunks + 604 KFQC SVG facsimile maps), IndexedDB sync journal & engine-plan archive (`wird-sync-journal` v10), IndexedDB + Cache Storage offline audio library (`wird-offline-audio`), and Service Worker (`public/sw.js`, `wird-app-v3`).
+- **Identified Architectural Gaps Targeted Across Phases 2–7:**
+  1. **Design System:** Replace scattered hardcoded hex strings across JSX with centralized semantic CSS variables and crisp vector/generated brand assets (Phase 2).
+  2. **Unified Data & Offline Audio:** Wire `offlineQuranAudioLibrary` into `QuranMushafReader` and `QuranLibraryView` (currently only `MemorizationSessionView` resolves local cached audio); move `readingKhatma` and Mushaf bookmarks into UID-scoped persistence; switch `DashboardView`, `SettingsView`, and `ProgressAnalyticsView` off direct synchronous `localStorage` plan/export reads onto the hydrated IndexedDB archive (Phase 3).
+  3. **Domain Expansion with Adapters:** Add provider-isolated adapters for Adhkar/Duas audio (Phase 4), versioned local Seerah narrative registry separated from UI (Phase 5), and AlAdhan prayer/Hijri/Qibla caching (Phase 6).
+  4. **Bidirectional Sync with Tombstones:** Extend `remoteInboxProjector.ts`, `syncConflictResolutionService.ts`, and `firestore.rules` (gated by Emulator tests & explicit approval before production deploy) to support collection-specific soft-delete tombstones, anti-resurrection, atomic grouped `syncMeta` resolution, and event-derived `activityEvents` (Phase 7).
 
 ## 1. Product boundaries
 

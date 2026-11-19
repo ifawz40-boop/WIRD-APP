@@ -88,5 +88,19 @@ export function runSessionStudyUiTests(): { passed: number; failed: number } {
       'memorization tests must not double-count the final question score or run duplicate generation on mode switch'
     );
   });
+  test('Phase 1 stabilization: reactive spread stepping, inline khatma quick-start, scoped khatma presets, and decoupled session tafsir', () => {
+    const reader = read('src/components/library/QuranMushafReader.tsx');
+    const panel = read('src/components/library/ReadingKhatmaPanel.tsx');
+    const session = read('src/components/session/MemorizationSessionView.tsx');
+    const spread = read('src/components/library/PrintedMushafSpread.tsx');
+
+    assert(reader.includes('printedSpreadContext.isTwoPage'), 'Mushaf reader must derive two-page stepping reactively from spread context');
+    assert(reader.includes('onQuickStartReadingKhatma') && reader.includes('بدء ختمة قراءة الآن'), 'Mushaf reader must allow starting a khatma directly when none is active');
+    assert(reader.includes('visibleSpreadPages.filter(p => !readingKhatma.completedPages.includes(p))'), 'Spread undo must only revert newly marked pages');
+    assert(panel.includes("newScopeMode === 'juz'") && panel.includes("newScopeMode === 'surah'") && panel.includes('QURAN_PAGE_INDEX'), 'ReadingKhatmaPanel must support Juz and Surah scope presets grounded in generated indices');
+    assert(!session.includes('if (nextAyah) handlePrintedSelectAyah(nextAyah);'), 'Browsing Tafsir in printed session must not mutate active memorization ayah');
+    assert(session.includes('const confirmed = confirmFinalSegmentMastery(cumulativeProgress);') && session.includes('saveCumulativeSessionProgress(confirmed);'), 'Cumulative final confirmation must persist synchronously before session completion');
+    assert(spread.includes('autoOpenTafsirOnSelect ? (activeTafsirAyah || selectedAyah) : (selectedAyah || activeTafsirAyah)'), 'PrintedMushafSpread must keep active memorization ayah highlighted when autoOpenTafsirOnSelect is false');
+  });
   return { passed, failed };
 }

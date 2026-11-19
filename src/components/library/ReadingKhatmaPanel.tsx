@@ -18,6 +18,34 @@ import {
   type ReadingKhatmaCycle,
   type ReadingKhatmaPlanOptions
 } from '../../services/readingKhatmaService';
+import { ALL_SURAHS } from '../../data/quranMeta';
+import { QURAN_JUZ_STARTS } from '../../data/quranNavigationIndex.generated';
+import { QURAN_PAGE_INDEX } from '../../data/quranPageIndex.generated';
+
+const JUZ_START_MAP = QURAN_JUZ_STARTS as unknown as Record<string, { surahNumber: number; ayahNumber: number; page: number }>;
+const PAGE_SEGMENTS_MAP = QURAN_PAGE_INDEX as unknown as Record<string, Array<{ surahNumber: number; startAyah: number; endAyah: number }>>;
+
+function getJuzPageRange(fromJuz: number, toJuz: number): { startPage: number; endPage: number } {
+  const safeFrom = Math.min(30, Math.max(1, fromJuz));
+  const safeTo = Math.min(30, Math.max(safeFrom, toJuz));
+  const startPage = JUZ_START_MAP[String(safeFrom)]?.page ?? 1;
+  const endPage = safeTo >= 30 ? 604 : Math.max(startPage, (JUZ_START_MAP[String(safeTo + 1)]?.page ?? 604) - 1);
+  return { startPage, endPage };
+}
+
+function getSurahPageRange(surahNumber: number): { startPage: number; endPage: number } {
+  const surah = ALL_SURAHS.find(s => s.number === surahNumber) || ALL_SURAHS[0];
+  let endPage = surah.pageStart;
+  for (let p = surah.pageStart; p <= 604; p += 1) {
+    const segments = PAGE_SEGMENTS_MAP[String(p)];
+    if (segments?.some(seg => seg.surahNumber === surah.number)) {
+      endPage = p;
+    } else if (p > surah.pageStart) {
+      break;
+    }
+  }
+  return { startPage: surah.pageStart, endPage };
+}
 
 interface Props {
   khatma: ReadingKhatma | null;
@@ -75,7 +103,10 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
   const [newTitle, setNewTitle] = useState('');
   const [newDurationDays, setNewDurationDays] = useState(30);
   const [newSessionsPerDay, setNewSessionsPerDay] = useState(2);
-  const [newScopeMode, setNewScopeMode] = useState<'full' | 'custom'>('full');
+  const [newScopeMode, setNewScopeMode] = useState<'full' | 'juz' | 'surah' | 'custom'>('full');
+  const [newFromJuz, setNewFromJuz] = useState(30);
+  const [newToJuz, setNewToJuz] = useState(30);
+  const [newSurahNumber, setNewSurahNumber] = useState(2);
   const [newStartPage, setNewStartPage] = useState(1);
   const [newEndPage, setNewEndPage] = useState(604);
 
@@ -125,9 +156,19 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
       )
     : [];
 
+  const resolvedCreatorRange = (() => {
+    if (newScopeMode === 'juz') return getJuzPageRange(newFromJuz, newToJuz);
+    if (newScopeMode === 'surah') return getSurahPageRange(newSurahNumber);
+    if (newScopeMode === 'custom') {
+      const startPage = Math.max(1, Math.min(604, newStartPage));
+      const endPage = Math.max(startPage, Math.min(604, newEndPage));
+      return { startPage, endPage };
+    }
+    return { startPage: 1, endPage: 604 };
+  })();
+
   const handleCreateSubmit = () => {
-    const scopeStart = newScopeMode === 'custom' ? Math.max(1, Math.min(604, newStartPage)) : 1;
-    const scopeEnd = newScopeMode === 'custom' ? Math.max(scopeStart, Math.min(604, newEndPage)) : 604;
+    const { startPage: scopeStart, endPage: scopeEnd } = resolvedCreatorRange;
     if (onCreateKhatma) {
       onCreateKhatma({
         title: newTitle.trim() || undefined,
@@ -145,10 +186,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
   };
 
   const showCreator = isCreatingNew || !selectedKhatma || Boolean(selectedKhatma.completedAt);
-  const creatorPreviewPagesCount =
-    newScopeMode === 'custom'
-      ? Math.max(1, Math.min(604, newEndPage) - Math.max(1, Math.min(604, newStartPage)) + 1)
-      : 604;
+  const creatorPreviewPagesCount = Math.max(1, resolvedCreatorRange.endPage - resolvedCreatorRange.startPage + 1);
   const creatorDailyPreview = Math.ceil(creatorPreviewPagesCount / Math.max(1, newDurationDays));
 
   return (
@@ -310,6 +348,30 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               </button>
               <button
                 type="button"
+                aria-pressed={newScopeMode === 'juz'}
+                onClick={() => setNewScopeMode('juz')}
+                className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
+                  newScopeMode === 'juz'
+                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
+                    : 'border-[#1C4E46]/15 bg-white text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8]'
+                }`}
+              >
+                بالأجزاء
+              </button>
+              <button
+                type="button"
+                aria-pressed={newScopeMode === 'surah'}
+                onClick={() => setNewScopeMode('surah')}
+                className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
+                  newScopeMode === 'surah'
+                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
+                    : 'border-[#1C4E46]/15 bg-white text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8]'
+                }`}
+              >
+                بسورة محددة
+              </button>
+              <button
+                type="button"
                 aria-pressed={newScopeMode === 'custom'}
                 onClick={() => setNewScopeMode('custom')}
                 className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
@@ -321,6 +383,59 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                 نطاق صفحات مخصص
               </button>
             </div>
+
+            {newScopeMode === 'juz' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                  <span>من جزء</span>
+                  <select
+                    aria-label="الجزء البداية للختمة"
+                    value={newFromJuz}
+                    onChange={event => {
+                      const nextFrom = Number(event.target.value);
+                      setNewFromJuz(nextFrom);
+                      if (newToJuz < nextFrom) setNewToJuz(nextFrom);
+                    }}
+                    className="min-h-10 rounded-lg border border-[#1C4E46]/15 bg-white px-2 text-xs font-semibold dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                  >
+                    {Array.from({ length: 30 }, (_, idx) => idx + 1).map(juz => (
+                      <option key={juz} value={juz}>الجزء {juz}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                  <span>إلى جزء</span>
+                  <select
+                    aria-label="الجزء النهاية للختمة"
+                    value={newToJuz}
+                    onChange={event => setNewToJuz(Number(event.target.value))}
+                    className="min-h-10 rounded-lg border border-[#1C4E46]/15 bg-white px-2 text-xs font-semibold dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                  >
+                    {Array.from({ length: 30 - newFromJuz + 1 }, (_, idx) => newFromJuz + idx).map(juz => (
+                      <option key={juz} value={juz}>الجزء {juz}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
+
+            {newScopeMode === 'surah' && (
+              <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <span>السورة</span>
+                <select
+                  aria-label="سورة الختمة"
+                  value={newSurahNumber}
+                  onChange={event => setNewSurahNumber(Number(event.target.value))}
+                  className="min-h-10 rounded-lg border border-[#1C4E46]/15 bg-white px-2.5 text-xs font-semibold dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                >
+                  {ALL_SURAHS.map(surah => (
+                    <option key={surah.number} value={surah.number}>
+                      {surah.number}. سورة {surah.name} (ص {surah.pageStart})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             {newScopeMode === 'custom' && (
               <div className="flex items-center gap-2">

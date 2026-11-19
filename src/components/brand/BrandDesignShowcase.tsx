@@ -21,7 +21,8 @@ import {
   X
 } from 'lucide-react';
 import { WirdAvatar } from './WirdAvatar';
-import { WirdIslamicPattern } from './WirdPattern';
+import { WirdSymbol, type WirdSymbolVariant } from './WirdLogo';
+import { WirdIslamicPattern, WirdMihrabArch } from './WirdPattern';
 
 interface BrandDesignShowcaseProps {
   onClose?: () => void;
@@ -462,6 +463,68 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
             </p>
           </div>
         )}
+      </section>
+
+      {/* Scalable Vector Emblem & Architectural Mihrab Art Gallery */}
+      <section className="bg-white dark:bg-[#111F36] rounded-3xl p-6 md:p-8 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-md space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
+              الشعار الهندسي المتجهي والزخرفة المعمارية (Scalable Vector Emblem & Mihrab Art)
+            </h2>
+            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] mt-1">
+              هندسة نجمة ربع الحزب الثمانية مع قوس المحراب والمصحف المفتوح على الرحل بدقة SVG متجهية لا تفقد وضوحها عند أي مقاس
+            </p>
+          </div>
+          <span className="wird-section-badge">SVG Vector · Zero-Latency</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {(
+            [
+              { variant: 'primary', label: 'الأساسي · Primary' },
+              { variant: 'light', label: 'النهاري · Light' },
+              { variant: 'dark', label: 'الليلي · Dark' },
+              { variant: 'gold', label: 'الذهبي · Gold' },
+              { variant: 'monochrome', label: 'أحادي · Mono' },
+              { variant: 'simplified', label: 'مُبسّط · Compact' },
+            ] as Array<{ variant: WirdSymbolVariant; label: string }>
+          ).map(item => (
+            <div
+              key={item.variant}
+              className="flex flex-col items-center justify-center gap-3 p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20"
+            >
+              <WirdSymbol size={60} variant={item.variant} withGlow={item.variant === 'primary' || item.variant === 'dark'} />
+              <span className="text-[11px] font-bold text-[#142421] dark:text-[#F5F1E8]">{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="relative overflow-hidden rounded-2xl p-5 bg-[#F9F6EE] border border-[#1C4E46]/15 flex items-center justify-between gap-4">
+            <WirdIslamicPattern variant="emerald" opacity={0.05} />
+            <div className="relative z-10 space-y-1.5">
+              <span className="text-[10px] font-bold text-[#C59B27] uppercase tracking-wider">زخرفة المحراب النهارية</span>
+              <h3 className="text-sm font-bold font-quran text-[#1C4E46]">قوس المحراب والمشكاة المعلقة</h3>
+              <p className="text-xs text-[#5B6F6B] leading-relaxed">
+                تكوين معماري متجهي يُستخدم في ترويسات الأقسام وحالات الفراغ دون أي صور نقطية ثقيلة.
+              </p>
+            </div>
+            <WirdMihrabArch size={96} variant="emerald" className="relative z-10 shrink-0" />
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl p-5 bg-[#0B132B] border border-[#E0A96D]/25 flex items-center justify-between gap-4 text-[#F5F1E8]">
+            <WirdIslamicPattern variant="gold" opacity={0.06} />
+            <div className="relative z-10 space-y-1.5">
+              <span className="text-[10px] font-bold text-[#E0A96D] uppercase tracking-wider">زخرفة المحراب الليلية</span>
+              <h3 className="text-sm font-bold font-quran text-[#F5F1E8]">توهج العنبر والذهب الكحلي</h3>
+              <p className="text-xs text-[#98ADAA] leading-relaxed">
+                تباين متزن يبرز تفاصيل المصحف المفتوح على الرحل فوق خلفية السكون الليلي.
+              </p>
+            </div>
+            <WirdMihrabArch size={96} variant="gold" className="relative z-10 shrink-0" />
+          </div>
+        </div>
       </section>
 
       {/* Color Swatches Palette Lab */}

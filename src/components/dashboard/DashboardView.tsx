@@ -32,6 +32,18 @@ import { QuranText } from '../shared/QuranText';
 import { WirdIslamicPattern } from '../brand/WirdPattern';
 import { WirdSymbol } from '../brand/WirdLogo';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+import {
+  PRAYER_CITY_PRESETS,
+  PRAYER_LABELS_AR,
+  buildOfflineFallbackSchedule,
+  fetchDailyPrayerSchedule,
+  getNextPrayerSummary,
+  getPrayerCityPresetById,
+  getSelectedPrayerCityId,
+  setSelectedPrayerCityId,
+  type DailyPrayerSchedule,
+  type PrayerTimingKey,
+} from '../../services/prayerTimesService';
 
 interface DashboardViewProps {
   profile: UserProfile;
@@ -61,6 +73,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [dailyPreviewText, setDailyPreviewText] = useState('جارٍ تحميل نص الآية...');
   const [pendingRecoveryMode, setPendingRecoveryMode] = useState<'shift' | 'light' | 'rebalance' | null>(null);
   const [isApplyingRecovery, setIsApplyingRecovery] = useState(false);
+  const [selectedPrayerCityId, setSelectedPrayerCityIdState] = useState<string>(() => getSelectedPrayerCityId());
+  const [prayerSchedule, setPrayerSchedule] = useState<DailyPrayerSchedule>(() =>
+    buildOfflineFallbackSchedule(getPrayerCityPresetById(getSelectedPrayerCityId()))
+  );
+
+  useEffect(() => {
+    let active = true;
+    fetchDailyPrayerSchedule({ cityId: selectedPrayerCityId })
+      .then((schedule) => {
+        if (active) setPrayerSchedule(schedule);
+      })
+      .catch(() => {
+        if (active) {
+          setPrayerSchedule(buildOfflineFallbackSchedule(getPrayerCityPresetById(selectedPrayerCityId)));
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedPrayerCityId]);
+
+  const handleChangePrayerCity = (cityId: string) => {
+    const preset = setSelectedPrayerCityId(cityId);
+    setSelectedPrayerCityIdState(preset.id);
+    setPrayerSchedule(buildOfflineFallbackSchedule(preset));
+  };
+  const nextPrayer = getNextPrayerSummary(prayerSchedule.timings);
   // Choose one truthful task from the active plan, due revisions, or next uncovered range.
   const todayStr = getLocalDateString();
   const queueDetails = RetentionService.getDailyRevisionQueueDetails(todayStr);
@@ -908,6 +947,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               <button
                 type="button"
+                onClick={() => onNavigate('adhkar')}
+                className="w-full min-h-16 flex items-center justify-between p-3 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 hover:bg-[#F2EDE2] dark:hover:bg-[#162744] border border-[#1C4E46]/10 dark:border-[#E0A96D]/20 transition-colors text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#1C4E46] dark:text-[#E0A96D] flex items-center justify-center">
+                    <Flame className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">الأذكار والأدعية اليومية</div>
+                    <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">أذكار الصباح والمساء والمسبحة</div>
+                  </div>
+                </div>
+                <ArrowLeft className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('seerah')}
+                className="w-full min-h-16 flex items-center justify-between p-3 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 hover:bg-[#F2EDE2] dark:hover:bg-[#162744] border border-[#1C4E46]/10 dark:border-[#E0A96D]/20 transition-colors text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#1C4E46]/12 dark:bg-[#1E4A47]/60 text-[#1C4E46] dark:text-[#E0A96D] flex items-center justify-center">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">السيرة النبوية الشريفة</div>
+                    <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">كتاب سردي متصل بمصادر محققة</div>
+                  </div>
+                </div>
+                <ArrowLeft className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              </button>
+
+              <button
+                type="button"
                 onClick={() => onNavigate('advisor')}
                 className="w-full min-h-16 flex items-center justify-between p-3 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 hover:bg-[#F2EDE2] dark:hover:bg-[#162744] border border-[#1C4E46]/10 dark:border-[#E0A96D]/20 transition-colors text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
               >
@@ -922,6 +995,81 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <ArrowLeft className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
               </button>
+            </div>
+          </div>
+
+          {/* Prayer Times, Hijri Calendar & Qibla Card (Phase 6 — AlAdhan + Offline Mathematical Qibla Fallback) */}
+          <div className="wird-card p-5 space-y-3" aria-label="مواقيت الصلاة والتاريخ الهجري واتجاه القبلة">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                  مواقيت الصلاة والقبلة
+                </h3>
+              </div>
+              <label className="sr-only" htmlFor="dashboard-prayer-city-select">
+                اختر المدينة لمواقيت الصلاة
+              </label>
+              <select
+                id="dashboard-prayer-city-select"
+                value={selectedPrayerCityId}
+                onChange={(e) => handleChangePrayerCity(e.target.value)}
+                className="text-xs font-bold px-2.5 py-1.5 rounded-lg bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+              >
+                {PRAYER_CITY_PRESETS.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.nameAr}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="p-3 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/10 dark:border-[#E0A96D]/20 flex items-center justify-between gap-2">
+              <div>
+                <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  الصلاة القادمة ({prayerSchedule.cityNameAr})
+                </div>
+                <div className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8] mt-0.5">
+                  {nextPrayer.labelAr} · <span className="tabular-nums font-mono">{nextPrayer.time24}</span>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#1C4E46]/12 dark:bg-[#E0A96D]/15 text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+                {nextPrayer.remainingLabelAr}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 text-center">
+              {(['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as PrayerTimingKey[]).map((key) => {
+                const isNext = nextPrayer.prayerId === key;
+                return (
+                  <div
+                    key={key}
+                    className={`p-2 rounded-lg border text-xs transition-colors ${
+                      isNext
+                        ? 'bg-[#1C4E46] text-white border-[#1C4E46] dark:bg-[#1E4A47] dark:border-[#E0A96D]/40 font-bold'
+                        : 'bg-[#F9F6EE]/80 dark:bg-[#0B132B]/50 border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#142421] dark:text-[#F5F1E8]'
+                    }`}
+                  >
+                    <div className={`text-[11px] ${isNext ? 'text-[#F6F1E6]/90' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      {PRAYER_LABELS_AR[key]}
+                    </div>
+                    <div className="font-mono tabular-nums mt-0.5">{prayerSchedule.timings[key]}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 space-y-1 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="flex items-center justify-between gap-2">
+                <span>التاريخ الهجري:</span>
+                <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">{prayerSchedule.hijriDateAr}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span>اتجاه القبلة:</span>
+                <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+                  {prayerSchedule.qiblaDirectionAr}
+                </span>
+              </div>
             </div>
           </div>
 

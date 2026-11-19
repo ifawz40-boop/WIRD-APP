@@ -35,3 +35,30 @@ export function containsUnsafeFullSnapshotProjection(
   }
   return false;
 }
+
+/**
+ * Returns true when a V2 event payload carries explicit per-device deltas,
+ * event-derived activity baselines, or V2 collection tombstones that can be
+ * deterministically merged without whole-snapshot data loss.
+ */
+export function isSafeV2ReconcilablePayload(
+  event: ConflictProjectionDescriptor
+): boolean {
+  if (!isRecord(event.payload)) return false;
+  if (event.payload.reconciliationSchemaVersion === 2) {
+    if (event.collection === 'weakVerses') {
+      return Array.isArray(event.payload.recordsV2);
+    }
+    if (event.collection === 'activityEvents') {
+      return isRecord(event.payload.baseline) && Array.isArray(event.payload.events);
+    }
+    if (
+      event.collection === 'plans' ||
+      event.collection === 'enginePlans' ||
+      event.collection === 'portions'
+    ) {
+      return Array.isArray(event.payload.recordsV2) && Array.isArray(event.payload.tombstonesV2);
+    }
+  }
+  return !containsUnsafeFullSnapshotProjection(event);
+}

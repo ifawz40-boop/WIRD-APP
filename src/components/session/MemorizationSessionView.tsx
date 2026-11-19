@@ -533,8 +533,11 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   useEffect(() => {
     setRevealedWordIndices(new Set());
     setMasteryFeedback(null);
-    setAwaitingFinalConfirm(false);
   }, [currentAyahIndex, maskLevel]);
+
+  useEffect(() => {
+    setAwaitingFinalConfirm(false);
+  }, [currentAyahIndex]);
 
   const isMaskingDisabled = displayPreferences.viewMode === 'page' && displayPreferences.mushafStyle === 'printed';
 
@@ -1826,7 +1829,6 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   tafsirAyah={printedTafsirAyah}
                   onTafsirAyahChange={(nextAyah: Ayah | null) => {
                     setPrintedTafsirAyah(nextAyah);
-                    if (nextAyah) handlePrintedSelectAyah(nextAyah);
                   }}
                   onAyahsResolved={handlePrintedAyahsResolved}
                   onFallback={handlePrintedFallback}
@@ -2433,7 +2435,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 type="button"
                 disabled={isCompleting}
                 onClick={() => {
-                  setCumulativeProgress(prev => confirmFinalSegmentMastery(prev));
+                  const confirmed = confirmFinalSegmentMastery(cumulativeProgress);
+                  saveCumulativeSessionProgress(confirmed);
+                  setCumulativeProgress(confirmed);
                   setAwaitingFinalConfirm(false);
                   void finalizeSessionCompletion();
                 }}

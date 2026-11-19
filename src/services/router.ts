@@ -31,6 +31,8 @@ export const VALID_NAV_TABS: NavTabId[] = [
   'tests',
   'progress',
   'advisor',
+  'adhkar',
+  'seerah',
   'ruqyah',
   'settings',
   'showcase'

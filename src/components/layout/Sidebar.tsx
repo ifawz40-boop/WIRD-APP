@@ -10,6 +10,9 @@ import {
   Settings, 
   X,
   ShieldCheck,
+  Heart,
+  ScrollText,
+  Compass,
   MoreHorizontal
 } from 'lucide-react';
 import { UserProfile } from '../../types/quran';
@@ -25,6 +28,8 @@ export type NavTabId =
   | 'tests' 
   | 'progress' 
   | 'advisor' 
+  | 'adhkar'
+  | 'seerah'
   | 'ruqyah'
   | 'settings'
   | 'showcase';
@@ -134,7 +139,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'المتابعة والمساندة',
       items: [
         { id: 'progress', label: 'التقدم والإنجاز', icon: BarChart3 },
+        { id: 'adhkar', label: 'الأذكار والأدعية', icon: Heart },
+        { id: 'seerah', label: 'السيرة النبوية', icon: ScrollText },
         { id: 'ruqyah', label: 'الرقية الشرعية', icon: ShieldCheck },
+        { id: 'advisor', label: 'المستشار القرآني', icon: Compass },
         { id: 'settings', label: 'الإعدادات', icon: Settings },
       ]
     }
@@ -187,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav aria-label="القائمة الرئيسية" className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {navGroups.map(group => (
           <div key={group.label} className="space-y-1.5">
-            <p className="px-3.5 text-[10px] font-bold tracking-wider text-[#5B6F6B] dark:text-[#8B9E9B]">{group.label}</p>
+            <p className="px-3.5 text-[10px] font-bold tracking-wider text-[#5B6F6B] dark:text-[#98ADAA]">{group.label}</p>
             {group.items.map(item => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -198,12 +206,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   aria-current={isActive ? 'page' : undefined}
                   className={`w-full min-h-11 flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
                     isActive
-                      ? 'bg-[#1C4E46] text-white shadow-xs dark:bg-[#1E4A47] ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/40'
+                      ? 'wird-nav-indicator bg-[#1C4E46] text-white shadow-xs dark:bg-[#1E4A47] ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/40'
                       : 'text-[#142421] dark:text-[#F5F1E8] hover:bg-white/80 dark:hover:bg-[#111F36] hover:text-[#1C4E46] dark:hover:text-[#E0A96D]'
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#C59B27] dark:text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#C59B27] dark:text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#98ADAA]'}`} />
                     <span className="truncate">{item.label}</span>
                   </span>
                   {item.badge !== undefined && (
@@ -226,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <h4 className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] truncate">
               {profile.name}
             </h4>
-            <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] truncate">
+            <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA] truncate">
               {profile.memorizationGoal || 'طالب حفظ'}
             </p>
           </div>

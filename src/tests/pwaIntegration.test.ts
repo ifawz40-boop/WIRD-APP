@@ -155,9 +155,11 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
   test('index.html links manifest.json and specifies theme-color and mobile web app tags', () => {
     const htmlPath = path.resolve('./index.html');
     const html = fs.readFileSync(htmlPath, 'utf8');
+    const manifest = JSON.parse(fs.readFileSync(path.resolve('./public/manifest.json'), 'utf8'));
 
     assert(html.includes('<link rel="manifest" href="/manifest.json"'), 'index.html must link /manifest.json');
-    assert(html.includes('<meta name="theme-color" content="#064e3b"'), 'index.html must set theme-color');
+    assert(typeof manifest.theme_color === 'string' && manifest.theme_color.length > 0, 'manifest.json must define theme_color');
+    assert(html.includes(`<meta name="theme-color" content="${manifest.theme_color}"`), 'index.html theme-color must match manifest.json');
     assert(html.includes('<meta name="apple-mobile-web-app-capable" content="yes"'), 'index.html must set apple web app capable');
   });
 
@@ -168,6 +170,46 @@ export function runPwaIntegrationTests(): { passed: number; failed: number } {
 
     assert(mainContent.includes("navigator.serviceWorker.register('/sw.js')"), 'main.tsx must register /sw.js');
     assert(mainContent.includes("wird-pwa-update-available"), 'main.tsx must dispatch update event on new worker');
+  });
+
+  // 5. Phase 2 Vector Brand Emblem, Semantic Design Tokens & Navigation Architecture
+  test('Phase 2 brand emblem uses crisp scalable vector SVG and preserves navigation focus order', () => {
+    const faviconSvg = fs.readFileSync(path.resolve('./public/favicon.svg'), 'utf8');
+    assert(!faviconSvg.includes('<image '), 'favicon.svg must be a pure scalable vector SVG without embedded raster <image> tags');
+    assert(faviconSvg.includes('radialGradient') && faviconSvg.includes('<path'), 'favicon.svg must render layered vector geometry');
+
+    const wirdLogo = fs.readFileSync(path.resolve('./src/components/brand/WirdLogo.tsx'), 'utf8');
+    const wirdAvatar = fs.readFileSync(path.resolve('./src/components/brand/WirdAvatar.tsx'), 'utf8');
+    const wirdPattern = fs.readFileSync(path.resolve('./src/components/brand/WirdPattern.tsx'), 'utf8');
+    assert(wirdLogo.includes('export const WirdVectorEmblemSvg'), 'WirdLogo must export WirdVectorEmblemSvg');
+    assert(wirdLogo.includes("renderMode = 'vector'"), 'WirdSymbol must default to vector renderMode');
+    assert(wirdAvatar.includes("renderMode = 'vector'"), 'WirdAvatar must default to vector renderMode');
+    assert(wirdPattern.includes('export const WirdMihrabArch'), 'WirdPattern must export WirdMihrabArch vector artwork');
+
+    const identityCss = fs.readFileSync(path.resolve('./src/wird-identity.css'), 'utf8');
+    assert(identityCss.includes('--wird-hero-gradient:'), 'wird-identity.css must define --wird-hero-gradient');
+    assert(identityCss.includes('.wird-hero-surface'), 'wird-identity.css must define .wird-hero-surface');
+    assert(identityCss.includes('.wird-nav-indicator'), 'wird-identity.css must define .wird-nav-indicator');
+
+    const sidebar = fs.readFileSync(path.resolve('./src/components/layout/Sidebar.tsx'), 'utf8');
+    const advisorIdx = sidebar.indexOf("id: 'advisor'");
+    const settingsIdx = sidebar.indexOf("id: 'settings'");
+    assert(advisorIdx !== -1, 'Sidebar must include Quran Advisor navigation item');
+    assert(settingsIdx > advisorIdx, 'Settings must remain the final sidebar navigation item after Quran Advisor for focus-trap accessibility');
+    assert(!sidebar.includes('معرض الهوية'), 'Sidebar must not expose internal showcase tab');
+  });
+
+  // 6. Phase 3 Offline Audio in Mushaf/Library, UID-Scoped Bookmarks & Canonical Weak-Verse Text
+  test('Phase 3 wires offlineQuranAudioLibrary into Mushaf & Library, scopes reading keys per UID, and enforces canonical weak-verse text', () => {
+    const mushafReader = fs.readFileSync(path.resolve('./src/components/library/QuranMushafReader.tsx'), 'utf8');
+    const quranLibrary = fs.readFileSync(path.resolve('./src/components/library/QuranLibraryView.tsx'), 'utf8');
+    const revisionView = fs.readFileSync(path.resolve('./src/components/revision/RevisionCenterView.tsx'), 'utf8');
+
+    assert(mushafReader.includes('offlineQuranAudioLibrary.resolvePlaybackSource('), 'QuranMushafReader must resolve downloaded offline audio before network fallback');
+    assert(mushafReader.includes('StorageService.resolveScopedKey(BOOKMARKS_KEY)'), 'QuranMushafReader bookmarks must be UID-scoped');
+    assert(quranLibrary.includes('offlineQuranAudioLibrary.resolvePlaybackSource('), 'QuranLibraryView must resolve downloaded offline audio before network fallback');
+    assert(quranLibrary.includes('StorageService.resolveScopedKey(LAST_READING_POSITION_KEY)'), 'QuranLibraryView last reading position must be UID-scoped');
+    assert(revisionView.includes('const text = found?.text || manualWeakText.trim()'), 'RevisionCenterView must prioritize verified local Quran corpus text over manual input');
   });
 
   return { passed, failed };

@@ -34,6 +34,8 @@ const RevisionCenterView = React.lazy(() => import('./components/revision/Revisi
 const MemorizationTestsView = React.lazy(() => import('./components/tests/MemorizationTestsView').then(m => ({ default: m.MemorizationTestsView })));
 const ProgressAnalyticsView = React.lazy(() => import('./components/progress/ProgressAnalyticsView').then(m => ({ default: m.ProgressAnalyticsView })));
 const QuranAdvisorView = React.lazy(() => import('./components/assistant/QuranAdvisorView').then(m => ({ default: m.QuranAdvisorView })));
+const AdhkarView = React.lazy(() => import('./components/adhkar/AdhkarView').then(m => ({ default: m.AdhkarView })));
+const SeerahView = React.lazy(() => import('./components/seerah/SeerahView').then(m => ({ default: m.SeerahView })));
 const RuqyahView = React.lazy(() => import('./components/ruqyah/RuqyahView').then(m => ({ default: m.RuqyahView })));
 const SettingsView = React.lazy(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
 const BrandDesignShowcase = React.lazy(() => import('./components/brand/BrandDesignShowcase').then(m => ({ default: m.BrandDesignShowcase })));
@@ -260,6 +262,8 @@ export default function App() {
     tests: 'اختبارات الحفظ',
     progress: 'التقدم والإنجاز',
     advisor: 'المستشار القرآني',
+    adhkar: 'الأذكار والأدعية اليومية',
+    seerah: 'السيرة النبوية الشريفة',
     ruqyah: 'الرقية الشرعية',
     settings: 'الإعدادات',
     showcase: 'معرض الهوية والتصميم (Showcase)'
@@ -859,6 +863,18 @@ export default function App() {
                   logs={logs}
                   onStartSessionWithSurah={handleStartSession}
                 />
+              )}
+
+              {currentTab === 'adhkar' && (
+                <AdhkarView
+                  preferredReciter={profile.preferredReciter}
+                  onOpenRuqyah={() => handleNavigate('ruqyah')}
+                  onToast={showToast}
+                />
+              )}
+
+              {currentTab === 'seerah' && (
+                <SeerahView onToast={showToast} />
               )}
 
               {currentTab === 'ruqyah' && (

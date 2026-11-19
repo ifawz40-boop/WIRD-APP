@@ -16,6 +16,7 @@ import {
   updateReadingKhatmaPlan,
   updateReadingKhatmaPosition
 } from './readingKhatmaService';
+import { StorageService } from './storageService';
 
 function assert(condition: unknown, message: string): asserts condition { if (!condition) throw new Error(message); }
 
@@ -116,6 +117,31 @@ export function runReadingKhatmaServiceTests(): { passed: number; failed: number
     const store = readAllReadingKhatmas(storage);
     assert(store.khatmas.length === 1 && store.khatmas[0].id === 'legacy-1', 'Legacy v1 record must migrate cleanly into v2');
     assert(JSON.stringify(store.khatmas[0].completedPages) === '[1,2,3]', 'Legacy pages must not be lost');
+  });
+
+  test('authenticated user scopes isolate reading khatmas per UID', () => {
+    StorageService.__resetStorageForTests();
+    try {
+      clearReadingKhatma(storage);
+      assert(StorageService.setStorageScope('user:alpha'), 'Alpha scope should activate');
+      const alphaKhatma = createReadingKhatma({ title: 'ختمة ألفا', durationDays: 30, sessionsPerDay: 2 }, storage);
+      markReadingPage(7, storage);
+
+      assert(StorageService.setStorageScope('user:beta'), 'Beta scope should activate');
+      assert(readReadingKhatma(storage) === null, 'Beta must not see Alpha reading khatmas');
+      const betaKhatma = createReadingKhatma({ title: 'ختمة بيتا', durationDays: 15, sessionsPerDay: 1 }, storage);
+      markReadingPage(12, storage);
+
+      assert(StorageService.setStorageScope('user:alpha'), 'Switching back to Alpha should succeed');
+      const restoredAlpha = readReadingKhatma(storage);
+      assert(restoredAlpha?.id === alphaKhatma.id && JSON.stringify(restoredAlpha?.completedPages) === '[7]', 'Alpha khatma must remain intact');
+
+      assert(StorageService.setStorageScope('user:beta'), 'Switching back to Beta should succeed');
+      const restoredBeta = readReadingKhatma(storage);
+      assert(restoredBeta?.id === betaKhatma.id && JSON.stringify(restoredBeta?.completedPages) === '[12]', 'Beta khatma must remain intact');
+    } finally {
+      StorageService.__resetStorageForTests();
+    }
   });
   return { passed, failed };
 }

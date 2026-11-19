@@ -1,3 +1,5 @@
+import { StorageService } from './storageService';
+
 export interface ReadingKhatmaPlanOptions {
   durationDays: number;
   sessionsPerDay: number;
@@ -70,6 +72,14 @@ export interface ReadingKhatmaProgress {
 const LEGACY_STORAGE_KEY = 'wird.reading.khatma.v1';
 const STORAGE_KEY_V2 = 'wird.reading.khatmas.v2';
 const DEFAULT_PLAN: ReadingKhatmaPlanOptions = { durationDays: 30, sessionsPerDay: 2 };
+
+function getScopedLegacyKey(): string {
+  return StorageService.resolveScopedKey(LEGACY_STORAGE_KEY);
+}
+
+function getScopedV2Key(): string {
+  return StorageService.resolveScopedKey(STORAGE_KEY_V2);
+}
 
 function isValidDate(value: unknown): value is string {
   return typeof value === 'string' && Number.isFinite(Date.parse(value));
@@ -202,7 +212,7 @@ function parseLegacyV1(storage: Pick<Storage, 'getItem'>): {
   status: 'missing' | 'corrupt' | 'valid';
   khatma?: ReadingKhatma;
 } {
-  const raw = storage.getItem(LEGACY_STORAGE_KEY);
+  const raw = storage.getItem(getScopedLegacyKey());
   if (!raw) return { status: 'missing' };
   try {
     const parsed: unknown = JSON.parse(raw);
@@ -229,7 +239,7 @@ function readStoreInternal(storage: Pick<Storage, 'getItem'> = localStorage): {
   const legacy = parseLegacyV1(storage);
   let storeV2: ReadingKhatmaStore | null = null;
   try {
-    const rawV2 = storage.getItem(STORAGE_KEY_V2);
+    const rawV2 = storage.getItem(getScopedV2Key());
     if (rawV2) {
       const parsedV2 = JSON.parse(rawV2) as Partial<ReadingKhatmaStore> | null;
       if (
@@ -344,15 +354,15 @@ function persistStore(
     completedCycles
   };
 
-  storage.setItem(STORAGE_KEY_V2, JSON.stringify(finalStore));
+  storage.setItem(getScopedV2Key(), JSON.stringify(finalStore));
   if (active) {
     const legacyMirror: ReadingKhatma = {
       ...active,
       completedCycles
     };
-    storage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacyMirror));
+    storage.setItem(getScopedLegacyKey(), JSON.stringify(legacyMirror));
   } else if (typeof storage.removeItem === 'function') {
-    storage.removeItem(LEGACY_STORAGE_KEY);
+    storage.removeItem(getScopedLegacyKey());
   }
 }
 
@@ -779,8 +789,8 @@ export function deleteReadingKhatmaById(
     ? (remaining.find(k => !k.completedAt)?.id || remaining[0]?.id || null)
     : store.activeKhatmaId;
   if (remaining.length === 0 && store.completedCycles.length === 0) {
-    storage.removeItem(LEGACY_STORAGE_KEY);
-    storage.removeItem(STORAGE_KEY_V2);
+    storage.removeItem(getScopedLegacyKey());
+    storage.removeItem(getScopedV2Key());
     return;
   }
   persistStore(
@@ -794,7 +804,7 @@ export function deleteReadingKhatmaById(
 }
 
 export function clearReadingKhatma(storage: Pick<Storage, 'removeItem'> = localStorage): void {
-  storage.removeItem(LEGACY_STORAGE_KEY);
-  storage.removeItem(STORAGE_KEY_V2);
+  storage.removeItem(getScopedLegacyKey());
+  storage.removeItem(getScopedV2Key());
 }
 
