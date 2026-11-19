@@ -33,7 +33,7 @@ Quran text and verse ranges remain checked against WIRD's canonical corpus. The 
 ## Explicitly blocked sources/features
 
 - IslamicAPI's `from-sunnah` content is not rendered or proxied. Its category endpoint is also blocked. The API is only a Quran locator/index; the server validates coordinates and returns only an item ID plus normalized numeric coordinates. All provider-authored titles, Arabic, references, introductions, translations, and category labels are stripped before reaching the browser. WIRD renders only canonical Quran text and local surah metadata.
-- IslamicAPI educational topic and category endpoints are hard-disabled in the server proxy, with no environment-variable override. Do not reintroduce them until each article is curated from a named, reviewed Sunni source and protected by source-registry tests.
+- IslamicAPI educational topic and category endpoints are available only when the server-side `RUQYAH_TOPICS_ENABLED` flag is exactly `true`. The proxy accepts only the 13 documented topic slugs, validates the documented article-block schema, bounds payload size, strips unknown fields, and renders all provider content as escaped text with IslamicAPI attribution. This is the owner's approved third-party educational source; it is not represented as independent scholarly verification.
 - IslamicAPI full-program recordings are not playable. Their reciter, complete contents, and source/rights chain have not been independently verified.
 - Al Furqan's dynamic reciter catalogue/audio endpoint remains blocked. Its public API documentation identifies EveryAyah.com as the audio data source, but WIRD has not independently completed the reciter-specific rights and exact-asset review required by this policy.
 - **Approved limited audio source: Al Quran Cloud, ayah-level streaming only.** Its current terms state that recitations are licensed to Al Quran Cloud by reciters or their estates for free, non-commercial redistribution, and explicitly permit streaming/embedding/download for personal and educational use. The terms also state that copyrights remain with the reciters and a reciter may request removal. WIRD limits this integration to educational streaming and does not download, bundle, mirror, or redistribute audio files. Terms: https://alquran.cloud/terms-and-conditions
@@ -50,7 +50,7 @@ Quran text and verse ranges remain checked against WIRD's canonical corpus. The 
 - Backend allowlist accepts only `from-quran` for IslamicAPI instant content.
 - API response Quran strings are never displayed; WIRD resolves the returned surah/ayah reference into `VERIFIED_AYAHS`.
 - Tests assert third-party Sunnah text is rejected before upstream access.
-- Tests assert unreviewed category indexes are blocked and every provider-authored field is stripped from the Quran locator response.
+- Tests assert topic endpoints are disabled when the server flag is off, allowlisted topic categories/articles pass through the bounded sanitizer when enabled, unknown topic slugs are rejected, and Quran locator responses continue to strip all provider-authored text.
 - Tests assert the Al Quran Cloud catalogue returns only the seven curated edition IDs and rejects unknown providers, IDs, malformed responses, and invalid ayah coordinates.
 - Tests assert audio URLs can only target the fixed HTTPS CDN host and only global ayah numbers 1–6236.
 - CI probes the first ayah for each of the seven approved editions and the final Alafasy ayah for a valid MPEG response and byte-range streaming.
