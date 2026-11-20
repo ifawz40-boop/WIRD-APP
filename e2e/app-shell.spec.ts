@@ -152,15 +152,23 @@ test('physical KeyB shortcut works with Arabic keyboard layout and mobile drawer
   await page.goto('/');
   await page.getByRole('button', { name: 'المتابعة كزائر دون تسجيل حساب' }).click();
 
-  await page.evaluate(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', {
+  // Wait for AuthGate async scope initialization to mount the App shell before dispatching KeyB.
+  const openToggle = page.getByRole('button', { name: 'إغلاق الشريط الجانبي' }).first();
+  await expect(openToggle).toBeVisible();
+  await expect(openToggle).toHaveAttribute('aria-expanded', 'true');
+
+  const handled = await page.evaluate(() => {
+    const event = new KeyboardEvent('keydown', {
       key: 'لا',
       code: 'KeyB',
       ctrlKey: true,
       bubbles: true,
       cancelable: true
-    }));
+    });
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
   });
+  expect(handled).toBe(true);
   await expect(page.getByRole('button', { name: 'فتح الشريط الجانبي' })).toHaveAttribute('aria-expanded', 'false');
 
   await page.setViewportSize({ width: 390, height: 844 });
