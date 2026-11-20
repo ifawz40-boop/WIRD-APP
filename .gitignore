@@ -7,4 +7,11 @@ coverage/
 .env*
 !.env.example
 src/data/quran-surahs/
+src/data/quran-simple-surahs/
 src/data/quranPageIndex.generated.ts
+src/data/quranNavigationIndex.generated.ts
+package-lock.json
+.agents/
+.antigravity/
+.vscode/
+

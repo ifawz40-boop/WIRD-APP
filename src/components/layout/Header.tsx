@@ -30,6 +30,22 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { status, pendingCount, triggerSync } = useCloudSync();
 
+  const tabSubtitles: Record<string, string> = {
+    dashboard: 'متابعة الورد اليومي والحفظ والمراجعة',
+    library: 'المصحف الشريف · تلاوة وتفسير واستماع',
+    plans: 'تخطيط ذكي وجدولة متوازنة',
+    session: 'بيئة تركيز وتكرار وتسميع تراكمي',
+    revision: 'تثبيت المحفوظ بنظام المراجعة المتباعدة',
+    tests: 'قياس الإتقان وجودة الاستحضار',
+    progress: 'خريطة المصحف وإحصاءات الإنجاز',
+    advisor: 'إرشاد منهجي وتوجيه قرآني',
+    adhkar: 'أذكار الصباح والمساء والأدعية القرآنية والنبوية',
+    seerah: 'كتاب السيرة النبوية السردي الموثق من المولد إلى الرفيق الأعلى',
+    ruqyah: 'آيات وأدعية نبوية موثقة',
+    settings: 'الحساب والمظهر والتخزين بدون إنترنت',
+    showcase: 'نظام التصميم والهوية البصرية',
+  };
+
   return (
     <header className="sticky top-0 z-30 h-16 bg-[#F9F6EE]/92 dark:bg-[#0B132B]/92 backdrop-blur-xl border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 px-4 md:px-7 flex items-center justify-between gap-3 transition-colors">
       {/* Page context with Sidebar Toggle */}
@@ -55,9 +71,16 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <h1 className="text-base md:text-lg font-bold text-[#142421] dark:text-[#F5F1E8] truncate font-quran">
-          {tabTitle}
-        </h1>
+        <div className="min-w-0 flex flex-col">
+          <h1 className="text-base md:text-lg font-bold text-[#142421] dark:text-[#F5F1E8] truncate font-quran leading-tight">
+            {tabTitle}
+          </h1>
+          {tabSubtitles[currentTab] && (
+            <span className="hidden md:block text-[11px] font-medium text-[#5B6F6B] dark:text-[#98ADAA] truncate">
+              {tabSubtitles[currentTab]}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Actions: Optional PWA Install (only when prompt ready) + Sync + Theme + Session CTA on secondary views */}

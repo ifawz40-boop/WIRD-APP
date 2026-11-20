@@ -109,9 +109,19 @@ test.describe('Memorization session audio repetition', () => {
     const audioStatus = page.getByRole('status').filter({ hasText: 'جارٍ تحميل التلاوة' });
     await expect(audioStatus).toHaveCount(0);
 
+    const failedAudioCount = await page.evaluate(() => (window as any).__wirdMockAudios.length);
     await page.getByRole('button', { name: 'استماع للآية' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__wirdMockAudios.length)).toBe(failedAudioCount + 1);
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__wirdMockAudios.at(-1).onerror)).toBe('function');
     await page.evaluate(() => (window as any).__wirdMockAudios.at(-1).onerror?.());
     await expect(page.getByRole('button', { name: 'استماع للآية' })).toBeVisible();
+    await expect(audioStatus).toHaveCount(0);
+
+    // Confirm recovery allows a subsequent fresh playback request to succeed cleanly.
+    await page.getByRole('button', { name: 'استماع للآية' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__wirdAudioPlayCalls)).toBe(3);
+    await page.evaluate(() => (window as any).__wirdMarkAudioPlaying());
+    await expect(page.getByRole('button', { name: 'إيقاف مؤقت' })).toBeVisible();
     await expect(audioStatus).toHaveCount(0);
   });
 

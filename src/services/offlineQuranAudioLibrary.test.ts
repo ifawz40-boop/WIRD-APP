@@ -47,6 +47,9 @@ function createMockCacheStorage(options: { rejectWrites?: boolean } = {}) {
         async delete(req: Request | string) {
           const key = typeof req === 'string' ? req : req.url;
           return store.delete(key);
+        },
+        async keys() {
+          return Array.from(store.keys()).map(url => new Request(url));
         }
       };
     }
@@ -427,6 +430,71 @@ export async function runOfflineQuranAudioLibraryTests(): Promise<{ passed: numb
     assert(cancelledJob?.status === 'cancelled', `Expected cancelled status, got ${cancelledJob?.status}`);
     // Ensure stores constants referenced cleanly
     assert(STORE_AUDIO_JOBS === 'jobs' && STORE_AUDIO_FILES === 'files', 'Store names valid');
+  });
+
+  await test('Cross-tab per-job worker lock prevents duplicate network fetches and reconcileLibrary sweeps unindexed Cache Storage orphans', async () => {
+    const mockCache = createMockCacheStorage();
+    const sharedIdb = new IDBFactory();
+    const dbName = `wird-audio-test-${++dbCounter}`;
+    const lockChains = new Map<string, Promise<unknown>>();
+    const serializeLock = async <T>(name: string, task: () => Promise<T>): Promise<T> => {
+      const prev = lockChains.get(name) ?? Promise.resolve();
+      const next = prev.catch(() => undefined).then(() => task());
+      lockChains.set(name, next);
+      return next;
+    };
+
+    let networkFetches = 0;
+    const fetchFn: typeof fetch = async () => {
+      networkFetches++;
+      await new Promise(r => setTimeout(r, 10));
+      const bytes = new Uint8Array([0x11, 0x22, 0x33]);
+      return new Response(bytes.buffer, {
+        status: 200,
+        headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': '3' }
+      });
+    };
+
+    const tabA = new OfflineQuranAudioLibrary({
+      indexedDBFactory: sharedIdb,
+      databaseName: dbName,
+      cacheStorageFactory: mockCache.factory,
+      fetchFn,
+      lockRunner: serializeLock,
+      storageEstimateFn: async () => ({ usage: 0, quota: 200_000_000 })
+    });
+    const tabB = new OfflineQuranAudioLibrary({
+      indexedDBFactory: sharedIdb,
+      databaseName: dbName,
+      cacheStorageFactory: mockCache.factory,
+      fetchFn,
+      lockRunner: serializeLock,
+      storageEstimateFn: async () => ({ usage: 0, quota: 200_000_000 })
+    });
+
+    const job = await tabA.enqueueDownloadJob({
+      scopeKind: 'surah',
+      labelAr: 'العصر',
+      reciterId: 'ar.alafasy',
+      ranges: [{ surahNumber: 103, startAyah: 1, endAyah: 3 }],
+      autoStart: false
+    });
+
+    // Both tabs concurrently attempt to run the same jobId
+    await Promise.all([tabA.startOrResumeJob(job.jobId), tabB.startOrResumeJob(job.jobId)]);
+    assert(networkFetches === 3, `Expected per-job cross-tab lock to prevent duplicate network fetches (expected 3, got ${networkFetches})`);
+
+    // Inject an unindexed orphan entry directly into Cache Storage
+    const rawCache = await mockCache.factory.open('wird-offline-quran-audio-v1');
+    await rawCache.put(
+      'https://wird.local/offline-audio/ar.alafasy/99999/orphan-gen-1.mp3',
+      new Response(new Uint8Array([1, 2]), { status: 200, headers: { 'Content-Type': 'audio/mpeg' } })
+    );
+    assert(mockCache.ensureStore('wird-offline-quran-audio-v1').size === 4, 'Expected 3 active + 1 orphan cache entry');
+
+    const recon = await tabA.reconcileLibrary();
+    assert(recon.cleanedOrphansCount === 1, `Expected 1 unindexed Cache Storage orphan swept, got ${recon.cleanedOrphansCount}`);
+    assert(mockCache.ensureStore('wird-offline-quran-audio-v1').size === 3, 'Expected only the 3 active entries to remain in Cache Storage');
   });
 
   return { passed, failed };

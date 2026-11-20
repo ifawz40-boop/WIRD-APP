@@ -1,8 +1,25 @@
-> **Roadmap scope note — 2026-11-14:** This file defines product direction and sequencing, not the live operational state. For current main/PR heads, CI, Vercel, Firebase, owner decisions and the next executable task, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). The dated implementation/status notes below are retained as history and must be revalidated before action.
+> **Roadmap scope note — 2026-11-19:** This file defines the unified product direction and phased Master Platform Transformation roadmap. For live operational state and exact next executable step, use [CONTINUE_HERE.md](./CONTINUE_HERE.md) and [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md). Dated sections below the Master Transformation Roadmap are preserved as historical context.
 
 ---
 
-# مسار منتجي جديد — Offline-first والتطبيق المستقبلي
+# خطة التحول الشامل لمنصة وِرد — Master Platform Transformation Roadmap (2026-11-19)
+
+**الهدف:** تحويل «وِرد | WIRD» من تطبيق وظيفي متعدد الشاشات إلى منتج إسلامي وقرآني متكامل بمستوى عالمي: هوية بصرية راقية وموحدة، معمارية نظيفة بلا تكرار، تجربة قرآن وحفظ ومراجعة فائقة، أذكار وأدعية ورقية بصوت حقيقي وموثق، سيرة نبوية سردية متصلة وموثقة، عمل كامل دون اتصال (Offline-First)، ومزامنة ثنائية الاتجاه آمنة تدعم الإضافة والتعديل والحذف (Tombstones) دون فقدان بيانات.
+
+| المرحلة | النطاق | الحالة | معيار القبول الأساسي |
+|---|---|---|---|
+| **Phase 1** | استقرار تجربة القرآن والختمات وجلسة الحفظ والـAPI/Auth | **COMPLETED (2026-11-19, local)** | إصلاح خطو الصفحتين وتراجع الختمة وفصل التفسير عن آية الحفظ وتثبيت تأكيد الربط التراكمي ومطابقة `theme-color` + اجتياز `769/0` اختبار و`tsc` وبناء الإنتاج |
+| **Phase 2** | الهوية البصرية الجديدة، نظام التصميم الموحد (Tokens)، وإعادة هندسة التنقل | **COMPLETED (2026-11-19, local)** | شعار متجهي نظيف (`WirdVectorEmblemSvg` + `favicon.svg` + `WirdMihrabArch`)، توحيد tokens الوضعين النهاري والليلي، إضافة `المستشار القرآني` قبل `الإعدادات` مع الحفاظ على ترتيب focus trap + اجتياز `770/0` اختبار و`tsc` وبناء الإنتاج |
+| **Phase 3** | توحيد المعمارية، تجربة المصحف/الصوت Offline، وتكامل المراجعة والتسميع | **COMPLETED (2026-11-20, local)** | ربط `offlineQuranAudioLibrary.resolvePlaybackSource` بقارئ المصحف والمكتبة، عزل `readingKhatma` وعلامات المصحف وآخر موضع قراءة تحت نطاق UID (`StorageService.resolveScopedKey`)، وإعطاء الأولوية لنص القرآن المحلي الموثق في تسجيل الآيات الملتبسة + اجتياز `772/0` اختبار و`tsc` وبناء الإنتاج |
+| **Phase 4** | منظومة الأذكار والأدعية اليومية بالصوت + تطوير الرقية الشرعية | **COMPLETED (2026-11-20, local)** | 8 أقسام أذكار وأدعية موثقة بالتشكيل والتخريج والفضل (`morning`، `evening`، `after_prayer`، `sleeping`، `waking_up`، `quranic_duas`، `prophetic_duas`، `istighfar`)، تلاوة قرآنية صوتية Offline، عدّاد يومي معزول لكل UID، ومسبحة إلكترونية + اجتياز `776/0` اختبار و`tsc` وبناء الإنتاج |
+| **Phase 5** | تجربة السيرة النبوية السردية المتصلة (Chronological Narrative) | **COMPLETED (2026-11-20, local)** | 5 أجزاء زمنية و16 فصلاً سردياً متصلاً من ما قبل البعثة إلى الوفاة والشمائل، 17 ادعاءً موثقاً بـ7 مصادر كلاسيكية ودرجات ثبوت (`ثابت بالصحيح`/`مشهور في السير`/`محل خلاف تاريخي`)، قارئ متصل، خط زمني، علامات مرجعية، وتقدم معزول لكل UID + اجتياز `781/0` اختبار و`tsc` وبناء الإنتاج |
+| **Phase 6** | Offline-First الشامل ومواقيت الصلاة/الهجري/القبلة (AlAdhan) | **COMPLETED (2026-11-20, local)** | قفل تنزيل الصوتيات عبر التبويبات (`wird-offline-audio-job-worker:${jobId}`)، تنظيف الأيتام غير المفهرسة في Cache Storage عبر `cache.keys()`، ومحول AlAdhan API مع تخزين يومي محلي (`wird.prayer.cache.v1`) وحساب القبلة الرياضي والتاريخ الهجري دون إنترنت + اجتياز `788/0` اختبار و`tsc` وبناء الإنتاج |
+| **Phase 7** | المزامنة ثنائية الاتجاه الشاملة (Tombstones، منع الإحياء، ودمج الأحداث) | **COMPLETED (2026-11-20, local)** | سياسة حذف آمنة (`CollectionTombstoneRecordV2` + `deletedAtRevision`) مع منع إحياء المحذوف والاستعادة الصريحة (`explicitRestore`)، وتجميع فروقات الآيات الملتبسة عبر الأجهزة (`reconcileWeakVerseSnapshotsV2`)، وتصنيف تعارضات V2 الآمنة (`isSafeV2ReconcilablePayload`) دون المساس بإعدادات الإنتاج + اجتياز `794/0` اختبار |
+| **Phase 8** | تدقيق الجودة النهائي، الأداء، الوصولية، واختبارات E2E والتسليم | **COMPLETED LOCALLY (2026-11-20)** | اجتياز جميع الـ 72 حزمة اختبار (`794 PASSED | 0 FAILED`)، فحص `tsc --noEmit` (`0` أخطاء)، فحص `smoke:api-imports`، وبناء الإنتاج (`2.34s`، 0 حزم > 500 kB) وتوثيق الحالة القياسية بالكامل (بانتظار ربط `.git` لتشغيل GitHub CI وPlaywright) |
+
+---
+
+# مسار منتجي جديد — Offline-first والتطبيق المستقبلي (تاريخي — 2026-11-12)
 
 ## قرار التخزين التالي — 2026-11-12 14:55 +02:00
 

@@ -46,6 +46,26 @@ export const STORAGE_KEYS = {
   SYNC_OUTBOX: 'wird_sync_outbox_v1'
 } as const;
 
+export const AUXILIARY_SCOPED_KEYS = [
+  'wird.reading.khatma.v1',
+  'wird.reading.khatmas.v2',
+  'wird.quran.pageBookmarks.v1',
+  'wird.quran.lastPage.v1',
+  'wird.quran.lastReadingPosition.v1',
+  'wird.adhkar.progress.v1',
+  'wird.seerah.progress.v1',
+  'wird.prayer.cache.v1'
+] as const;
+
+/**
+ * Automatic technical caches that remain UID-scoped (and migrate/reset with
+ * user data when explicitly imported or cleared), but do NOT by themselves
+ * constitute user-authored guest worship data for first-sign-in prompts.
+ */
+export const CACHE_ONLY_AUXILIARY_KEYS: ReadonlySet<string> = new Set([
+  'wird.prayer.cache.v1'
+]);
+
 // In-memory fallback for test / Node / SSR environments where localStorage is not defined.
 const memoryStorage = new Map<string, string>();
 const STORAGE_SCOPE_PREFIX = 'wird_scope_v1';
@@ -170,9 +190,13 @@ function isUserStorageScope(scope: string): boolean {
   return uid.length > 0 && uid.length <= 128 && !/[\u0000-\u001F]/.test(uid);
 }
 
+function isLegacyUserDataKey(key: string): boolean {
+  return key !== STORAGE_KEYS.SCHEMA_VERSION && !CACHE_ONLY_AUXILIARY_KEYS.has(key);
+}
+
 function hasLegacyStorageData(): boolean {
-  return Object.values(STORAGE_KEYS)
-    .filter(key => key !== STORAGE_KEYS.SCHEMA_VERSION)
+  return [...Object.values(STORAGE_KEYS), ...AUXILIARY_SCOPED_KEYS]
+    .filter(isLegacyUserDataKey)
     .some(key => rawGetItem(key) !== null);
 }
 
@@ -233,7 +257,7 @@ function setStorageScope(scope: string, legacyChoice?: 'import' | 'keep-guest'):
   const owner = readRawStorageValue(STORAGE_OWNER_MARKER);
   if (owner === undefined) return false;
   if (!owner) {
-    const legacyKeys = Object.values(STORAGE_KEYS);
+    const legacyKeys = [...Object.values(STORAGE_KEYS), ...AUXILIARY_SCOPED_KEYS];
     const destinationKeys = legacyKeys.map(key => resolveStorageKey(key, normalized));
     const snapshotKeys = [...new Set([STORAGE_OWNER_MARKER, ...legacyKeys, ...destinationKeys])];
     const snapshot = new Map<string, string | null>();
@@ -244,7 +268,7 @@ function setStorageScope(scope: string, legacyChoice?: 'import' | 'keep-guest'):
     }
 
     const legacyValues = legacyKeys.map(key => ({ key, value: snapshot.get(key) ?? null }));
-    const hasLegacyData = legacyValues.some(item => item.value !== null);
+    const hasLegacyData = legacyValues.some(item => isLegacyUserDataKey(item.key) && item.value !== null);
 
     // Existing unscoped data may belong to a guest or another person using
     // this browser. Require an explicit in-app choice before claiming it.
@@ -1060,6 +1084,10 @@ export const StorageService = {
     return activeStorageScope;
   },
 
+  resolveScopedKey(key: string): string {
+    return resolveStorageKey(key);
+  },
+
   getRawItem(key: string): string | null {
     return getItem(key);
   },
@@ -1104,6 +1132,7 @@ export const StorageService = {
     hydratedEnginePlansCache = null;
     const keysToRemove = new Set<string>([
       ...Object.values(STORAGE_KEYS),
+      ...AUXILIARY_SCOPED_KEYS,
       STORAGE_OWNER_MARKER
     ]);
     try {

@@ -1,9 +1,19 @@
 # WIRD — Release Checklist
 
-**Last verified:** 2026-11-17 (Google AI Studio workspace; prior GitHub/Vercel snapshot: 2026-11-14 20:16 +02:00)  
-**Current release decision:** BLOCKED (workspace fixes verified locally in AI Studio, NOT pushed to GitHub CI, NOT deployed to Vercel; Firestore Emulator blocked by missing Java in Studio; sync/offline release gates remain open)
+**Last verified:** 2026-11-20 (Local Windows workspace — All 8 Phases of Master Platform Transformation Complete Locally; prior GitHub/Vercel snapshot: 2026-11-14)  
+**Current release decision:** BLOCKED (All 8 phases verified locally on unit/integration/lint/build with `794 PASSED | 0 FAILED`; workspace lacks `.git`/Java/CI/Vercel push; Playwright E2E and Firestore Rules Emulator must run in GitHub CI after connecting `.git`)
 
 Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Record exact SHAs and run/deployment IDs. Never convert missing logs into a test failure or success.
+
+## Phase 1 through Phase 8 local verification snapshot (2026-11-20)
+
+- [x] PASS — `npm.cmd run test` (`794 PASSED | 0 FAILED` across 72 suites, incl. Tanzil Simple validation, 114 Surah chunk generation, Phase 2 vector emblem/navigation assertions, Phase 3 UID-scoped Khatma/offline-audio assertions, Phase 4 Daily Adhkar/Duas/Tasbih assertions, Phase 5 Chronological Seerah book/claims/bookmarks assertions, Phase 6 AlAdhan Prayer/Qibla/Hijri + cross-tab audio lock/orphan sweep assertions & Phase 7 Multi-Device Tombstone Anti-Resurrection/Restore/Weak-Verse Delta Convergence assertions)
+- [x] PASS — `npm.cmd run lint` (`tsc --noEmit`, 0 errors)
+- [x] PASS — `npm.cmd run smoke:api-imports`
+- [x] PASS — Production Vite build (`NODE_ENV=production` + `vite build`, `2.34s`, 0 chunks > 500 kB)
+- [ ] BLOCKED — `npm.cmd run test:firestore-rules` (Java runtime not installed locally)
+- [ ] NOT VERIFIED — Playwright Desktop/Mobile E2E on 2026-11-20 Phase 1–8 edits
+- [ ] NOT VERIFIED — GitHub commit/PR, exact-head CI, Vercel Preview/Production deployment (no `.git` repository in local workspace folder)
 
 ## A. Repository and change control
 
@@ -58,15 +68,14 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 - [x] PASS (AI Studio workspace 2026-11-16) — `NODE_ENV=production vite build` + non-blocking `/sw.js` registration (`src/main.tsx`) + non-blocking `precacheQuranFont` (`public/sw.js`) verified in desktop/mobile Playwright: installed SW serves full app shell after offline reload and full offline preparation caches all 252 lazy Quran assets and opens Mushaf offline.
 - [x] PASS — isolated offline audio tests: library 18/18, downloader 6/6, cache adapter 5/5 (29/29 total).
-- [ ] BLOCKED — cross-tab job ownership/locking for concurrent downloads.
-- [ ] BLOCKED — complete Cache Storage orphan cleanup lifecycle.
-- [ ] BLOCKED — consistent Cache Storage quota detection and user-facing recovery.
+- [x] PASS (Phase 6 2026-11-20) — cross-tab job ownership/locking (`wird-offline-audio-job-worker:${jobId}`) for concurrent downloads verified in `offlineQuranAudioLibrary.test.ts`.
+- [x] PASS (Phase 6 2026-11-20) — complete Cache Storage orphan cleanup lifecycle (including displaced generations and unindexed Cache Storage orphan sweep via `cache.keys()`) verified in `offlineQuranAudioLibrary.test.ts`.
+- [x] PASS (Phase 3 & 4 2026-11-20) — offline audio playback (`offlineQuranAudioLibrary.resolvePlaybackSource`) integrated with `QuranMushafReader.tsx`, `QuranLibraryView.tsx`, `MemorizationSessionView.tsx`, and `AdhkarView.tsx`.
 - [ ] NOT VERIFIED — progress, pause/cancel/retry behavior in browser integration.
 - [ ] NOT VERIFIED — restart recovery and partial-file cleanup.
 - [ ] NOT VERIFIED — service-worker cache version migration and invalidation on supported browsers.
 - [ ] NOT VERIFIED — storage quota exhaustion and multi-tab tests.
 - [ ] NOT VERIFIED — Android/iOS PWA airplane-mode and restart verification.
-- [ ] NOT VERIFIED — offline audio playback integrated with the reader.
 
 ## F. Security and Advisor
 
@@ -80,10 +89,10 @@ Use only these statuses: **PASS**, **FAIL**, **BLOCKED**, **NOT VERIFIED**. Reco
 
 ## G. Seerah
 
-- [x] PASS — prototype UI explicitly labels itself as non-published and uses draft navigation fixtures only.
-- [ ] NOT VERIFIED — historical source reliability and edition-level citations.
-- [ ] NOT VERIFIED — quotation rights and source license/permission evidence.
-- [ ] BLOCKED — no chapter may be published until claims, sources, rights notes, scientific review, language review, narrative continuity, and accessibility review pass.
+- [x] PASS (Phase 5 2026-11-20) — 5 chronological parts and 16 doubly-linked narrative chapters (`src/data/seerahData.ts`) verified in `src/tests/seerahSystem.test.ts`.
+- [x] PASS (Phase 5 2026-11-20) — 17 claim-level records (`SEERAH_CLAIMS`) mapped to 7 public-domain classical sources (`SEERAH_SOURCES`, `rightsStatus: 'verified_public_domain'`) with explicit evidence grades and uncertainty notes (`uncertainty_note`).
+- [x] PASS (Phase 5 2026-11-20) — UID-scoped reading progress, reading mode, and versioned scene bookmarks (`src/services/seerahProgressService.ts`) verified isolated from Quran memorization/khatma statistics.
+- [ ] NOT VERIFIED — Playwright browser E2E for `#/seerah` reader and external human scholarly review prior to production release.
 
 ## H. Firebase and sync safety
 

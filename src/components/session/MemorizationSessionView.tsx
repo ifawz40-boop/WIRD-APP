@@ -533,8 +533,11 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   useEffect(() => {
     setRevealedWordIndices(new Set());
     setMasteryFeedback(null);
-    setAwaitingFinalConfirm(false);
   }, [currentAyahIndex, maskLevel]);
+
+  useEffect(() => {
+    setAwaitingFinalConfirm(false);
+  }, [currentAyahIndex]);
 
   const isMaskingDisabled = displayPreferences.viewMode === 'page' && displayPreferences.mushafStyle === 'printed';
 
@@ -619,28 +622,29 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     audio.onplaying = () => {
       if (audioRef.current === audio) setIsAudioLoading(false);
     };
-    audio.onerror = () => {
-      if (audioRef.current !== audio) return;
-      console.warn('Audio playback failed to load', audio.error);
+    const resetFailedPlayback = () => {
+      // Request sequence is authoritative: a late error from a superseded audio element
+      // must not tear down a newer playback request.
+      if (requestSeq !== playbackRequestSeqRef.current) return;
+      if (audioRef.current === audio) audioRef.current = null;
       audio.onended = null;
-      audioRef.current = null;
+      audio.onerror = null;
+      audio.onplaying = null;
+      try { audio.pause(); } catch { /* element may already be detached */ }
       playbackIterationRef.current = 1;
       setIsPlaying(false);
       setIsAudioLoading(false);
       revokeAllActiveAudioUrls();
       globalAudioCoordinator.releaseFocus('session');
     };
+    audio.onerror = () => {
+      console.warn('Audio playback failed to load', audio.error);
+      resetFailedPlayback();
+    };
 
     audio.play().catch(e => {
-      if (audioRef.current !== audio) return;
       console.warn("Audio playback error", e);
-      audio.onended = null;
-      audioRef.current = null;
-      playbackIterationRef.current = 1;
-      setIsPlaying(false);
-      setIsAudioLoading(false);
-      revokeAllActiveAudioUrls();
-      globalAudioCoordinator.releaseFocus('session');
+      resetFailedPlayback();
     });
 
     attachAyahRepeatHandler(
@@ -1826,7 +1830,6 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   tafsirAyah={printedTafsirAyah}
                   onTafsirAyahChange={(nextAyah: Ayah | null) => {
                     setPrintedTafsirAyah(nextAyah);
-                    if (nextAyah) handlePrintedSelectAyah(nextAyah);
                   }}
                   onAyahsResolved={handlePrintedAyahsResolved}
                   onFallback={handlePrintedFallback}
@@ -2433,7 +2436,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 type="button"
                 disabled={isCompleting}
                 onClick={() => {
-                  setCumulativeProgress(prev => confirmFinalSegmentMastery(prev));
+                  const confirmed = confirmFinalSegmentMastery(cumulativeProgress);
+                  saveCumulativeSessionProgress(confirmed);
+                  setCumulativeProgress(confirmed);
                   setAwaitingFinalConfirm(false);
                   void finalizeSessionCompletion();
                 }}

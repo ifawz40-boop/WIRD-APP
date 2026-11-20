@@ -123,3 +123,78 @@ export const WirdOrnateFrame: React.FC<{
     </div>
   );
 };
+
+/**
+ * Architectural Mihrab Arch & Illuminated Manuscript Vector Artwork
+ * (زخرفة المحراب المعماري والمصحف المُنار للواجهات الترحيبية وحالات الفراغ)
+ */
+export const WirdMihrabArch: React.FC<{
+  className?: string;
+  size?: number;
+  variant?: 'gold' | 'emerald';
+}> = ({
+  className = '',
+  size = 140,
+  variant = 'gold',
+}) => {
+  const strokeMain = variant === 'gold' ? '#C59B27' : '#1C4E46';
+  const strokeAccent = variant === 'gold' ? '#E0A96D' : '#28665B';
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 160 160"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`select-none pointer-events-none ${className}`}
+      aria-hidden="true"
+    >
+      {/* Outer Mihrab Arch */}
+      <path
+        d="M28 136 V74 C28 45 54 27 80 16 C106 27 132 45 132 74 V136"
+        stroke={strokeMain}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+      {/* Inner Scalloped Arch */}
+      <path
+        d="M36 132 V76 C36 51 58 35 80 25 C102 35 124 51 124 76 V132"
+        stroke={strokeAccent}
+        strokeWidth="1.1"
+        strokeDasharray="3 3"
+        opacity="0.55"
+      />
+      {/* Suspended Mosque Lamp (Mishkat) */}
+      <line x1="80" y1="25" x2="80" y2="48" stroke={strokeMain} strokeWidth="1.2" opacity="0.65" />
+      <path
+        d="M73 48 H87 L84 59 C82 63 78 63 76 59 L73 48 Z"
+        stroke={strokeMain}
+        strokeWidth="1.3"
+        fill={strokeAccent}
+        fillOpacity="0.16"
+      />
+      <circle cx="80" cy="54" r="2.2" fill={strokeMain} />
+
+      {/* Open Mushaf on Rihal */}
+      <path
+        d="M80 78 C69 72.5 55 73 45 77.5 V106 C55 101.5 69 101.5 80 107.5 C91 101.5 105 101.5 115 106 V77.5 C105 73 91 72.5 80 78 Z"
+        stroke={strokeMain}
+        strokeWidth="1.7"
+        fill={strokeAccent}
+        fillOpacity="0.1"
+        strokeLinejoin="round"
+      />
+      <line x1="80" y1="78" x2="80" y2="107.5" stroke={strokeMain} strokeWidth="1.5" />
+      <path
+        d="M50 112 L80 122 L110 112 M62 128 L80 119 L98 128"
+        stroke={strokeMain}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line x1="22" y1="136" x2="138" y2="136" stroke={strokeMain} strokeWidth="1.4" strokeLinecap="round" opacity="0.5" />
+    </svg>
+  );
+};

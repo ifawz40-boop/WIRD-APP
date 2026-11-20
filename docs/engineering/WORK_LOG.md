@@ -822,3 +822,146 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - **Next action:** Push Studio workspace changes to a dedicated GitHub feature branch/PR and execute GitHub Quality Gate CI (including Firestore Rules Emulator with Java); keep Vercel Production deployment and sync flags unchanged until explicit owner authorization.
 
 
+## 2026-11-19 — Full Platform Transformation Stage A (Audit & Roadmap) + Phase 1 Stabilization (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace` (Node `v26.13.0`, npm `11.20.0`). Note: folder has no `.git` repository, and `bun`, `java`, `gh`, `vercel` CLIs are not installed locally. Production settings, secrets, Firebase Rules, and sync flags were NOT modified.
+- **Stage A Audit & Research Completed:**
+  - Audited entire workspace structure (41 React components, 80+ service/test modules, 5 API handlers, `firestore.rules`, `public/sw.js`, `vite.config.ts`, `vercel.json`, `.github/workflows/ci.yml`, `src/index.css`, `src/wird-identity.css`).
+  - Researched external providers via live web search: Quran Foundation API v4 (OAuth2 client credentials + granular scopes `content.tafsirs.read`/`content.audio.read`), AlAdhan API (free, no key, ~12 req/s per IP, daily caching required), OpenDua / Seen-Arabic Morning-And-Evening-Adhkar-DB (MIT) / rn0x Adhkar-json (audio + Hisn Al-Muslim), Sunnah.com API (key required via GitHub request), and Ihsan Seerah API (`public.api.ihsandeen.com`) alongside previously audited SeerahBook / Islamic Network / Dorar.
+  - Updated canonical docs (`docs/CONTINUE_HERE.md`, `docs/engineering/MASTER_PROJECT_STATE.md`, `docs/DEVELOPMENT_ROADMAP.md`, `docs/engineering/ARCHITECTURE.md`, `docs/engineering/RELEASE_CHECKLIST.md`, `CHANGELOG.md`, and this append-only `WORK_LOG.md`).
+- **Phase 1 Implementation Completed:**
+  - `index.html`, `public/manifest.json`, `src/tests/pwaIntegration.test.ts`: aligned `theme-color` (`#1C4E46`) and body background/text colors with `wird-identity.css`, and strengthened `pwaIntegration.test.ts` to assert exact `index.html` ↔ `manifest.json` `theme_color` parity.
+  - `src/components/dashboard/DashboardView.tsx`: removed duplicate Multi-Khatma section above Welcome Banner.
+  - `src/components/library/QuranLibraryView.tsx` & `src/components/library/ReadingKhatmaPanel.tsx`: restored Hero Quran Header Banner + Search Bar above `ReadingKhatmaPanel`; added Juz-range (`QURAN_JUZ_STARTS`) and Surah (`QURAN_PAGE_INDEX`) scope selectors to multi-khatma creation; wired inline `onQuickStartReadingKhatma` into `QuranMushafReader`.
+  - `src/components/library/QuranMushafReader.tsx`: derived `isTwoPageSpreadActive` reactively from `printedSpreadContext.isTwoPage`; filtered Undo (`تراجع`) on 2-page spread and batch mark to newly marked pages only; added inline `بدء ختمة قراءة الآن` button when no active khatma exists.
+  - `src/components/library/PrintedMushafSpread.tsx`, `src/components/session/MemorizationSessionView.tsx`, `src/index.css`: decoupled `onTafsirAyahChange` from mutating `currentAyahIndex`; preserved active memorization ayah highlight when `autoOpenTafsirOnSelect=false`; added light/dark CSS contrast rules for `[data-session-ayah='true']`; persisted cumulative mastery confirmation synchronously via `saveCumulativeSessionProgress` before `finalizeSessionCompletion()`; scoped `awaitingFinalConfirm` reset cleanly to `currentAyahIndex`.
+  - `server.ts` & `src/services/authService.ts`: switched `/api/advisor/chat` to `ai.models.generateContent` with bounded history context; stopped triggering `signInWithRedirect` on `auth/popup-closed-by-user` and `auth/cancelled-popup-request`.
+  - `src/tests/sessionStudyUi.test.ts`: added Phase 1 stabilization regression test suite.
+- **Verification Executed (after final Phase 1 edit):**
+  - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split): **PASS** (`769 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.40s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+  - `npm.cmd run test:firestore-rules`: **BLOCKED** (Java runtime absent locally)
+  - `npm.cmd run smoke:server`: **BLOCKED** in Windows sandbox (loopback/spawn boundary); requires unsandboxed or host run
+  - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this Phase 1 local turn.
+- **Next Action:** Await user go-ahead to execute **Phase 2 (Visual Identity Reinvention, Semantic Design System & Unified Navigation)**.
+
+
+
+## 2026-11-19 — Full Platform Transformation Phase 2: Visual Identity, Vector Emblem, Semantic Design Tokens & Navigation (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace`. No `.git` repository, no production settings/secrets/rules/sync flags touched.
+- **Phase 2 Implementation Completed:**
+  - `public/favicon.svg`, `src/components/brand/WirdLogo.tsx`, `src/components/brand/WirdAvatar.tsx`: replaced embedded raster JPEG with a pure **Scalable Vector SVG Emblem (`WirdVectorEmblemSvg`)** featuring an 8-pointed Rub el Hizb geometric frame, Mihrab arch with crescent finial, and an illuminated open Mushaf on a traditional Rihal stand across 6 semantic variants (`primary`, `light`, `dark`, `gold`, `monochrome`, `simplified`), while retaining `OFFICIAL_BRAND_EMBLEM_URL` for optional `renderMode="raster"`.
+  - `src/components/brand/WirdPattern.tsx`: added `WirdMihrabArch` architectural vector illustration for hero headers and empty states.
+  - `src/wird-identity.css`: expanded semantic design tokens (`--wird-hero-gradient`, `--wird-accent-soft`, `--wird-ring`, `--wird-header-glass`), improved dark-mode muted text contrast (`#98adaa`), and added `.wird-hero-surface`, `.wird-section-badge`, `.wird-nav-indicator`, and `.wird-view-enter`.
+  - `src/components/layout/Sidebar.tsx` & `src/components/layout/Header.tsx`: added `المستشار القرآني` (`id: 'advisor'`) inside `'المتابعة والمساندة'` before `'الإعدادات'` (preserving `'الإعدادات'` as the final focusable sidebar item for the mobile drawer `Shift+Tab` focus trap), applied `.wird-nav-indicator`, and added contextual section subtitles in `Header.tsx`.
+  - `src/components/brand/BrandDesignShowcase.tsx` & `src/tests/pwaIntegration.test.ts`: added the Vector Emblem & Architectural Mihrab gallery to the design showcase and added Phase 2 automated assertions to `pwaIntegration.test.ts`.
+- **Verification Executed (after final Phase 2 edit):**
+  - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split): **PASS** (`770 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.39s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+  - `npm.cmd run test:firestore-rules`: **BLOCKED** (Java runtime absent locally)
+  - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this Phase 2 local turn.
+- **Next Action:** Proceed to **Phase 3 (Unified Data Architecture, Offline Quran Audio Playback in Mushaf/Library, UID-Scoped Khatma/Bookmarks & Revision/Tasmee' Enhancement)**.
+
+## 2026-11-20 — Full Platform Transformation Phase 3: Offline Audio in Mushaf/Library, UID-Scoped Khatmas/Bookmarks & Canonical Weak-Verse Verification (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace`. No `.git` repository, no production settings/secrets/rules/sync flags touched.
+- **Phase 3 Implementation Completed:**
+  - `src/services/storageService.ts` & `src/services/readingKhatmaService.ts`: added `AUXILIARY_SCOPED_KEYS` (`wird.reading.khatma.v1`, `wird.reading.khatmas.v2`, `wird.quran.pageBookmarks.v1`, `wird.quran.lastPage.v1`, `wird.quran.lastReadingPosition.v1`) and `StorageService.resolveScopedKey(key)` so Reading Khatmas, Mushaf Bookmarks, and Last Reading Positions are isolated per authenticated UID (`user:<uid>`) and migrated on first-account `'import'`.
+  - `src/components/library/QuranMushafReader.tsx` & `src/components/library/QuranLibraryView.tsx`: wired `offlineQuranAudioLibrary.resolvePlaybackSource(approvedReciterId, globalAyah, fallbackUrl)` into Mushaf page/segment playback and Library ayah/segment playback with automatic `ObjectURL` revocation and sequence race guards, and passed licensed `cdn.islamic.network` URLs (`getLicensedAyahAudioUrl`) to `requestOfflineAudioCache`.
+  - `src/components/revision/RevisionCenterView.tsx`: prioritized verified local Quran corpus text (`loadAyahByCoordinate`) over manual user input when recording weak verses, and added live verified Quran text previews in both the Failed-Revision Rating modal and the Manual Weak-Verse modal.
+  - `src/services/readingKhatmaService.test.ts` & `src/tests/pwaIntegration.test.ts`: added automated unit and integration tests for UID-scoped Reading Khatmas and Phase 3 offline audio/bookmark wiring.
+- **Verification Executed (after final Phase 3 edit):**
+  - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split): **PASS** (`772 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.75s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+  - `npm.cmd run test:firestore-rules`: **BLOCKED** (Java runtime absent locally)
+  - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this Phase 3 local turn.
+- **Next Action:** Proceed to **Phase 4 (Complete Daily Adhkar & Duas System with Verified Audio Playback, Counter, Categories & Ruqyah Integration)**.
+
+## 2026-11-20 — Full Platform Transformation Phase 4: Daily Adhkar & Duas System with Verified Audio Playback, Counter & Free Tasbih (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace`. No `.git` repository, no production settings/secrets/rules/sync flags touched.
+- **Phase 4 Implementation Completed:**
+  - `src/data/adhkarData.ts`: created a verified, sourced, fully vocalized Daily Adhkar & Duas corpus across 8 categories (`morning`, `evening`, `after_prayer`, `sleeping`, `waking_up`, `quranic_duas`, `prophetic_duas`, `istighfar`) plus 5 Free Tasbih presets (`FREE_TASBIH_PRESETS`) and time-of-day category recommendation (`getRecommendedAdhkarCategoryForHour`).
+  - `src/services/adhkarProgressService.ts` & `src/services/storageService.ts`: implemented UID-scoped persistence (`wird.adhkar.progress.v1`) for daily item repetition counts, category completion summaries, favorite Adhkar, and the cumulative Free Tasbih counter.
+  - `src/components/adhkar/AdhkarView.tsx`: built the lazy-loaded Daily Adhkar & Duas workspace resolving verified local Quran chunks (`loadSurahVerses`) and local-first offline audio playback (`offlineQuranAudioLibrary.resolvePlaybackSource`) for all Quranic Adhkar/Duas, interactive tap-to-count cards with auto-advance, search/favorites/audio filters, Free Tasbih counter, and cross-navigation to Ruqyah (`#/ruqyah`).
+  - `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/services/router.ts`, `src/App.tsx`, `src/components/dashboard/DashboardView.tsx`: registered `'adhkar'` (`الأذكار والأدعية`) in navigation (before `'الإعدادات'`), routing, lazy-loaded chunks, and dashboard quick actions.
+  - `src/tests/adhkarSystem.test.ts` & `src/tests/runAllTests.ts`: added automated test suite verifying all 8 categories, Quranic coordinate bounds, UID-scoped counters/favorites/Tasbih, and offline audio integration.
+- **Verification Executed (after final Phase 4 edit):**
+  - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split): **PASS** (`776 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.88s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+  - `npm.cmd run test:firestore-rules`: **BLOCKED** (Java runtime absent locally)
+  - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this Phase 4 local turn.
+- **Next Action:** Proceed to **Phase 5 (Complete Chronological Sourced Prophetic Seerah Experience)**.
+
+
+## 2026-11-20 — Full Platform Transformation Phase 5: Complete Chronological Sourced Prophetic Seerah Experience (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace`. No `.git` repository, no production settings/secrets/rules/sync flags touched.
+- **Phase 5 Implementation Completed:**
+  - `src/data/seerahData.ts`: created a versioned (`SEERAH_BOOK_VERSION = '1.0.0'`), chronological Prophetic Seerah book spanning 5 chronological parts (`SEERAH_PARTS`) and 16 doubly-linked narrative chapters (`SEERAH_CHAPTERS`) from pre-birth Makkah through birth, youth, revelation in Hira, public call & Abyssinia, Year of Sorrow & Isra/Mi'raj, Aqabah pledges, Hijrah, Madinah foundation, Badr, Uhud & Khandaq, Hudaybiyyah & letters to kings, Fath Makkah, Farewell Pilgrimage, passing to Al-Rafiq Al-A'la, and Shamail/character — with 17 claim-level records (`SEERAH_CLAIMS`), 7 public-domain classical sources (`SEERAH_SOURCES`), evidence grades (`ثابت بالصحيح` / `مشهور في السير` / `محل خلاف تاريخي`), and explicit uncertainty notes.
+  - `src/services/seerahProgressService.ts` & `src/services/storageService.ts`: implemented UID-scoped persistence (`wird.seerah.progress.v1`) for reading mode (`continuous` vs `study`), last reading position, completed chapters, and versioned scene bookmarks, completely isolated from Quran memorization/khatma statistics.
+  - `src/components/seerah/SeerahView.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/services/router.ts`, `src/App.tsx`, `src/components/dashboard/DashboardView.tsx`: built the lazy-loaded `#/seerah` continuous narrative book reader with pure-reading vs verification mode toggle, parts/timeline index, figures/places/sources directory, bookmarks tab, and optional end-of-chapter comprehension quiz.
+  - `src/tests/seerahSystem.test.ts` & `src/tests/runAllTests.ts`: added automated test suite verifying the 5-part / 16-chapter chain, claim/source/figure/place integrity, uncertainty notes, and UID-scoped progress/bookmarks.
+- **Verification Executed (after final Phase 5 edit):**
+  - `npm.cmd run test`: **PASS** (`781 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.34s`, `SeerahView` code-split into `dist/assets/SeerahView-ClcVHDEl.js` at `116.19 kB` / `28.18 kB` gzip, 0 chunks > 500 kB)
+- **Next Action:** Proceed to **Phase 6 (Offline-First Hardening & Prayer Times / Hijri Calendar / Qibla via AlAdhan Adapter)**.
+
+## 2026-11-20 — Full Platform Transformation Phase 6: Offline-First Hardening & Prayer Times / Hijri Calendar / Qibla Adapter (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace`. No `.git` repository, no production settings/secrets/rules/sync flags touched.
+- **Phase 6 Implementation Completed:**
+  - `src/services/offlineQuranAudioLibrary.ts` & `src/services/offlineQuranAudioLibrary.test.ts`: added per-job cross-tab exclusive worker locks (`wird-offline-audio-job-worker:${jobId}`) around `executeJobWorker(jobId)` in `startOrResumeJob(jobId)`, displaced generation cleanup on re-verification in `markJobItemVerified`, and unindexed Cache Storage orphan key sweeping via `cache.keys()` during `reconcileLibrary()`.
+  - `src/services/prayerTimesService.ts`, `src/services/prayerTimesService.test.ts`, `src/services/storageService.ts`, `src/components/dashboard/DashboardView.tsx`: built the AlAdhan API adapter (`fetchDailyPrayerSchedule`) with 4500ms timeout, `redirect: 'error'`, strict `HH:MM` sanitization, UID-scoped daily cache (`wird.prayer.cache.v1`), mathematical Great-Circle Qibla bearing calculation (`computeQiblaBearingDegrees`) to the Holy Kaaba (`21.422487° N, 39.826206° E`), offline Umm al-Qura Hijri date formatting (`formatLocalHijriDate`), next-prayer countdown (`getNextPrayerSummary`), and interactive Dashboard Prayer/Hijri/Qibla card across 8 city presets.
+- **Verification Executed (after final Phase 6 edit):**
+  - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split): **PASS** (`788 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.17s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+  - `npm.cmd run test:firestore-rules`: **BLOCKED** (Java runtime absent locally)
+  - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this Phase 6 local turn.
+- **Next Action:** Proceed to **Phase 7 (Bidirectional Multi-Device Synchronization with Tombstones, Anti-Resurrection & Event-Derived Projections)**.
+
+## 2026-11-20 — Full Platform Transformation Phase 7 & Phase 8: Multi-Device Tombstones, Anti-Resurrection, Weak-Verse Delta Convergence & Final Quality Audit (Local Windows Workspace)
+
+- **Environment:** Local Windows workspace `local WIRD-APP workspace`. No `.git` repository, no production settings/secrets/rules/sync flags touched.
+- **Phase 7 Implementation Completed:**
+  - `src/services/tombstoneReconciliationService.ts`, `src/services/syncConflictSafety.ts`, `src/services/tombstoneReconciliationService.test.ts`, `src/tests/runAllTests.ts`: implemented `CollectionTombstoneRecordV2`, `reconcileRecordsWithTombstones` (clock-independent revision comparison, anti-resurrection suppression when `revision <= deletedAtRevision`, explicit restore superseding tombstones at `revision > deletedAtRevision`, and fail-closed `concurrent_divergent_edit` conflict descriptors), `reconcileWeakVerseSnapshotsV2` (per-device mistake delta convergence + resolved-at-revision anti-resurrection), and `isSafeV2ReconcilablePayload` (while preserving fail-closed `containsUnsafeFullSnapshotProjection` for V1 full snapshots).
+- **Phase 8 Final Quality Audit & Local Verification Executed:**
+  - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split across all 72 suites): **PASS** (`794 PASSED | 0 FAILED`)
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.34s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+  - `npm.cmd run test:firestore-rules`: **BLOCKED** (Java runtime absent locally)
+  - `npm.cmd run mushaf:validate-coverage`: **BLOCKED** in sandbox (script fetches remote SVG pages over network; local 604-page Mushaf index & 6,236 ayah coverage verified offline in `runQuranIntegrityTests`, `runQuranMushafReaderTests`, and `runMushafFacsimileServiceTests`)
+  - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this local turn (no `.git` repo in folder; Production sync flags untouched).
+- **Next Action:** Connect local workspace to `.git` feature branch when ready to push for GitHub Actions Quality Gate (Firestore Rules Emulator + Playwright E2E) and Vercel Preview inspection.
+
+## 2026-11-20 — Draft PR #404 Release Readiness Fixes (Primary-Source Religious Accuracy, Backward-Compatible Adhkar ID, Cache-Only Storage UX)
+
+- **Repository & PR:** `ifawz40-boop/WIRD-APP`, Draft PR `#404` (`feat/platform-transformation-20261120` → `main` `61554d60da5a5bbb644f6698d7b6193068a4d70a`), building on CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS).
+- **Changes Applied (Single Release-Readiness Commit):**
+  - `src/data/adhkarData.ts`: Fixed sleeping category typo (`عندوي` → `عند الإيواء`); restricted `adhkar-kalimat-tammat` to `['evening']` with exact source separation (Sahih Muslim 2708 & 2709, Sunan al-Tirmidhi 3604, Musnad Ahmad 7898); added `repeatTargetByCategory: { after_prayer: 1 }` and `getAdhkarRepeatTarget(item, category?)` for `adhkar-ikhlas`, `adhkar-falaq`, and `adhkar-nas` (`3×` in morning/evening/sleep per Abu Dawud 5082, Tirmidhi 3575, Bukhari 5017; `1×` after obligatory prayers per Abu Dawud 1523, Nasai 1336, Tirmidhi 2903, noting Fajr/Maghrib 3× overlap with morning/evening adhkar); renamed `adhkar-sleep-bismika-ربي-wadatu` → `adhkar-sleep-bismika-rabbi-wadatu` with `LEGACY_ADHKAR_ITEM_ID_ALIASES`.
+  - `src/services/adhkarProgressService.ts` & `src/components/adhkar/AdhkarView.tsx`: Normalized legacy Adhkar item IDs losslessly on read and mutation (`normalizeAdhkarItemId`), wired category-aware `getAdhkarRepeatTarget` into daily counter, category summaries, auto-advance, and UI progress indicators without downgrading higher-target counts.
+  - `src/data/seerahData.ts`: Fixed `كماخلّده` → `كما خلّده` (`blk-1-1-b`); added `src-musnad-ahmad` and `src-muwatta-malik` to `SEERAH_SOURCES`; distinguished Badr consultation speakers and primary sources in `blk-10-1-a` (Al-Miqdad in Bukhari 3952, Sa'd ibn Ubadah in Muslim 1779, Sa'd ibn Mu'adh in Ibn Hisham); separated Farewell Pilgrimage wordings in `blk-14-1-a` (Sahih Muslim 1218 verbatim «كتاب الله», Bukhari 67/1739, Muslim 1679) and `blk-14-1-c` (Muwatta Malik balagh «كتاب الله وسنة نبيه» and Musnad Ahmad 23489 Tashriq equality wording — zero misattribution to Sahihayn).
+  - `src/services/storageService.ts`: Exported `CACHE_ONLY_AUXILIARY_KEYS` (`wird.prayer.cache.v1`) and shared `isLegacyUserDataKey(key)` across `hasLegacyStorageData()` and `setStorageScope()` so automatic Dashboard prayer cache alone never triggers a false guest-data import prompt while remaining UID-scoped, migrated on real-data `'import'`, and cleared on `resetAllData()`.
+  - `src/tests/adhkarSystem.test.ts`, `src/tests/seerahSystem.test.ts`, `src/services/storageScope.test.ts`: Added 6 automated regression tests covering every fix above.
+- **Verification Executed (Local Windows Workspace):**
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - `npm.cmd run test`: **PASS** (`800 PASSED | 0 FAILED`)
+  - `$env:NODE_ENV='production'; npx.cmd vite build`: **PASS** (`3.27s`)
+  - `npx.cmd --yes bun@1.4.4 install --frozen-lockfile`: **PASS** (`Checked 304 installs across 371 packages`)
+  - `npx.cmd --yes bun@1.4.4 audit --audit-level=high`: **PASS** (`No vulnerabilities found (checked 360 packages)`)
+- **Production & Safety Confirmation:** ZERO edits to Quran corpus (`completeQuranData.json`, `src/data/sources/`), sync engine, `firestore.rules`, `authService.ts`, Vercel/Firebase settings, secrets, feature flags, or `main`. Exact-head CI (`WIRD Quality Gate`) triggered on push to PR `#404`.

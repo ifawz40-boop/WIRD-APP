@@ -1,5 +1,9 @@
 import React from 'react';
-import type { WirdSymbolVariant } from './WirdLogo';
+import {
+  OFFICIAL_BRAND_EMBLEM_URL,
+  WirdVectorEmblemSvg,
+  type WirdSymbolVariant
+} from './WirdLogo';
 
 export type WirdAvatarShape = 'circle' | 'squircle' | 'rounded';
 export type WirdAvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -12,9 +16,8 @@ export interface WirdAvatarProps {
   withRing?: boolean;
   withGlow?: boolean;
   alt?: string;
+  renderMode?: 'vector' | 'raster';
 }
-
-const OFFICIAL_EMBLEM_URL = '/assets/aistudio/IMG_0140_900ee5d2.jpeg';
 
 const sizeMap: Record<WirdAvatarSize, { container: string; pixelSize: number }> = {
   xs: { container: 'w-6 h-6', pixelSize: 24 },
@@ -33,8 +36,7 @@ const shapeMap: Record<WirdAvatarShape, string> = {
 
 /**
  * Official WIRD Brand Avatar (الأفاتار والشعار الرسمي المعتمد لتطبيق وِرد)
- * Renders the official circular emblem with golden dome, minaret, open Quran,
- * and calligraphic «وِرْد» against midnight navy.
+ * Renders the crisp scalable vector emblem by default (with optional raster mode).
  */
 export const WirdAvatar: React.FC<WirdAvatarProps> = ({
   size = 'md',
@@ -44,6 +46,7 @@ export const WirdAvatar: React.FC<WirdAvatarProps> = ({
   withRing = true,
   withGlow = false,
   alt = 'شعار وأفاتار وِرد الرسمي',
+  renderMode = 'vector',
 }) => {
   const isCustomSize = typeof size === 'number';
   const pixel = isCustomSize ? size : sizeMap[size].pixelSize;
@@ -62,20 +65,30 @@ export const WirdAvatar: React.FC<WirdAvatarProps> = ({
     <div
       role="img"
       aria-label={alt}
+      data-emblem-mode={renderMode}
       style={isCustomSize ? { width: size, height: size } : undefined}
       className={`relative inline-flex items-center justify-center shrink-0 overflow-hidden select-none bg-[#0B132B] transition-all duration-200 ${shapeClass} ${containerClass} ${ringStyles} ${glowStyles} ${className}`}
     >
-      <img
-        src={OFFICIAL_EMBLEM_URL}
-        alt={alt}
-        width={pixel}
-        height={pixel}
-        className={`w-full h-full object-cover transition-transform duration-300 hover:scale-105 ${
-          variant === 'monochrome' ? 'grayscale opacity-85' : ''
-        }`}
-        loading="eager"
-        decoding="async"
-      />
+      {renderMode === 'raster' ? (
+        <img
+          src={OFFICIAL_BRAND_EMBLEM_URL}
+          alt={alt}
+          width={pixel}
+          height={pixel}
+          className={`w-full h-full object-cover transition-transform duration-300 hover:scale-105 ${
+            variant === 'monochrome' ? 'grayscale opacity-85' : ''
+          }`}
+          loading="eager"
+          decoding="async"
+        />
+      ) : (
+        <WirdVectorEmblemSvg
+          variant={variant}
+          className={`w-full h-full transition-transform duration-300 hover:scale-105 ${
+            variant === 'monochrome' ? 'grayscale opacity-85' : ''
+          }`}
+        />
+      )}
     </div>
   );
 };

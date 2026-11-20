@@ -66,6 +66,10 @@ import { runPlanMissedDayRecoveryTests } from '../services/planMissedDayRecovery
 import { runTestQuestionGeneratorTests } from '../services/testQuestionGenerator.test';
 import { runMushafSpreadServiceTests } from '../services/mushafSpreadService.test';
 import { runCumulativeLinkingServiceTests } from '../services/cumulativeLinkingService.test';
+import { runAdhkarSystemTests } from './adhkarSystem.test';
+import { runSeerahSystemTests } from './seerahSystem.test';
+import { runPrayerTimesServiceTests } from '../services/prayerTimesService.test';
+import { runTombstoneReconciliationServiceTests } from '../services/tombstoneReconciliationService.test';
 
 export interface SuiteResult {
   passed: number;
@@ -179,6 +183,10 @@ async function main() {
     { name: 'Memorization Test Fill-Blank Words & Scope Filters', runner: runTestQuestionGeneratorTests },
     { name: 'Two-Page Printed Mushaf Spread Math & Surface Preferences', runner: runMushafSpreadServiceTests },
     { name: '5-Stage Cumulative Linking Memorization Engine & Recall Gate', runner: runCumulativeLinkingServiceTests },
+    { name: 'Daily Adhkar & Duas Corpus, UID-Scoped Counter, Free Tasbih & Offline Audio', runner: runAdhkarSystemTests },
+    { name: 'Chronological Sourced Prophetic Seerah Book, Claims, Bookmarks & UID-Scoped Progress', runner: runSeerahSystemTests },
+    { name: 'AlAdhan Prayer Times Adapter, Great-Circle Qibla Bearing & UID-Scoped Offline Cache', runner: runPrayerTimesServiceTests },
+    { name: 'Multi-Device Tombstone Anti-Resurrection, Restore & Weak-Verse Delta Convergence', runner: runTombstoneReconciliationServiceTests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);

@@ -34,6 +34,7 @@
   --wird-surface: #ffffff;
   --wird-surface-muted: #f2ede2;
   --wird-surface-elevated: #ffffff;
+  --wird-header-glass: rgba(249, 246, 238, 0.92);
   --wird-text: #142421;
   --wird-muted: #5b6f6b;
   --wird-primary: #1c4e46;
@@ -42,8 +43,11 @@
   --wird-secondary: #28665b;
   --wird-accent: #c59b27;
   --wird-accent-hover: #af851a;
+  --wird-accent-soft: rgba(197, 155, 39, 0.14);
+  --wird-ring: rgba(197, 155, 39, 0.45);
   --wird-border: rgba(28, 78, 70, 0.12);
   --wird-border-gold: rgba(197, 155, 39, 0.4);
+  --wird-hero-gradient: linear-gradient(135deg, #1c4e46 0%, #153c36 55%, #0f2c27 100%);
   --wird-shadow: 0 10px 30px -5px rgba(28, 78, 70, 0.07);
   --wird-shadow-lg: 0 20px 40px -10px rgba(28, 78, 70, 0.12);
 }
@@ -56,16 +60,20 @@
   --wird-surface: #111f36;
   --wird-surface-muted: #0e1a2f;
   --wird-surface-elevated: #162744;
+  --wird-header-glass: rgba(11, 19, 43, 0.92);
   --wird-text: #f5f1e8;
-  --wird-muted: #8b9e9b;
+  --wird-muted: #98adaa;
   --wird-primary: #1e4a47;
   --wird-primary-strong: #235d59;
   --wird-primary-hover: #2c6e69;
   --wird-secondary: #142e2c;
   --wird-accent: #e0a96d;
   --wird-accent-hover: #f3b77b;
-  --wird-border: rgba(224, 169, 109, 0.15);
+  --wird-accent-soft: rgba(224, 169, 109, 0.16);
+  --wird-ring: rgba(224, 169, 109, 0.48);
+  --wird-border: rgba(224, 169, 109, 0.16);
   --wird-border-gold: rgba(224, 169, 109, 0.35);
+  --wird-hero-gradient: linear-gradient(135deg, #111f36 0%, #0d192d 55%, #0b132b 100%);
   --wird-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
   --wird-shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.75), 0 0 20px rgba(224, 169, 109, 0.08);
 }
@@ -101,6 +109,62 @@ body {
 
 .wird-card:hover {
   border-color: color-mix(in srgb, var(--wird-accent) 40%, transparent);
+}
+
+/* Architectural Hero Surface */
+.wird-hero-surface {
+  background: var(--wird-hero-gradient);
+  border: 1px solid var(--wird-border-gold);
+  box-shadow: var(--wird-shadow-lg);
+  border-radius: 1.5rem;
+  color: #f5f1e8;
+}
+
+/* Semantic Section Badge */
+.wird-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: var(--wird-accent-soft);
+  color: var(--wird-accent);
+  border: 1px solid var(--wird-border-gold);
+}
+
+/* RTL Active Sidebar Indicator */
+.wird-nav-indicator {
+  position: relative;
+}
+
+.wird-nav-indicator::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0.35rem;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f6d78b 0%, #c59b27 100%);
+  box-shadow: 0 0 8px rgba(224, 169, 109, 0.55);
+}
+
+/* Subtle View Entrance Animation */
+@keyframes wird-fade-up {
+  from {
+    opacity: 0.92;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wird-view-enter {
+  animation: wird-fade-up 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Primary Button in Soft Teal / Night Muted Teal */
@@ -243,9 +307,11 @@ body {
   .wird-app-shell,
   .wird-mobile-nav__item,
   .wird-btn-primary,
-  .wird-btn-accent {
+  .wird-btn-accent,
+  .wird-view-enter {
     transition: none;
     transform: none;
+    animation: none;
   }
 }
 

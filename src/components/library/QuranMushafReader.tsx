@@ -23,7 +23,16 @@ import { QURAN_PAGE_INDEX } from '../../data/quranPageIndex.generated';
 import { QURAN_JUZ_STARTS, QURAN_HIZB_QUARTER_STARTS } from '../../data/quranNavigationIndex.generated';
 import { loadSurahVerses } from '../../data/quranDataLoader';
 import { findSurahStartPage } from '../../data/quranNavigation';
-import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
+import {
+  RECITERS,
+  computeGlobalAyahNumber,
+  formatAyahAudioUrl,
+  getLicensedAyahAudioUrl,
+  requestOfflineAudioCache,
+  resolveApprovedOfflineReciterId
+} from '../../services/audioService';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
+import { StorageService } from '../../services/storageService';
 import {
   getSavedAudioRepeatCount,
   getSavedPlaybackRate,
@@ -72,6 +81,7 @@ interface QuranMushafReaderProps {
   onMarkSpreadPagesRead?: (pages: number[]) => void;
   onMarkUntilPageRead?: (upToPage: number) => void;
   onUnmarkPagesRead?: (pages: number[]) => void;
+  onQuickStartReadingKhatma?: () => void;
   onPageVisited?: (page: number) => void;
   readingKhatmaError?: string;
 }
@@ -147,7 +157,7 @@ const HIZB_INDEX = QURAN_HIZB_QUARTER_STARTS as unknown as Record<string, Naviga
 
 function readLastPage(): number {
   try {
-    const value = Number(localStorage.getItem(LAST_PAGE_KEY));
+    const value = Number(localStorage.getItem(StorageService.resolveScopedKey(LAST_PAGE_KEY)));
     return Number.isInteger(value) && value >= 1 && value <= 604 ? value : 1;
   } catch {
     return 1;
@@ -156,7 +166,7 @@ function readLastPage(): number {
 
 function readBookmarks(): number[] {
   try {
-    const value = JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]');
+    const value = JSON.parse(localStorage.getItem(StorageService.resolveScopedKey(BOOKMARKS_KEY)) || '[]');
     if (!Array.isArray(value)) return [];
     return [...new Set(value.filter((p): p is number => Number.isInteger(p) && p >= 1 && p <= 604))].sort((a, b) => a - b);
   } catch {
@@ -175,6 +185,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   onMarkSpreadPagesRead,
   onMarkUntilPageRead,
   onUnmarkPagesRead,
+  onQuickStartReadingKhatma,
   onPageVisited,
   readingKhatmaError
 }) => {
@@ -220,6 +231,14 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   }).current;
   const [pageTurnDirection, setPageTurnDirection] = useState<'next' | 'previous'>('next');
   const audioQueueRef = useRef<QuranAudioQueueController | null>(null);
+  const playbackRequestSeqRef = useRef(0);
+  const activeObjectUrlRevokersRef = useRef<Set<() => void>>(new Set());
+  const revokeAllActiveAudioUrls = () => {
+    for (const revoke of activeObjectUrlRevokersRef.current) {
+      try { revoke(); } catch { /* ignore */ }
+    }
+    activeObjectUrlRevokersRef.current.clear();
+  };
   const autoPlayNextPageRef = useRef(false);
   const pendingTargetRef = useRef<{ surahNumber: number; ayahNumber: number } | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -274,7 +293,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
 
   useEffect(() => {
     setPageInput(String(page));
-    try { localStorage.setItem(LAST_PAGE_KEY, String(page)); } catch { /* Reading remains available without persistence. */ }
+    try { localStorage.setItem(StorageService.resolveScopedKey(LAST_PAGE_KEY), String(page)); } catch { /* Reading remains available without persistence. */ }
     onPageVisitedRef.current?.(page);
   }, [page]);
 
@@ -304,8 +323,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   }, [page, audioAyahs.length]);
 
   const stopAudio = () => {
+    playbackRequestSeqRef.current += 1;
     audioQueueRef.current?.stop();
     audioQueueRef.current = null;
+    revokeAllActiveAudioUrls();
     globalAudioCoordinator.releaseFocus('mushaf');
     setIsPlaying(false);
     setIsAudioPaused(false);
@@ -325,12 +346,14 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
     return () => {
       unsubAudioPrefs();
       unregCoordinator();
+      playbackRequestSeqRef.current += 1;
       audioQueueRef.current?.stop();
       audioQueueRef.current = null;
+      revokeAllActiveAudioUrls();
     };
   }, []);
 
-  const startAudioQueue = (
+  const startAudioQueue = async (
     queue: Ayah[],
     startIndex: number,
     endIndex: number,
@@ -341,14 +364,38 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
     if (!queue.length || startIndex < 0 || endIndex < startIndex || endIndex >= queue.length) return;
     stopAudio();
     globalAudioCoordinator.claimFocus('mushaf');
-    const tracks = queue.map(ayah => ({
-      id: String(ayah.number),
-      url: formatAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter)
-    }));
+    const requestSeq = ++playbackRequestSeqRef.current;
+    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
     const cacheUpcoming = (index: number) => {
-      requestOfflineAudioCache(tracks.slice(index, Math.min(endIndex + 1, index + 20)).map(track => track.url));
+      requestOfflineAudioCache(
+        queue.slice(index, Math.min(endIndex + 1, index + 20)).map(ayah =>
+          getLicensedAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter).url
+        )
+      );
     };
     cacheUpcoming(startIndex);
+
+    const tracks = await Promise.all(
+      queue.map(async ayah => {
+        const fallbackUrl = formatAyahAudioUrl(ayah.surahNumber, ayah.numberInSurah, activeReciter);
+        const globalAyah = computeGlobalAyahNumber(ayah.surahNumber, ayah.numberInSurah);
+        const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+          approvedReciterId,
+          globalAyah,
+          fallbackUrl
+        );
+        if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
+        return {
+          id: String(ayah.number),
+          url: resolved.src
+        };
+      })
+    );
+
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      revokeAllActiveAudioUrls();
+      return;
+    }
 
     const controller = new QuranAudioQueueController({
       onTrackChange: (index, cycle, ayahIteration) => {
@@ -365,6 +412,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
       onComplete: () => {
         if (audioQueueRef.current !== controller) return;
         audioQueueRef.current = null;
+        revokeAllActiveAudioUrls();
         setIsPlaying(false);
         setIsAudioPaused(false);
         setPlayingIndex(null);
@@ -381,6 +429,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
         console.warn('[WIRD Mushaf] Quran audio queue failed:', error);
         if (audioQueueRef.current !== controller) return;
         audioQueueRef.current = null;
+        revokeAllActiveAudioUrls();
         setIsPlaying(false);
         setIsAudioPaused(false);
         setPlayingIndex(null);
@@ -403,6 +452,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
     } catch (error) {
       controller.stop();
       audioQueueRef.current = null;
+      revokeAllActiveAudioUrls();
       setIsPlaying(false);
       setIsAudioPaused(false);
       setPlayingIndex(null);
@@ -523,7 +573,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   const toggleBookmark = () => {
     setBookmarks(current => {
       const next = current.includes(page) ? current.filter(item => item !== page) : [...current, page].sort((a, b) => a - b);
-      try { localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(next)); } catch { /* Bookmark works for this view if storage is blocked. */ }
+      try { localStorage.setItem(StorageService.resolveScopedKey(BOOKMARKS_KEY), JSON.stringify(next)); } catch { /* Bookmark works for this view if storage is blocked. */ }
       return next;
     });
   };
@@ -557,10 +607,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   const selectedStartAyah = audioAyahs[segmentStartIndex];
   const selectedEndAyah = audioAyahs[segmentEndIndex];
 
-  const isTwoPageSpreadActive = readerLayout === 'printed' &&
-    typeof window !== 'undefined' &&
-    resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
-    window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX;
+  const isTwoPageSpreadActive = readerLayout === 'printed' && (
+    printedSpreadContext
+      ? printedSpreadContext.isTwoPage
+      : (
+          typeof window !== 'undefined' &&
+          resolveEffectiveSpreadMode(getSavedMushafSpreadMode('library'), window.innerWidth) === 'double' &&
+          window.innerWidth >= DESKTOP_SPREAD_BREAKPOINT_PX
+        )
+  );
   const isOppositeTafsirActive = readerLayout === 'printed' && Boolean(printedSpreadContext?.isOppositeTafsirActive);
   const visibleSpreadPages = readerLayout === 'printed' && printedSpreadContext?.visiblePages.length
     ? printedSpreadContext.visiblePages
@@ -1033,7 +1088,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setLastMarkedUndoPages(visibleSpreadPages);
+                      const newlyMarked = visibleSpreadPages.filter(p => !readingKhatma.completedPages.includes(p));
+                      setLastMarkedUndoPages(newlyMarked);
                       onMarkSpreadPagesRead(visibleSpreadPages);
                     }}
                     className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#162744] px-3 py-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] transition-colors tabular-nums"
@@ -1050,7 +1106,9 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
                     type="button"
                     onClick={() => {
                       const batch: number[] = [];
-                      for (let p = khatmaProgress.nextPage; p <= page; p += 1) batch.push(p);
+                      for (let p = khatmaProgress.nextPage; p <= page; p += 1) {
+                        if (!readingKhatma.completedPages.includes(p)) batch.push(p);
+                      }
                       setLastMarkedUndoPages(batch);
                       onMarkUntilPageRead(page);
                     }}
@@ -1092,6 +1150,24 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
               {readingKhatmaError}
             </p>
           )}
+        </section>
+      )}
+      {(!readingKhatma || readingKhatma.completedAt) && onQuickStartReadingKhatma && (
+        <section
+          aria-label="بدء متابعة ختمة القراءة من المصحف"
+          className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl border border-[#C59B27]/30 bg-[#F9F6EE]/90 dark:border-[#E0A96D]/20 dark:bg-[#111F36]/85 px-4 py-2.5 text-xs"
+        >
+          <span className="font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+            لا توجد ختمة قراءة نشطة حالياً لتسجيل تقدمك في صفحات المصحف.
+          </span>
+          <button
+            type="button"
+            onClick={onQuickStartReadingKhatma}
+            className="min-h-11 inline-flex items-center gap-1.5 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] px-3.5 py-2 text-xs font-bold text-white transition-colors whitespace-nowrap"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>بدء ختمة قراءة الآن</span>
+          </button>
         </section>
       )}
       {(!readingKhatma || readingKhatma.completedAt) && readingKhatmaError && (

@@ -27,7 +27,16 @@ import { QURAN_DATA_SOURCE_INFO } from '../../data/quranDataInfo';
 import { loadSurahVerses, getAyahDisplayText } from '../../data/quranDataLoader';
 import { TafsirSheet } from './TafsirSheet';
 import { Ayah, SurahMeta, ReciterId } from '../../types/quran';
-import { RECITERS, formatAyahAudioUrl, requestOfflineAudioCache } from '../../services/audioService';
+import {
+  RECITERS,
+  computeGlobalAyahNumber,
+  formatAyahAudioUrl,
+  getLicensedAyahAudioUrl,
+  requestOfflineAudioCache,
+  resolveApprovedOfflineReciterId
+} from '../../services/audioService';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
+import { StorageService } from '../../services/storageService';
 import { attachAyahRepeatHandler } from '../../services/audioRepeatController';
 import { QuranAudioQueueController } from '../../services/audioQueueController';
 import {
@@ -89,7 +98,7 @@ const LAST_READING_POSITION_KEY = 'wird.quran.lastReadingPosition.v1';
 
 function readLastReadingPosition(): QuranReadingPosition | null {
   try {
-    const value = JSON.parse(localStorage.getItem(LAST_READING_POSITION_KEY) || 'null') as QuranReadingPosition | null;
+    const value = JSON.parse(localStorage.getItem(StorageService.resolveScopedKey(LAST_READING_POSITION_KEY)) || 'null') as QuranReadingPosition | null;
     if (!value || !Number.isInteger(value.surahNumber) || !Number.isInteger(value.ayahNumber)) return null;
     const surah = ALL_SURAHS[value.surahNumber - 1];
     return surah && value.ayahNumber >= 1 && value.ayahNumber <= surah.versesCount ? value : null;
@@ -157,6 +166,14 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const [segmentStatus, setSegmentStatus] = useState<{ ayahNumber: number; cycle: number; ayahIteration: number } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const segmentQueueRef = useRef<QuranAudioQueueController | null>(null);
+  const playbackRequestSeqRef = useRef(0);
+  const activeObjectUrlRevokersRef = useRef<Set<() => void>>(new Set());
+  const revokeAllActiveAudioUrls = () => {
+    for (const revoke of activeObjectUrlRevokersRef.current) {
+      try { revoke(); } catch { /* ignore */ }
+    }
+    activeObjectUrlRevokersRef.current.clear();
+  };
   const currentRepeatCountRef = useRef(1);
   const repeatTargetRef = useRef<number | null>(repeatTarget === -1 ? null : repeatTarget);
   const stopAudioRef = useRef<() => void>(() => {});
@@ -219,7 +236,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const rememberReadingPosition = (ayahNumber: number) => {
     const position = { surahNumber: selectedSurah.number, ayahNumber };
     setLastReadingPosition(position);
-    try { localStorage.setItem(LAST_READING_POSITION_KEY, JSON.stringify(position)); } catch { /* Keep the current read usable when storage is unavailable. */ }
+    try { localStorage.setItem(StorageService.resolveScopedKey(LAST_READING_POSITION_KEY), JSON.stringify(position)); } catch { /* Keep the current read usable when storage is unavailable. */ }
   };
 
   const handleResumeReading = () => {
@@ -255,72 +272,91 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       return;
     }
 
-    const audioUrl = formatAyahAudioUrl(selectedSurah.number, ayahNumberInSurah, activeReciter);
+    const fallbackUrl = formatAyahAudioUrl(selectedSurah.number, ayahNumberInSurah, activeReciter);
     requestOfflineAudioCache(
       currentAyahs.filter(ayah => ayah.numberInSurah >= ayahNumberInSurah).slice(0, 20)
-        .map(ayah => formatAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter))
+        .map(ayah => getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url)
     );
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
       audioRef.current.pause();
+      audioRef.current = null;
     }
+    revokeAllActiveAudioUrls();
 
     globalAudioCoordinator.claimFocus('library');
     currentRepeatCountRef.current = 1;
     repeatTargetRef.current = repeatTarget === -1 ? null : repeatTarget;
     setCurrentRepeatCount(1);
-
-    const audio = new Audio(audioUrl);
-    audio.playbackRate = getSavedPlaybackRate();
-    audioRef.current = audio;
     setPlayingAyah(ayahNumberInSurah);
     setIsPlaying(true);
 
-    attachAyahRepeatHandler(
-      audio,
-      currentRepeatCountRef,
-      repeatTargetRef,
-      setCurrentRepeatCount,
-      () => {
-        const nextAyah = ayahNumberInSurah + 1;
-        const hasNext = currentAyahs.some(a => a.numberInSurah === nextAyah);
-        if (hasNext) {
-          handlePlayAyah(nextAyah);
-        } else {
+    const requestSeq = ++playbackRequestSeqRef.current;
+    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
+    const globalAyah = computeGlobalAyahNumber(selectedSurah.number, ayahNumberInSurah);
+
+    void offlineQuranAudioLibrary.resolvePlaybackSource(approvedReciterId, globalAyah, fallbackUrl)
+      .then(resolved => {
+        if (requestSeq !== playbackRequestSeqRef.current) {
+          resolved.revoke?.();
+          return;
+        }
+        if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
+
+        const audio = new Audio(resolved.src);
+        audio.playbackRate = getSavedPlaybackRate();
+        audioRef.current = audio;
+
+        attachAyahRepeatHandler(
+          audio,
+          currentRepeatCountRef,
+          repeatTargetRef,
+          setCurrentRepeatCount,
+          () => {
+            revokeAllActiveAudioUrls();
+            const nextAyah = ayahNumberInSurah + 1;
+            const hasNext = currentAyahs.some(a => a.numberInSurah === nextAyah);
+            if (hasNext) {
+              handlePlayAyah(nextAyah);
+            } else {
+              audioRef.current = null;
+              setIsPlaying(false);
+              setPlayingAyah(null);
+            }
+          },
+          () => {
+            audio.onended = null;
+            audioRef.current = null;
+            revokeAllActiveAudioUrls();
+            currentRepeatCountRef.current = 1;
+            setCurrentRepeatCount(1);
+            setIsPlaying(false);
+            setPlayingAyah(null);
+          }
+        );
+
+        audio.onerror = () => {
+          audio.onended = null;
           audioRef.current = null;
+          revokeAllActiveAudioUrls();
+          currentRepeatCountRef.current = 1;
+          setCurrentRepeatCount(1);
           setIsPlaying(false);
           setPlayingAyah(null);
-        }
-      },
-      () => {
-        audio.onended = null;
-        audioRef.current = null;
-        currentRepeatCountRef.current = 1;
-        setCurrentRepeatCount(1);
-        setIsPlaying(false);
-        setPlayingAyah(null);
-      }
-    );
+        };
 
-    audio.onerror = () => {
-      audio.onended = null;
-      audioRef.current = null;
-      currentRepeatCountRef.current = 1;
-      setCurrentRepeatCount(1);
-      setIsPlaying(false);
-      setPlayingAyah(null);
-    };
-
-    audio.play().catch(error => {
-      console.warn('Audio play prevented or unavailable', error);
-      audio.onended = null;
-      audioRef.current = null;
-      currentRepeatCountRef.current = 1;
-      setCurrentRepeatCount(1);
-      setIsPlaying(false);
-      setPlayingAyah(null);
-    });
+        audio.play().catch(error => {
+          console.warn('Audio play prevented or unavailable', error);
+          audio.onended = null;
+          audioRef.current = null;
+          revokeAllActiveAudioUrls();
+          currentRepeatCountRef.current = 1;
+          setCurrentRepeatCount(1);
+          setIsPlaying(false);
+          setPlayingAyah(null);
+        });
+      });
   };
 
   const handleNextAyah = () => {
@@ -364,6 +400,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   };
 
   const handleStopAudio = () => {
+    playbackRequestSeqRef.current += 1;
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
@@ -372,6 +409,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     }
     segmentQueueRef.current?.stop();
     segmentQueueRef.current = null;
+    revokeAllActiveAudioUrls();
     currentRepeatCountRef.current = 1;
     setIsPlaying(false);
     setPlayingAyah(null);
@@ -408,7 +446,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     };
   }, []);
 
-  const handleToggleStudySegmentAudio = () => {
+  const handleToggleStudySegmentAudio = async () => {
     const activeQueue = segmentQueueRef.current;
     if (activeQueue?.getState().active) {
       if (activeQueue.getState().paused) {
@@ -426,13 +464,35 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
     handleStopAudio();
     globalAudioCoordinator.claimFocus('library');
-    const tracks = currentAyahs.map(ayah => ({
-      id: String(ayah.number),
-      url: formatAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter)
-    }));
+    const requestSeq = ++playbackRequestSeqRef.current;
+    const approvedReciterId = resolveApprovedOfflineReciterId(activeReciter);
     requestOfflineAudioCache(
-      tracks.slice(segmentStartIndex, Math.min(segmentEndIndex + 1, segmentStartIndex + 20)).map(track => track.url)
+      currentAyahs.slice(segmentStartIndex, Math.min(segmentEndIndex + 1, segmentStartIndex + 20)).map(ayah =>
+        getLicensedAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter).url
+      )
     );
+
+    const tracks = await Promise.all(
+      currentAyahs.map(async ayah => {
+        const fallbackUrl = formatAyahAudioUrl(selectedSurah.number, ayah.numberInSurah, activeReciter);
+        const globalAyah = computeGlobalAyahNumber(selectedSurah.number, ayah.numberInSurah);
+        const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+          approvedReciterId,
+          globalAyah,
+          fallbackUrl
+        );
+        if (resolved.revoke) activeObjectUrlRevokersRef.current.add(resolved.revoke);
+        return {
+          id: String(ayah.number),
+          url: resolved.src
+        };
+      })
+    );
+
+    if (requestSeq !== playbackRequestSeqRef.current) {
+      revokeAllActiveAudioUrls();
+      return;
+    }
 
     const controller = new QuranAudioQueueController({
       onTrackChange: (index, cycle, ayahIteration) => {
@@ -454,6 +514,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       onComplete: () => {
         if (segmentQueueRef.current !== controller) return;
         segmentQueueRef.current = null;
+        revokeAllActiveAudioUrls();
         setIsSegmentPlaying(false);
         setIsSegmentPaused(false);
         setIsPlaying(false);
@@ -466,6 +527,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         console.warn('[WIRD Study] Segment audio queue failed:', error);
         if (segmentQueueRef.current !== controller) return;
         segmentQueueRef.current = null;
+        revokeAllActiveAudioUrls();
         setIsSegmentPlaying(false);
         setIsSegmentPaused(false);
         setIsPlaying(false);
@@ -491,6 +553,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
     } catch (error) {
       controller.stop();
       segmentQueueRef.current = null;
+      revokeAllActiveAudioUrls();
       setIsSegmentPlaying(false);
       setIsSegmentPaused(false);
       setIsPlaying(false);
@@ -501,6 +564,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
   useEffect(() => {
     return () => {
+      playbackRequestSeqRef.current += 1;
       if (audioRef.current) {
         audioRef.current.onended = null;
         audioRef.current.onerror = null;
@@ -509,6 +573,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       }
       segmentQueueRef.current?.stop();
       segmentQueueRef.current = null;
+      revokeAllActiveAudioUrls();
       globalAudioCoordinator.releaseFocus('library');
     };
   }, []);
@@ -620,6 +685,15 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
             setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر التراجع عن تسجيل الصفحات.');
           }
         }}
+        onQuickStartReadingKhatma={() => {
+          try {
+            startReadingKhatma(localStorage, new Date());
+            refreshKhatmaStore();
+            setReadingKhatmaError('');
+          } catch (error) {
+            setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر بدء ختمة القراءة.');
+          }
+        }}
         onPageVisited={visitedPage => {
           if (!readingKhatma || readingKhatma.completedAt || readingKhatma.lastVisitedPage === visitedPage) return;
           try {
@@ -662,22 +736,6 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
           متابعة آخر موضع قراءة · سورة {ALL_SURAHS[lastReadingPosition.surahNumber - 1]?.name} · الآية {lastReadingPosition.ayahNumber}
         </button>
       )}
-      <ReadingKhatmaPanel
-        khatma={readingKhatma}
-        khatmas={khatmaStore.khatmas}
-        activeKhatmaId={khatmaStore.activeKhatmaId}
-        completedCycles={khatmaStore.completedCycles}
-        error={readingKhatmaError}
-        onStart={plan => { try { startReadingKhatma(localStorage, new Date(), plan); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر بدء الختمة.'); } }}
-        onCreateKhatma={options => { try { createReadingKhatma(options); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إنشاء الختمة.'); } }}
-        onSelectKhatma={id => { try { setActiveReadingKhatma(id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديد الختمة.'); } }}
-        onDeleteKhatma={id => { try { deleteReadingKhatmaById(id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر حذف الختمة.'); } }}
-        onReset={() => { try { clearReadingKhatma(); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إعادة ضبط الختمة.'); } }}
-        onPause={id => { try { pauseReadingKhatma(localStorage, new Date(), id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إيقاف الختمة مؤقتاً.'); } }}
-        onResume={id => { try { resumeReadingKhatma(localStorage, new Date(), id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر استئناف الختمة.'); } }}
-        onUpdatePlan={(plan, id, title) => { try { updateReadingKhatmaPlan(plan, localStorage, new Date(), id, title); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديث خطة الختمة.'); } }}
-        onContinue={page => handleOpenMushafPage(page)}
-      />
       {/* 1. Hero Quran Header Banner */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B132B] via-[#1C4E46] to-[#111F36] text-white p-7 md:p-10 shadow-xl border border-[#C59B27]/35">
         <WirdIslamicPattern opacity={0.06} className="text-white" />
@@ -741,6 +799,23 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
           )}
         </div>
       </section>
+
+      <ReadingKhatmaPanel
+        khatma={readingKhatma}
+        khatmas={khatmaStore.khatmas}
+        activeKhatmaId={khatmaStore.activeKhatmaId}
+        completedCycles={khatmaStore.completedCycles}
+        error={readingKhatmaError}
+        onStart={plan => { try { startReadingKhatma(localStorage, new Date(), plan); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر بدء الختمة.'); } }}
+        onCreateKhatma={options => { try { createReadingKhatma(options); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إنشاء الختمة.'); } }}
+        onSelectKhatma={id => { try { setActiveReadingKhatma(id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديد الختمة.'); } }}
+        onDeleteKhatma={id => { try { deleteReadingKhatmaById(id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر حذف الختمة.'); } }}
+        onReset={() => { try { clearReadingKhatma(); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إعادة ضبط الختمة.'); } }}
+        onPause={id => { try { pauseReadingKhatma(localStorage, new Date(), id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر إيقاف الختمة مؤقتاً.'); } }}
+        onResume={id => { try { resumeReadingKhatma(localStorage, new Date(), id); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر استئناف الختمة.'); } }}
+        onUpdatePlan={(plan, id, title) => { try { updateReadingKhatmaPlan(plan, localStorage, new Date(), id, title); refreshKhatmaStore(); setReadingKhatmaError(''); } catch (error) { setReadingKhatmaError(error instanceof Error ? error.message : 'تعذر تحديث خطة الختمة.'); } }}
+        onContinue={page => handleOpenMushafPage(page)}
+      />
 
       {/* 2. Top Segmented Navigation Tabs + Direct Reciter Rail + Speed */}
       <div className="space-y-3 border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/15 pb-3">

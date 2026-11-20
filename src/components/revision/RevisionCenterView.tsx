@@ -103,7 +103,29 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
   const ratingTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [weakAyahNum, setWeakAyahNum] = useState<number | ''>('');
+  const [ratingWeakAyahPreview, setRatingWeakAyahPreview] = useState('');
   const [isSavingRating, setIsSavingRating] = useState(false);
+
+  useEffect(() => {
+    if (!ratingPortion || weakAyahNum === '') {
+      setRatingWeakAyahPreview('');
+      return;
+    }
+    const ayahNum = Number(weakAyahNum);
+    if (!Number.isSafeInteger(ayahNum) || ayahNum < ratingPortion.startAyah || ayahNum > ratingPortion.endAyah) {
+      setRatingWeakAyahPreview('');
+      return;
+    }
+    let active = true;
+    loadAyahByCoordinate(ratingPortion.surahNumber, ayahNum)
+      .then(ayah => {
+        if (active) setRatingWeakAyahPreview(ayah?.text || '');
+      })
+      .catch(() => {
+        if (active) setRatingWeakAyahPreview('');
+      });
+    return () => { active = false; };
+  }, [ratingPortion, weakAyahNum]);
 
   useEffect(() => {
     if (!ratingPortion) return;
@@ -179,6 +201,17 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
   const [manualWeakAyahNum, setManualWeakAyahNum] = useState(1);
   const [manualWeakText, setManualWeakText] = useState('');
   const [manualWeakNotes, setManualWeakNotes] = useState('');
+
+  useEffect(() => {
+    if (!isAddWeakVerseModalOpen) return;
+    let active = true;
+    loadAyahByCoordinate(weakSurahNum, manualWeakAyahNum)
+      .then(ayah => {
+        if (active && ayah?.text) setManualWeakText(ayah.text);
+      })
+      .catch(() => { /* Keep existing input if local chunk is unavailable. */ });
+    return () => { active = false; };
+  }, [isAddWeakVerseModalOpen, weakSurahNum, manualWeakAyahNum]);
 
   useEffect(() => {
     const activeDialog = isAddPortionModalOpen ? 'portion' : isAddWeakVerseModalOpen ? 'weakVerse' : null;
@@ -561,17 +594,14 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
     const surah = ALL_SURAHS.find(s => s.number === weakSurahNum);
     if (!surah) return;
 
-    let text = manualWeakText.trim();
+    const found = await loadAyahByCoordinate(weakSurahNum, manualWeakAyahNum).catch(() => undefined);
+    const text = found?.text || manualWeakText.trim();
     if (!text) {
-      const found = await loadAyahByCoordinate(weakSurahNum, manualWeakAyahNum).catch(() => undefined);
-      if (!found?.text) {
-        setActionFeedback({
-          message: 'تعذر تحميل نص الآية من مصدر القرآن؛ أدخل النص القرآني الصحيح أو حاول مجددًا. لم يتم تسجيل نص بديل.',
-          type: 'warn'
-        });
-        return;
-      }
-      text = found.text;
+      setActionFeedback({
+        message: 'تعذر تحميل نص الآية من مصدر القرآن؛ أدخل النص القرآني الصحيح أو حاول مجددًا. لم يتم تسجيل نص بديل.',
+        type: 'warn'
+      });
+      return;
     }
 
     if (weakVerseInFlightRef.current) return;
@@ -1405,6 +1435,11 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   placeholder="مثال: 8"
                   className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27] font-mono tabular-nums"
                 />
+                {ratingWeakAyahPreview && (
+                  <div className="mt-2 p-2.5 rounded-xl bg-white/80 dark:bg-[#0B132B]/70 border border-[#C59B27]/30 font-quran text-sm text-[#142421] dark:text-[#F5F1E8] leading-loose">
+                    <QuranText>{ratingWeakAyahPreview}</QuranText>
+                  </div>
+                )}
               </div>
 
               <div>

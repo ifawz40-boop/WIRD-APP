@@ -806,7 +806,9 @@ export class OfflineQuranAudioLibrary {
     this.pausedJobs.delete(jobId);
     this.cancelledJobs.delete(jobId);
 
-    const workerPromise = this.executeJobWorker(jobId).finally(() => {
+    const workerPromise = this.runWithLock(`wird-offline-audio-job-worker:${jobId}`, () =>
+      this.executeJobWorker(jobId)
+    ).finally(() => {
       this.runningWorkers.delete(jobId);
       this.activeControllers.delete(jobId);
       this.notifyListeners();
@@ -987,6 +989,7 @@ export class OfflineQuranAudioLibrary {
     fileRecord: OfflineAudioFileRecord,
     _byteLength: number
   ): Promise<void> {
+    let displacedGenerationId: string | null = null;
     await this.runWithLock('wird-offline-audio-jobs', async () => {
       const db = await this.openDatabase();
       const tx = db.transaction([STORE_AUDIO_FILES, STORE_AUDIO_JOB_ITEMS, STORE_AUDIO_JOBS], 'readwrite');
@@ -998,6 +1001,10 @@ export class OfflineQuranAudioLibrary {
       if (!job || job.status === 'cancelled') {
         await idbTx(tx);
         return;
+      }
+      const existingFile = (await idbReq(filesStore.get(fileRecord.fileKey))) as OfflineAudioFileRecord | undefined;
+      if (existingFile && existingFile.cacheGenerationId && existingFile.cacheGenerationId !== fileRecord.cacheGenerationId) {
+        displacedGenerationId = existingFile.cacheGenerationId;
       }
       filesStore.put(fileRecord);
       itemsStore.put({
@@ -1019,6 +1026,10 @@ export class OfflineQuranAudioLibrary {
       } satisfies OfflineAudioJob);
       await idbTx(tx);
     });
+
+    if (displacedGenerationId) {
+      await this.deleteCacheGeneration(fileRecord.reciterId, fileRecord.globalAyahNumber, displacedGenerationId);
+    }
   }
 
   private async sumJobVerifiedBytes(
@@ -1195,11 +1206,48 @@ export class OfflineQuranAudioLibrary {
       });
     }
 
+    let cleanedOrphansCount = orphansToFinalize.length;
     for (const orphan of orphansToFinalize) {
       await this.finalizeOrphanDeletion(orphan);
     }
+
+    // Sweep any unindexed Cache Storage generation entries not referenced by active STORE_AUDIO_FILES
+    if (this.cacheStorageFactory) {
+      try {
+        const cache = await this.openAudioCache();
+        if (typeof cache.keys === 'function') {
+          const txVerify = db.transaction([STORE_AUDIO_FILES], 'readonly');
+          const verifyDone = idbTx(txVerify);
+          const remainingFiles = (await idbReq(
+            txVerify.objectStore(STORE_AUDIO_FILES).getAll()
+          )) as OfflineAudioFileRecord[];
+          await verifyDone;
+
+          const activeCacheKeys = new Set(
+            remainingFiles
+              .filter(f => f.available && !f.deletionPending && Boolean(f.cacheGenerationId))
+              .map(f => buildCacheGenerationKey(f.reciterId, f.globalAyahNumber, f.cacheGenerationId))
+          );
+
+          const cachedRequests = await cache.keys();
+          for (const req of cachedRequests) {
+            const rawKey = typeof req === 'string' ? req : req.url;
+            if (
+              rawKey.startsWith('https://wird.local/offline-audio/') &&
+              !activeCacheKeys.has(rawKey)
+            ) {
+              const deleted = await cache.delete(rawKey);
+              if (deleted) cleanedOrphansCount++;
+            }
+          }
+        }
+      } catch {
+        // Ignore non-fatal Cache Storage enumeration errors
+      }
+    }
+
     this.notifyListeners();
-    return { evictedCount, cleanedOrphansCount: orphansToFinalize.length };
+    return { evictedCount, cleanedOrphansCount };
   }
 
   /**
