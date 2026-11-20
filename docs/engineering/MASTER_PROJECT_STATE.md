@@ -1,8 +1,8 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-20 (Local Antigravity workspace — Stage A Audit + All 8 Phases of Master Platform Transformation Complete Locally; Git Connected on `feat/platform-transformation-20261120`)  
-**Refreshed GitHub `origin/main` baseline (fetched 2026-11-20):** `61554d60da5a5bbb644f6698d7b6193068a4d70a` (`feat(ai): add chat history context and update styles`); historical CI/Vercel snapshot: `f264e4bdea7496090f60940e9e8db03e2fb15696` (2026-11-14)  
-**Repository:** `xm8eslam-stack/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` · **Active local branch:** `feat/platform-transformation-20261120`
+**Current snapshot reconciled:** 2026-11-20 (Draft PR `#404` on `feat/platform-transformation-20261120` — Release Readiness Fixes Applied & Verified Locally; Pending Exact-Head CI Run)  
+**Refreshed GitHub `origin/main` baseline (fetched 2026-11-20):** `61554d60da5a5bbb644f6698d7b6193068a4d70a` (`feat(ai): add chat history context and update styles`); previous CI-passing PR `#404` head: `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` · **Active PR branch:** `feat/platform-transformation-20261120` (Draft PR `#404`)
 
 - **Local Workspace Verification (2026-11-20 — Prepared on `feat/platform-transformation-20261120`, NOT yet committed/pushed to GitHub and NOT deployed to Vercel):**
   - **Runtime & Environment:** Windows PowerShell, Node `v26.13.0`, npm `11.20.0`, `git 2.56.0.windows.4`, `node_modules` installed (`289` packages). `bun`, `java`, `gh`, and `vercel` are absent locally. Canonical `bun.lock` and `metadata.json` restored from `origin/main` (`61554d60da5a5bbb644f6698d7b6193068a4d70a`).
@@ -41,15 +41,15 @@
     - `src/services/prayerTimesService.ts`, `src/services/prayerTimesService.test.ts`, `src/components/dashboard/DashboardView.tsx`: built the AlAdhan API adapter (`fetchDailyPrayerSchedule`) with 4500ms timeout, `redirect: 'error'`, strict `HH:MM` sanitization, UID-scoped daily cache (`wird.prayer.cache.v1`), mathematical Great-Circle Qibla bearing calculation (`computeQiblaBearingDegrees`) to the Holy Kaaba (`21.422487° N, 39.826206° E`), offline Umm al-Qura Hijri date formatting (`formatLocalHijriDate`), next-prayer countdown (`getNextPrayerSummary`), and interactive Dashboard Prayer/Hijri/Qibla card across 8 city presets.
   - **Phase 7 Changes Implemented (2026-11-20):**
     - `src/services/tombstoneReconciliationService.ts`, `src/services/syncConflictSafety.ts`, `src/services/tombstoneReconciliationService.test.ts`: implemented `CollectionTombstoneRecordV2`, `reconcileRecordsWithTombstones` (clock-independent revision comparison, anti-resurrection suppression when `revision <= deletedAtRevision`, explicit restore superseding tombstones at `revision > deletedAtRevision`, and fail-closed `concurrent_divergent_edit` conflict descriptors), `reconcileWeakVerseSnapshotsV2` (per-device mistake delta convergence + resolved-at-revision anti-resurrection), and `isSafeV2ReconcilablePayload` (while preserving fail-closed `containsUnsafeFullSnapshotProjection` for V1 full snapshots).
-  - **Phase 8 Final Quality Audit & Executed Local Checks (2026-11-20):**
-    - `npm.cmd run test` (incl. Tanzil Simple validation + 114 Surah chunk split across all 72 suites): **PASS** (`794 PASSED | 0 FAILED`)
+  - **Phase 8 + Release Readiness Fixes & Local Verification (2026-11-20 — Draft PR `#404`):**
+    - Applied primary-source religious fixes (`src/data/adhkarData.ts`, `src/data/seerahData.ts`), category-specific Adhkar repetition targets (`1×` after obligatory prayer vs `3×` morning/evening/sleep) and backward-compatible legacy ID alias (`adhkar-sleep-bismika-ربي-wadatu` → `adhkar-sleep-bismika-rabbi-wadatu`) across `src/services/adhkarProgressService.ts` and `src/components/adhkar/AdhkarView.tsx`, plus cache-only exclusion of `wird.prayer.cache.v1` from guest legacy-data prompts in `src/services/storageService.ts`.
+    - `npm.cmd run test` (incl. Tanzil Simple validation + 114 Surah chunk split across all 72 suites): **PASS** (`800 PASSED | 0 FAILED`)
     - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
     - `npm.cmd run smoke:api-imports`: **PASS**
-    - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.34s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
-    - `npm.cmd run test:firestore-rules`: **BLOCKED** locally (Java runtime absent)
-    - `npm.cmd run mushaf:validate-coverage`: **BLOCKED** in sandbox (script fetches remote SVG pages over network; local 604-page Mushaf index & 6,236 ayah coverage verified offline in `runQuranIntegrityTests`, `runQuranMushafReaderTests`, and `runMushafFacsimileServiceTests`)
-    - Desktop/Mobile Playwright E2E (`npx playwright test`): **NOT VERIFIED** in this local turn
-    - GitHub commit/push, CI Quality Gate, Vercel Preview/Production deployment: **NOT EXECUTED** (no `.git` repo or deployment credentials in folder; Production sync flags `VITE_WIRD_REVISIONED_SYNC_ENABLED` & `VITE_WIRD_REMOTE_PROJECTION_ENABLED` remain untouched)
+    - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`3.27s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+    - `bun@1.4.4 install --frozen-lockfile`: **PASS** (`Checked 304 installs across 371 packages`)
+    - `bun@1.4.4 audit --audit-level=high`: **PASS** (`No vulnerabilities found (checked 360 packages)`)
+    - GitHub Actions `WIRD Quality Gate` (Firestore Rules Emulator + Desktop & Mobile Playwright E2E + server smoke): previous head `bcbf26fe` passed 100% (Run `44672654181`); new Release Readiness Fixes commit queued for exact-head CI verification on PR `#404`. Production settings, sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`), `firestore.rules`, `authService.ts`, Quran corpus, Vercel, and `main` remain completely untouched.
 
 > This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
 

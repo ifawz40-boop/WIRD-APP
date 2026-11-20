@@ -1,7 +1,9 @@
 import {
   ADHKAR_ITEMS,
   FREE_TASBIH_PRESETS,
+  LEGACY_ADHKAR_ITEM_ID_ALIASES,
   getAdhkarItemsByCategory,
+  getAdhkarRepeatTarget,
   type AdhkarCategory
 } from '../data/adhkarData';
 import { StorageService } from './storageService';
@@ -33,6 +35,10 @@ export interface AdhkarCategoryProgressSummary {
 
 const VALID_ITEM_IDS = new Set(ADHKAR_ITEMS.map(item => item.id));
 const VALID_PRESET_IDS = new Set(FREE_TASBIH_PRESETS.map(p => p.id));
+
+function normalizeAdhkarItemId(itemId: string): string {
+  return LEGACY_ADHKAR_ITEM_ID_ALIASES[itemId] ?? itemId;
+}
 
 function createDefaultStore(): AdhkarProgressStore {
   return {
@@ -73,16 +79,22 @@ export function readAdhkarProgressStore(
       const dayRecord = parsed.countsByDate[dateKey];
       if (!dayRecord || typeof dayRecord !== 'object') continue;
       const cleanDay: Record<string, number> = {};
-      for (const [itemId, val] of Object.entries(dayRecord)) {
+      for (const [rawItemId, val] of Object.entries(dayRecord)) {
+        const itemId = normalizeAdhkarItemId(rawItemId);
         if (VALID_ITEM_IDS.has(itemId) && typeof val === 'number' && Number.isSafeInteger(val) && val >= 0 && val <= 10000) {
-          cleanDay[itemId] = val;
+          cleanDay[itemId] = Math.max(cleanDay[itemId] ?? 0, val);
         }
       }
       countsByDate[dateKey] = cleanDay;
     }
 
     const favoriteIds = Array.isArray(parsed.favoriteIds)
-      ? [...new Set(parsed.favoriteIds.filter((id): id is string => typeof id === 'string' && VALID_ITEM_IDS.has(id)))]
+      ? [...new Set(
+          parsed.favoriteIds
+            .filter((id): id is string => typeof id === 'string')
+            .map(normalizeAdhkarItemId)
+            .filter(id => VALID_ITEM_IDS.has(id))
+        )]
       : [];
 
     const rawTasbih = parsed.freeTasbih;
@@ -139,17 +151,20 @@ export function getAdhkarCountsForDate(
 export function incrementAdhkarItemCount(
   itemId: string,
   dateKey: string = getLocalDateString(),
-  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
+  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage,
+  category?: AdhkarCategory
 ): { store: AdhkarProgressStore; currentCount: number; targetCount: number; justCompleted: boolean } {
-  const item = ADHKAR_ITEMS.find(entry => entry.id === itemId);
+  const canonicalId = normalizeAdhkarItemId(itemId);
+  const item = ADHKAR_ITEMS.find(entry => entry.id === canonicalId);
   if (!item) {
     throw new Error('لم يتم العثور على الذكر المطلوب.');
   }
+  const targetCount = getAdhkarRepeatTarget(item, category);
   const store = readAdhkarProgressStore(storage);
   const dayCounts = { ...(store.countsByDate[dateKey] || {}) };
-  const prevCount = dayCounts[itemId] ?? 0;
-  const nextCount = Math.min(item.repeatTarget, prevCount + 1);
-  dayCounts[itemId] = nextCount;
+  const prevCount = dayCounts[canonicalId] ?? 0;
+  const nextCount = prevCount >= targetCount ? prevCount : Math.min(targetCount, prevCount + 1);
+  dayCounts[canonicalId] = nextCount;
 
   const nextStore: AdhkarProgressStore = {
     ...store,
@@ -163,8 +178,8 @@ export function incrementAdhkarItemCount(
   return {
     store: nextStore,
     currentCount: nextCount,
-    targetCount: item.repeatTarget,
-    justCompleted: prevCount < item.repeatTarget && nextCount >= item.repeatTarget
+    targetCount,
+    justCompleted: prevCount < targetCount && nextCount >= targetCount
   };
 }
 
@@ -173,9 +188,10 @@ export function resetAdhkarItemCount(
   dateKey: string = getLocalDateString(),
   storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
 ): AdhkarProgressStore {
+  const canonicalId = normalizeAdhkarItemId(itemId);
   const store = readAdhkarProgressStore(storage);
   const dayCounts = { ...(store.countsByDate[dateKey] || {}) };
-  delete dayCounts[itemId];
+  delete dayCounts[canonicalId];
   const nextStore: AdhkarProgressStore = {
     ...store,
     countsByDate: {
@@ -210,12 +226,13 @@ export function toggleAdhkarFavorite(
   itemId: string,
   storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
 ): AdhkarProgressStore {
-  if (!VALID_ITEM_IDS.has(itemId)) return readAdhkarProgressStore(storage);
+  const canonicalId = normalizeAdhkarItemId(itemId);
+  if (!VALID_ITEM_IDS.has(canonicalId)) return readAdhkarProgressStore(storage);
   const store = readAdhkarProgressStore(storage);
-  const exists = store.favoriteIds.includes(itemId);
+  const exists = store.favoriteIds.includes(canonicalId);
   const favoriteIds = exists
-    ? store.favoriteIds.filter(id => id !== itemId)
-    : [...store.favoriteIds, itemId];
+    ? store.favoriteIds.filter(id => id !== canonicalId)
+    : [...store.favoriteIds, canonicalId];
   return persistAdhkarProgressStore({ ...store, favoriteIds }, storage);
 }
 
@@ -280,10 +297,11 @@ export function getAdhkarCategoryProgressSummary(
   let completedRepetitions = 0;
 
   for (const item of items) {
-    const count = Math.min(item.repeatTarget, Math.max(0, countsForDate[item.id] ?? 0));
-    totalRepetitionsTarget += item.repeatTarget;
+    const target = getAdhkarRepeatTarget(item, category);
+    const count = Math.min(target, Math.max(0, countsForDate[item.id] ?? 0));
+    totalRepetitionsTarget += target;
     completedRepetitions += count;
-    if (count >= item.repeatTarget) {
+    if (count >= target) {
       completedItems += 1;
     }
   }

@@ -947,3 +947,21 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
   - `npm.cmd run mushaf:validate-coverage`: **BLOCKED** in sandbox (script fetches remote SVG pages over network; local 604-page Mushaf index & 6,236 ayah coverage verified offline in `runQuranIntegrityTests`, `runQuranMushafReaderTests`, and `runMushafFacsimileServiceTests`)
   - Playwright Desktop/Mobile E2E, GitHub CI, Vercel Preview/Production: **NOT EXECUTED** in this local turn (no `.git` repo in folder; Production sync flags untouched).
 - **Next Action:** Connect local workspace to `.git` feature branch when ready to push for GitHub Actions Quality Gate (Firestore Rules Emulator + Playwright E2E) and Vercel Preview inspection.
+
+## 2026-11-20 — Draft PR #404 Release Readiness Fixes (Primary-Source Religious Accuracy, Backward-Compatible Adhkar ID, Cache-Only Storage UX)
+
+- **Repository & PR:** `ifawz40-boop/WIRD-APP`, Draft PR `#404` (`feat/platform-transformation-20261120` → `main` `61554d60da5a5bbb644f6698d7b6193068a4d70a`), building on CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS).
+- **Changes Applied (Single Release-Readiness Commit):**
+  - `src/data/adhkarData.ts`: Fixed sleeping category typo (`عندوي` → `عند الإيواء`); restricted `adhkar-kalimat-tammat` to `['evening']` with exact source separation (Sahih Muslim 2708 & 2709, Sunan al-Tirmidhi 3604, Musnad Ahmad 7898); added `repeatTargetByCategory: { after_prayer: 1 }` and `getAdhkarRepeatTarget(item, category?)` for `adhkar-ikhlas`, `adhkar-falaq`, and `adhkar-nas` (`3×` in morning/evening/sleep per Abu Dawud 5082, Tirmidhi 3575, Bukhari 5017; `1×` after obligatory prayers per Abu Dawud 1523, Nasai 1336, Tirmidhi 2903, noting Fajr/Maghrib 3× overlap with morning/evening adhkar); renamed `adhkar-sleep-bismika-ربي-wadatu` → `adhkar-sleep-bismika-rabbi-wadatu` with `LEGACY_ADHKAR_ITEM_ID_ALIASES`.
+  - `src/services/adhkarProgressService.ts` & `src/components/adhkar/AdhkarView.tsx`: Normalized legacy Adhkar item IDs losslessly on read and mutation (`normalizeAdhkarItemId`), wired category-aware `getAdhkarRepeatTarget` into daily counter, category summaries, auto-advance, and UI progress indicators without downgrading higher-target counts.
+  - `src/data/seerahData.ts`: Fixed `كماخلّده` → `كما خلّده` (`blk-1-1-b`); added `src-musnad-ahmad` and `src-muwatta-malik` to `SEERAH_SOURCES`; distinguished Badr consultation speakers and primary sources in `blk-10-1-a` (Al-Miqdad in Bukhari 3952, Sa'd ibn Ubadah in Muslim 1779, Sa'd ibn Mu'adh in Ibn Hisham); separated Farewell Pilgrimage wordings in `blk-14-1-a` (Sahih Muslim 1218 verbatim «كتاب الله», Bukhari 67/1739, Muslim 1679) and `blk-14-1-c` (Muwatta Malik balagh «كتاب الله وسنة نبيه» and Musnad Ahmad 23489 Tashriq equality wording — zero misattribution to Sahihayn).
+  - `src/services/storageService.ts`: Exported `CACHE_ONLY_AUXILIARY_KEYS` (`wird.prayer.cache.v1`) and shared `isLegacyUserDataKey(key)` across `hasLegacyStorageData()` and `setStorageScope()` so automatic Dashboard prayer cache alone never triggers a false guest-data import prompt while remaining UID-scoped, migrated on real-data `'import'`, and cleared on `resetAllData()`.
+  - `src/tests/adhkarSystem.test.ts`, `src/tests/seerahSystem.test.ts`, `src/services/storageScope.test.ts`: Added 6 automated regression tests covering every fix above.
+- **Verification Executed (Local Windows Workspace):**
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - `npm.cmd run test`: **PASS** (`800 PASSED | 0 FAILED`)
+  - `$env:NODE_ENV='production'; npx.cmd vite build`: **PASS** (`3.27s`)
+  - `npx.cmd --yes bun@1.4.4 install --frozen-lockfile`: **PASS** (`Checked 304 installs across 371 packages`)
+  - `npx.cmd --yes bun@1.4.4 audit --audit-level=high`: **PASS** (`No vulnerabilities found (checked 360 packages)`)
+- **Production & Safety Confirmation:** ZERO edits to Quran corpus (`completeQuranData.json`, `src/data/sources/`), sync engine, `firestore.rules`, `authService.ts`, Vercel/Firebase settings, secrets, feature flags, or `main`. Exact-head CI (`WIRD Quality Gate`) triggered on push to PR `#404`.

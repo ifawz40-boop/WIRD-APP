@@ -28,9 +28,22 @@ export interface AdhkarItem {
   startAyah?: number;
   endAyah?: number;
   repeatTarget: number;
+  /** Optional category-specific Sunnah repetition target (e.g., Mu'awwidhat are 1x after obligatory prayers vs 3x morning/evening/sleep). */
+  repeatTargetByCategory?: Partial<Record<AdhkarCategory, number>>;
   virtue: string;
   source: string;
   grade: 'قرآن كريم' | 'متفق عليه' | 'صحيح' | 'حسن';
+}
+
+export const LEGACY_ADHKAR_ITEM_ID_ALIASES: Record<string, string> = {
+  'adhkar-sleep-bismika-ربي-wadatu': 'adhkar-sleep-bismika-rabbi-wadatu'
+};
+
+export function getAdhkarRepeatTarget(item: AdhkarItem, category?: AdhkarCategory): number {
+  if (category && item.repeatTargetByCategory && typeof item.repeatTargetByCategory[category] === 'number') {
+    return item.repeatTargetByCategory[category]!;
+  }
+  return item.repeatTarget;
 }
 
 export const ADHKAR_CATEGORIES: AdhkarCategoryMeta[] = [
@@ -59,7 +72,7 @@ export const ADHKAR_CATEGORIES: AdhkarCategoryMeta[] = [
     id: 'sleeping',
     label: 'أذكار النوم',
     shortLabel: 'النوم',
-    description: 'ما يقال عندوي إلى الفراش للتحصين والختم بالتوحيد',
+    description: 'ما يقال عند الإيواء إلى الفراش للتحصين والختم بالتوحيد',
     recommendedTimeAr: 'عند الاضطجاع على الفراش قبل النوم'
   },
   {
@@ -135,8 +148,9 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     endAyah: 4,
     text: 'قُلْ هُوَ اللَّهُ أَحَدٌ * اللَّهُ الصَّمَدُ * لَمْ يَلِدْ وَلَمْ يُولَدْ * وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',
     repeatTarget: 3,
-    virtue: 'قل هو الله أحد والمعوذتين حين تمسي وحين تصبح ثلاث مرات تكفيك من كل شيء (ومرة دبر كل صلاة).',
-    source: 'صحيح البخاري 5017؛ سنن أبي داود 5082 (حسن، الألباني)',
+    repeatTargetByCategory: { after_prayer: 1 },
+    virtue: 'تُقرأ ثلاث مرات مع المعوذتين في الصباح والمساء فتكفيك من كل شيء (أبو داود 5082، الترمذي 3575)، وثلاث مرات عند النوم مع النفث والمسح (البخاري 5017)، ومرة واحدة دبر كل صلاة مكتوبة (أبو داود 1523، النسائي 1336؛ وتُثَلّث بعد الفجر والمغرب لاندراج وقتهما في أذكار الصباح والمساء).',
+    source: 'صحيح البخاري 5017؛ سنن أبي داود 1523 و5082؛ سنن الترمذي 2903 و3575؛ سنن النسائي 1336',
     grade: 'قرآن كريم'
   },
   {
@@ -150,8 +164,9 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     endAyah: 5,
     text: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ * مِن شَرِّ مَا خَلَقَ * وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ * وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ * وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',
     repeatTarget: 3,
-    virtue: 'من المعوذات التي يُتحصن بها ثلاثاً في الصباح والمساء وعند النوم، ومرة بعد كل صلاة.',
-    source: 'صحيح البخاري 5017؛ سنن أبي داود 5082 (حسن، الألباني)',
+    repeatTargetByCategory: { after_prayer: 1 },
+    virtue: 'من المعوذات التي يُتحصن بها ثلاث مرات في الصباح والمساء (أبو داود 5082، الترمذي 3575) وعند النوم (البخاري 5017)، ومرة واحدة دبر كل صلاة مكتوبة (أبو داود 1523، النسائي 1336؛ وتُثَلّث بعد الفجر والمغرب لاندراج وقتهما في أذكار الصباح والمساء).',
+    source: 'صحيح البخاري 5017؛ سنن أبي داود 1523 و5082؛ سنن الترمذي 2903 و3575؛ سنن النسائي 1336',
     grade: 'قرآن كريم'
   },
   {
@@ -165,8 +180,9 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     endAyah: 6,
     text: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ * مَلِكِ النَّاسِ * إِلَٰهِ النَّاسِ * مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ * الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ * مِنَ الْجِنَّةِ وَالنَّاسِ',
     repeatTarget: 3,
-    virtue: 'من المعوذات الكافية بإذن الله من كل شر في الصباح والمساء وعند النوم وبعد الصلاة.',
-    source: 'صحيح البخاري 5017؛ سنن أبي داود 5082 (حسن، الألباني)',
+    repeatTargetByCategory: { after_prayer: 1 },
+    virtue: 'من المعوذات الكافية بإذن الله من كل شر: ثلاث مرات في الصباح والمساء (أبو داود 5082، الترمذي 3575) وعند النوم (البخاري 5017)، ومرة واحدة دبر كل صلاة مكتوبة (أبو داود 1523، النسائي 1336؛ وتُثَلّث بعد الفجر والمغرب لاندراج وقتهما في أذكار الصباح والمساء).',
+    source: 'صحيح البخاري 5017؛ سنن أبي داود 1523 و5082؛ سنن الترمذي 2903 و3575؛ سنن النسائي 1336',
     grade: 'قرآن كريم'
   },
 
@@ -240,12 +256,12 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'adhkar-kalimat-tammat',
     title: 'أعوذ بكلمات الله التامات من شر ما خلق',
-    categories: ['evening', 'morning'],
+    categories: ['evening'],
     kind: 'hadith',
     text: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.',
     repeatTarget: 3,
-    virtue: 'من قالها حين يمسي ثلاث مرات لم تضره حُمَة تلك الليلة.',
-    source: 'صحيح مسلم 2709؛ سنن الترمذي 3604',
+    virtue: 'ثبتت في المساء بلفظ «أما لو قلت حين أمسيت... لم تضرك» (صحيح مسلم 2709)، وجاء التقييد بثلاث مرات في المساء في سنن الترمذي (3604) ومسند أحمد (7898): «من قال حين يمسي ثلاث مرات... لم تضره حُمة تلك الليلة»، وتقال أيضاً عند نزول منزل فيحفظه الله حتى يرتحل منه (صحيح مسلم 2708).',
+    source: 'صحيح مسلم 2708 و2709؛ سنن الترمذي 3604؛ مسند أحمد 7898',
     grade: 'صحيح'
   },
   {
@@ -352,7 +368,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     grade: 'صحيح'
   },
   {
-    id: 'adhkar-sleep-bismika-ربي-wadatu',
+    id: 'adhkar-sleep-bismika-rabbi-wadatu',
     title: 'باسمك ربي وضعت جنبي وبك أرفعه',
     categories: ['sleeping'],
     kind: 'hadith',

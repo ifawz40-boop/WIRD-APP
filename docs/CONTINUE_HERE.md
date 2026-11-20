@@ -1,8 +1,8 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-20 (Local Antigravity workspace — Stage A Audit & All 8 Phases of Master Platform Transformation Complete Locally; Git Connected on `feat/platform-transformation-20261120`)  
-**Repository:** `xm8eslam-stack/WIRD-APP` · **Primary branch:** `main` (`origin/main` HEAD `61554d60da5a5bbb644f6698d7b6193068a4d70a`)  
-**Active feature branch:** `feat/platform-transformation-20261120` (attached non-destructively to `origin/main` `61554d60da5a5bbb644f6698d7b6193068a4d70a`; uncommitted working tree prepared for review)  
+**Last reconciled:** 2026-11-20 (Draft PR `#404` on `feat/platform-transformation-20261120` — Release Readiness Fixes Applied & Verified Locally; Pending Exact-Head CI Run)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (`origin/main` HEAD `61554d60da5a5bbb644f6698d7b6193068a4d70a`)  
+**Active feature branch & PR:** `feat/platform-transformation-20261120` → Draft PR `#404` (`https://github.com/ifawz40-boop/WIRD-APP/pull/404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
@@ -48,15 +48,19 @@ The owner authorized a full phased platform transformation covering visual ident
    - `src/services/prayerTimesService.ts`, `src/services/prayerTimesService.test.ts`, `src/components/dashboard/DashboardView.tsx`: Built the AlAdhan API adapter (`fetchDailyPrayerSchedule`) with 4500ms timeout, `redirect: 'error'`, strict `HH:MM` sanitization, UID-scoped daily cache (`wird.prayer.cache.v1`), mathematical Great-Circle Qibla bearing calculation (`computeQiblaBearingDegrees`) to the Holy Kaaba (`21.422487° N, 39.826206° E`), offline Umm al-Qura Hijri date formatting (`formatLocalHijriDate`), next-prayer countdown (`getNextPrayerSummary`), and interactive Dashboard Prayer/Hijri/Qibla card across 8 city presets.
 8. **Phase 7 Bidirectional Multi-Device Sync with Collection-Specific Tombstones, Anti-Resurrection & Weak-Verse Delta Convergence Implemented:**
    - `src/services/tombstoneReconciliationService.ts`, `src/services/syncConflictSafety.ts`, `src/services/tombstoneReconciliationService.test.ts`: Implemented `CollectionTombstoneRecordV2`, `reconcileRecordsWithTombstones` (clock-independent revision comparison, anti-resurrection suppression when `revision <= deletedAtRevision`, explicit restore superseding tombstones at `revision > deletedAtRevision`, and fail-closed `concurrent_divergent_edit` conflict descriptors), `reconcileWeakVerseSnapshotsV2` (per-device mistake delta convergence + resolved-at-revision anti-resurrection), and `isSafeV2ReconcilablePayload` (while preserving fail-closed `containsUnsafeFullSnapshotProjection` for V1 full snapshots).
-9. **Phase 8 Final Quality Audit & Local Verification Executed (2026-11-20):**
-   - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split across all 72 suites): **PASS** (`794 PASSED | 0 FAILED`)
-   - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
-   - `npm.cmd run smoke:api-imports`: **PASS**
-   - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.34s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
-   - `npm.cmd run test:firestore-rules`: **BLOCKED** locally (Java runtime absent)
-   - `npm.cmd run mushaf:validate-coverage`: **BLOCKED** in sandbox (script fetches remote SVG pages over network; local 604-page Mushaf index & 6,236 ayah coverage verified offline in `runQuranIntegrityTests`, `runQuranMushafReaderTests`, and `runMushafFacsimileServiceTests`)
-   - Playwright browser E2E (`npx playwright test`): **NOT EXECUTED** in this local turn
-   - GitHub commit/push, exact-head CI, Vercel Preview/Production deployment: **NOT EXECUTED** yet (local branch `feat/platform-transformation-20261120` connected to `origin/main` `61554d60da5a5bbb644f6698d7b6193068a4d70a`, awaiting owner approval to commit & push; Production sync flags untouched)
+9. **Phase 8 + Release Readiness Fixes Verified (2026-11-20 — Draft PR `#404`):**
+   - **Religious Content & Source Hardening:** Fixed Arabic typos (`عند الإيواء إلى الفراش` in `src/data/adhkarData.ts`, `كما خلّده` in `src/data/seerahData.ts`); verified and separated primary Badr consultation narrations (`صحيح البخاري 3952` for Al-Miqdad, `صحيح مسلم 1779` for Sa'd ibn Ubadah, `سيرة ابن هشام` for Sa'd ibn Mu'adh); separated Farewell Pilgrimage wordings (`صحيح مسلم 1218` verbatim «كتاب الله», `موطأ مالك` balagh «كتاب الله وسنة نبيه», `مسند أحمد 23489` for Tashriq equality wording — zero misattribution to Sahihayn); restricted `adhkar-kalimat-tammat` to `evening` (Muslim 2708/2709, Tirmidhi 3604, Ahmad 7898); added category-specific repetition targets (`getAdhkarRepeatTarget`: `3` in morning/evening/sleep, `1` in `after_prayer` per Abu Dawud 1523 & Nasai 1336, with note on Fajr/Maghrib overlap).
+   - **Backward-Compatible ASCII Adhkar ID:** Normalized `adhkar-sleep-bismika-ربي-wadatu` → `adhkar-sleep-bismika-rabbi-wadatu` via `LEGACY_ADHKAR_ITEM_ID_ALIASES` in `src/services/adhkarProgressService.ts` (lossless migration for stored counts and favorites).
+   - **Storage UX (`wird.prayer.cache.v1`):** Excluded automatic cache-only `CACHE_ONLY_AUXILIARY_KEYS` (`wird.prayer.cache.v1`) from `hasLegacyStorageData()` and `setStorageScope()`'s legacy-choice blocker while preserving full UID scoping, migration on real-data `'import'`, and cleanup in `resetAllData()`.
+   - **Local Verification Executed (2026-11-20):**
+     - `npm.cmd run test` (incl. `pretest` Tanzil Simple validation + 114 Surah chunk split across all 72 suites): **PASS** (`800 PASSED | 0 FAILED`)
+     - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+     - `npm.cmd run smoke:api-imports`: **PASS**
+     - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`3.27s`, 0 chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+     - `bun@1.4.4 install --frozen-lockfile`: **PASS** (`Checked 304 installs across 371 packages`)
+     - `bun@1.4.4 audit --audit-level=high`: **PASS** (`No vulnerabilities found (checked 360 packages)`)
+     - Exact-head GitHub Actions `WIRD Quality Gate` (Firestore Rules Emulator + Desktop & Mobile Playwright E2E + server smoke): triggered on push to PR `#404`; previous commit `bcbf26fe` passed 100% in Run `44672654181`.
+     - Production settings, sync flags, `firestore.rules`, `authService.ts`, Quran corpus, Vercel, and `main`: **UNTOUCHED**.
 
 ### Exact Next Action
 - **Commit & Push `feat/platform-transformation-20261120` After Owner Approval & Run GitHub CI Quality Gate:**

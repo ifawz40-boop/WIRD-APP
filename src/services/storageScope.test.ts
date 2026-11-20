@@ -146,6 +146,84 @@ export function runStorageScopeTests(): { passed: number; failed: number } {
       }
     });
 
+    test('Automatic prayer cache alone does not trigger guest legacy-data prompt, while real worship data does and migrates cleanly', () => {
+      const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+      const values = new Map<string, string>();
+      StorageService.__resetStorageForTests();
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: {
+          getItem: (key: string) => values.get(key) ?? null,
+          setItem: (key: string, value: string) => { values.set(key, value); },
+          removeItem: (key: string) => { values.delete(key); }
+        }
+      });
+
+      const prayerCachePayload = JSON.stringify({
+        schemaVersion: 1,
+        selectedCityId: 'makkah',
+        schedulesByKey: {}
+      });
+      const adhkarProgressPayload = JSON.stringify({
+        schemaVersion: 1,
+        countsByDate: { '2026-11-20': { 'adhkar-ayat-alkursi': 1 } },
+        favoriteIds: ['adhkar-ayat-alkursi'],
+        freeTasbih: { presetId: 'subhanallah', currentCount: 3, targetCount: 33, totalLifetimeCount: 3 }
+      });
+
+      try {
+        // 1. Only automatic prayer cache present -> must NOT prompt or block sign-in scope activation
+        values.set('wird.prayer.cache.v1', prayerCachePayload);
+        assert(
+          !StorageService.needsLegacyDataDecision('user:cache-only'),
+          'Automatic prayer cache alone must not trigger a legacy guest-data decision'
+        );
+        assert(
+          StorageService.setStorageScope('user:cache-only'),
+          'First sign-in with only automatic prayer cache must activate scope without legacyChoice'
+        );
+        assert(
+          StorageService.getStorageScope() === 'user:cache-only',
+          'Account scope must activate cleanly when only cache keys exist'
+        );
+
+        // 2. Real user worship data alongside prayer cache -> MUST prompt and migrate BOTH on import
+        values.clear();
+        StorageService.__resetStorageForTests();
+        values.set('wird.prayer.cache.v1', prayerCachePayload);
+        values.set('wird.adhkar.progress.v1', adhkarProgressPayload);
+
+        assert(
+          StorageService.needsLegacyDataDecision('user:real-guest'),
+          'Real guest worship data alongside prayer cache must trigger legacy decision'
+        );
+        assert(
+          !StorageService.setStorageScope('user:real-guest'),
+          'Real guest worship data must block scope activation until the user chooses'
+        );
+        assert(
+          StorageService.setStorageScope('user:real-guest', 'import'),
+          'Importing real guest worship data must succeed'
+        );
+        assert(
+          values.get('wird_scope_v1:user:real-guest:wird.adhkar.progress.v1') === adhkarProgressPayload,
+          'Real guest worship data must be migrated into the account scope'
+        );
+        assert(
+          values.get('wird_scope_v1:user:real-guest:wird.prayer.cache.v1') === prayerCachePayload,
+          'Prayer cache must also migrate alongside real guest worship data on import'
+        );
+        assert(
+          !values.has('wird.adhkar.progress.v1') && !values.has('wird.prayer.cache.v1'),
+          'Legacy unscoped keys must be cleaned up after verified import'
+        );
+      } finally {
+        if (originalDescriptor) Object.defineProperty(globalThis, 'localStorage', originalDescriptor);
+        else delete (globalThis as any).localStorage;
+        StorageService.__resetStorageForTests();
+      }
+    });
+
   } finally {
     StorageService.__resetStorageForTests();
   }

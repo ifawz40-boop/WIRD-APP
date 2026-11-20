@@ -57,6 +57,15 @@ export const AUXILIARY_SCOPED_KEYS = [
   'wird.prayer.cache.v1'
 ] as const;
 
+/**
+ * Automatic technical caches that remain UID-scoped (and migrate/reset with
+ * user data when explicitly imported or cleared), but do NOT by themselves
+ * constitute user-authored guest worship data for first-sign-in prompts.
+ */
+export const CACHE_ONLY_AUXILIARY_KEYS: ReadonlySet<string> = new Set([
+  'wird.prayer.cache.v1'
+]);
+
 // In-memory fallback for test / Node / SSR environments where localStorage is not defined.
 const memoryStorage = new Map<string, string>();
 const STORAGE_SCOPE_PREFIX = 'wird_scope_v1';
@@ -181,9 +190,13 @@ function isUserStorageScope(scope: string): boolean {
   return uid.length > 0 && uid.length <= 128 && !/[\u0000-\u001F]/.test(uid);
 }
 
+function isLegacyUserDataKey(key: string): boolean {
+  return key !== STORAGE_KEYS.SCHEMA_VERSION && !CACHE_ONLY_AUXILIARY_KEYS.has(key);
+}
+
 function hasLegacyStorageData(): boolean {
   return [...Object.values(STORAGE_KEYS), ...AUXILIARY_SCOPED_KEYS]
-    .filter(key => key !== STORAGE_KEYS.SCHEMA_VERSION)
+    .filter(isLegacyUserDataKey)
     .some(key => rawGetItem(key) !== null);
 }
 
@@ -255,7 +268,7 @@ function setStorageScope(scope: string, legacyChoice?: 'import' | 'keep-guest'):
     }
 
     const legacyValues = legacyKeys.map(key => ({ key, value: snapshot.get(key) ?? null }));
-    const hasLegacyData = legacyValues.some(item => item.value !== null);
+    const hasLegacyData = legacyValues.some(item => isLegacyUserDataKey(item.key) && item.value !== null);
 
     // Existing unscoped data may belong to a guest or another person using
     // this browser. Require an explicit in-app choice before claiming it.

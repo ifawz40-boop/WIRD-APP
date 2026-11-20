@@ -22,6 +22,7 @@ import {
   ADHKAR_ITEMS,
   FREE_TASBIH_PRESETS,
   getAdhkarItemsByCategory,
+  getAdhkarRepeatTarget,
   getRecommendedAdhkarCategoryForHour,
   type AdhkarCategory,
   type AdhkarItem
@@ -177,14 +178,16 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
     );
   }, [activeCategory, filterMode, searchQuery, store.favoriteIds]);
 
+  const effectiveCategory: AdhkarCategory | undefined = filterMode === 'favorites' ? undefined : activeCategory;
+
   const handleTapCount = (item: AdhkarItem) => {
-    const result = incrementAdhkarItemCount(item.id, todayStr);
+    const result = incrementAdhkarItemCount(item.id, todayStr, localStorage, effectiveCategory);
     setStore(result.store);
 
     if (result.justCompleted && autoAdvance) {
       const currentIdx = visibleItems.findIndex(entry => entry.id === item.id);
       const nextUnfinished = visibleItems.slice(currentIdx + 1).find(
-        entry => (result.store.countsByDate[todayStr]?.[entry.id] ?? 0) < entry.repeatTarget
+        entry => (result.store.countsByDate[todayStr]?.[entry.id] ?? 0) < getAdhkarRepeatTarget(entry, effectiveCategory)
       );
       if (nextUnfinished) {
         window.setTimeout(() => {
@@ -520,13 +523,15 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
       {/* 3. Adhkar & Duas Cards List */}
       <div className="space-y-4">
         {visibleItems.map(item => {
+          const targetCount = getAdhkarRepeatTarget(item, effectiveCategory);
           const currentCount = countsForToday[item.id] ?? 0;
-          const isCompleted = currentCount >= item.repeatTarget;
+          const displayCount = Math.min(currentCount, targetCount);
+          const isCompleted = currentCount >= targetCount;
           const isFavorite = store.favoriteIds.includes(item.id);
           const isThisPlaying = playingItemId === item.id && isAudioPlaying;
           const isThisPaused = playingItemId === item.id && isAudioPaused;
           const resolvedAyahs = verifiedQuranAyahsById[item.id];
-          const progressPercent = Math.min(100, Math.round((currentCount / item.repeatTarget) * 100));
+          const progressPercent = Math.min(100, Math.round((displayCount / targetCount) * 100));
 
           return (
             <article
@@ -555,7 +560,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                       {item.grade}
                     </span>
                     <span className="text-[11px] font-bold text-[#5B6F6B] dark:text-[#98ADAA] font-mono tabular-nums">
-                      التكرار المسنون: {item.repeatTarget === 1 ? 'مرة واحدة' : `${item.repeatTarget} مرات`}
+                      التكرار المسنون: {targetCount === 1 ? 'مرة واحدة' : `${targetCount} مرات`}
                     </span>
                   </div>
                   <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">
@@ -662,7 +667,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                 <button
                   type="button"
                   onClick={() => handleTapCount(item)}
-                  aria-label={`تكرار ${item.title} (${currentCount} من ${item.repeatTarget})`}
+                  aria-label={`تكرار ${item.title} (${displayCount} من ${targetCount})`}
                   className={`min-h-12 px-6 py-3 rounded-2xl font-bold text-xs md:text-sm flex items-center justify-center gap-3 shrink-0 transition-all active:scale-95 ${
                     isCompleted
                       ? 'bg-emerald-700 text-white shadow-xs'
@@ -672,13 +677,13 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                   {isCompleted ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-[#F6D78B]" />
-                      <span>مكتمل ({currentCount} / {item.repeatTarget})</span>
+                      <span>مكتمل ({displayCount} / {targetCount})</span>
                     </>
                   ) : (
                     <>
                       <span>اضغط للعدّ</span>
                       <span className="px-2.5 py-0.5 rounded-lg bg-black/20 font-mono text-sm tabular-nums">
-                        {currentCount} / {item.repeatTarget}
+                        {displayCount} / {targetCount}
                       </span>
                     </>
                   )}
@@ -686,7 +691,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               </div>
 
               {/* Subtle Item Progress Line */}
-              {item.repeatTarget > 1 && (
+              {targetCount > 1 && (
                 <div className="w-full h-1 rounded-full bg-[#E5DEC9] dark:bg-[#162744] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-all duration-200"

@@ -126,12 +126,55 @@ export async function runSeerahSystemTests(): Promise<{ passed: number; failed: 
 
   assert(
     allReferencesValid &&
-      sourcesList.length >= 7 &&
+      sourcesList.length >= 9 &&
       peopleList.length >= 6 &&
       placesList.length >= 7 &&
       uncertaintyBlocksCount >= 2 &&
-      scholarlyNotesCount >= 2,
+      scholarlyNotesCount >= 4,
     'Every Seerah narrative block and quiz question maps to verified public-domain classical sources and preserves explicit uncertainty notes'
+  );
+
+  // 2b. Primary-source separation & textual accuracy checks (Chapter 1 typo, Badr consultation, Farewell Pilgrimage)
+  const ch1 = getSeerahChapterById('ch-1-arabia-makkah');
+  const ch1BlockB = ch1?.scenes[0]?.bodyBlocks.find((b) => b.id === 'blk-1-1-b');
+  assert(
+    Boolean(ch1BlockB) &&
+      !ch1BlockB!.text.includes('كماخلّده') &&
+      ch1BlockB!.text.includes('كما خلّده'),
+    'Chapter 1 narrative preserves clean Arabic spacing («كما خلّده»)'
+  );
+
+  const ch10 = getSeerahChapterById('ch-10-badr');
+  const ch10BlockA = ch10?.scenes[0]?.bodyBlocks.find((b) => b.id === 'blk-10-1-a');
+  assert(
+    Boolean(ch10BlockA) &&
+      ch10BlockA!.sourceIds.includes('src-bukhari') &&
+      ch10BlockA!.sourceIds.includes('src-muslim') &&
+      ch10BlockA!.sourceIds.includes('src-ibn-hisham') &&
+      ch10BlockA!.text.includes('المقداد بن الأسود') &&
+      ch10BlockA!.text.includes('3952') &&
+      ch10BlockA!.text.includes('سعد بن عبادة') &&
+      ch10BlockA!.text.includes('1779') &&
+      ch10BlockA!.text.includes('سعد بن معاذ') &&
+      ch10BlockA!.text.includes('سيرة ابن هشام'),
+    'Badr consultation distinguishes Al-Miqdad (Bukhari 3952), Sa\'d ibn Ubadah (Muslim 1779), and Sa\'d ibn Mu\'adh (Ibn Hisham)'
+  );
+
+  const ch14 = getSeerahChapterById('ch-14-farewell-pilgrimage');
+  const ch14BlockA = ch14?.scenes[0]?.bodyBlocks.find((b) => b.id === 'blk-14-1-a');
+  const ch14BlockC = ch14?.scenes[0]?.bodyBlocks.find((b) => b.id === 'blk-14-1-c');
+  assert(
+    Boolean(ch14BlockA) &&
+      Boolean(ch14BlockC) &&
+      !ch14BlockA!.text.includes('وسنته') &&
+      !ch14BlockA!.text.includes('وسنتي') &&
+      ch14BlockA!.text.includes('صحيح مسلم (1218)') &&
+      ch14BlockA!.text.includes('كتاب الله') &&
+      ch14BlockC!.sourceIds.includes('src-muwatta-malik') &&
+      ch14BlockC!.sourceIds.includes('src-musnad-ahmad') &&
+      ch14BlockC!.text.includes('موطأ مالك') &&
+      ch14BlockC!.text.includes('23489'),
+    'Farewell Pilgrimage separates Sahih Muslim 1218 («كتاب الله») from Muwatta Malik («كتاب الله وسنة نبيه») and Musnad Ahmad 23489 without misattribution to Sahihayn'
   );
 
   // 3. UID-scoped persistence for reading mode, last position, completed chapters & versioned bookmarks

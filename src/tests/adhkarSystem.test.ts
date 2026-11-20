@@ -4,11 +4,14 @@ import {
   ADHKAR_CATEGORIES,
   ADHKAR_ITEMS,
   FREE_TASBIH_PRESETS,
+  LEGACY_ADHKAR_ITEM_ID_ALIASES,
   getAdhkarItemsByCategory,
+  getAdhkarRepeatTarget,
   getRecommendedAdhkarCategoryForHour
 } from '../data/adhkarData';
 import { ALL_SURAHS } from '../data/quranMeta';
 import {
+  ADHKAR_PROGRESS_KEY,
   getAdhkarCategoryProgressSummary,
   getAdhkarCountsForDate,
   incrementAdhkarItemCount,
@@ -48,6 +51,7 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
     const seenIds = new Set<string>();
     for (const item of ADHKAR_ITEMS) {
       assert(!seenIds.has(item.id), `Duplicate Adhkar item ID: ${item.id}`);
+      assert(/^[a-z0-9-]+$/.test(item.id), `Adhkar item ID must be ASCII kebab-case: ${item.id}`);
       seenIds.add(item.id);
       assert(item.title.trim().length > 0, `Item ${item.id} must have a title`);
       assert(item.text.trim().length > 0, `Item ${item.id} must have vocalized text`);
@@ -74,6 +78,94 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
     for (const cat of ADHKAR_CATEGORIES) {
       const catItems = getAdhkarItemsByCategory(cat.id);
       assert(catItems.length >= 2, `Category ${cat.id} must have at least 2 items`);
+      assert(!cat.description.includes('عندوي'), `Category ${cat.id} description must not contain typos`);
+    }
+    const sleepingCategory = ADHKAR_CATEGORIES.find(c => c.id === 'sleeping');
+    assert(sleepingCategory?.description.includes('عند الإيواء إلى الفراش') === true, 'Sleeping category description must use corrected Arabic wording');
+  });
+
+  test('Adhkar categories and category-specific repetition targets match primary Hadith sources', () => {
+    const kalimat = ADHKAR_ITEMS.find(item => item.id === 'adhkar-kalimat-tammat');
+    assert(Boolean(kalimat), 'adhkar-kalimat-tammat must exist');
+    assert(kalimat!.categories.includes('evening'), 'adhkar-kalimat-tammat must belong to evening adhkar');
+    assert(!kalimat!.categories.includes('morning'), 'adhkar-kalimat-tammat must not be classified under morning adhkar');
+    assert(kalimat!.source.includes('2708') && kalimat!.source.includes('2709') && kalimat!.source.includes('3604'), 'adhkar-kalimat-tammat must cite Muslim 2708/2709 and Tirmidhi 3604');
+
+    for (const id of ['adhkar-ikhlas', 'adhkar-falaq', 'adhkar-nas']) {
+      const item = ADHKAR_ITEMS.find(entry => entry.id === id);
+      assert(Boolean(item), `${id} must exist`);
+      assert(getAdhkarRepeatTarget(item!, 'morning') === 3, `${id} must target 3x in morning`);
+      assert(getAdhkarRepeatTarget(item!, 'evening') === 3, `${id} must target 3x in evening`);
+      assert(getAdhkarRepeatTarget(item!, 'sleeping') === 3, `${id} must target 3x at sleep`);
+      assert(getAdhkarRepeatTarget(item!, 'after_prayer') === 1, `${id} must target 1x after obligatory prayer`);
+    }
+  });
+
+  test('Category-specific counting (1x after_prayer vs 3x morning) and legacy Arabic ID alias migrate losslessly', () => {
+    StorageService.__resetStorageForTests();
+    const map = new Map<string, string>();
+    const mockStorage = {
+      getItem: (k: string) => map.get(k) ?? null,
+      setItem: (k: string, v: string) => { map.set(k, v); },
+      removeItem: (k: string) => { map.delete(k); }
+    };
+
+    try {
+      assert(StorageService.setStorageScope('user:adhkar-compat'), 'Scope should activate');
+      const dateKey = '2026-11-20';
+
+      // 1. After-prayer target for Al-Ikhlas completes on first count (1/1)
+      const afterPrayerTap = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'after_prayer');
+      assert(
+        afterPrayerTap.currentCount === 1 && afterPrayerTap.targetCount === 1 && afterPrayerTap.justCompleted === true,
+        'Al-Ikhlas in after_prayer must complete on count 1'
+      );
+      const afterPrayerSummary = getAdhkarCategoryProgressSummary('after_prayer', getAdhkarCountsForDate(dateKey, mockStorage));
+      assert(afterPrayerSummary.completedItems === 1, 'after_prayer summary must count Al-Ikhlas as completed at 1');
+
+      // 2. Morning target for Al-Ikhlas continues to 3/3 and is NOT downgraded if tapped again in after_prayer
+      const morningSummaryBefore = getAdhkarCategoryProgressSummary('morning', getAdhkarCountsForDate(dateKey, mockStorage));
+      assert(morningSummaryBefore.completedItems === 0, 'Morning summary must not mark Al-Ikhlas complete at count 1');
+      incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
+      const morningTap3 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
+      assert(
+        morningTap3.currentCount === 3 && morningTap3.targetCount === 3 && morningTap3.justCompleted === true,
+        'Al-Ikhlas in morning must complete on count 3'
+      );
+      const afterPrayerRetap = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'after_prayer');
+      assert(
+        afterPrayerRetap.currentCount === 3 && afterPrayerRetap.justCompleted === false,
+        'Tapping an already-completed item in a lower-target category must not downgrade its stored count'
+      );
+
+      // 3. Backward-compatible migration of legacy Arabic-character sleep dhikr ID
+      const legacyId = 'adhkar-sleep-bismika-ربي-wadatu';
+      const canonicalId = LEGACY_ADHKAR_ITEM_ID_ALIASES[legacyId];
+      assert(canonicalId === 'adhkar-sleep-bismika-rabbi-wadatu', 'Legacy alias map must resolve to ASCII canonical ID');
+
+      const scopedKey = StorageService.resolveScopedKey(ADHKAR_PROGRESS_KEY);
+      map.set(
+        scopedKey,
+        JSON.stringify({
+          schemaVersion: 1,
+          countsByDate: { [dateKey]: { [legacyId]: 1 } },
+          favoriteIds: [legacyId],
+          freeTasbih: { presetId: FREE_TASBIH_PRESETS[0].id, currentCount: 0, targetCount: 33, totalLifetimeCount: 0 }
+        })
+      );
+
+      const migrated = readAdhkarProgressStore(mockStorage);
+      assert(migrated.countsByDate[dateKey]?.[canonicalId] === 1, 'Legacy ID daily count must migrate to canonical ID');
+      assert(migrated.countsByDate[dateKey]?.[legacyId] === undefined, 'Legacy ID key must not remain after normalization');
+      assert(migrated.favoriteIds.includes(canonicalId) && !migrated.favoriteIds.includes(legacyId), 'Legacy ID favorite must migrate to canonical ID');
+
+      // Calling mutators with legacy ID must still operate cleanly on canonical ID
+      const toggledOff = toggleAdhkarFavorite(legacyId, mockStorage);
+      assert(!toggledOff.favoriteIds.includes(canonicalId), 'Toggling favorite via legacy ID must toggle canonical ID');
+      const resetStore = resetAdhkarItemCount(legacyId, dateKey, mockStorage);
+      assert(resetStore.countsByDate[dateKey]?.[canonicalId] === undefined, 'Resetting via legacy ID must clear canonical ID');
+    } finally {
+      StorageService.__resetStorageForTests();
     }
   });
 
