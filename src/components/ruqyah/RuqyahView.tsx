@@ -17,6 +17,7 @@ import {
 } from '../../services/audioPreferences';
 import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { RuqyahApiLibrary } from './RuqyahApiLibrary';
+import { RuqyahTopicsLibrary } from './RuqyahTopicsLibrary';
 import { 
   ShieldCheck, 
   Volume2,
@@ -58,7 +59,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
     resetPreferences: resetDisplayPreferences,
   } = useReadingDisplayPreferences('ruqyah');
   const [activeCategory, setActiveCategory] = useState<RuqyahCategory>('brief');
-  const [viewMode, setViewMode] = useState<'interactive' | 'api_library'>('interactive');
+  const [viewMode, setViewMode] = useState<'interactive' | 'api_library' | 'topics'>('interactive');
   
   // Counter states per item (itemId -> current count)
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -665,7 +666,20 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
               }`}
             >
               <BookOpen className="w-4 h-4" />
-              <span>المكتبة الموسعة</span>
+              <span>فهرس الآيات</span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={viewMode === 'topics'}
+              onClick={() => { stopRuqyahAudio(); setShowResetConfirmation(false); setViewMode('topics'); }}
+              className={`flex items-center justify-center gap-2 px-4 py-3 min-h-12 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E0A96D] ${
+                viewMode === 'topics'
+                  ? 'bg-gradient-to-r from-[#E0A96D] to-[#C59B27] text-[#0B132B] shadow-md'
+                  : 'text-[#CBD5E1] hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>موضوعات الرقية</span>
             </button>
           </div>
         </div>
@@ -1012,6 +1026,12 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       {viewMode === 'api_library' && (
         <div style={{ zoom: displayPreferences.uiScale / 100 }}>
           <RuqyahApiLibrary />
+        </div>
+      )}
+
+      {viewMode === 'topics' && (
+        <div style={{ zoom: displayPreferences.uiScale / 100 }}>
+          <RuqyahTopicsLibrary />
         </div>
       )}
     </div>

@@ -4,13 +4,11 @@ Last reviewed: 2026-11-07 — audio source review updated
 
 ## Non-negotiable rule
 
-WIRD must not publish a religious text, recitation, explanation, ruling, or treatment claim merely because it appears in an API, repository, app, social post, or search result.
-
-A source is eligible only after its exact content, attribution, evidence, grading, and usage rights have been reviewed. When the evidence is unclear or disputed, omit the material until qualified review is complete. Do not present this software as a mufti or a medical diagnostic tool.
+WIRD distinguishes its own curated religious corpus from attributed third-party educational material. The project owner has explicitly approved IslamicAPI as a trusted provider for the optional Ruqyah topic library, including its category labels and article blocks. Display that material with clear IslamicAPI attribution; do not describe it as independently verified or as a WIRD-authored fatwa. Do not turn provider text into medical diagnosis or guaranteed treatment claims. Do not present this software as a mufti or a medical diagnostic tool.
 
 ## Allowed source hierarchy
 
-1. **Quran:** display Arabic text only from WIRD's verified canonical Quran corpus (`src/data/verifiedAyahs`). Any external API may at most provide a chapter/ayah locator. The external Arabic string is never rendered as Quran text.
+1. **Quran:** the core Mushaf, recitation lists, and Quran locator views display Arabic text only from WIRD's verified canonical Quran corpus (`src/data/verifiedAyahs`). IslamicAPI article blocks may contain quoted Arabic within an attributed educational article; those blocks remain clearly identified as provider article content and are not treated as the canonical Mushaf or used to populate Quran reading/audio controls.
 2. **Hadith:** prefer the primary recognized Sunni hadith collections. For grading or disputed reports, show the named hadith scholar and exact grading, with a traceable reference. Use the Dorar Hadith Encyclopedia as an index to locate the primary narration and named grading; Dorar itself is not a substitute for identifying the hadith scholar.
 3. **Fiqh/adab/health guidance:** include only after review against a named, recognized Sunni scholar/institution or authoritative medical guidance, with clear attribution. Otherwise omit.
 4. **Audio:** full-program recordings require human review of the reciter identity, complete recording contents, source chain, and usage permissions. Ayah-addressable provider CDN files may be used only when the provider explicitly documents and licenses the reciter edition, maps each asset to a canonical ayah coordinate, identifies the source host and rights chain, and representative live files pass media-type and byte-range checks. This is provider-declared ayah mapping, not a claim that every file has been independently human-listened to; disclose that limitation. A filename, API catalogue, or reciter name alone is not verification.
@@ -32,8 +30,8 @@ Quran text and verse ranges remain checked against WIRD's canonical corpus. The 
 
 ## Explicitly blocked sources/features
 
-- IslamicAPI's `from-sunnah` content is not rendered or proxied. Its category endpoint is also blocked. The API is only a Quran locator/index; the server validates coordinates and returns only an item ID plus normalized numeric coordinates. All provider-authored titles, Arabic, references, introductions, translations, and category labels are stripped before reaching the browser. WIRD renders only canonical Quran text and local surah metadata.
-- IslamicAPI educational topic and category endpoints are hard-disabled in the server proxy, with no environment-variable override. Do not reintroduce them until each article is curated from a named, reviewed Sunni source and protected by source-registry tests.
+- IslamicAPI's `from-sunnah` content is not rendered or proxied. The `instant-category` endpoint remains blocked. For `instant` + `from-quran`, the server validates coordinates and returns only an item ID plus normalized numeric coordinates; provider-authored titles, Arabic, references, introductions, translations, and category labels are stripped. The separately gated `topic-category` and `topic` endpoints are handled under the owner-approved educational-content policy below.
+- IslamicAPI educational topic and category endpoints are available only when the server-side `RUQYAH_TOPICS_ENABLED` flag is exactly `true`. The proxy accepts only the 13 documented topic slugs, validates the documented article-block schema, bounds payload size, strips unknown fields, and renders all provider content as escaped text with IslamicAPI attribution. This is the owner's approved third-party educational source; it is not represented as independent scholarly verification.
 - IslamicAPI full-program recordings are not playable. Their reciter, complete contents, and source/rights chain have not been independently verified.
 - Al Furqan's dynamic reciter catalogue/audio endpoint remains blocked. Its public API documentation identifies EveryAyah.com as the audio data source, but WIRD has not independently completed the reciter-specific rights and exact-asset review required by this policy.
 - **Approved limited audio source: Al Quran Cloud, ayah-level streaming only.** Its current terms state that recitations are licensed to Al Quran Cloud by reciters or their estates for free, non-commercial redistribution, and explicitly permit streaming/embedding/download for personal and educational use. The terms also state that copyrights remain with the reciters and a reciter may request removal. WIRD limits this integration to educational streaming and does not download, bundle, mirror, or redistribute audio files. Terms: https://alquran.cloud/terms-and-conditions
@@ -50,7 +48,7 @@ Quran text and verse ranges remain checked against WIRD's canonical corpus. The 
 - Backend allowlist accepts only `from-quran` for IslamicAPI instant content.
 - API response Quran strings are never displayed; WIRD resolves the returned surah/ayah reference into `VERIFIED_AYAHS`.
 - Tests assert third-party Sunnah text is rejected before upstream access.
-- Tests assert unreviewed category indexes are blocked and every provider-authored field is stripped from the Quran locator response.
+- Tests assert topic endpoints are disabled when the server flag is off, allowlisted topic categories/articles pass through the bounded sanitizer when enabled, unknown topic slugs are rejected, and Quran locator responses continue to strip all provider-authored text.
 - Tests assert the Al Quran Cloud catalogue returns only the seven curated edition IDs and rejects unknown providers, IDs, malformed responses, and invalid ayah coordinates.
 - Tests assert audio URLs can only target the fixed HTTPS CDN host and only global ayah numbers 1–6236.
 - CI probes the first ayah for each of the seven approved editions and the final Alafasy ayah for a valid MPEG response and byte-range streaming.
