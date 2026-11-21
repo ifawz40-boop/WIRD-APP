@@ -43,14 +43,14 @@ Canonical repository: `ifawz40-boop/WIRD-APP` (re-fetch repository metadata beca
 Key documents:
 - `docs/CONTINUE_HERE.md` — current continuation state and next action.
 - `docs/DEVELOPMENT_ROADMAP.md` — product/engineering roadmap.
-- `docs/CHAT_WORKSTREAMS_AR.md` — workstream ownership and conflict boundaries.
+- `docs/AI_COLLABORATION_SYSTEM_AR.md` — unified ChatGPT Project setup, tool roles, integrations, and dynamic workstream model.
 - `docs/AI_OPERATING_PROTOCOL.md` — this operating protocol.
 
 Before consequential repository work, refresh the current repository identity, default branch, HEAD SHA, relevant open PRs, changed paths, and exact-head CI. Treat documentation snapshots and chat memory as context, not proof of current state. AI Studio is main-only: it cannot see unmerged feature branches/PRs. Its workspace may also contain uncommitted changes not present on GitHub; inspect both workspace and GitHub `main` before syncing or overwriting anything.
 
 ## 4. Workstream ownership and concurrency
 
-The central conversation is **WIRD — Central Coordinator & Integration**. Specialized conversations own W01–W10 and S11–S16 according to `docs/CHAT_WORKSTREAMS_AR.md`.
+The central conversation is **WIRD — Central Coordinator & Integration**. Create specialist conversations dynamically only for substantial, independent workstreams, following `docs/AI_COLLABORATION_SYSTEM_AR.md`. Do not assume a fixed set of 16 permanent chats.
 
 - Give each substantial workstream handled through GitHub-capable agents a focused feature branch and PR.
 - **Exception: Google AI Studio is main-only.** It does not participate in the feature-branch/PR workflow; schedule its `main` edits so they do not overlap with merges or other direct `main` updates.
@@ -184,7 +184,7 @@ Ownership:
 - `docs/CONTINUE_HERE.md` is the central continuation entry point; coordinate its edits centrally.
 - Workstream-specific docs may be updated by the owning branch when ownership permits.
 - Update `docs/DEVELOPMENT_ROADMAP.md` only when roadmap scope/order/status materially changes.
-- Update `docs/CHAT_WORKSTREAMS_AR.md` only when ownership or concurrency boundaries change.
+- Update `docs/AI_COLLABORATION_SYSTEM_AR.md` when tool availability, collaboration roles, setup, or workstream ownership/concurrency changes.
 - Keep this protocol stable; change it only when the operating model changes.
 
 If repository write access is unavailable, provide the checkpoint in the conversation and clearly say GitHub documentation was not updated. Never claim a documentation commit that did not happen.
