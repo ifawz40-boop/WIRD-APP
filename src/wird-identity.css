@@ -1,35 +1,148 @@
 /* ==========================================================================
-   WIRD — Master Visual Identity & Brand Design System
-   Palettes:
-     [Day Mode / الوضع النهاري]:
-       - Naskh Cream Canvas:   #F9F6EE
-       - Pure White Surfaces:  #FFFFFF & #F2EDE2
-       - Soft Mint / Teal:     #1C4E46 & #28665B
-       - Bright Gold Accents:  #C59B27 & #D4AF37
-       - High-Contrast Text:   #142421
-
-     [Night Mode / الوضع الليلي]:
-       - Midnight Navy Canvas: #0B132B / #0D1B2A
-       - Dark Glass Surfaces:  #111F36 & #162744
-       - Muted Dark Teal:      #1E4A47 & #235D59
-       - Glowing Amber Gold:   #E0A96D & #F39C12
-       - Soft Ivory Text:      #F5F1E8
+   WIRD — Master Visual Identity & Design System V2
+   Multi-Theme Semantic Token Cascade (3 Presets × Day/Night)
+   Presets:
+     1. emerald-editorial (Default V2):
+        - Day:   Warm Ivory (#F8F5EE) · Deep Emerald (#14453D) · Champagne Gold (#B58D34)
+        - Night: Deep Forest Charcoal (#0C1412) · Forest Surface (#131F1C) · Muted Gold (#D4B475)
+     2. mushaf-parchment (Reading Comfort — inspired by Ummah Library):
+        - Day:   Warm Parchment (#F4EDE0) · Ink Umber (#261E16) · Heritage Emerald (#2D4A3E)
+        - Night: Deep Espresso Charcoal (#141210) · Stone Surface (#1D1A17) · Warm Bronze (#CFA56A)
+     3. classic-midnight (Preserved Classic WIRD Identity):
+        - Day:   Naskh Cream (#F9F6EE) · Soft Mint Teal (#1C4E46) · Bright Gold (#C59B27)
+        - Night: Midnight Navy (#0B132B) · Dark Glass (#111F36) · Glowing Amber (#E0A96D)
    ========================================================================== */
 
-:root {
+:root,
+:root[data-wird-theme='emerald-editorial'] {
   color-scheme: light;
 
   /* Raw Brand Constants */
-  --wird-brand-cream: #f9f6ee;
-  --wird-brand-teal: #1c4e46;
-  --wird-brand-teal-light: #28665b;
-  --wird-brand-gold: #c59b27;
-  --wird-brand-gold-bright: #d4af37;
-  --wird-brand-gold-amber: #e0a96d;
-  --wird-brand-midnight: #0b132b;
-  --wird-brand-glass: #111f36;
+  --wird-brand-cream: #f8f5ee;
+  --wird-brand-teal: #14453d;
+  --wird-brand-teal-light: #1e5c52;
+  --wird-brand-gold: #b58d34;
+  --wird-brand-gold-bright: #c59b27;
+  --wird-brand-gold-amber: #d4b475;
+  --wird-brand-midnight: #0c1412;
+  --wird-brand-glass: #131f1c;
 
-  /* Semantic Light Mode Tokens (Day Mode) */
+  /* Semantic Light Mode Tokens (Editorial Emerald & Warm Ivory) */
+  --wird-bg: #f8f5ee;
+  --wird-surface: #ffffff;
+  --wird-surface-muted: #efeae0;
+  --wird-surface-elevated: #ffffff;
+  --wird-header-glass: rgba(248, 245, 238, 0.9);
+  --wird-text: #13221f;
+  --wird-muted: #536661;
+  --wird-primary: #14453d;
+  --wird-primary-strong: #0e332d;
+  --wird-primary-hover: #1d5b51;
+  --wird-primary-ink: #ffffff;
+  --wird-secondary: #1e5c52;
+  --wird-accent: #b58d34;
+  --wird-accent-hover: #9a7526;
+  --wird-accent-ink: #0c1412;
+  --wird-accent-soft: rgba(181, 141, 52, 0.12);
+  --wird-ring: rgba(181, 141, 52, 0.45);
+  --wird-border: rgba(20, 69, 61, 0.12);
+  --wird-border-strong: rgba(20, 69, 61, 0.22);
+  --wird-border-gold: rgba(181, 141, 52, 0.36);
+  --wird-hero-gradient: linear-gradient(135deg, #14453d 0%, #103831 58%, #0c2924 100%);
+  --wird-shadow: 0 1px 2px rgba(19, 34, 31, 0.04), 0 8px 24px -10px rgba(20, 69, 61, 0.08);
+  --wird-shadow-lg: 0 18px 36px -12px rgba(20, 69, 61, 0.14);
+
+  /* Layout Rhythm & Geometry Tokens */
+  --wird-radius-card: 1.125rem;
+  --wird-radius-control: 0.75rem;
+  --wird-card-pad: 1.25rem;
+  --wird-section-gap: 1.5rem;
+}
+
+.dark,
+.dark[data-wird-theme='emerald-editorial'] {
+  color-scheme: dark;
+
+  /* Semantic Dark Mode Tokens (Deep Forest Charcoal & Muted Champagne Gold) */
+  --wird-bg: #0c1412;
+  --wird-surface: #131f1c;
+  --wird-surface-muted: #101a17;
+  --wird-surface-elevated: #1a2a26;
+  --wird-header-glass: rgba(12, 20, 18, 0.9);
+  --wird-text: #efece4;
+  --wird-muted: #98aba6;
+  --wird-primary: #226358;
+  --wird-primary-strong: #29776a;
+  --wird-primary-hover: #2c7e70;
+  --wird-primary-ink: #f8f5ee;
+  --wird-secondary: #163731;
+  --wird-accent: #d4b475;
+  --wird-accent-hover: #e2c58a;
+  --wird-accent-ink: #0c1412;
+  --wird-accent-soft: rgba(212, 180, 117, 0.14);
+  --wird-ring: rgba(212, 180, 117, 0.48);
+  --wird-border: rgba(212, 180, 117, 0.14);
+  --wird-border-strong: rgba(212, 180, 117, 0.28);
+  --wird-border-gold: rgba(212, 180, 117, 0.32);
+  --wird-hero-gradient: linear-gradient(135deg, #132420 0%, #0f1c19 55%, #0c1412 100%);
+  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.32), 0 10px 28px -10px rgba(0, 0, 0, 0.55);
+  --wird-shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.72);
+}
+
+/* Preset 2: Mushaf Parchment (Warm Reading Comfort) */
+:root[data-wird-theme='mushaf-parchment'] {
+  color-scheme: light;
+  --wird-bg: #f4ede0;
+  --wird-surface: #fbf8f1;
+  --wird-surface-muted: #eae0ce;
+  --wird-surface-elevated: #fffdf8;
+  --wird-header-glass: rgba(244, 237, 224, 0.92);
+  --wird-text: #261e16;
+  --wird-muted: #685b4c;
+  --wird-primary: #2d4a3e;
+  --wird-primary-strong: #20372e;
+  --wird-primary-hover: #385c4d;
+  --wird-primary-ink: #ffffff;
+  --wird-secondary: #385c4d;
+  --wird-accent: #9e7432;
+  --wird-accent-hover: #835f25;
+  --wird-accent-ink: #ffffff;
+  --wird-accent-soft: rgba(158, 116, 50, 0.13);
+  --wird-ring: rgba(158, 116, 50, 0.45);
+  --wird-border: rgba(38, 30, 22, 0.12);
+  --wird-border-strong: rgba(38, 30, 22, 0.22);
+  --wird-border-gold: rgba(158, 116, 50, 0.36);
+  --wird-hero-gradient: linear-gradient(135deg, #2d4a3e 0%, #243c32 58%, #1c2f27 100%);
+}
+
+.dark[data-wird-theme='mushaf-parchment'] {
+  color-scheme: dark;
+  --wird-bg: #141210;
+  --wird-surface: #1d1a17;
+  --wird-surface-muted: #181512;
+  --wird-surface-elevated: #26221e;
+  --wird-header-glass: rgba(20, 18, 16, 0.92);
+  --wird-text: #f1eae0;
+  --wird-muted: #a99d8f;
+  --wird-primary: #386353;
+  --wird-primary-strong: #437663;
+  --wird-primary-hover: #49816c;
+  --wird-primary-ink: #fbf8f1;
+  --wird-secondary: #223b32;
+  --wird-accent: #cfa56a;
+  --wird-accent-hover: #dfb982;
+  --wird-accent-ink: #141210;
+  --wird-accent-soft: rgba(207, 165, 106, 0.15);
+  --wird-ring: rgba(207, 165, 106, 0.48);
+  --wird-border: rgba(207, 165, 106, 0.15);
+  --wird-border-strong: rgba(207, 165, 106, 0.28);
+  --wird-border-gold: rgba(207, 165, 106, 0.34);
+  --wird-hero-gradient: linear-gradient(135deg, #221e1a 0%, #1a1714 55%, #141210 100%);
+}
+
+/* Preset 3: Classic WIRD Midnight (Preserved Original Palette) */
+:root[data-wird-theme='classic-midnight'] {
+  color-scheme: light;
   --wird-bg: #f9f6ee;
   --wird-surface: #ffffff;
   --wird-surface-muted: #f2ede2;
@@ -40,22 +153,21 @@
   --wird-primary: #1c4e46;
   --wird-primary-strong: #123731;
   --wird-primary-hover: #28665b;
+  --wird-primary-ink: #ffffff;
   --wird-secondary: #28665b;
   --wird-accent: #c59b27;
   --wird-accent-hover: #af851a;
+  --wird-accent-ink: #0b132b;
   --wird-accent-soft: rgba(197, 155, 39, 0.14);
   --wird-ring: rgba(197, 155, 39, 0.45);
   --wird-border: rgba(28, 78, 70, 0.12);
+  --wird-border-strong: rgba(28, 78, 70, 0.22);
   --wird-border-gold: rgba(197, 155, 39, 0.4);
   --wird-hero-gradient: linear-gradient(135deg, #1c4e46 0%, #153c36 55%, #0f2c27 100%);
-  --wird-shadow: 0 10px 30px -5px rgba(28, 78, 70, 0.07);
-  --wird-shadow-lg: 0 20px 40px -10px rgba(28, 78, 70, 0.12);
 }
 
-.dark {
+.dark[data-wird-theme='classic-midnight'] {
   color-scheme: dark;
-
-  /* Semantic Dark Mode Tokens (Night Mode - Midnight Navy & Glowing Amber) */
   --wird-bg: #0b132b;
   --wird-surface: #111f36;
   --wird-surface-muted: #0e1a2f;
@@ -66,22 +178,42 @@
   --wird-primary: #1e4a47;
   --wird-primary-strong: #235d59;
   --wird-primary-hover: #2c6e69;
+  --wird-primary-ink: #f5f1e8;
   --wird-secondary: #142e2c;
   --wird-accent: #e0a96d;
   --wird-accent-hover: #f3b77b;
+  --wird-accent-ink: #0b132b;
   --wird-accent-soft: rgba(224, 169, 109, 0.16);
   --wird-ring: rgba(224, 169, 109, 0.48);
   --wird-border: rgba(224, 169, 109, 0.16);
+  --wird-border-strong: rgba(224, 169, 109, 0.3);
   --wird-border-gold: rgba(224, 169, 109, 0.35);
   --wird-hero-gradient: linear-gradient(135deg, #111f36 0%, #0d192d 55%, #0b132b 100%);
-  --wird-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
-  --wird-shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.75), 0 0 20px rgba(224, 169, 109, 0.08);
+}
+
+/* Density & Corner Modifiers */
+:root[data-wird-density='compact'] {
+  --wird-card-pad: 0.95rem;
+  --wird-section-gap: 1rem;
+}
+
+:root[data-wird-corners='soft'] {
+  --wird-radius-card: 1.5rem;
+  --wird-radius-control: 1rem;
 }
 
 html,
 body {
   min-height: 100%;
-  background: var(--wird-bg);
+  background-color: var(--wird-bg);
+  color: var(--wird-text);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Dark mode optical legibility compensation */
+.dark body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .wird-app-shell {
@@ -90,43 +222,59 @@ body {
   transition: background-color 180ms ease, color 180ms ease;
 }
 
-/* Luxury Islamic Surface Card */
-.wird-card {
+/* Single-Elevation Editorial Surface Card */
+.wird-card,
+.wird-surface-editorial {
   background: var(--wird-surface);
   border: 1px solid var(--wird-border);
   box-shadow: var(--wird-shadow);
-  border-radius: 1.25rem;
-  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-}
-
-.dark .wird-card {
-  background: rgba(17, 31, 54, 0.85);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(224, 169, 109, 0.18);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(224, 169, 109, 0.05);
+  border-radius: var(--wird-radius-card);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .wird-card:hover {
-  border-color: color-mix(in srgb, var(--wird-accent) 40%, transparent);
+  border-color: var(--wird-border-strong);
 }
 
-/* Architectural Hero Surface */
+.wird-hairline {
+  border-color: var(--wird-border);
+}
+
+.wird-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.wird-headline-balance {
+  text-wrap: balance;
+}
+
+/* Architectural Hero Surface (used selectively for focal anchors only) */
 .wird-hero-surface {
   background: var(--wird-hero-gradient);
   border: 1px solid var(--wird-border-gold);
   box-shadow: var(--wird-shadow-lg);
-  border-radius: 1.5rem;
+  border-radius: var(--wird-radius-card);
   color: #f5f1e8;
 }
 
-/* Semantic Section Badge */
+/* Semantic Quiet Text Metadata Row (Zero-Pill discipline) */
+.wird-metadata-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--wird-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Preserved Legacy Section Badge Token (refined, restrained) */
 .wird-section-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.5rem;
   font-size: 0.6875rem;
   font-weight: 700;
   background: var(--wird-accent-soft);
@@ -147,15 +295,14 @@ body {
   bottom: 22%;
   width: 3px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #f6d78b 0%, #c59b27 100%);
-  box-shadow: 0 0 8px rgba(224, 169, 109, 0.55);
+  background: var(--wird-accent);
 }
 
-/* Subtle View Entrance Animation */
+/* Compositor-only Subtle View Entrance Animation (<= 180ms) */
 @keyframes wird-fade-up {
   from {
-    opacity: 0.92;
-    transform: translateY(3px);
+    opacity: 0;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -164,58 +311,69 @@ body {
 }
 
 .wird-view-enter {
-  animation: wird-fade-up 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: wird-fade-up 170ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
 }
 
-/* Primary Button in Soft Teal / Night Muted Teal */
+/* Loading Skeleton Pulse */
+@keyframes wird-skeleton-shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.wird-skeleton {
+  background: var(--wird-surface-muted);
+  border-radius: 0.65rem;
+  animation: wird-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Primary Button */
 .wird-btn-primary {
   background-color: var(--wird-primary);
   color: #ffffff;
-  border-radius: 0.875rem;
+  border-radius: var(--wird-radius-control);
   font-weight: 700;
-  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 2px 10px rgba(28, 78, 70, 0.22);
+  white-space: nowrap;
 }
 
 .wird-btn-primary:hover {
   background-color: var(--wird-primary-hover);
-  transform: translateY(-1px);
-}
-
-.dark .wird-btn-primary {
-  box-shadow: 0 2px 10px rgba(30, 74, 71, 0.4), 0 0 12px rgba(224, 169, 109, 0.1);
 }
 
 .wird-btn-primary:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
-/* Accent Button in Bright Gold / Glowing Amber */
+/* Accent Button */
 .wird-btn-accent {
-  background: linear-gradient(135deg, #f3b77b 0%, #c59b27 100%);
-  color: #0b132b;
-  border-radius: 0.875rem;
+  background-color: var(--wird-accent);
+  color: #0c1412;
+  border-radius: var(--wird-radius-control);
   font-weight: 700;
-  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 2px 12px rgba(197, 155, 39, 0.3);
+  white-space: nowrap;
 }
 
 .wird-btn-accent:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(224, 169, 109, 0.4);
+  background-color: var(--wird-accent-hover);
 }
 
 .wird-btn-accent:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* Secondary Button */
@@ -223,20 +381,27 @@ body {
   background-color: var(--wird-surface-muted);
   color: var(--wird-text);
   border: 1px solid var(--wird-border);
-  border-radius: 0.875rem;
+  border-radius: var(--wird-radius-control);
   font-weight: 600;
-  transition: all 160ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .wird-btn-secondary:hover {
-  background-color: color-mix(in srgb, var(--wird-surface-muted) 85%, var(--wird-primary));
+  border-color: var(--wird-border-strong);
+  background-color: color-mix(in srgb, var(--wird-surface-muted) 86%, var(--wird-primary));
 }
 
-/* Mobile Quick Navigation Bar */
+.wird-focus-ring:focus-visible {
+  outline: 2px solid var(--wird-ring);
+  outline-offset: 2px;
+}
+
+/* Mobile Quick Navigation Bar (Thumb-Zone Ergonomics, compact <= 15% sticky budget) */
 .wird-mobile-nav {
   position: fixed;
   inset-inline: 0;
@@ -244,71 +409,74 @@ body {
   z-index: 40;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 3px;
-  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  gap: 2px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--wird-border);
-  background: color-mix(in srgb, var(--wird-surface) 95%, transparent);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 -4px 20px rgba(11, 19, 43, 0.08);
+  background: var(--wird-header-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 .wird-mobile-nav__item {
   position: relative;
   min-width: 0;
-  min-height: 52px;
+  min-height: 46px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  border-radius: 14px;
+  gap: 2px;
+  border-radius: 12px;
   color: var(--wird-muted);
   font-size: 10px;
   font-weight: 700;
-  transition: color 160ms ease, background-color 160ms ease, transform 140ms ease;
+  transition: color 150ms ease, background-color 150ms ease;
 }
 
 .wird-mobile-nav__item.is-active {
   color: var(--wird-primary);
-  background: color-mix(in srgb, var(--wird-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--wird-primary) 11%, transparent);
 }
 
 .dark .wird-mobile-nav__item.is-active {
   color: var(--wird-accent);
-  background: rgba(224, 169, 109, 0.16);
+  background: var(--wird-accent-soft);
 }
 
 .wird-mobile-nav__item:focus-visible {
-  outline: 2px solid var(--wird-primary);
+  outline: 2px solid var(--wird-ring);
   outline-offset: -2px;
 }
 
 .wird-mobile-nav__badge {
   position: absolute;
-  top: 3px;
-  inset-inline-start: calc(50% + 6px);
-  min-width: 17px;
-  height: 17px;
+  top: 2px;
+  inset-inline-start: calc(50% + 7px);
+  min-width: 16px;
+  height: 16px;
   padding: 0 4px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--wird-accent);
-  color: #0b132b;
+  color: #0c1412;
   font-size: 9px;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html,
+  body,
   .wird-app-shell,
   .wird-mobile-nav__item,
   .wird-btn-primary,
   .wird-btn-accent,
-  .wird-view-enter {
+  .wird-btn-secondary,
+  .wird-view-enter,
+  .wird-skeleton {
     transition: none;
     transform: none;
     animation: none;
@@ -350,11 +518,6 @@ html {
 .wird-segmented-track {
   background: var(--wird-surface-muted);
   border: 1px solid var(--wird-border);
-  border-radius: 1rem;
+  border-radius: var(--wird-radius-control);
   padding: 0.25rem;
-}
-
-.dark .wird-segmented-track {
-  background: rgba(14, 26, 47, 0.9);
-  border-color: rgba(224, 169, 109, 0.16);
 }

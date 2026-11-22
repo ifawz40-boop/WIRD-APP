@@ -231,19 +231,19 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
   const currentSizeConfig = FONT_SIZES[fontSizeIndex];
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#F9F6EE] dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8]">
+    <div className="flex flex-col h-full min-h-0 bg-[var(--wird-surface)] text-[var(--wird-text)]">
       {/* Header */}
-      <div className={`flex flex-col border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/18 bg-[#F2EDE2]/85 dark:bg-[#0B132B]/90 shrink-0 ${compactHeader ? 'px-4 py-3 space-y-2.5' : 'px-5 py-3.5 space-y-3'}`}>
+      <div className={`flex flex-col border-b border-[var(--wird-border)] bg-[var(--wird-surface-muted)]/90 shrink-0 ${compactHeader ? 'px-4 py-3 space-y-2.5' : 'px-5 py-3.5 space-y-3'}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#1C4E46] dark:bg-[#1E4A47] text-[#E0A96D] flex items-center justify-center shadow-xs shrink-0 border border-[#C59B27]/40 dark:border-[#E0A96D]/35">
+            <div className="w-9 h-9 rounded-xl bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] flex items-center justify-center shadow-xs shrink-0 border border-[var(--wird-border-gold)]">
               <BookOpen className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h2 id={titleId} className="font-bold text-[#142421] dark:text-[#F5F1E8] text-sm md:text-base font-quran truncate">
+              <h2 id={titleId} className="font-bold text-[var(--wird-text)] text-sm md:text-base font-quran truncate">
                 {currentBookName}
               </h2>
-              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] truncate">
+              <p className="text-xs text-[var(--wird-muted)] truncate">
                 سورة {surah?.name || ayah.surahNumber} · الآية {ayah.numberInSurah}
                 {pageNumber ? ` · ص ${pageNumber}` : ''}
                 {currentAuthor ? ` · ${currentAuthor}` : ''}
@@ -258,13 +258,13 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
               disabled={isLoading || !rawText}
               aria-label="نسخ الآية والتفسير"
               title="نسخ الآية والتفسير للمشاركة"
-              className={`min-h-11 min-w-11 px-2.5 py-2 rounded-xl border transition-all text-xs font-semibold flex items-center gap-1.5 ${
+              className={`min-h-10 min-w-10 px-2.5 py-1.5 rounded-[var(--wird-radius-control)] border transition-all text-xs font-semibold flex items-center gap-1.5 ${
                 copied
-                  ? 'bg-[#1C4E46]/12 border-[#1C4E46] text-[#1C4E46] dark:bg-[#1E4A47]/55 dark:border-[#E0A96D] dark:text-[#E0A96D]'
-                  : 'bg-white dark:bg-[#162744] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                  : 'bg-[var(--wird-surface)] border-[var(--wird-border-strong)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
               } disabled:opacity-40`}
             >
-              {copied ? <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" /> : <Copy className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B]" />}
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4 text-[var(--wird-muted)]" />}
               <span className="hidden sm:inline">{copied ? 'تم النسخ' : 'نسخ'}</span>
             </button>
 
@@ -274,7 +274,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
                 onClick={onClose}
                 ref={closeButtonRef}
                 aria-label={returnToMushafLabel || 'إغلاق التفسير'}
-                className="min-h-11 min-w-11 px-2.5 py-2 rounded-xl hover:bg-white/80 dark:hover:bg-[#162744] text-[#5B6F6B] hover:text-[#142421] dark:hover:text-[#F5F1E8] transition-colors inline-flex items-center gap-1 text-xs font-bold"
+                className="min-h-10 min-w-10 px-2.5 py-1.5 rounded-[var(--wird-radius-control)] hover:bg-[var(--wird-surface)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] transition-colors inline-flex items-center gap-1 text-xs font-bold"
               >
                 <X className="w-4 h-4" />
                 {returnToMushafLabel && <span className="hidden sm:inline">{returnToMushafLabel}</span>}
@@ -284,14 +284,14 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         </div>
 
         {/* Context-aware Ayah Stepping & Page Tafsir Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--wird-border)] text-xs">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               disabled={!hasPrevAyah || isStepping}
               onClick={() => void handleStepAyah('prev')}
               aria-label="تفسير الآية السابقة"
-              className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#162744] px-3 py-1.5 font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
+              className="min-h-10 inline-flex items-center gap-1 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-1.5 font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] disabled:opacity-40 transition-colors"
             >
               <ChevronRight className="w-4 h-4" /> الآية السابقة
             </button>
@@ -300,7 +300,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
               disabled={!hasNextAyah || isStepping}
               onClick={() => void handleStepAyah('next')}
               aria-label="تفسير الآية التالية"
-              className="min-h-11 inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#162744] px-3 py-1.5 font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors"
+              className="min-h-10 inline-flex items-center gap-1 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-1.5 font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] disabled:opacity-40 transition-colors"
             >
               الآية التالية <ChevronLeft className="w-4 h-4" />
             </button>
@@ -311,7 +311,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
               <button
                 type="button"
                 onClick={syncReadingPageAction.onSync}
-                className="min-h-11 inline-flex items-center gap-1.5 rounded-xl border border-[#C59B27]/50 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 px-3 py-1.5 font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] transition-colors whitespace-nowrap"
+                className="min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] px-3 py-1.5 font-bold text-[var(--wird-primary)] hover:border-[var(--wird-accent)] transition-colors whitespace-nowrap"
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>تفسير صفحة {syncReadingPageAction.pageNumber}</span>
@@ -323,10 +323,10 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
                 type="button"
                 aria-pressed={viewMode === 'page_overview'}
                 onClick={() => setViewMode(prev => (prev === 'page_overview' ? 'single_ayah' : 'page_overview'))}
-                className={`min-h-11 inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-bold transition-colors ${
+                className={`min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border px-3 py-1.5 font-bold transition-colors ${
                   viewMode === 'page_overview'
-                    ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                    : 'bg-white dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                    ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                    : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border-strong)] hover:border-[var(--wird-accent)]'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -338,16 +338,16 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
               <div
                 role="group"
                 aria-label="تخطيط عرض التفسير بجانب المصحف"
-                className="inline-flex rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#162744] p-0.5"
+                className="inline-flex rounded-[var(--wird-radius-control)] border border-[var(--wird-border)] bg-[var(--wird-surface)] p-0.5"
               >
                 <button
                   type="button"
                   aria-pressed={desktopLayout === 'panel'}
                   onClick={() => onChangeDesktopLayout('panel')}
-                  className={`min-h-10 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors inline-flex items-center gap-1 whitespace-nowrap ${
+                  className={`min-h-9 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors inline-flex items-center gap-1 whitespace-nowrap ${
                     desktopLayout === 'panel'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                      : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
                   }`}
                 >
                   <PanelLeft className="w-3.5 h-3.5" />
@@ -357,10 +357,10 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
                   type="button"
                   aria-pressed={desktopLayout === 'replace_opposite'}
                   onClick={() => onChangeDesktopLayout('replace_opposite')}
-                  className={`min-h-10 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ${
+                  className={`min-h-9 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ${
                     desktopLayout === 'replace_opposite'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                      : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
                   }`}
                 >
                   استبدال المقابلة
@@ -371,14 +371,14 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         </div>
 
         {/* Edition Selector & Font Scaler Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
-          <label className="flex items-center gap-2 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--wird-border)] text-xs">
+          <label className="flex items-center gap-2 text-xs text-[var(--wird-muted)]">
             <span className="text-[11px] font-semibold shrink-0">كتاب التفسير</span>
             <select
               aria-label="اختيار كتاب التفسير"
               value={selectedBookId}
               onChange={event => handleSelectBook(Number(event.target.value))}
-              className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#162744] px-3 py-1.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+              className="min-h-10 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-1.5 text-xs font-bold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-accent)]"
             >
               {TAFSIR_EDITIONS.map(edition => (
                 <option key={edition.id} value={edition.id}>
@@ -388,18 +388,18 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
             </select>
           </label>
 
-          <div className="flex items-center gap-1 bg-white dark:bg-[#162744] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl p-0.5">
+          <div className="flex items-center gap-1 bg-[var(--wird-surface)] border border-[var(--wird-border)] rounded-[var(--wird-radius-control)] p-0.5">
             <button
               type="button"
               onClick={() => handleAdjustFontSize('decrease')}
               disabled={fontSizeIndex === 0}
               aria-label="تصغير خط التفسير"
               title="تصغير خط التفسير"
-              className="min-h-11 min-w-11 p-1 hover:bg-[#F2EDE2] dark:hover:bg-[#0B132B] text-[#5B6F6B] dark:text-[#8B9E9B] rounded-lg disabled:opacity-30"
+              className="min-h-10 min-w-10 p-1 hover:bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] rounded-lg disabled:opacity-30 flex items-center justify-center"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span className="px-1 text-[11px] font-mono font-medium text-[#5B6F6B] dark:text-[#8B9E9B]">
+            <span className="px-1.5 text-[11px] font-mono font-medium text-[var(--wird-muted)]">
               {currentSizeConfig.label}
             </span>
             <button
@@ -408,7 +408,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
               disabled={fontSizeIndex === FONT_SIZES.length - 1}
               aria-label="تكبير خط التفسير"
               title="تكبير خط التفسير"
-              className="min-h-11 min-w-11 p-1 hover:bg-[#F2EDE2] dark:hover:bg-[#0B132B] text-[#5B6F6B] dark:text-[#8B9E9B] rounded-lg disabled:opacity-30"
+              className="min-h-10 min-w-10 p-1 hover:bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] rounded-lg disabled:opacity-30 flex items-center justify-center"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
@@ -417,10 +417,10 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
       </div>
 
       {/* Scrollable Body */}
-      <div className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-5 space-y-5">
+      <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-24 md:p-5 lg:pb-6 space-y-5">
         {viewMode === 'page_overview' && pageAyahs && pageAyahs.length > 0 && (
-          <div className="rounded-2xl border border-[#C59B27]/35 bg-white/80 dark:bg-[#0B132B]/80 p-3.5 space-y-2.5">
-            <p className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+          <div className="rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-3.5 space-y-2.5">
+            <p className="text-xs font-bold text-[var(--wird-primary)]">
               اختر آية من الصفحة {pageNumber ? `(${pageNumber})` : ''} لقراءة تفسيرها مباشرة:
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -440,8 +440,8 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
                     }}
                     className={`min-h-10 px-2.5 py-1 rounded-lg border text-xs font-bold tabular-nums transition-colors ${
                       isSelected
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                        : 'bg-[#F9F6EE] dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                        : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border-strong)] hover:border-[var(--wird-accent)]'
                     }`}
                   >
                     {itemSurah?.name || pageItem.surahNumber}: {pageItem.numberInSurah}
@@ -453,19 +453,19 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         )}
 
         {/* Ayah Display */}
-        <div className="rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#F2EDE2] dark:from-[#0B132B]/90 dark:to-[#162744]/85 border border-[#C59B27]/40 dark:border-[#E0A96D]/30 p-4 md:p-5 shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between gap-2 mb-2.5 text-xs text-[#9A7415] dark:text-[#E0A96D] font-semibold border-b border-[#C59B27]/25 dark:border-[#E0A96D]/20 pb-2">
+        <div className="rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] p-4 md:p-5 relative overflow-hidden">
+          <div className="flex items-center justify-between gap-2 mb-2.5 text-xs text-[var(--wird-accent)] font-semibold border-b border-[var(--wird-border)] pb-2">
             <span>نص الآية الكريمة</span>
             <span className="font-sans-ui text-[11px] font-bold">
               سورة {surah?.name || ayah.surahNumber} · الآية {ayah.numberInSurah}
             </span>
           </div>
 
-          <p className="font-quran text-xl md:text-2xl leading-[2.3] text-right text-[#142421] dark:text-[#F5F1E8]">
+          <p className="font-quran text-xl md:text-2xl leading-[2.3] text-right text-[var(--wird-text)]">
             <QuranText surahNumber={ayah.surahNumber} ayahNumber={ayah.numberInSurah}>
               {ayah.text}
             </QuranText>{' '}
-            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[#C59B27] dark:border-[#E0A96D] text-[#9A7415] dark:text-[#E0A96D] bg-[#F9F6EE] dark:bg-[#0B132B] font-sans text-xs align-middle font-bold mx-1 tabular-nums">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[var(--wird-accent)] text-[var(--wird-accent)] bg-[var(--wird-surface)] font-sans text-xs align-middle font-bold mx-1 tabular-nums">
               {ayah.numberInSurah}
             </span>
           </p>
@@ -473,7 +473,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center gap-3 py-12 text-[#1C4E46] dark:text-[#E0A96D]">
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-[var(--wird-primary)]">
             <Loader2 className="w-7 h-7 animate-spin" />
             <p className="text-sm font-semibold">جارٍ تحميل التفسير المعتمد من المصدر الرسمي...</p>
           </div>
@@ -508,9 +508,9 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
 
         {/* Tafsir Text */}
         {!isLoading && !error && segments.length > 0 && (
-          <article className={`p-1 space-y-3 text-[#142421] dark:text-[#F5F1E8] ${currentSizeConfig.sizeClass} text-justify font-sans-ui`}>
-            <div className="flex items-center gap-2 pb-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/18">
-              <Sparkles className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+          <article className={`p-1 space-y-3 text-[var(--wird-text)] ${currentSizeConfig.sizeClass} text-justify font-sans-ui`}>
+            <div className="flex items-center gap-2 pb-2 text-xs font-bold text-[var(--wird-primary)] border-b border-[var(--wird-border)]">
+              <Sparkles className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
               <span>بيان المعنى والشرح:</span>
             </div>
 
@@ -521,7 +521,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         )}
 
         {!isLoading && !error && segments.length === 0 && (
-          <div className="py-10 text-center text-[#5B6F6B] dark:text-[#8B9E9B] text-xs">
+          <div className="py-10 text-center text-[var(--wird-muted)] text-xs">
             لا يتوفر نص تفسير متاح لهذه الآية في الطبعة المحددة حالياً.
           </div>
         )}
@@ -529,13 +529,13 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         <RelatedHadithPanel ayah={ayah} />
 
         {/* Footer */}
-        <div className="pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+        <div className="pt-4 border-t border-[var(--wird-border)] flex flex-wrap items-center justify-between gap-3 text-[11px] text-[var(--wird-muted)]">
           <span>{isCached ? 'محفوظ محلياً للرجوع إليه دون إنترنت' : 'تم الجلب مباشرة من Quran.com API v4'}</span>
           <a
             href="https://quran.com/ar/developers"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 font-semibold text-[#1C4E46] dark:text-[#E0A96D] hover:underline"
+            className="inline-flex items-center gap-1 font-semibold text-[var(--wird-primary)] hover:underline"
           >
             <span>منصة مطوري Quran.com</span>
             <ExternalLink className="w-3 h-3" />
@@ -571,7 +571,7 @@ function renderSegmentBlocks(segments: ReturnType<typeof parseTafsirToSegments>)
           return (
             <span
               key={seg.id}
-              className="font-quran text-[#9A7415] dark:text-[#E0A96D] font-bold bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 px-1.5 py-0.5 rounded-md inline-block mx-1 shadow-2xs border border-[#C59B27]/35 dark:border-[#E0A96D]/30"
+              className="font-quran text-[var(--wird-accent)] font-bold bg-[var(--wird-accent-soft)] px-1.5 py-0.5 rounded-md inline-block mx-1 border border-[var(--wird-border-gold)]"
             >
               {seg.text}
             </span>
@@ -581,7 +581,7 @@ function renderSegmentBlocks(segments: ReturnType<typeof parseTafsirToSegments>)
           return (
             <span
               key={seg.id}
-              className="font-bold text-[#1C4E46] dark:text-[#6EE7B7] bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 px-1 py-0.5 rounded inline-block mx-0.5"
+              className="font-bold text-[var(--wird-primary)] bg-[var(--wird-surface-muted)] px-1 py-0.5 rounded inline-block mx-0.5"
             >
               {seg.text}
             </span>

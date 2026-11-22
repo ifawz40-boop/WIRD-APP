@@ -452,11 +452,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
       <div className="wird-card p-5 sm:p-6 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
-              <Sparkles className="w-5 h-5 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+            <h2 className="text-xl font-bold text-[var(--wird-text)] flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[var(--wird-accent)] shrink-0" />
               <span>{isCreatingNew ? 'إنشاء خطة حفظ مخصصة' : 'خططك الذكية وجدول الحفظ'}</span>
             </h2>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+            <p className="text-xs text-[var(--wird-muted)] mt-1">
               {isCreatingNew
                 ? 'اضبط هدفك القرآني وحدد محفوظك السابق في أربع خطوات متدرجة واضحة'
                 : 'توزيع يومي متزن للحفظ الجديد والمراجعة الصغرى والكبرى وفق طاقتك'}
@@ -468,9 +468,9 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               <button
                 type="button"
                 onClick={onOpenAdvisor}
-                className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors"
+                className="min-h-11 px-3.5 py-2 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-accent)] text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors"
               >
-                <Compass className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+                <Compass className="w-4 h-4 text-[var(--wird-accent)]" />
                 <span>اقتراح عبر المستشار</span>
               </button>
             )}
@@ -496,7 +496,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
           <HorizontalScrollRail
             ariaLabel="الخطط الذكية المحفوظة"
             activeKey={activePlan?.id || selectedPlanId}
-            className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15"
+            className="pt-2 border-t border-[var(--wird-border)]"
           >
             {enginePlans.map(p => {
               const isSelected = p.id === (activePlan?.id || selectedPlanId);
@@ -508,8 +508,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   aria-pressed={isSelected}
                   className={`min-h-11 shrink-0 snap-start px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 whitespace-nowrap ${
                     isSelected
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   <span>{p.title}</span>
@@ -524,11 +524,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
       {/* Empty State when user has no Engine Plans yet */}
       {!isCreatingNew && enginePlans.length === 0 && (
         <div className="wird-card border-dashed px-6 py-12 text-center space-y-3">
-          <Calendar className="mx-auto h-10 w-10 text-[#1C4E46] dark:text-[#E0A96D]" />
-          <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+          <Calendar className="mx-auto h-10 w-10 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+          <h3 className="text-base font-bold text-[var(--wird-text)]">
             لا توجد خطة مخصصة نشطة بعد
           </h3>
-          <p className="mx-auto max-w-md text-xs leading-6 text-[#5B6F6B] dark:text-[#8B9E9B]">
+          <p className="mx-auto max-w-md text-xs leading-6 text-[var(--wird-muted)]">
             أنشئ خطتك الأولى باختيار السور أو الأجزاء المستهدفة وتحديد ما تحفظه مسبقاً ليحسب لك النظام جدولاً متزناً للحفظ والمراجعة.
           </p>
           <button
@@ -560,19 +560,19 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   aria-current={isCurrent ? 'step' : undefined}
                   className={`min-h-12 px-3 py-2 rounded-xl border text-right flex items-center gap-2.5 transition-colors ${
                     isCurrent
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
                       : isDone
-                      ? 'bg-[#1C4E46]/8 dark:bg-[#1E4A47]/30 text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 text-[#5B6F6B] dark:text-[#8B9E9B] border-[#1C4E46]/10 dark:border-[#E0A96D]/15 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary-soft)] text-[var(--wird-text)] border-[var(--wird-border-strong)]'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   <span
                     className={`w-7 h-7 rounded-lg font-mono font-bold tabular-nums text-xs flex items-center justify-center shrink-0 ${
                       isCurrent
-                        ? 'bg-[#C59B27] text-[#0B132B]'
+                        ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
                         : isDone
-                        ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
-                        : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8]'
+                        ? 'bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] text-white dark:text-[var(--wird-accent-ink)]'
+                        : 'bg-[var(--wird-surface)] text-[var(--wird-text)]'
                     }`}
                   >
                     {isDone ? <Check className="w-3.5 h-3.5" /> : item.step}
@@ -599,11 +599,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               {/* STEP 1: Target Scope */}
               {wizardStep === 1 && (
                 <div className="space-y-5">
-                  <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                    <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                  <div className="pb-3 border-b border-[var(--wird-border)]">
+                    <h3 className="font-bold text-base text-[var(--wird-text)]">
                       1. تحديد نطاق الحفظ والهدف
                     </h3>
-                    <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                    <p className="text-[var(--wird-muted)] mt-0.5">
                       اختر نقطة البداية والنهاية، أو استخدم التحديد السريع لسورة أو جزء كامل
                     </p>
                   </div>
@@ -611,7 +611,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   <div>
                     <label
                       htmlFor="wird-plan-title"
-                      className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-1.5"
+                      className="block font-semibold text-[var(--wird-text)] mb-1.5"
                     >
                       عنوان الخطة (اختياري):
                     </label>
@@ -621,16 +621,16 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                       value={planTitle}
                       onChange={e => setPlanTitle(e.target.value)}
                       placeholder="مثال: خطة حفظ سورة الكهف بتثبيت أسبوعي..."
-                      className="w-full min-h-11 px-3.5 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                      className="w-full min-h-11 px-3.5 py-2.5 bg-[var(--wird-surface-muted)] border border-[var(--wird-border-strong)] rounded-xl text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                     />
                   </div>
 
                   {/* Quick Scope Helpers */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)]">
                     <button
                       type="button"
                       onClick={handleApplyFullSurahTarget}
-                      className="min-h-11 px-3.5 py-2 rounded-xl bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] font-bold text-xs whitespace-nowrap transition-colors"
+                      className="min-h-11 px-3.5 py-2 rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border-strong)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:border-[var(--wird-accent)] font-bold text-xs whitespace-nowrap transition-colors"
                     >
                       تحديد سورة {startSurahMeta?.name || 'البداية'} كاملة
                     </button>
@@ -638,7 +638,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <label
                         htmlFor="wird-quick-juz-target"
-                        className="font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] whitespace-nowrap"
+                        className="font-semibold text-[var(--wird-muted)] whitespace-nowrap"
                       >
                         أو استهدف جزءاً كاملاً:
                       </label>
@@ -646,7 +646,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                         id="wird-quick-juz-target"
                         value={selectedTargetJuz}
                         onChange={e => handleApplyJuzTarget(e.target.value)}
-                        className="flex-1 min-w-0 min-h-11 px-3 py-2 bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                        className="flex-1 min-w-0 min-h-11 px-3 py-2 bg-[var(--wird-surface)] border border-[var(--wird-border-strong)] rounded-xl text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                       >
                         <option value="">— اختر جزءاً من القرآن —</option>
                         {ALL_JUZ_DEFINITIONS.map(def => (
@@ -709,17 +709,17 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               {/* STEP 2: Level, Time Budget, Pace & Study Days */}
               {wizardStep === 2 && (
                 <div className="space-y-5">
-                  <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                    <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                  <div className="pb-3 border-b border-[var(--wird-border)]">
+                    <h3 className="font-bold text-base text-[var(--wird-text)]">
                       2. الوتيرة والوقت وأيام الدراسة
                     </h3>
-                    <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                    <p className="text-[var(--wird-muted)] mt-0.5">
                       حدد وقتك المتاح يومياً والكمية المناسبة لتوزيع المهام دون إرهاق
                     </p>
                   </div>
 
                   <div>
-                    <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                    <span className="block font-semibold text-[var(--wird-text)] mb-2">
                       المستوى القرآني:
                     </span>
                     <DirectOptionGroup
@@ -734,7 +734,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                      <span className="block font-semibold text-[var(--wird-text)] mb-2">
                         وقت الحفظ الجديد يومياً:
                       </span>
                       <DirectOptionGroup
@@ -748,7 +748,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     </div>
 
                     <div>
-                      <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                      <span className="block font-semibold text-[var(--wird-text)] mb-2">
                         وقت المراجعة اليومي:
                       </span>
                       <DirectOptionGroup
@@ -762,9 +762,9 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[var(--wird-border)]">
                     <div>
-                      <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                      <span className="block font-semibold text-[var(--wird-text)] mb-2">
                         طريقة تحديد وتيرة الحفظ:
                       </span>
                       <div className="grid grid-cols-1 gap-2">
@@ -796,8 +796,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                               onClick={() => setPaceType(option.id)}
                               className={`flex min-h-11 items-center justify-between gap-3 text-right rounded-xl border p-3 transition-colors ${
                                 selected
-                                  ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border-[#1C4E46] dark:border-[#E0A96D] text-[#142421] dark:text-[#F5F1E8]'
-                                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                                  ? 'bg-[var(--wird-primary-soft)] border-[var(--wird-primary)] dark:border-[var(--wird-accent)] text-[var(--wird-text)]'
+                                  : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)]'
                               }`}
                             >
                               <span className="min-w-0">
@@ -806,11 +806,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                               </span>
                               <span
                                 className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                                  selected ? 'border-[#1C4E46] dark:border-[#E0A96D]' : 'border-[#5B6F6B]/50'
+                                  selected ? 'border-[var(--wird-primary)] dark:border-[var(--wird-accent)]' : 'border-[var(--wird-border-strong)]'
                                 }`}
                               >
                                 {selected && (
-                                  <span className="w-2 h-2 rounded-full bg-[#1C4E46] dark:bg-[#E0A96D]" />
+                                  <span className="w-2 h-2 rounded-full bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)]" />
                                 )}
                               </span>
                             </button>
@@ -822,7 +822,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     <div className="space-y-3">
                       {paceType === 'verses_per_day' && (
                         <div className="space-y-2">
-                          <label className="block font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                          <label className="block font-semibold text-[var(--wird-text)]">
                             عدد الآيات في كل يوم دراسة:
                           </label>
                           <DirectOptionGroup
@@ -847,14 +847,14 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             value={Number.isFinite(paceQuantity) && paceQuantity > 0 ? paceQuantity : ''}
                             onChange={e => setPaceQuantity(e.target.value === '' ? 0 : Number(e.target.value))}
                             onBlur={() => setPaceQuantity(safePaceQuantity)}
-                            className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                            className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface-muted)] border border-[var(--wird-border-strong)] rounded-xl font-mono font-bold tabular-nums text-[var(--wird-text)]"
                           />
                         </div>
                       )}
 
                       {paceType === 'pages_per_day' && (
                         <div className="space-y-2">
-                          <label className="block font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                          <label className="block font-semibold text-[var(--wird-text)]">
                             عدد الصفحات يومياً (تقديري):
                           </label>
                           <DirectOptionGroup
@@ -879,7 +879,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             value={Number.isFinite(paceQuantity) && paceQuantity > 0 ? paceQuantity : ''}
                             onChange={e => setPaceQuantity(e.target.value === '' ? 0 : Number(e.target.value))}
                             onBlur={() => setPaceQuantity(safePaceQuantity)}
-                            className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                            className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface-muted)] border border-[var(--wird-border-strong)] rounded-xl font-mono font-bold tabular-nums text-[var(--wird-text)]"
                           />
                         </div>
                       )}
@@ -887,7 +887,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                       {paceType === 'by_target_date' && (
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                            <label className="font-semibold text-[var(--wird-text)]">
                               تاريخ الختم المستهدف:
                             </label>
                             <button
@@ -906,7 +906,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                                   'info'
                                 );
                               }}
-                              className="min-h-11 text-[11px] text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:underline"
+                              className="min-h-11 text-[11px] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-bold hover:underline"
                             >
                               اقتراح موعد ملائم لطاقتك
                             </button>
@@ -916,15 +916,15 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             required
                             value={targetEndDate}
                             onChange={e => setTargetEndDate(e.target.value)}
-                            className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono text-[#142421] dark:text-[#F5F1E8]"
+                            className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface-muted)] border border-[var(--wird-border-strong)] rounded-xl font-mono text-[var(--wird-text)]"
                           />
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                    <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-2">
+                  <div className="pt-2 border-t border-[var(--wird-border)]">
+                    <span className="block font-semibold text-[var(--wird-text)] mb-2">
                       أيام الدراسة النشطة أسبوعياً (انقر لتعيين يوم الاستراحة):
                     </span>
                     <div className="flex flex-wrap gap-2">
@@ -938,8 +938,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                             aria-pressed={isActive}
                             className={`min-h-11 py-2 px-3.5 rounded-xl border font-semibold transition-all whitespace-nowrap ${
                               isActive
-                                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                                : 'bg-[#F2EDE2]/70 dark:bg-[#0B132B] text-[#5B6F6B] dark:text-[#8B9E9B] border-[#1C4E46]/15 dark:border-[#E0A96D]/18'
+                                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                                : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-[var(--wird-border)]'
                             }`}
                           >
                             {day.label} {isActive ? '✓' : '· راحة'}
@@ -954,11 +954,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               {/* STEP 3: Unified Pre-Memorized Portions Selector */}
               {wizardStep === 3 && (
                 <div className="space-y-4">
-                  <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                    <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                  <div className="pb-3 border-b border-[var(--wird-border)]">
+                    <h3 className="font-bold text-base text-[var(--wird-text)]">
                       3. تحديد المحفوظ السابق (للمراجعة الكبرى)
                     </h3>
-                    <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                    <p className="text-[var(--wird-muted)] mt-0.5">
                       حدّد أكثر من سورة دفعة واحدة، أو أجزاء كاملة، أو عدداً محدداً من آيات أي سورة، أو استورد سجل حفظك الحالي
                     </p>
                   </div>
@@ -974,32 +974,32 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               {/* STEP 4: Review, Live Preview & Save */}
               {wizardStep === 4 && (
                 <div className="space-y-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--wird-border)]">
                     <div>
-                      <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                      <h3 className="font-bold text-base text-[var(--wird-text)]">
                         4. معاينة الجدول الزمني واعتماد الخطة
                       </h3>
-                      <p className="text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+                      <p className="text-[var(--wird-muted)] mt-0.5">
                         راجع توزيع الأيام الأولى والمراجعة الكبرى قبل حفظ الخطة وتفعيلها
                       </p>
                     </div>
                     <button
                       type="submit"
-                      className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
+                      className="min-h-11 px-3.5 py-2 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
-                      <Eye className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                      <Eye className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                       <span>تحديث المعاينة</span>
                     </button>
                   </div>
 
                   {previewPlan && (
                     <div className="space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 p-4 rounded-2xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--wird-primary-soft)] p-4 rounded-2xl border border-[var(--wird-border-strong)]">
                         <div>
-                          <h4 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                          <h4 className="font-bold text-sm text-[var(--wird-text)]">
                             {previewPlan.title}
                           </h4>
-                          <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5 tabular-nums">
+                          <p className="text-[11px] text-[var(--wird-muted)] mt-0.5 tabular-nums">
                             {previewPlan.meta.totalVerses} آية · {previewPlan.meta.activeStudyDaysCount} يوماً نشطاً · {previewPlan.meta.restDaysCount} يوم استراحة · الختم المتوقع: {previewPlan.meta.projectedEndDate}
                           </p>
                         </div>
@@ -1014,7 +1014,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                       </div>
 
                       <div className="space-y-2">
-                        <span className="font-bold text-[#142421] dark:text-[#F5F1E8] block text-xs">
+                        <span className="font-bold text-[var(--wird-text)] block text-xs">
                           توزيع الأيام الأولى في الجدول:
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -1023,34 +1023,34 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                               key={day.id}
                               className={`p-3 rounded-xl border text-xs ${
                                 day.isRestDay
-                                  ? 'bg-[#F2EDE2]/55 dark:bg-[#0B132B]/55 border-[#1C4E46]/10 dark:border-[#E0A96D]/10 text-[#5B6F6B] dark:text-[#8B9E9B]'
-                                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/20 dark:border-[#E0A96D]/25'
+                                  ? 'bg-[var(--wird-surface-muted)]/70 border-[var(--wird-border)] text-[var(--wird-muted)]'
+                                  : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border-strong)]'
                               }`}
                             >
                               <div className="flex items-center justify-between font-bold mb-1">
-                                <span className="text-[#142421] dark:text-[#F5F1E8]">
+                                <span className="text-[var(--wird-text)]">
                                   {day.dayNameAr} ({day.date})
                                 </span>
                                 {day.isRestDay ? (
                                   <span className="text-[10px]">استراحة</span>
                                 ) : (
-                                  <span className="text-[10px] text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+                                  <span className="text-[10px] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums">
                                     {day.memorizationTask?.versesCount} آيات
                                   </span>
                                 )}
                               </div>
                               {day.memorizationTask && (
-                                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                                <p className="text-[11px] text-[var(--wird-muted)]">
                                   {day.memorizationTask.surahName} ({day.memorizationTask.startAyah}-{day.memorizationTask.endAyah})
                                 </p>
                               )}
                               {day.minorRevisionTask && (
-                                <p className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+                                <p className="text-[10px] text-[var(--wird-muted)] mt-1">
                                   {day.minorRevisionTask.description}
                                 </p>
                               )}
                               {day.majorRevisionTask && (
-                                <p className="text-[10px] text-[#9A7512] dark:text-[#E0A96D] mt-0.5">
+                                <p className="text-[10px] text-[var(--wird-accent)] mt-0.5">
                                   كبرى: {day.majorRevisionTask.description}
                                 </p>
                               )}
@@ -1064,7 +1064,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               )}
 
               {/* Wizard Footer Navigation */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--wird-border)]">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1072,7 +1072,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                       setIsCreatingNew(false);
                       setPreviewPlan(null);
                     }}
-                    className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:opacity-90 text-[#142421] dark:text-[#F5F1E8] rounded-xl font-semibold"
+                    className="min-h-11 px-4 py-2 bg-[var(--wird-surface-muted)] hover:opacity-90 text-[var(--wird-text)] rounded-xl font-semibold"
                   >
                     إلغاء
                   </button>
@@ -1081,7 +1081,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     <button
                       type="button"
                       onClick={() => setWizardStep((wizardStep - 1) as WizardStep)}
-                      className="min-h-11 px-4 py-2 rounded-xl border border-[#1C4E46]/18 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1"
+                      className="min-h-11 px-4 py-2 rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)] font-bold inline-flex items-center gap-1"
                     >
                       <ChevronRight className="w-4 h-4" />
                       <span>السابق</span>
@@ -1120,47 +1120,47 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               aria-label="ملخص الخطة المباشر"
               className="lg:col-span-4 lg:sticky lg:top-20 wird-card p-5 space-y-4"
             >
-              <div className="pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                <span className="text-[11px] font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="pb-3 border-b border-[var(--wird-border)]">
+                <span className="text-[11px] font-semibold text-[var(--wird-muted)]">
                   ملخص الخطة المباشر
                 </span>
-                <h4 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran mt-0.5 truncate">
+                <h4 className="font-bold text-sm text-[var(--wird-text)] mt-0.5 truncate">
                   {resolvedTitlePreview}
                 </h4>
               </div>
 
               <dl className="space-y-2.5 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">النطاق المستهدف</dt>
-                  <dd className="font-bold text-[#142421] dark:text-[#F5F1E8] text-left tabular-nums">
+                  <dt className="text-[var(--wird-muted)]">النطاق المستهدف</dt>
+                  <dd className="font-bold text-[var(--wird-text)] text-left tabular-nums">
                     {startSurahMeta?.name} ({startAyah}) ← {endSurahMeta?.name} ({endAyah})
                   </dd>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">إجمالي آيات الهدف</dt>
-                  <dd className="font-mono font-bold tabular-nums text-[#1C4E46] dark:text-[#E0A96D]">
+                  <dt className="text-[var(--wird-muted)]">إجمالي آيات الهدف</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                     {liveTotalVerses} آية
                   </dd>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">المقدار اليومي التقريبي</dt>
-                  <dd className="font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]">
+                  <dt className="text-[var(--wird-muted)]">المقدار اليومي التقريبي</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[var(--wird-text)]">
                     {liveDailyPaceVerses} آية / يوم
                   </dd>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">الأيام النشطة أسبوعياً</dt>
-                  <dd className="font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]">
+                  <dt className="text-[var(--wird-muted)]">الأيام النشطة أسبوعياً</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[var(--wird-text)]">
                     {activeDays.length} من 7 أيام
                   </dd>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <dt className="text-[#5B6F6B] dark:text-[#8B9E9B]">المحفوظ للمراجعة الكبرى</dt>
-                  <dd className="font-mono font-bold tabular-nums text-[#C59B27] dark:text-[#E0A96D]">
+                  <dt className="text-[var(--wird-muted)]">المحفوظ للمراجعة الكبرى</dt>
+                  <dd className="font-mono font-bold tabular-nums text-[var(--wird-accent)]">
                     {existingMemorizedCount} آية
                   </dd>
                 </div>
@@ -1172,8 +1172,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   liveFeasibility.cognitiveLoadScore === 'impossible'
                     ? 'bg-rose-50 dark:bg-rose-950/45 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'
                     : liveFeasibility.cognitiveLoadScore === 'strenuous'
-                    ? 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 border-[#C59B27]/45 dark:border-[#E0A96D]/40 text-[#142421] dark:text-[#F5F1E8]'
-                    : 'bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8]'
+                    ? 'bg-[var(--wird-accent-soft)] border-[var(--wird-border-gold)] text-[var(--wird-text)]'
+                    : 'bg-[var(--wird-primary-soft)] border-[var(--wird-border-strong)] text-[var(--wird-text)]'
                 }`}
               >
                 <div className="flex items-center gap-2 font-bold">
@@ -1181,11 +1181,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                   )}
                   {liveFeasibility.cognitiveLoadScore === 'strenuous' && (
-                    <Info className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                    <Info className="w-4 h-4 text-[var(--wird-accent)] shrink-0" />
                   )}
                   {(liveFeasibility.cognitiveLoadScore === 'optimal' ||
                     liveFeasibility.cognitiveLoadScore === 'light') && (
-                    <CheckCircle className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0" />
                   )}
                   <span>التوازن الذهني: {feasibilityLabel}</span>
                 </div>
@@ -1207,22 +1207,22 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-xl font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
+                  <h3 className="text-xl font-bold text-[var(--wird-text)]">
                     {activePlan.title}
                   </h3>
                   <span
                     className={`text-[11px] font-bold ${
                       activePlan.isPaused
-                        ? 'text-[#C59B27] dark:text-[#E0A96D]'
-                        : 'text-[#1C4E46] dark:text-[#E0A96D]'
+                        ? 'text-[var(--wird-accent)]'
+                        : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
                     }`}
                   >
                     · {activePlan.isPaused ? 'متوقفة مؤقتاً' : 'نشطة وتعمل'}
                   </span>
                 </div>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1 tabular-nums">
+                <p className="text-xs text-[var(--wird-muted)] mt-1 tabular-nums">
                   تاريخ البدء: <span className="font-mono">{activePlan.input.startDate}</span> · الختم المتوقع:{' '}
-                  <span className="font-mono font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                  <span className="font-mono font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                     {activePlan.meta.projectedEndDate}
                   </span>
                 </p>
@@ -1235,7 +1235,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                     activePlan.isPaused
                       ? 'wird-btn-primary'
-                      : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] hover:opacity-90'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:opacity-90'
                   }`}
                 >
                   {activePlan.isPaused ? <Play className="w-3.5 h-3.5 fill-white" /> : <Pause className="w-3.5 h-3.5" />}
@@ -1248,10 +1248,10 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     modalTriggerRef.current = event.currentTarget;
                     setShowRecalculateConfirm(true);
                   }}
-                  className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] hover:border-[#C59B27] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-semibold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 whitespace-nowrap transition-colors"
+                  className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[var(--wird-surface-muted)] hover:border-[var(--wird-accent)] text-[var(--wird-text)] rounded-xl text-xs font-semibold border border-[var(--wird-border)] whitespace-nowrap transition-colors"
                   title="إعادة جدولة المهام القادمة بناءً على التقدم الفعلي"
                 >
-                  <RotateCcw className="w-3.5 h-3.5 text-[#1C4E46] dark:text-[#E0A96D]" />
+                  <RotateCcw className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                   <span>إعادة ضبط المتبقي</span>
                 </button>
 
@@ -1262,7 +1262,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     setPlanToDelete(activePlan.id);
                   }}
                   aria-label={`حذف الخطة الذكية ${activePlan.title}`}
-                  className="flex min-h-11 min-w-11 items-center justify-center px-3 py-2 text-[#5B6F6B] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex min-h-11 min-w-11 items-center justify-center px-3 py-2 text-[var(--wird-muted)] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-semibold transition-colors"
                   title="حذف هذه الخطة الذكية"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1270,55 +1270,55 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs space-y-1.5">
-              <div className="font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
+            <div className="pt-4 border-t border-[var(--wird-border)] text-xs space-y-1.5">
+              <div className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
                 <Info className="w-4 h-4 shrink-0" />
                 <span>الأساس المنهجي لتوزيع الخطة</span>
               </div>
-              <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed text-[11px]">
+              <p className="text-[var(--wird-muted)] leading-relaxed text-[11px]">
                 {activePlan.rationale}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-[var(--wird-border)] text-xs">
               <div>
-                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">إجمالي الآيات</span>
-                <div className="text-lg font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8] mt-0.5">
+                <span className="text-[var(--wird-muted)]">إجمالي الآيات</span>
+                <div className="text-lg font-bold font-mono tabular-nums text-[var(--wird-text)] mt-0.5">
                   {activePlan.meta.totalVerses} آية
                 </div>
               </div>
 
               <div>
-                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المستهدف حتى اليوم</span>
-                <div className="text-lg font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8] mt-0.5">
+                <span className="text-[var(--wird-muted)]">المستهدف حتى اليوم</span>
+                <div className="text-lg font-bold font-mono tabular-nums text-[var(--wird-text)] mt-0.5">
                   {activePlan.actualVsPlanned.plannedVersesToDate} آية
                 </div>
               </div>
 
               <div>
-                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المحفوظ الفعلي</span>
-                <div className="text-lg font-bold font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D] mt-0.5">
+                <span className="text-[var(--wird-muted)]">المحفوظ الفعلي</span>
+                <div className="text-lg font-bold font-mono tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)] mt-0.5">
                   {activePlan.actualVsPlanned.actualVersesMemorized} آية
                 </div>
               </div>
 
               <div>
-                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">حالة المسار</span>
+                <span className="text-[var(--wird-muted)]">حالة المسار</span>
                 <div className="flex items-center gap-1.5 font-bold mt-1">
                   {activePlan.actualVsPlanned.status === 'on_track' && (
-                    <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                    <Check className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                   )}
                   {activePlan.actualVsPlanned.status === 'ahead' && (
-                    <TrendingUp className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                    <TrendingUp className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                   )}
                   {activePlan.actualVsPlanned.status === 'behind' && (
-                    <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+                    <AlertTriangle className="w-4 h-4 text-[var(--wird-accent)]" />
                   )}
                   <span
                     className={
                       activePlan.actualVsPlanned.status === 'behind'
-                        ? 'text-[#C59B27] dark:text-[#E0A96D]'
-                        : 'text-[#1C4E46] dark:text-[#E0A96D]'
+                        ? 'text-[var(--wird-accent)]'
+                        : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
                     }
                   >
                     {activePlan.actualVsPlanned.status === 'ahead'
@@ -1335,16 +1335,16 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
           {activePlanMissedSummary?.hasMissedDays && (
             <section
               aria-label="خيارات معالجة الأيام الفائتة"
-              className="wird-card p-5 border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/8 dark:bg-[#111F36] space-y-3 text-xs"
+              className="wird-card p-5 border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] dark:bg-[var(--wird-surface)] space-y-3 text-xs"
             >
               <div className="flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0 mt-0.5" />
+                <AlertTriangle className="w-4 h-4 text-[var(--wird-accent)] shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">
+                  <h3 className="font-bold text-sm text-[var(--wird-text)]">
                     رصد {activePlanMissedSummary.missedDaysCount}{' '}
                     {activePlanMissedSummary.missedDaysCount === 1 ? 'يوم فائت' : 'أيام فائتة'} في هذه الخطة
                   </h3>
-                  <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed tabular-nums">
+                  <p className="text-[var(--wird-muted)] leading-relaxed tabular-nums">
                     مجموع الآيات غير المكتملة قبل اليوم: {activePlanMissedSummary.missedMemorizationVerses} آية
                     {activePlanMissedSummary.missedRevisionTasksCount > 0
                       ? ` · ${activePlanMissedSummary.missedRevisionTasksCount} مهام مراجعة`
@@ -1363,8 +1363,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   onClick={() => setPendingRecoveryMode('shift')}
                   className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
                     pendingRecoveryMode === 'shift'
-                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
-                      : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] text-white dark:text-[var(--wird-accent-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border-strong)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   ترحيل الورد للأمام
@@ -1374,8 +1374,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   onClick={() => setPendingRecoveryMode('light')}
                   className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
                     pendingRecoveryMode === 'light'
-                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
-                      : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] text-white dark:text-[var(--wird-accent-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border-strong)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   تثبيت ومراجعة خفيفة اليوم
@@ -1385,8 +1385,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   onClick={() => setPendingRecoveryMode('rebalance')}
                   className={`min-h-11 px-3.5 py-2 rounded-xl font-bold border transition-colors whitespace-nowrap ${
                     pendingRecoveryMode === 'rebalance'
-                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] border-[#C59B27]'
-                      : 'bg-white dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] text-white dark:text-[var(--wird-accent-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border-strong)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   إعادة توزيع المتبقي
@@ -1394,8 +1394,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
               </div>
 
               {pendingRecoveryMode && (
-                <div className="p-3.5 rounded-xl bg-white dark:bg-[#0B132B]/85 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <p className="text-[#142421] dark:text-[#F5F1E8] leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-[var(--wird-surface)]/85 border border-[var(--wird-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-[var(--wird-text)] leading-relaxed">
                     {pendingRecoveryMode === 'shift' && 'تأكيد ترحيل جميع المهام غير المكتملة للأمام بدءاً من اليوم مع الإبقاء التام على الأوراد المكتملة.'}
                     {pendingRecoveryMode === 'light' && 'تأكيد تخصيص اليوم كمراجعة وتثبيت خفيف لما فات، واستئناف الحفظ الجديد من اليوم الدراسي التالي.'}
                     {pendingRecoveryMode === 'rebalance' && 'تأكيد إعادة توزيع المتبقي بالتساوي على الأيام النشطة المتاحة مع الاحتفاظ بكامل السجلات المكتملة.'}
@@ -1405,7 +1405,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                       type="button"
                       disabled={isApplyingRecovery}
                       onClick={() => setPendingRecoveryMode(null)}
-                      className="min-h-11 px-3.5 py-2 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold"
+                      className="min-h-11 px-3.5 py-2 rounded-xl border border-[var(--wird-border)] text-[var(--wird-muted)] font-semibold"
                     >
                       تراجع
                     </button>
@@ -1426,8 +1426,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
           {/* 4. Schedule View Modes & Task List */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <h3 className="font-bold text-sm text-[var(--wird-text)] flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                 <span className="tabular-nums">
                   جدول المهام اليومية الموزعة ({activePlan.schedule.length} يوماً)
                 </span>
@@ -1440,8 +1440,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   aria-pressed={scheduleViewMode === 'weekly'}
                   className={`min-h-11 px-3 py-1 rounded-lg transition-colors whitespace-nowrap ${
                     scheduleViewMode === 'weekly'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                      : 'text-[var(--wird-muted)]'
                   }`}
                 >
                   أول أسبوعين
@@ -1452,8 +1452,8 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                   aria-pressed={scheduleViewMode === 'all'}
                   className={`min-h-11 px-3 py-1 rounded-lg transition-colors whitespace-nowrap ${
                     scheduleViewMode === 'all'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                      : 'text-[var(--wird-muted)]'
                   }`}
                 >
                   الجدول كاملاً
@@ -1471,11 +1471,11 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     return (
                       <div
                         key={day.id}
-                        className="p-4 rounded-2xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/12 bg-[#F2EDE2]/50 dark:bg-[#0B132B]/40 flex items-center justify-between text-xs text-[#5B6F6B] dark:text-[#8B9E9B]"
+                        className="p-4 rounded-2xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] dark:bg-[var(--wird-bg)]/85 flex items-center justify-between text-xs text-[var(--wird-muted)]"
                       >
                         <div className="flex items-center gap-3">
                           <span className="font-mono tabular-nums">{day.date}</span>
-                          <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                          <span className="font-bold text-[var(--wird-text)]">
                             ({day.dayNameAr})
                           </span>
                           <span>{day.notes || 'استراحة أسبوعية'}</span>
@@ -1489,18 +1489,18 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                     <div
                       key={day.id}
                       className={`wird-card p-5 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                        isDone ? 'border-[#1C4E46]/40 dark:border-[#E0A96D]/40' : ''
+                        isDone ? 'border-[var(--wird-border-strong)] dark:border-[var(--wird-border-gold)]' : ''
                       }`}
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2.5 text-xs">
-                          <span className="font-mono font-bold tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                          <span className="font-mono font-bold tabular-nums text-[var(--wird-muted)]">
                             {day.date}
                           </span>
-                          <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+                          <span className="font-bold text-[var(--wird-text)]">
                             ({day.dayNameAr})
                           </span>
-                          <span className="text-[#5B6F6B]">·</span>
+                          <span className="text-[var(--wird-muted)]">·</span>
                           {isDone ? (() => {
                             const task = day.memorizationTask!;
                             const completedDate = task.completedDate || (typeof task.completedAt === 'string' ? task.completedAt.slice(0, 10) : day.date);
@@ -1511,12 +1511,12 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                                 ? 'تم الحفظ متأخراً'
                                 : 'تم الحفظ في موعده';
                             return (
-                              <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] inline-flex items-center gap-1">
+                              <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] inline-flex items-center gap-1">
                                 <Check className="w-3.5 h-3.5" /> {timingLabel}
                               </span>
                             );
                           })() : (
-                            <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                            <span className="text-[11px] text-[var(--wird-muted)]">
                               قيد الإنجاز
                             </span>
                           )}
@@ -1524,23 +1524,23 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
                         {day.memorizationTask && (
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-bold text-base font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+                            <span className="font-bold text-base font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                               سورة {day.memorizationTask.surahName} · الآيات ({day.memorizationTask.startAyah} - {day.memorizationTask.endAyah})
                             </span>
-                            <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
+                            <span className="text-xs text-[var(--wird-muted)] font-mono tabular-nums">
                               ({day.memorizationTask.versesCount} آيات · ~{day.memorizationTask.estimatedMinutes}د)
                             </span>
                           </div>
                         )}
 
                         {day.minorRevisionTask && (
-                          <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                          <div className="text-[11px] text-[var(--wird-muted)]">
                             المراجعة الصغرى: {day.minorRevisionTask.description}
                           </div>
                         )}
 
                         {day.majorRevisionTask && (
-                          <div className="text-[11px] text-[#9A7512] dark:text-[#E0A96D]">
+                          <div className="text-[11px] text-[var(--wird-accent)]">
                             المراجعة الكبرى: {day.majorRevisionTask.description}
                           </div>
                         )}
@@ -1565,7 +1565,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                         )}
 
                         {day.memorizationTask && isDone && (
-                          <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                          <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                             ✓ مكتملة في الجدول
                           </span>
                         )}
@@ -1586,23 +1586,23 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="wird-engine-recalculate-title"
-            className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right"
+            className="bg-[var(--wird-surface)] rounded-3xl p-6 max-w-md w-full border border-[var(--wird-border-gold)] shadow-2xl space-y-4 text-right"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] flex items-center justify-center shrink-0">
                 <RotateCcw className="w-5 h-5" />
               </div>
               <div>
-                <h3 id="wird-engine-recalculate-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
+                <h3 id="wird-engine-recalculate-title" className="font-bold text-[var(--wird-text)] text-base">
                   إعادة جدولة المهام القادمة
                 </h3>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <p className="text-xs text-[var(--wird-muted)]">
                   إعادة موازنة الجدول بدءاً من اليوم
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-[#142421] dark:text-[#F5F1E8] leading-relaxed bg-white dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+            <p className="text-xs text-[var(--wird-text)] leading-relaxed bg-[var(--wird-surface)]/70 p-3.5 rounded-xl border border-[var(--wird-border)]">
               ستُعاد جدولة المهام المتبقية بناءً على تاريخ اليوم ومعدل تقدمك، مع <strong>الحفاظ الكامل على جميع الأوراد المكتملة وسجل إنجازك دون أي مساس</strong>.
             </p>
 
@@ -1611,7 +1611,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                 type="button"
                 ref={cancelRecalculateRef}
                 onClick={() => setShowRecalculateConfirm(false)}
-                className="min-h-11 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
+                className="min-h-11 px-4 py-2 text-xs font-semibold text-[var(--wird-muted)] hover:bg-[var(--wird-surface-hover)] rounded-xl transition-colors"
               >
                 إلغاء
               </button>
@@ -1635,23 +1635,23 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="wird-engine-delete-title"
-            className="bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4 text-right"
+            className="bg-[var(--wird-surface)] rounded-3xl p-6 max-w-md w-full border border-[var(--wird-border-gold)] shadow-2xl space-y-4 text-right"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 id="wird-engine-delete-title" className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
+                <h3 id="wird-engine-delete-title" className="font-bold text-[var(--wird-text)] text-base">
                   حذف الخطة الذكية
                 </h3>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <p className="text-xs text-[var(--wird-muted)]">
                   تأكيد إزالة الخطة من قائمة الأهداف
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-[#142421] dark:text-[#F5F1E8] leading-relaxed bg-white dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+            <p className="text-xs text-[var(--wird-text)] leading-relaxed bg-[var(--wird-surface)]/70 p-3.5 rounded-xl border border-[var(--wird-border)]">
               هل أنت متأكد من حذف هذه الخطة؟ <strong>لن يؤثر الحذف إطلاقاً على الآيات والمقاطع التي أتممت حفظها في المصحف وسجل التكرار والمراجعة</strong>؛ سيتم فقط حذف جدول الخطة المستقبلي.
             </p>
 
@@ -1660,7 +1660,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                 type="button"
                 ref={cancelDeleteRef}
                 onClick={() => setPlanToDelete(null)}
-                className="min-h-11 px-4 py-2 text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl transition-colors"
+                className="min-h-11 px-4 py-2 text-xs font-semibold text-[var(--wird-muted)] hover:bg-[var(--wird-surface-hover)] rounded-xl transition-colors"
               >
                 إلغاء
               </button>

@@ -70,6 +70,7 @@ import { runAdhkarSystemTests } from './adhkarSystem.test';
 import { runSeerahSystemTests } from './seerahSystem.test';
 import { runPrayerTimesServiceTests } from '../services/prayerTimesService.test';
 import { runTombstoneReconciliationServiceTests } from '../services/tombstoneReconciliationService.test';
+import { runDesignSystemV2Tests } from './designSystemV2.test';
 
 export interface SuiteResult {
   passed: number;
@@ -187,6 +188,7 @@ async function main() {
     { name: 'Chronological Sourced Prophetic Seerah Book, Claims, Bookmarks & UID-Scoped Progress', runner: runSeerahSystemTests },
     { name: 'AlAdhan Prayer Times Adapter, Great-Circle Qibla Bearing & UID-Scoped Offline Cache', runner: runPrayerTimesServiceTests },
     { name: 'Multi-Device Tombstone Anti-Resurrection, Restore & Weak-Verse Delta Convergence', runner: runTombstoneReconciliationServiceTests },
+    { name: 'WIRD Design System V2 Multi-Theme Presets, Token Cascade & Application Shell', runner: runDesignSystemV2Tests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);

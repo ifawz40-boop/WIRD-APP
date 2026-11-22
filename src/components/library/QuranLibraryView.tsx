@@ -732,67 +732,66 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       className={`space-y-8 ${READING_PAGE_WIDTH_CLASSES[displayPreferences.pageWidth]} mx-auto pb-24 transition-all`}
     >
       {lastReadingPosition && (
-        <button type="button" onClick={handleResumeReading} className="min-h-11 rounded-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/35 bg-[#F2EDE2] dark:bg-[#111F36] px-4 py-2 text-sm font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:border-[#C59B27] transition-colors">
+        <button type="button" onClick={handleResumeReading} className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] px-4 py-2 text-sm font-bold text-[var(--wird-primary)] hover:border-[var(--wird-accent)] transition-colors">
           متابعة آخر موضع قراءة · سورة {ALL_SURAHS[lastReadingPosition.surahNumber - 1]?.name} · الآية {lastReadingPosition.ayahNumber}
         </button>
       )}
-      {/* 1. Hero Quran Header Banner */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B132B] via-[#1C4E46] to-[#111F36] text-white p-7 md:p-10 shadow-xl border border-[#C59B27]/35">
-        <WirdIslamicPattern opacity={0.06} className="text-white" />
-        <div className="absolute top-0 left-0 w-80 h-80 bg-radial from-[#E0A96D]/20 via-transparent to-transparent rounded-full -translate-x-20 -translate-y-20 pointer-events-none" />
+      {/* 1. Calm Editorial Quran Hero Banner */}
+      <section className="wird-hero-surface relative overflow-hidden rounded-[var(--wird-radius-card)] p-6 md:p-8">
+        <WirdIslamicPattern opacity={0.055} variant="gold" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl text-right">
-            <p className="text-xs font-semibold text-[#E0A96D] flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#C59B27] shrink-0" />
-              <span>قراءة القرآن الكريم · برواية حفص عن عاصم</span>
+          <div className="space-y-2.5 max-w-2xl text-right">
+            <p className="text-xs font-semibold text-[#E6B85C] flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <span>المصحف المطبوع والقراءة · برواية حفص عن عاصم</span>
             </p>
-            <h1 className="text-3xl md:text-5xl font-black font-quran text-[#F9F6EE] tracking-wide leading-tight">
+            <h1 className="text-3xl md:text-4xl font-black font-quran text-[#F9F6EE] tracking-wide leading-tight">
               القرآن الكريم
             </h1>
-            <p className="text-[#F5F1E8]/85 text-sm md:text-base leading-relaxed font-sans-ui">
-              تصفّح سور القرآن الكريم الـ 114 كاملة مع الاستماع المباشر لكبار القرّاء، وعرض التفسير المعتمد من منصة Quran.com، والقراءة بصفحات المصحف الشريف.
+            <p className="text-[#F5F1E8]/85 text-sm leading-relaxed font-sans-ui">
+              اقرأ في المصحف المطبوع بصفحة أو صفحتين متقابلتين مع التفسير المقابل، أو تصفّح السور الـ 114 والأجزاء الثلاثين مع الاستماع والختمات.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {readingKhatma && !readingKhatma.completedAt && (
               <button
                 type="button"
                 onClick={() => handleOpenMushafPage(getReadingKhatmaProgress(readingKhatma).resumePage)}
-                className="min-h-12 inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-[#C59B27]/60 bg-white/10 hover:bg-white/20 text-[#F9F6EE] text-sm font-bold shadow-lg transition-colors tabular-nums"
+                className="min-h-12 inline-flex items-center gap-2 px-4 py-2.5 rounded-[var(--wird-radius-control)] border border-white/25 bg-white/12 hover:bg-white/20 text-[#F9F6EE] text-xs md:text-sm font-bold transition-colors tabular-nums"
               >
-                <BookOpen className="w-4 h-4 text-[#E0A96D]" />
+                <BookOpen className="w-4 h-4 text-[#E6B85C]" />
                 <span>استكمال ختمة القراءة · ص {getReadingKhatmaProgress(readingKhatma).resumePage}</span>
               </button>
             )}
             <button
               type="button"
               onClick={() => handleOpenMushafPage(selectedSurah.pageStart)}
-              className="min-h-12 inline-flex items-center gap-2 px-5 py-3 rounded-2xl wird-btn-accent text-sm font-bold shadow-lg"
+              className="min-h-12 inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--wird-radius-control)] wird-btn-accent text-xs md:text-sm font-bold"
             >
-              <BookOpen className="w-4 h-4 fill-[#0B132B]" />
-              <span>فتح المصحف بالصفحات (604)</span>
+              <BookOpen className="w-4 h-4" />
+              <span>فتح المصحف المطبوع (604)</span>
             </button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="mt-8 max-w-3xl mx-auto relative">
-          <Search className="w-5 h-5 text-[#5B6F6B] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="mt-6 max-w-3xl mx-auto relative">
+          <Search className="w-5 h-5 text-[var(--wird-muted)] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ابحث عن أي سورة، رقمها، أو جزء (مثال: الملك، 67، البقرة، جزء عم)..."
-            className="w-full min-h-12 pl-10 pr-12 py-3.5 bg-[#F9F6EE] dark:bg-[#111F36]/95 text-[#142421] dark:text-[#F5F1E8] rounded-2xl text-sm md:text-base shadow-xl border border-[#C59B27]/30 focus:outline-none focus:ring-2 focus:ring-[#E0A96D] transition-all placeholder:text-[#5B6F6B] dark:placeholder:text-[#8B9E9B]"
+            className="w-full min-h-12 pl-10 pr-12 py-3 bg-[var(--wird-surface)] text-[var(--wird-text)] rounded-[var(--wird-radius-control)] text-sm shadow-md border border-[var(--wird-border-gold)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-accent)] transition-all placeholder:text-[var(--wird-muted)]"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
               aria-label="مسح البحث"
-              className="min-h-10 min-w-10 flex items-center justify-center absolute left-2 top-1/2 -translate-y-1/2 text-[#5B6F6B] hover:text-[#142421] dark:hover:text-[#F5F1E8]"
+              className="min-h-10 min-w-10 flex items-center justify-center absolute left-2 top-1/2 -translate-y-1/2 text-[var(--wird-muted)] hover:text-[var(--wird-text)]"
             >
               <X className="w-4 h-4" />
             </button>
@@ -818,16 +817,16 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       />
 
       {/* 2. Top Segmented Navigation Tabs + Direct Reciter Rail + Speed */}
-      <div className="space-y-3 border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/15 pb-3">
+      <div className="space-y-3 border-b border-[var(--wird-border)] pb-3">
         <HorizontalScrollRail ariaLabel="أقسام تصفح القرآن" activeKey={activeTab}>
           <button
             type="button"
             onClick={() => setActiveTab('surahs')}
             aria-pressed={activeTab === 'surahs'}
-            className={`min-h-11 shrink-0 snap-start px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+            className={`min-h-11 shrink-0 snap-start px-4 py-2 rounded-[var(--wird-radius-control)] text-xs font-bold border transition-all ${
               activeTab === 'surahs'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
             }`}
           >
             السور ({filteredSurahs.length})
@@ -836,10 +835,10 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
             type="button"
             onClick={() => setActiveTab('juz')}
             aria-pressed={activeTab === 'juz'}
-            className={`min-h-11 shrink-0 snap-start px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+            className={`min-h-11 shrink-0 snap-start px-4 py-2 rounded-[var(--wird-radius-control)] text-xs font-bold border transition-all ${
               activeTab === 'juz'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
             }`}
           >
             الأجزاء (30 جزء)
@@ -848,10 +847,10 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
             type="button"
             onClick={() => setActiveTab('study')}
             aria-pressed={activeTab === 'study'}
-            className={`min-h-11 shrink-0 snap-start px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+            className={`min-h-11 shrink-0 snap-start px-4 py-2 rounded-[var(--wird-radius-control)] text-xs font-bold border transition-all flex items-center gap-1.5 ${
               activeTab === 'study'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 shrink-0" />
@@ -862,7 +861,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         {/* Global Controls: Direct Reciter Buttons + Audio Speed */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="inline-flex items-center gap-1.5 font-bold text-[#1C4E46] dark:text-[#E0A96D] shrink-0">
+            <span className="inline-flex items-center gap-1.5 font-bold text-[var(--wird-primary)] shrink-0">
               <Volume2 className="w-4 h-4" />
               <span>القارئ:</span>
             </span>
@@ -880,10 +879,10 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       savePreferredReciter(r.id);
                       setActiveReciter(r.id);
                     }}
-                    className={`min-h-11 shrink-0 snap-start px-3 py-1.5 rounded-xl border text-xs font-bold transition-all whitespace-nowrap ${
+                    className={`min-h-10 shrink-0 snap-start px-3 py-1.5 rounded-[var(--wird-radius-control)] border text-xs font-bold transition-all whitespace-nowrap ${
                       isReciterActive
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                        : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                        : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                     }`}
                   >
                     {shortName}
@@ -908,51 +907,32 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       {/* Scaled Reading Stage (settings menu & fixed audio bar stay crisp at 100%) */}
       <div className="space-y-8" style={{ zoom: displayPreferences.uiScale / 100 }}>
 
-      {/* 3. TAB 1: SURAHS DIRECTORY GRID (Like Quran.com Home) */}
+      {/* 3. TAB 1: SURAHS DIRECTORY GRID */}
       {activeTab === 'surahs' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-5">
           {/* Revelation Filters */}
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold">تصنيف النزول:</span>
-              <div className="inline-flex p-1 bg-[#F2EDE2] dark:bg-[#0E1A2F] rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
-                <button
-                  type="button"
-                  onClick={() => setRevelationFilter('all')}
-                  className={`min-h-10 px-3.5 py-1.5 rounded-lg font-bold transition-colors ${
-                    revelationFilter === 'all'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-2xs'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
-                  }`}
-                >
-                  الكل
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRevelationFilter('مكية')}
-                  className={`min-h-10 px-3.5 py-1.5 rounded-lg font-bold transition-colors ${
-                    revelationFilter === 'مكية'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-2xs'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
-                  }`}
-                >
-                  مكية
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRevelationFilter('مدنية')}
-                  className={`min-h-10 px-3.5 py-1.5 rounded-lg font-bold transition-colors ${
-                    revelationFilter === 'مدنية'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-2xs'
-                      : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
-                  }`}
-                >
-                  مدنية
-                </button>
+              <span className="text-[var(--wird-muted)] font-semibold">تصنيف النزول:</span>
+              <div className="inline-flex p-1 bg-[var(--wird-surface-muted)] rounded-[var(--wird-radius-control)] border border-[var(--wird-border)]">
+                {(['all', 'مكية', 'مدنية'] as const).map(filter => (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setRevelationFilter(filter)}
+                    className={`min-h-9 px-3.5 py-1 rounded-lg font-bold transition-colors ${
+                      revelationFilter === filter
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-2xs'
+                        : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
+                    }`}
+                  >
+                    {filter === 'all' ? 'الكل' : filter}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-xs tabular-nums font-medium">
+            <div className="text-[var(--wird-muted)] text-xs tabular-nums font-medium">
               عرض {filteredSurahs.length} من أصل 114 سورة
             </div>
           </div>
@@ -964,18 +944,18 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
               return (
                 <article
                   key={surah.number}
-                  className={`wird-card group relative p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                  className={`wird-card group relative p-4 rounded-[var(--wird-radius-card)] transition-all flex flex-col justify-between ${
                     isSelected
-                      ? 'border-[#C59B27] dark:border-[#E0A96D] shadow-sm ring-1 ring-[#C59B27]/40'
-                      : 'hover:border-[#C59B27]/60 dark:hover:border-[#E0A96D]/50 hover:shadow-md'
+                      ? 'border-[var(--wird-accent)] ring-1 ring-[var(--wird-border-gold)]'
+                      : 'hover:border-[var(--wird-border-gold)]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-mono tabular-nums font-bold text-xs transition-colors ${
                         isSelected
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-[#E0A96D] border-[#C59B27]'
-                          : 'bg-[#F2EDE2] dark:bg-[#162744] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#1C4E46] dark:text-[#E0A96D] group-hover:bg-[#1C4E46] group-hover:text-white'
+                          ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                          : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-primary)] group-hover:bg-[var(--wird-primary)] group-hover:text-[var(--wird-primary-ink)]'
                       }`}>
                         {surah.number}
                       </div>
@@ -987,24 +967,24 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                             onClick={() => handleOpenStudy(surah)}
                             aria-label={`فتح سورة ${surah.name} للدراسة`}
                             aria-pressed={isSelected}
-                            className="text-right text-[#142421] dark:text-[#F5F1E8] hover:text-[#1C4E46] dark:hover:text-[#E0A96D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] rounded-md transition-colors"
+                            className="text-right text-[var(--wird-text)] hover:text-[var(--wird-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-accent)] rounded-md transition-colors"
                           >
                             سورة {surah.name}
                           </button>
                         </h3>
-                        <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-sans tracking-wide">
+                        <p className="text-xs text-[var(--wird-muted)] font-sans tracking-wide">
                           {surah.englishName}
                         </p>
                       </div>
                     </div>
 
-                    <span className="text-[11px] font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    <span className="text-[11px] font-semibold text-[var(--wird-muted)]">
                       {surah.revelationType}
                     </span>
                   </div>
 
                   {/* Unboxed Metadata & Action Buttons */}
-                  <div className="mt-4 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex items-center justify-between text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  <div className="mt-4 pt-3 border-t border-[var(--wird-border)] flex items-center justify-between text-xs text-[var(--wird-muted)]">
                     <div className="flex items-center gap-1.5 text-[11px] tabular-nums">
                       <span>{surah.versesCount} آيات</span>
                       <span aria-hidden="true">·</span>
@@ -1021,7 +1001,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                         }}
                         title="قراءة في المصحف"
                         aria-label={`قراءة سورة ${surah.name} في المصحف`}
-                        className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[#1C4E46]/10 dark:hover:bg-[#1E4A47] text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#1C4E46] dark:hover:text-[#E0A96D] transition-colors"
+                        className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] hover:text-[var(--wird-primary)] transition-colors"
                       >
                         <BookOpen className="w-4 h-4" />
                       </button>
@@ -1033,7 +1013,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                         }}
                         title="بدء حفظ السورة"
                         aria-label={`بدء جلسة حفظ لسورة ${surah.name}`}
-                        className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[#C59B27]/15 dark:hover:bg-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#C59B27] dark:hover:text-[#E0A96D] transition-colors"
+                        className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[var(--wird-accent-soft)] text-[var(--wird-muted)] hover:text-[var(--wird-accent)] transition-colors"
                       >
                         <Sparkles className="w-4 h-4" />
                       </button>
@@ -1045,7 +1025,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
           </div>
 
           {filteredSurahs.length === 0 && (
-            <div className="wird-card text-center py-16 rounded-3xl text-[#5B6F6B] dark:text-[#8B9E9B] text-sm">
+            <div className="wird-card text-center py-16 rounded-3xl text-[var(--wird-muted)] text-sm">
               لم يتم العثور على سور مطابقة لكلمة البحث. جرّب البحث برقم السورة أو كتابة اسم آخر.
             </div>
           )}
@@ -1054,7 +1034,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
       {/* 4. TAB 2: JUZ DIRECTORY GRID (30 Juz) */}
       {activeTab === 'juz' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 30 }, (_, index) => index + 1).map((juzNumber) => {
               const point = JUZ_INDEX[String(juzNumber)];
@@ -1064,33 +1044,33 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
               return (
                 <div
                   key={juzNumber}
-                  className="wird-card p-5 rounded-2xl hover:border-[#C59B27] dark:hover:border-[#E0A96D] hover:shadow-md transition-all flex flex-col justify-between"
+                  className="wird-card p-5 rounded-[var(--wird-radius-card)] hover:border-[var(--wird-border-gold)] transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 border border-[#C59B27]/40 dark:border-[#E0A96D]/30 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center font-bold font-mono tabular-nums text-sm">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--wird-accent-soft)] border border-[var(--wird-border-gold)] text-[var(--wird-accent)] flex items-center justify-center font-bold font-mono tabular-nums text-sm">
                         {juzNumber}
                       </div>
                       <div>
-                        <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8]">
+                        <h3 className="font-bold text-base text-[var(--wird-text)]">
                           {juzName}
                         </h3>
-                        <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+                        <p className="text-xs text-[var(--wird-muted)]">
                           يبدأ من: سورة {startSurah?.name || '—'} (الآية {point?.ayahNumber || 1})
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex items-center justify-between text-xs">
-                    <span className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[11px] tabular-nums">
+                  <div className="mt-5 pt-3 border-t border-[var(--wird-border)] flex items-center justify-between text-xs">
+                    <span className="text-[var(--wird-muted)] text-[11px] tabular-nums">
                       صفحة {point?.page || Math.ceil((juzNumber - 1) * 20 + 2)}
                     </span>
 
                     <button
                       type="button"
                       onClick={() => handleOpenMushafPage(point?.page || 1)}
-                      className="min-h-11 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1C4E46]/10 dark:bg-[#1E4A47] text-[#1C4E46] dark:text-[#F5F1E8] hover:bg-[#1C4E46] hover:text-white font-bold transition-colors"
+                      className="min-h-11 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] hover:bg-[var(--wird-primary)] hover:text-[var(--wird-primary-ink)] font-bold transition-colors"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>قراءة الجزء</span>
@@ -1105,54 +1085,54 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
       {/* 5. TAB 3: VERSE-BY-VERSE STUDY & RECITATION VIEW */}
       {activeTab === 'study' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           {/* Surah Header Card with Calligraphy and Metadata */}
-          <div className="rounded-3xl border border-[#C59B27]/40 dark:border-[#E0A96D]/30 bg-gradient-to-br from-[#F9F6EE] to-[#F2EDE2] dark:from-[#111F36] dark:to-[#0B132B] p-6 md:p-8 text-center relative overflow-hidden shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold border-b border-[#C59B27]/25 dark:border-[#E0A96D]/20 pb-3 mb-4">
+          <div className="rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface)] p-6 md:p-8 text-center relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--wird-muted)] font-semibold border-b border-[var(--wird-border)] pb-3 mb-4">
               <span>الجزء {selectedSurah.juzStart} {selectedSurah.juzEnd !== selectedSurah.juzStart && `إلى ${selectedSurah.juzEnd}`}</span>
-              <span className="font-quran text-lg text-[#1C4E46] dark:text-[#E0A96D] font-bold">
+              <span className="font-quran text-lg text-[var(--wird-primary)] font-bold">
                 سورة {selectedSurah.name} ({selectedSurah.englishName})
               </span>
               <span className="tabular-nums">{selectedSurah.revelationType} · صفحة {selectedSurah.pageStart}</span>
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-black font-quran text-[#1C4E46] dark:text-[#F9F6EE] my-2">
+            <h2 className="text-3xl md:text-5xl font-black font-quran text-[var(--wird-primary)] my-2">
               سُورَةُ {selectedSurah.name}
             </h2>
 
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1 tabular-nums">
-              عدد آياتها: <strong className="font-mono text-[#142421] dark:text-[#E0A96D]">{selectedSurah.versesCount}</strong> آية
+            <p className="text-xs text-[var(--wird-muted)] mt-1 tabular-nums">
+              عدد آياتها: <strong className="font-mono text-[var(--wird-text)]">{selectedSurah.versesCount}</strong> آية
             </p>
 
             {/* Sacred Basmalah */}
             {selectedSurah.number !== 1 && selectedSurah.number !== 9 && (
-              <p className="font-quran text-2xl md:text-3xl text-[#1C4E46] dark:text-[#E0A96D] py-4 mt-2">
+              <p className="font-quran text-2xl md:text-3xl text-[var(--wird-primary)] py-4 mt-2">
                 <QuranBasmala surahNumber={selectedSurah.number} />
               </p>
             )}
 
             {/* Quick Action Shortcuts */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-3 border-t border-[#C59B27]/25 dark:border-[#E0A96D]/20">
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-3 border-t border-[var(--wird-border)]">
               <button
                 type="button"
                 onClick={() => handlePlayAyah(1)}
-                className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white font-bold text-xs transition-colors shadow-xs"
+                className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--wird-radius-control)] bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] font-bold text-xs transition-colors shadow-xs"
               >
-                <Play className="w-3.5 h-3.5 fill-white" />
+                <Play className="w-3.5 h-3.5 fill-current" />
                 <span>استماع للسورة من البداية</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleOpenMushafPage(selectedSurah.pageStart)}
-                className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 font-bold text-xs transition-colors"
+                className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-accent)] border border-[var(--wird-border-strong)] font-bold text-xs transition-colors"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[#1C4E46] dark:text-[#E0A96D]" />
+                <BookOpen className="w-3.5 h-3.5 text-[var(--wird-primary)]" />
                 <span>فتح صفحة {selectedSurah.pageStart} في المصحف</span>
               </button>
 
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white/80 dark:bg-[#0B132B]/70 px-2.5 py-1.5 text-xs">
-                <label className="inline-flex items-center gap-1.5 font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="flex flex-wrap items-center gap-2 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface-muted)] px-2.5 py-1.5 text-xs">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-muted)]">
                   <span>من</span>
                   <select
                     aria-label="بداية نطاق الحفظ من الآية"
@@ -1162,7 +1142,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       setSessionRangeStart(nextStart);
                       if (sessionRangeEnd < nextStart) setSessionRangeEnd(nextStart);
                     }}
-                    className="min-h-9 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#111F36] px-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] tabular-nums"
+                    className="min-h-9 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-xs font-bold text-[var(--wird-text)] tabular-nums"
                   >
                     {Array.from({ length: selectedSurah.versesCount }, (_, i) => i + 1).map(num => (
                       <option key={num} value={num}>آية {num}</option>
@@ -1170,13 +1150,13 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                   </select>
                 </label>
 
-                <label className="inline-flex items-center gap-1.5 font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-muted)]">
                   <span>إلى</span>
                   <select
                     aria-label="نهاية نطاق الحفظ إلى الآية"
                     value={sessionRangeEnd}
                     onChange={event => setSessionRangeEnd(Number(event.target.value))}
-                    className="min-h-9 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#111F36] px-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] tabular-nums"
+                    className="min-h-9 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-xs font-bold text-[var(--wird-text)] tabular-nums"
                   >
                     {Array.from(
                       { length: selectedSurah.versesCount - sessionRangeStart + 1 },
@@ -1190,7 +1170,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onStartSession(selectedSurah.number, sessionRangeStart, sessionRangeEnd)}
-                  className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-xl wird-btn-accent text-xs font-bold shadow-xs"
+                  className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--wird-radius-control)] wird-btn-accent text-xs font-bold shadow-xs"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>

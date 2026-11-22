@@ -378,11 +378,11 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
       {/* 1. Header & Test Mode Switcher */}
       <div className="wird-card p-6 space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
-            <CheckCircle className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+          <h2 className="text-xl font-bold text-[var(--wird-text)] flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
             <span>اختبارات الحفظ والتقييم الذاتي المتقدمة</span>
           </h2>
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+          <p className="text-xs text-[var(--wird-muted)] mt-1">
             امتحانات قرآنية تفاعلية دقيقة: إكمال الآيات، الاسترجاع العكسي، المتشابهات اللفظية، وسحب عشوائي من المحفوظ
           </p>
         </div>
@@ -393,15 +393,15 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             type="button"
             aria-pressed={selectedTestType === 'complete_verse'}
             onClick={() => handleSwitchTestType('complete_verse')}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`min-h-11 p-3 rounded-[var(--wird-radius-control)] border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               selectedTestType === 'complete_verse'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
             }`}
           >
-            <BookOpen className={`w-4 h-4 ${selectedTestType === 'complete_verse' ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
+            <BookOpen className={`w-4 h-4 ${selectedTestType === 'complete_verse' ? 'text-[var(--wird-accent)]' : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'}`} />
             <div className="font-bold text-xs">أكمل الآية التالية</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'complete_verse' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'complete_verse' ? 'opacity-85' : 'text-[var(--wird-muted)]'}`}>
               التسلسل الأمامي
             </div>
           </button>
@@ -410,15 +410,15 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             type="button"
             aria-pressed={selectedTestType === 'bidirectional_recall'}
             onClick={() => handleSwitchTestType('bidirectional_recall')}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`min-h-11 p-3 rounded-[var(--wird-radius-control)] border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               selectedTestType === 'bidirectional_recall'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
             }`}
           >
-            <ArrowUpDown className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+            <ArrowUpDown className="w-4 h-4 text-[var(--wird-accent)]" />
             <div className="font-bold text-xs">الآية السابقة والتالية</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'bidirectional_recall' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'bidirectional_recall' ? 'opacity-85' : 'text-[var(--wird-muted)]'}`}>
               الاسترجاع الثنائي
             </div>
           </button>
@@ -427,15 +427,15 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             type="button"
             aria-pressed={selectedTestType === 'fill_blank_words'}
             onClick={() => handleSwitchTestType('fill_blank_words')}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`min-h-11 p-3 rounded-[var(--wird-radius-control)] border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               selectedTestType === 'fill_blank_words'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
             }`}
           >
-            <ListFilter className={`w-4 h-4 ${selectedTestType === 'fill_blank_words' ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
+            <ListFilter className={`w-4 h-4 ${selectedTestType === 'fill_blank_words' ? 'text-[var(--wird-accent)]' : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'}`} />
             <div className="font-bold text-xs">إكمال الكلمات المفقودة</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'fill_blank_words' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'fill_blank_words' ? 'opacity-85' : 'text-[var(--wird-muted)]'}`}>
               تثبيت المواضع
             </div>
           </button>
@@ -444,15 +444,15 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             type="button"
             aria-pressed={selectedTestType === 'random_recall'}
             onClick={() => handleSwitchTestType('random_recall')}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`min-h-11 p-3 rounded-[var(--wird-radius-control)] border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               selectedTestType === 'random_recall'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
             }`}
           >
-            <Shuffle className={`w-4 h-4 ${selectedTestType === 'random_recall' ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
+            <Shuffle className={`w-4 h-4 ${selectedTestType === 'random_recall' ? 'text-[var(--wird-accent)]' : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'}`} />
             <div className="font-bold text-xs">عشوائي من المحفوظ</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'random_recall' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'random_recall' ? 'opacity-85' : 'text-[var(--wird-muted)]'}`}>
               اختبار المفاجأة
             </div>
           </button>
@@ -461,15 +461,15 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             type="button"
             aria-pressed={selectedTestType === 'mutashabihat'}
             onClick={() => handleSwitchTestType('mutashabihat')}
-            className={`min-h-11 p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`min-h-11 p-3 rounded-[var(--wird-radius-control)] border text-center transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               selectedTestType === 'mutashabihat'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+            <Sparkles className="w-4 h-4 text-[var(--wird-accent)]" />
             <div className="font-bold text-xs">المتشابهات اللفظية</div>
-            <div className={`text-[10px] font-normal ${selectedTestType === 'mutashabihat' ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+            <div className={`text-[10px] font-normal ${selectedTestType === 'mutashabihat' ? 'opacity-85' : 'text-[var(--wird-muted)]'}`}>
               الضوابط القرآنية
             </div>
           </button>
@@ -478,7 +478,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
         {/* Scope Selector Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 text-xs">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">نطاق الأسئلة:</span>
+            <span className="font-bold text-[var(--wird-muted)]">نطاق الأسئلة:</span>
             <div role="group" aria-label="نطاق أسئلة الاختبار" className="inline-flex flex-wrap items-center gap-1.5">
               {[
                 { id: 'all' as const, label: 'كل المحفوظ' },
@@ -490,10 +490,10 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
                   type="button"
                   aria-pressed={scope === item.id}
                   onClick={() => handleSwitchScope(item.id)}
-                  className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border transition-colors whitespace-nowrap ${
+                  className={`min-h-11 px-3 py-1.5 rounded-[var(--wird-radius-control)] font-bold border transition-colors whitespace-nowrap ${
                     scope === item.id
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   {item.label}
@@ -504,7 +504,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
 
           {scope === 'surah' && (
             <label className="flex items-center gap-2">
-              <span className="font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] whitespace-nowrap">السورة:</span>
+              <span className="font-semibold text-[var(--wird-muted)] whitespace-nowrap">السورة:</span>
               <select
                 aria-label="اختيار سورة نطاق الاختبار"
                 value={scopeSurahNumber}
@@ -512,7 +512,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
                   setScopeSurahNumber(Number(e.target.value));
                   resetQuizState(false);
                 }}
-                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
               >
                 {ALL_SURAHS.map(s => (
                   <option key={s.number} value={s.number}>
@@ -537,49 +537,49 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
       <div style={{ zoom: displayPreferences.uiScale / 100 }}>
       {isFinished ? (
         <div className="wird-card p-8 text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 text-[#1C4E46] dark:text-[#E0A96D] flex items-center justify-center mx-auto border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--wird-accent-soft)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center justify-center mx-auto border border-[var(--wird-border-gold)]">
             <Award className="w-8 h-8" />
           </div>
 
           <div className="space-y-1">
-            <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] uppercase tracking-wider">
+            <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] uppercase tracking-wider">
               نتيجة الاختبار القرآني
             </span>
-            <h3 className="text-2xl font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
+            <h3 className="text-2xl font-bold text-[var(--wird-text)]">
               أحسنت بارك الله فيك ونفع بك!
             </h3>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
-              حصلت على <strong className="text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums text-sm">{score}</strong> من <strong className="font-mono tabular-nums text-sm">{currentQuestions.length}</strong>
+            <p className="text-xs text-[var(--wird-muted)]">
+              حصلت على <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-mono tabular-nums text-sm">{score}</strong> من <strong className="font-mono tabular-nums text-sm">{currentQuestions.length}</strong>
             </p>
           </div>
 
-          <div className="p-4 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 max-w-sm mx-auto text-xs space-y-2">
+          <div className="p-4 bg-[var(--wird-surface-muted)] rounded-xl border border-[var(--wird-border)] max-w-sm mx-auto text-xs space-y-2">
             <div className="flex justify-between">
-              <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">معدل الدقة الإجمالي:</span>
-              <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
+              <span className="text-[var(--wird-muted)]">معدل الدقة الإجمالي:</span>
+              <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-mono tabular-nums">
                 {Math.round((score / Math.max(1, currentQuestions.length)) * 100)}%
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">مستوى الرسوخ الذهني:</span>
-              <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">
+              <span className="text-[var(--wird-muted)]">مستوى الرسوخ الذهني:</span>
+              <span className="font-bold text-[var(--wird-text)]">
                 {score === currentQuestions.length ? 'ممتاز ومتقن تماماً' : score >= currentQuestions.length * 0.7 ? 'جيد جداً مع حاجة للتثبيت' : 'يحتاج مراجعة وتكرار'}
               </span>
             </div>
           </div>
 
           {missedQuestions.length > 0 && (
-            <div className="max-w-lg mx-auto rounded-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 bg-[#F9F6EE] dark:bg-[#0B132B]/75 p-4 text-right space-y-3">
+            <div className="max-w-lg mx-auto rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-4 text-right space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
-                  <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                <div className="flex items-center gap-2 text-xs font-bold text-[var(--wird-text)]">
+                  <AlertTriangle className="w-4 h-4 text-[var(--wird-accent)] shrink-0" />
                   <span>الآيات التي تحتاج إلى مراجعة وتثبيت ({missedQuestions.length})</span>
                 </div>
                 <button
                   type="button"
                   disabled={isSavingBatchMissed || missedQuestions.every(q => savedMissedKeys.has(`${q.surahNumber}:${q.targetAyahNumber}`))}
                   onClick={handleSaveAllMissedToWeakVerses}
-                  className="min-h-11 px-3.5 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] text-white dark:text-[#0B132B] text-xs font-bold disabled:opacity-50 whitespace-nowrap transition-colors"
+                  className="wird-btn-primary min-h-11 px-3.5 py-2 text-xs disabled:opacity-50 whitespace-nowrap"
                 >
                   {isSavingBatchMissed
                     ? 'جارٍ الحفظ...'
@@ -596,12 +596,12 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
                   return (
                     <li
                       key={key}
-                      className="flex items-center justify-between gap-2 rounded-xl bg-white dark:bg-[#111F36] px-3 py-2 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15"
+                      className="flex items-center justify-between gap-2 rounded-xl bg-[var(--wird-surface)] px-3 py-2 border border-[var(--wird-border)]"
                     >
-                      <span className="font-quran font-bold text-[#142421] dark:text-[#F5F1E8]">
+                      <span className="font-bold text-[var(--wird-text)]">
                         سورة {q.surahName} · الآية {q.targetAyahNumber}
                       </span>
-                      <span className={`text-[11px] font-semibold ${isSavedMissed ? 'text-[#1C4E46] dark:text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                      <span className={`text-[11px] font-semibold ${isSavedMissed ? 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]' : 'text-[var(--wird-muted)]'}`}>
                         {isSavedMissed ? 'مسجلة في المراجعة المستعجلة' : 'بانتظار التثبيت'}
                       </span>
                     </li>
@@ -610,7 +610,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
               </ul>
 
               {batchMissedFeedback && (
-                <p role="status" aria-live="polite" className={`text-[11px] font-semibold ${batchMissedFeedback.success ? 'text-[#1C4E46] dark:text-[#E0A96D]' : 'text-rose-600 dark:text-rose-300'}`}>
+                <p role="status" aria-live="polite" className={`text-[11px] font-semibold ${batchMissedFeedback.success ? 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]' : 'text-rose-600 dark:text-rose-300'}`}>
                   {batchMissedFeedback.message}
                 </p>
               )}
@@ -621,7 +621,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             <button
               type="button"
               onClick={handleResetTest}
-              className="wird-btn-primary flex min-h-11 items-center gap-2 px-5 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              className="wird-btn-primary flex min-h-11 items-center gap-2 px-5 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
             >
               <RotateCcw className="w-4 h-4" />
               <span>إعادة الاختبار</span>
@@ -629,19 +629,19 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           </div>
         </div>
       ) : isGenerating ? (
-        <div role="status" aria-live="polite" className="wird-card p-8 text-center text-sm text-[#5B6F6B] dark:text-[#8B9E9B]">
+        <div role="status" aria-live="polite" className="wird-card p-8 text-center text-sm text-[var(--wird-muted)]">
           جارٍ تجهيز أسئلة الاختبار من السور المحفوظة فقط...
         </div>
       ) : currentQuestions.length === 0 ? (
         <div className="wird-card p-8 text-center space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center mx-auto border border-[#C59B27]/30 dark:border-[#E0A96D]/25">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] flex items-center justify-center mx-auto border border-[var(--wird-border-gold)]">
             <AlertTriangle className="w-7 h-7" />
           </div>
           <div className="space-y-2 max-w-md mx-auto">
-            <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-base">
+            <h3 className="font-bold text-[var(--wird-text)] text-base">
               لا تتوفر أسئلة مؤهلة من المحفوظ حالياً
             </h3>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed">
+            <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
               {generationResult.messageAr || 'يرجى تسجيل مقاطع محفوظة أولاً في خطتك أو إتمام جلسة حفظ قبل إجراء الاختبارات المبنية على المحفوظ الفعلي.'}
             </p>
           </div>
@@ -649,11 +649,11 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
       ) : (
         /* 4. Question Card */
         <div className={`wird-card ${questionCardPadding} space-y-6`}>
-          <div className="flex items-center justify-between text-xs pb-3 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-            <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+          <div className="flex items-center justify-between text-xs pb-3 border-b border-[var(--wird-border)]">
+            <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums">
               السؤال {currentQuestionIndex + 1} من {currentQuestions.length}
             </span>
-            <span className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
+            <span className="text-[var(--wird-muted)] font-mono tabular-nums">
               الدرجة الحالية: {score}
             </span>
           </div>
@@ -665,17 +665,17 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             aria-valuemax={currentQuestions.length}
             aria-valuenow={currentQuestionIndex + 1}
             aria-valuetext={`السؤال ${currentQuestionIndex + 1} من ${currentQuestions.length}`}
-            className="h-2 overflow-hidden rounded-full bg-[#F2EDE2] dark:bg-[#0B132B]"
+            className="h-2 overflow-hidden rounded-full bg-[var(--wird-surface-muted)]"
           >
             <div
-              className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-[width]"
+              className="h-full rounded-full bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] transition-[width]"
               style={{ width: `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%` }}
             />
           </div>
 
           {(!generationResult.hasSufficientData || generationResult.messageAr) && (
-            <div className="p-3 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 border border-[#C59B27]/30 dark:border-[#E0A96D]/25 rounded-xl text-xs text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+            <div className="p-3 bg-[var(--wird-accent-soft)] border border-[var(--wird-border-gold)] rounded-xl text-xs text-[var(--wird-text)] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[var(--wird-accent)] shrink-0" />
               <span>{generationResult.messageAr || 'ملاحظة: هذا الاختبار مستخرج من المقاطع المحفوظة في سجلك الفعلي.'}</span>
             </div>
           )}
@@ -685,7 +685,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
             <h3
               aria-live="polite"
               aria-atomic="true"
-              className="font-quran text-[#142421] dark:text-[#F5F1E8] text-right bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-5 rounded-2xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/22"
+              className="font-quran text-[var(--wird-text)] text-right bg-[var(--wird-surface-muted)] p-5 rounded-2xl border border-[var(--wird-border)]"
               style={{ fontSize: `${displayPreferences.fontSize}px`, lineHeight: textLineHeight }}
             >
               {displayPrompt || 'جارٍ تحميل النص الإملائي المعتمد...'}
@@ -699,14 +699,14 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
               const isCorrect = idx === currentQ.correctIndex;
               const letterMark = ARABIC_OPTION_LETTERS[idx] || 'أ';
 
-              let style = 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] dark:hover:border-[#E0A96D]';
+              let style = 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]';
               if (isAnswered) {
                 if (isCorrect) {
-                  style = 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 border-[#1C4E46] dark:border-[#E0A96D] text-[#142421] dark:text-[#F5F1E8] font-bold ring-1 ring-[#1C4E46] dark:ring-[#E0A96D]';
+                  style = 'bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/35 border-[var(--wird-primary)] dark:border-[var(--wird-accent)] text-[var(--wird-text)] font-bold ring-1 ring-[var(--wird-primary)] dark:ring-[var(--wird-accent)]';
                 } else if (isSelected && !isCorrect) {
                   style = 'bg-rose-50 dark:bg-rose-950/50 border-rose-500 text-rose-950 dark:text-rose-200';
                 } else {
-                  style = 'opacity-50 border-[#1C4E46]/10 dark:border-[#E0A96D]/10';
+                  style = 'opacity-50 border-[var(--wird-border)]';
                 }
               }
 
@@ -717,14 +717,14 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
                   aria-pressed={isSelected}
                   onClick={() => handleSelectOption(idx)}
                   disabled={isAnswered}
-                  className={`w-full min-h-11 p-4 rounded-xl border text-right transition-all flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${style}`}
+                  className={`w-full min-h-11 p-4 rounded-[var(--wird-radius-control)] border text-right transition-all flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${style}`}
                 >
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold font-quran ${
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
                     isAnswered && isCorrect
-                      ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
                       : isAnswered && isSelected && !isCorrect
                       ? 'bg-rose-600 text-white'
-                      : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#1C4E46] dark:text-[#E0A96D]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border border-[var(--wird-border)]'
                   }`}>
                     {isAnswered && isCorrect ? <Check className="w-3.5 h-3.5" /> : isAnswered && isSelected && !isCorrect ? <X className="w-3.5 h-3.5" /> : letterMark}
                   </div>
@@ -741,11 +741,11 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           </div>
 
           {isAnswered && 'distinctionRule' in currentQ && (
-            <div className="p-4 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 text-xs space-y-1 text-right">
-              <div className="font-bold text-[#142421] dark:text-[#E0A96D]">
+            <div className="p-4 bg-[var(--wird-accent-soft)] rounded-xl border border-[var(--wird-border-gold)] text-xs space-y-1 text-right">
+              <div className="font-bold text-[var(--wird-text)]">
                 ضابط الحفظ وقاعدة التمييز المعتمدة:
               </div>
-              <p className="text-[#5B6F6B] dark:text-[#F5F1E8] leading-relaxed text-[11px]">
+              <p className="text-[var(--wird-muted)] leading-relaxed text-[11px]">
                 {(currentQ as { distinctionRule?: string }).distinctionRule}
               </p>
             </div>
@@ -754,11 +754,11 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           {weakVerseFeedback && (
             <div role="status" aria-live="polite" className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
               weakVerseFeedback.success
-                ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border-[#1C4E46]/30 dark:border-[#E0A96D]/35 text-[#142421] dark:text-[#F5F1E8]'
+                ? 'bg-[var(--wird-primary)]/10 dark:bg-[var(--wird-primary)]/30 border-[var(--wird-border-strong)] text-[var(--wird-text)]'
                 : 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 text-rose-900 dark:text-rose-200'
             }`}>
               {weakVerseFeedback.success
-                ? <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+                ? <Check className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                 : <AlertTriangle className="w-4 h-4 text-rose-600" />}
               <span>{weakVerseFeedback.message}</span>
             </div>
@@ -771,15 +771,15 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
           )}
 
           {isAnswered && (
-            <div className="flex items-center justify-between pt-4 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex-wrap gap-3">
+            <div className="flex items-center justify-between pt-4 border-t border-[var(--wird-border)] flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleAddCurrentToWeakVerses}
                   disabled={isSavingWeakVerse}
-                  className="min-h-11 text-xs text-[#142421] dark:text-[#E0A96D] hover:border-[#C59B27] font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/35 bg-[#C59B27]/12 dark:bg-[#E0A96D]/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                  className="min-h-11 text-xs text-[var(--wird-text)] hover:border-[var(--wird-accent)] font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                 >
-                  <AlertTriangle className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
                   <span>{isSavingWeakVerse ? 'جارٍ حفظ الآية...' : 'تسجيل هذه الآية في قائمة الآيات الملتبسة'}</span>
                 </button>
               </div>
@@ -788,7 +788,7 @@ export const MemorizationTestsView: React.FC<MemorizationTestsViewProps> = ({
                 type="button"
                 onClick={handleNext}
                 disabled={isSavingTestResult}
-                className="wird-btn-primary flex min-h-11 items-center gap-2 px-6 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                className="wird-btn-primary flex min-h-11 items-center gap-2 px-6 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
               >
                 <span>
                   {currentQuestionIndex === currentQuestions.length - 1

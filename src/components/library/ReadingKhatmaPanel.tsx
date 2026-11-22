@@ -192,27 +192,27 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
   return (
     <section
       aria-labelledby="reading-khatma-title"
-      className="wird-card p-5 border-[#C59B27]/30 dark:border-[#E0A96D]/25 space-y-4"
+      className="wird-card p-5 border-[var(--wird-border-gold)] space-y-4"
     >
       {/* Header Row */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
           <h2
             id="reading-khatma-title"
-            className="flex items-center gap-2 font-bold text-[#1C4E46] dark:text-[#E0A96D]"
+            className="flex items-center gap-2 font-bold text-[var(--wird-primary)]"
           >
             <BookOpenCheck className="h-5 w-5 shrink-0" />
             <span>ختمات القراءة المتعددة</span>
           </h2>
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
-            أنشئ أكثر من ختمة مستقلة بالاسم والموضع، وسجّل وردك مباشرة من داخل المصحف المرن أو المطبوع.
+          <p className="text-xs text-[var(--wird-muted)]">
+            أنشئ أكثر من ختمة مستقلة بالاسم والموضع، وسجّل وردك مباشرة من داخل المصحف المطبوع أو النص المرن.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {historyCount > 0 && (
-            <span className="text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
-              المكتملة: <strong className="text-[#142421] dark:text-[#F5F1E8]">{historyCount}</strong>
+            <span className="text-xs font-semibold text-[var(--wird-muted)] tabular-nums">
+              المكتملة: <strong className="text-[var(--wird-text)]">{historyCount}</strong>
             </span>
           )}
           {selectedKhatma && !selectedKhatma.completedAt && (
@@ -220,10 +220,10 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               type="button"
               onClick={() => setIsCreatingNew(prev => !prev)}
               aria-expanded={isCreatingNew}
-              className={`min-h-11 inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors whitespace-nowrap ${
+              className={`min-h-11 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border px-3.5 py-2 text-xs font-bold transition-colors whitespace-nowrap ${
                 isCreatingNew
-                  ? 'border-[#1C4E46] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
-                  : 'border-[#C59B27]/50 bg-[#F9F6EE] text-[#1C4E46] hover:border-[#C59B27] dark:border-[#E0A96D]/35 dark:bg-[#0B132B] dark:text-[#E0A96D]'
+                  ? 'border-[var(--wird-accent)] bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                  : 'border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] hover:border-[var(--wird-accent)]'
               }`}
             >
               {isCreatingNew ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -238,7 +238,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
         <div
           role="tablist"
           aria-label="الختمات النشطة"
-          className="flex flex-wrap items-center gap-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3"
+          className="flex flex-wrap items-center gap-2 border-t border-[var(--wird-border)] pt-3"
         >
           {activeList.map(item => {
             const itemProgress = getReadingKhatmaProgress(item);
@@ -250,14 +250,14 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => onSelectKhatma?.(item.id)}
-                className={`min-h-11 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors ${
+                className={`min-h-11 inline-flex items-center gap-2 rounded-[var(--wird-radius-control)] border px-3.5 py-2 text-xs font-bold transition-colors ${
                   isSelected
-                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47] shadow-xs'
-                    : 'border-[#1C4E46]/15 bg-[#F9F6EE] text-[#142421] hover:border-[#C59B27] dark:border-[#E0A96D]/20 dark:bg-[#0B132B] dark:text-[#F5F1E8]'
+                    ? 'border-[var(--wird-accent)] bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-xs'
+                    : 'border-[var(--wird-border-strong)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
                 }`}
               >
                 <span>{item.title || 'ختمة القراءة'}</span>
-                <span className={`font-mono tabular-nums text-[11px] ${isSelected ? 'text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                <span className={`font-mono tabular-nums text-[11px] ${isSelected ? 'opacity-85' : 'text-[var(--wird-muted)]'}`}>
                   {itemProgress.completedPages}/{itemProgress.totalScopePages} · ص {itemProgress.resumePage}
                 </span>
               </button>
@@ -266,17 +266,17 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
         </div>
       )}
 
-      {/* Creation Form (shown for first khatma, completion, or explicit "+ إنشاء ختمة جديدة") */}
+      {/* Creation Form */}
       {showCreator && (
-        <div className="space-y-4 rounded-2xl border border-[#1C4E46]/12 bg-[#F9F6EE] p-4 dark:border-[#E0A96D]/18 dark:bg-[#0B132B]/70">
-          <p className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">
+        <div className="space-y-4 rounded-2xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] p-4">
+          <p className="text-sm font-bold text-[var(--wird-text)]">
             {selectedKhatma?.completedAt && !isCreatingNew
               ? 'ما شاء الله، اكتملت الختمة السابقة. ابدأ ختمة جديدة:'
               : 'إعداد ختمة قراءة جديدة'}
           </p>
 
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-            <label className="block space-y-1.5 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+            <label className="block space-y-1.5 text-xs font-semibold text-[var(--wird-text)]">
               <span>اسم الختمة (اختياري)</span>
               <input
                 type="text"
@@ -285,20 +285,20 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                 onChange={event => setNewTitle(event.target.value)}
                 placeholder="مثال: ختمة التلاوة اليومية"
                 maxLength={50}
-                className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 bg-white px-3 text-xs font-semibold text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="min-h-11 w-full rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-accent)]"
               />
             </label>
 
-            <label className="block space-y-1.5 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+            <label className="block space-y-1.5 text-xs font-semibold text-[var(--wird-text)]">
               <span className="flex items-center gap-1.5">
-                <CalendarDays className="h-3.5 w-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+                <CalendarDays className="h-3.5 w-3.5 text-[var(--wird-accent)]" />
                 مدة الختمة
               </span>
               <select
                 aria-label="مدة ختمة القراءة"
                 value={newDurationDays}
                 onChange={event => setNewDurationDays(Number(event.target.value))}
-                className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 bg-white px-3 text-xs font-semibold dark:border-[#E0A96D]/20 dark:bg-[#111F36]"
+                className="min-h-11 w-full rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)]"
               >
                 <option value={10}>10 أيام (جزء يومياً × 3)</option>
                 <option value={15}>15 يوماً (جزآن يومياً)</option>
@@ -310,16 +310,16 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               </select>
             </label>
 
-            <label className="block space-y-1.5 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+            <label className="block space-y-1.5 text-xs font-semibold text-[var(--wird-text)]">
               <span className="flex items-center gap-1.5">
-                <Target className="h-3.5 w-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+                <Target className="h-3.5 w-3.5 text-[var(--wird-accent)]" />
                 جلسات القراءة يومياً
               </span>
               <select
                 aria-label="عدد جلسات القراءة اليومية"
                 value={newSessionsPerDay}
                 onChange={event => setNewSessionsPerDay(Number(event.target.value))}
-                className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 bg-white px-3 text-xs font-semibold dark:border-[#E0A96D]/20 dark:bg-[#111F36]"
+                className="min-h-11 w-full rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)]"
               >
                 <option value={1}>جلسة واحدة</option>
                 <option value={2}>جلستان</option>
@@ -333,60 +333,32 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">النطاق:</span>
-              <button
-                type="button"
-                aria-pressed={newScopeMode === 'full'}
-                onClick={() => setNewScopeMode('full')}
-                className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
-                  newScopeMode === 'full'
-                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
-                    : 'border-[#1C4E46]/15 bg-white text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8]'
-                }`}
-              >
-                المصحف كامل (1–604)
-              </button>
-              <button
-                type="button"
-                aria-pressed={newScopeMode === 'juz'}
-                onClick={() => setNewScopeMode('juz')}
-                className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
-                  newScopeMode === 'juz'
-                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
-                    : 'border-[#1C4E46]/15 bg-white text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8]'
-                }`}
-              >
-                بالأجزاء
-              </button>
-              <button
-                type="button"
-                aria-pressed={newScopeMode === 'surah'}
-                onClick={() => setNewScopeMode('surah')}
-                className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
-                  newScopeMode === 'surah'
-                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
-                    : 'border-[#1C4E46]/15 bg-white text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8]'
-                }`}
-              >
-                بسورة محددة
-              </button>
-              <button
-                type="button"
-                aria-pressed={newScopeMode === 'custom'}
-                onClick={() => setNewScopeMode('custom')}
-                className={`min-h-10 rounded-xl border px-3 py-1.5 font-bold ${
-                  newScopeMode === 'custom'
-                    ? 'border-[#C59B27] bg-[#1C4E46] text-white dark:bg-[#1E4A47]'
-                    : 'border-[#1C4E46]/15 bg-white text-[#142421] dark:border-[#E0A96D]/20 dark:bg-[#111F36] dark:text-[#F5F1E8]'
-                }`}
-              >
-                نطاق صفحات مخصص
-              </button>
+              <span className="font-semibold text-[var(--wird-muted)]">النطاق:</span>
+              {([
+                { id: 'full', label: 'المصحف كامل (1–604)' },
+                { id: 'juz', label: 'بالأجزاء' },
+                { id: 'surah', label: 'بسورة محددة' },
+                { id: 'custom', label: 'نطاق صفحات مخصص' }
+              ] as const).map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  aria-pressed={newScopeMode === opt.id}
+                  onClick={() => setNewScopeMode(opt.id)}
+                  className={`min-h-10 rounded-[var(--wird-radius-control)] border px-3 py-1.5 font-bold transition-colors ${
+                    newScopeMode === opt.id
+                      ? 'border-[var(--wird-accent)] bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                      : 'border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
 
             {newScopeMode === 'juz' && (
               <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-text)]">
                   <span>من جزء</span>
                   <select
                     aria-label="الجزء البداية للختمة"
@@ -396,20 +368,20 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                       setNewFromJuz(nextFrom);
                       if (newToJuz < nextFrom) setNewToJuz(nextFrom);
                     }}
-                    className="min-h-10 rounded-lg border border-[#1C4E46]/15 bg-white px-2 text-xs font-semibold dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                    className="min-h-10 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-xs font-semibold text-[var(--wird-text)]"
                   >
                     {Array.from({ length: 30 }, (_, idx) => idx + 1).map(juz => (
                       <option key={juz} value={juz}>الجزء {juz}</option>
                     ))}
                   </select>
                 </label>
-                <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-text)]">
                   <span>إلى جزء</span>
                   <select
                     aria-label="الجزء النهاية للختمة"
                     value={newToJuz}
                     onChange={event => setNewToJuz(Number(event.target.value))}
-                    className="min-h-10 rounded-lg border border-[#1C4E46]/15 bg-white px-2 text-xs font-semibold dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                    className="min-h-10 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-xs font-semibold text-[var(--wird-text)]"
                   >
                     {Array.from({ length: 30 - newFromJuz + 1 }, (_, idx) => newFromJuz + idx).map(juz => (
                       <option key={juz} value={juz}>الجزء {juz}</option>
@@ -420,13 +392,13 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
             )}
 
             {newScopeMode === 'surah' && (
-              <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+              <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-text)]">
                 <span>السورة</span>
                 <select
                   aria-label="سورة الختمة"
                   value={newSurahNumber}
                   onChange={event => setNewSurahNumber(Number(event.target.value))}
-                  className="min-h-10 rounded-lg border border-[#1C4E46]/15 bg-white px-2.5 text-xs font-semibold dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                  className="min-h-10 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2.5 text-xs font-semibold text-[var(--wird-text)]"
                 >
                   {ALL_SURAHS.map(surah => (
                     <option key={surah.number} value={surah.number}>
@@ -439,7 +411,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
 
             {newScopeMode === 'custom' && (
               <div className="flex items-center gap-2">
-                <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-text)]">
                   <span>من ص</span>
                   <input
                     type="number"
@@ -448,10 +420,10 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     aria-label="صفحة بداية الختمة"
                     value={newStartPage}
                     onChange={event => setNewStartPage(Number(event.target.value) || 1)}
-                    className="min-h-10 w-16 rounded-lg border border-[#1C4E46]/15 bg-white px-2 text-center font-mono tabular-nums dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                    className="min-h-10 w-16 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-center font-mono tabular-nums text-[var(--wird-text)]"
                   />
                 </label>
-                <label className="inline-flex items-center gap-1.5 font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="inline-flex items-center gap-1.5 font-semibold text-[var(--wird-text)]">
                   <span>إلى ص</span>
                   <input
                     type="number"
@@ -460,13 +432,13 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     aria-label="صفحة نهاية الختمة"
                     value={newEndPage}
                     onChange={event => setNewEndPage(Number(event.target.value) || 604)}
-                    className="min-h-10 w-16 rounded-lg border border-[#1C4E46]/15 bg-white px-2 text-center font-mono tabular-nums dark:border-[#E0A96D]/25 dark:bg-[#111F36]"
+                    className="min-h-10 w-16 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-center font-mono tabular-nums text-[var(--wird-text)]"
                   />
                 </label>
               </div>
             )}
 
-            <span className="text-[11px] font-semibold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+            <span className="text-[11px] font-semibold text-[var(--wird-primary)] tabular-nums">
               الورد التقديري: {creatorDailyPreview} صفحة يومياً
             </span>
           </div>
@@ -474,7 +446,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
           <button
             type="button"
             onClick={handleCreateSubmit}
-            className="min-h-11 w-full rounded-xl wird-btn-primary px-4 py-2 text-sm font-bold"
+            className="min-h-11 w-full rounded-[var(--wird-radius-control)] wird-btn-primary px-4 py-2 text-sm font-bold"
           >
             بدء ختمة جديدة
           </button>
@@ -484,17 +456,16 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
       {/* Active Khatma Tracking Hub */}
       {selectedKhatma && progress && isActive && (
         <div className="space-y-4">
-          {/* Primary Resume + Progress Header */}
-          <div className="rounded-2xl border border-[#C59B27]/30 bg-[#F9F6EE] p-4 dark:border-[#E0A96D]/20 dark:bg-[#0B132B]/70 space-y-3">
+          <div className="rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-0.5">
-                <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">
+                <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[var(--wird-text)]">
                   <span>{selectedKhatma.title || 'ختمة القراءة'}</span>
-                  <span className="text-xs font-mono tabular-nums text-[#1C4E46] dark:text-[#E0A96D]">
+                  <span className="text-xs font-mono tabular-nums text-[var(--wird-primary)]">
                     · {progress.percent}٪ ({progress.completedPages} / {progress.totalScopePages} صفحة)
                   </span>
                 </div>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                <p className="text-xs text-[var(--wird-muted)] tabular-nums">
                   آخر موضع توقف: صفحة {progress.resumePage} · ورد اليوم: {progress.pagesReadToday} / {progress.pagesPerDay} صفحة · المتبقي {progress.remainingPages} صفحة حتى {formatDate(progress.targetCompletionDate)}
                 </p>
               </div>
@@ -504,7 +475,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                   type="button"
                   disabled={progress.isPaused}
                   onClick={() => onContinue(progress.resumePage)}
-                  className="min-h-11 rounded-xl wird-btn-primary px-4 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-11 rounded-[var(--wird-radius-control)] wird-btn-primary px-4 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   متابعة القراءة · ص {progress.resumePage}
                 </button>
@@ -513,7 +484,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     type="button"
                     disabled={progress.isPaused}
                     onClick={() => onContinue(progress.nextPage)}
-                    className="min-h-11 rounded-xl border border-[#1C4E46]/20 bg-white px-3 py-2 text-xs font-bold text-[#1C4E46] hover:border-[#C59B27] disabled:opacity-50 dark:border-[#E0A96D]/25 dark:bg-[#111F36] dark:text-[#E0A96D]"
+                    className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-2 text-xs font-bold text-[var(--wird-primary)] hover:border-[var(--wird-accent)] disabled:opacity-50"
                   >
                     أول غير مقروءة (ص {progress.nextPage})
                   </button>
@@ -525,11 +496,10 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               aria-label="تقدم ختمة القراءة"
               value={progress.completedPages}
               max={progress.totalScopePages}
-              className="h-2 w-full accent-[#1C4E46] dark:accent-[#E0A96D]"
+              className="h-2 w-full accent-[var(--wird-primary)]"
             />
 
-            {/* Single Calm Line for Daily Sessions Split */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--wird-muted)] tabular-nums">
               <span>
                 الهدف اليومي: {progress.pagesPerDay} ص ({progress.sessionsPerDay} جلسات × ~{progress.pagesPerSession} ص) · الأيام المتبقية: {progress.daysRemaining}
               </span>
@@ -541,16 +511,15 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Progressive Disclosure for Editing Plan, Pause/Resume, and Deleting */}
-          <details className="rounded-xl border border-[#1C4E46]/12 bg-[#F9F6EE]/70 px-4 py-2.5 dark:border-[#E0A96D]/15 dark:bg-[#0B132B]/50">
-            <summary className="flex min-h-10 cursor-pointer items-center justify-between text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+          <details className="rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)]/70 px-4 py-2.5">
+            <summary className="flex min-h-10 cursor-pointer items-center justify-between text-xs font-bold text-[var(--wird-text)]">
               <span>إعدادات هذه الختمة (تعديل الخطة أو الإيقاف المؤقت)</span>
-              <ChevronDown className="h-4 w-4 text-[#5B6F6B]" />
+              <ChevronDown className="h-4 w-4 text-[var(--wird-muted)]" />
             </summary>
 
-            <div className="mt-3 space-y-3 border-t border-[#1C4E46]/10 pt-3 dark:border-[#E0A96D]/15">
+            <div className="mt-3 space-y-3 border-t border-[var(--wird-border)] pt-3">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <label className="space-y-1 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="space-y-1 text-xs font-semibold text-[var(--wird-text)]">
                   <span>تعديل اسم الختمة</span>
                   <input
                     type="text"
@@ -558,16 +527,16 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     value={editTitle}
                     onChange={event => setEditTitle(event.target.value)}
                     maxLength={50}
-                    className="min-h-11 w-full rounded-lg border border-[#1C4E46]/15 bg-white px-3 text-xs dark:border-[#E0A96D]/20 dark:bg-[#111F36]"
+                    className="min-h-11 w-full rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs text-[var(--wird-text)]"
                   />
                 </label>
-                <label className="space-y-1 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="space-y-1 text-xs font-semibold text-[var(--wird-text)]">
                   <span>تعديل مدة الختمة</span>
                   <select
                     aria-label="تعديل مدة الختمة"
                     value={durationDays}
                     onChange={event => setDurationDays(Number(event.target.value))}
-                    className="min-h-11 w-full rounded-lg border border-[#1C4E46]/15 bg-white px-3 text-xs dark:border-[#E0A96D]/20 dark:bg-[#111F36]"
+                    className="min-h-11 w-full rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs text-[var(--wird-text)]"
                   >
                     <option value={10}>10 أيام</option>
                     <option value={15}>15 يوماً</option>
@@ -578,13 +547,13 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     <option value={120}>120 يوماً</option>
                   </select>
                 </label>
-                <label className="space-y-1 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                <label className="space-y-1 text-xs font-semibold text-[var(--wird-text)]">
                   <span>تعديل عدد الجلسات</span>
                   <select
                     aria-label="تعديل عدد الجلسات"
                     value={sessionsPerDay}
                     onChange={event => setSessionsPerDay(Number(event.target.value))}
-                    className="min-h-11 w-full rounded-lg border border-[#1C4E46]/15 bg-white px-3 text-xs dark:border-[#E0A96D]/20 dark:bg-[#111F36]"
+                    className="min-h-11 w-full rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 text-xs text-[var(--wird-text)]"
                   >
                     <option value={1}>جلسة واحدة</option>
                     <option value={2}>جلستان</option>
@@ -600,14 +569,14 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => onUpdatePlan({ durationDays, sessionsPerDay }, selectedKhatma.id, editTitle)}
-                  className="min-h-11 rounded-xl border border-[#C59B27]/50 px-3.5 py-2 text-xs font-bold text-[#1C4E46] dark:border-[#E0A96D]/40 dark:text-[#E0A96D]"
+                  className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] px-3.5 py-2 text-xs font-bold text-[var(--wird-primary)] hover:bg-[var(--wird-surface)]"
                 >
                   تحديث الخطة
                 </button>
                 <button
                   type="button"
                   onClick={() => (progress.isPaused ? onResume(selectedKhatma.id) : onPause(selectedKhatma.id))}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#1C4E46]/20 px-3 py-2 text-xs font-semibold text-[#142421] dark:border-[#E0A96D]/25 dark:text-[#F5F1E8]"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] px-3 py-2 text-xs font-semibold text-[var(--wird-text)]"
                 >
                   {progress.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                   {progress.isPaused ? 'استئناف الختمة' : 'إيقاف مؤقت'}
@@ -617,7 +586,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => onDeleteKhatma(selectedKhatma.id)}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-rose-300/60 px-3 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:text-rose-300"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--wird-radius-control)] border border-rose-300/60 px-3 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:text-rose-300"
                   >
                     <Trash2 className="h-4 w-4" />
                     <span>حذف هذه الختمة</span>
@@ -642,7 +611,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     <button
                       type="button"
                       onClick={() => setConfirmReset(false)}
-                      className="min-h-11 rounded-lg border px-3 text-xs"
+                      className="min-h-11 rounded-lg border border-[var(--wird-border-strong)] px-3 text-xs text-[var(--wird-text)]"
                     >
                       إلغاء
                     </button>
@@ -652,7 +621,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     type="button"
                     onClick={() => setConfirmReset(true)}
                     aria-label="إعادة ضبط ختمة القراءة"
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#1C4E46]/15 px-3 text-xs font-semibold text-[#142421] dark:border-[#E0A96D]/20 dark:text-[#F5F1E8]"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] px-3 text-xs font-semibold text-[var(--wird-text)]"
                   >
                     <RotateCcw className="h-4 w-4" /> مسح الكل
                   </button>
@@ -664,22 +633,22 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
       )}
 
       {selectedKhatma?.completedAt && (
-        <div className="rounded-xl border border-[#C59B27]/40 bg-[#F9F6EE] p-4 text-sm font-semibold text-[#1C4E46] dark:border-[#E0A96D]/30 dark:bg-[#0B132B]/70 dark:text-[#E0A96D]">
+        <div className="rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-4 text-sm font-semibold text-[var(--wird-primary)]">
           اكتملت الختمة الحالية، تقبل الله منك. يمكنك بدء ختمة جديدة مع الاحتفاظ بسجل الختمات السابقة.
         </div>
       )}
 
       {history.length > 0 && (
-        <details className="rounded-xl border border-[#1C4E46]/12 bg-[#F9F6EE] px-4 py-2.5 dark:border-[#E0A96D]/15 dark:bg-[#0B132B]/60">
-          <summary className="flex min-h-10 cursor-pointer items-center justify-between text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+        <details className="rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)]/75 px-4 py-2.5">
+          <summary className="flex min-h-10 cursor-pointer items-center justify-between text-xs font-bold text-[var(--wird-text)]">
             <span>سجل الختمات المكتملة ({history.length})</span>
-            <ChevronDown className="h-4 w-4 text-[#5B6F6B]" />
+            <ChevronDown className="h-4 w-4 text-[var(--wird-muted)]" />
           </summary>
-          <ul className="mt-2.5 space-y-2 border-t border-[#1C4E46]/10 pt-2.5 dark:border-[#E0A96D]/15">
+          <ul className="mt-2.5 space-y-2 border-t border-[var(--wird-border)] pt-2.5">
             {history.slice(0, 8).map(cycle => (
               <li
                 key={cycle.id}
-                className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]"
+                className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--wird-muted)]"
               >
                 <span>
                   {cycle.title ? `${cycle.title} · ` : ''}بدأت {formatDate(cycle.startedAt.slice(0, 10))} · اكتملت {formatDate(cycle.completedAt.slice(0, 10))}

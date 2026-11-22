@@ -1063,9 +1063,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   if (isLoadingAyahs) {
     return (
       <div className="wird-card rounded-3xl p-8 text-center space-y-3 max-w-lg mx-auto shadow-sm">
-        <BookOpen className="w-8 h-8 mx-auto text-[#1C4E46] dark:text-[#E0A96D] animate-pulse" />
-        <p className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">جارٍ تحميل سورة {surahMeta.name}...</p>
-        <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">يتم تحميل نص السورة المطلوبة فقط.</p>
+        <BookOpen className="w-8 h-8 mx-auto text-[var(--wird-primary)] dark:text-[var(--wird-accent)] animate-pulse" />
+        <p className="text-sm font-bold text-[var(--wird-text)]">جارٍ تحميل سورة {surahMeta.name}...</p>
+        <p className="text-xs text-[var(--wird-muted)]">يتم تحميل نص السورة المطلوبة فقط.</p>
       </div>
     );
   }
@@ -1074,17 +1074,17 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
     const isInvalidRange = allSurahAyahs.length > 0 && sessionAyahs.length === 0;
     return (
       <div className="wird-card rounded-3xl p-8 text-center space-y-5 max-w-lg mx-auto shadow-sm">
-        <div className="w-14 h-14 rounded-2xl bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#9A7415] dark:text-[#E0A96D] flex items-center justify-center mx-auto border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
+        <div className="w-14 h-14 rounded-2xl bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] flex items-center justify-center mx-auto border border-[var(--wird-border-gold)]">
           <BookOpen className="w-7 h-7" />
         </div>
         <div className="space-y-2">
-          <span className="text-[11px] font-bold text-[#9A7415] dark:text-[#E0A96D] tracking-wider">
+          <span className="text-[11px] font-bold text-[var(--wird-accent)] tracking-wider">
             {isInvalidRange ? 'نطاق الآيات غير صالح' : 'تعذر تحميل النص القرآني'}
           </span>
-          <h3 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-lg">
+          <h3 className="font-bold text-[var(--wird-text)] text-lg">
             سورة {surahMeta.name} ({surahMeta.versesCount} آية)
           </h3>
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed max-w-md mx-auto">
+          <p className="text-xs text-[var(--wird-muted)] leading-relaxed max-w-md mx-auto">
             {isInvalidRange
               ? `النطاق المحدد (من آية ${startAyah} إلى آية ${endAyah}) خارج حدود آيات سورة ${surahMeta.name}. اختر جلسة صحيحة للمتابعة.`
               : 'تعذر تحميل النص القرآني العثماني لهذه السورة من الملفات المحلية. تحقق من سلامة ملفات التطبيق ثم أعد المحاولة؛ لم يتم استبدال النص بأي مصدر غير موثوق.'}
@@ -1094,19 +1094,19 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <button
             onClick={() => setLoadRetry(value => value + 1)}
-            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[#C59B27] text-[#0B132B] rounded-xl text-xs font-bold shadow-xs hover:bg-[#d8ae37] transition-colors"
+            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[var(--wird-accent)] text-[var(--wird-accent-ink)] rounded-xl text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
           >
             إعادة تحميل النص
           </button>
           <button
             onClick={() => applySessionRange(67, 1, 10)}
-            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[#1C4E46] dark:bg-[#1E4A47] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#143D36] transition-colors"
+            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] rounded-xl text-xs font-bold shadow-xs hover:bg-[var(--wird-primary-hover)] transition-colors"
           >
             جلسة سورة الملك (الآيات 1-10)
           </button>
           <button
             onClick={() => applySessionRange(1, 1, 7)}
-            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[#F2EDE2] hover:bg-[#E6DFCE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl text-xs font-semibold transition-colors"
+            className="w-full sm:w-auto min-h-11 px-5 py-2.5 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] border border-[var(--wird-border)] rounded-xl text-xs font-semibold transition-colors"
           >
             سورة الفاتحة (كاملة)
           </button>
@@ -1119,39 +1119,39 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   if (isCompleted) {
     return (
       <div className="wird-card rounded-3xl p-8 text-center space-y-6 max-w-xl mx-auto shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#9A7415] dark:text-[#E0A96D] flex items-center justify-center mx-auto shadow-inner border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] flex items-center justify-center mx-auto shadow-inner border border-[var(--wird-border-gold)]">
           <Award className="w-8 h-8" />
         </div>
 
         <div className="space-y-2">
-          <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] uppercase tracking-wider">
+          <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] uppercase tracking-wider">
             {mode === 'review' ? 'مبارك إتمام المراجعة' : 'مبارك الإنجاز القرآني'}
           </span>
-          <h2 className="text-2xl font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
+          <h2 className="text-2xl font-bold text-[var(--wird-text)]">
             {mode === 'review' ? 'أتممت جلسة المراجعة بنجاح!' : 'أتممت وِرد الحفظ اليومي بنجاح!'}
           </h2>
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs text-[var(--wird-muted)] max-w-sm mx-auto leading-relaxed">
             {mode === 'review' ? `تمت مراجعة الآيات المحددة من سورة ${surahMeta.name}.` : `تم حفظ وتكرار وتثبيت الآيات المقررة لسورة ${surahMeta.name}. ثبّت الله القرآن في قلبك ونفعك به في الدنيا والآخرة.`}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 p-4 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-xs">
+        <div className="grid grid-cols-3 gap-3 p-4 bg-[var(--wird-surface-muted)] rounded-xl border border-[var(--wird-border)] text-xs">
           <div>
-            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">{mode === 'review' ? 'الآيات المراجعة' : 'الآيات المحفوظة'}</div>
-            <div className="text-lg font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
+            <div className="text-[var(--wird-muted)]">{mode === 'review' ? 'الآيات المراجعة' : 'الآيات المحفوظة'}</div>
+            <div className="text-lg font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-mono tabular-nums">
               {sessionAyahs.length}
             </div>
           </div>
           <div>
-            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">زمن الجلسة</div>
-            <div className="text-lg font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
+            <div className="text-[var(--wird-muted)]">زمن الجلسة</div>
+            <div className="text-lg font-bold text-[var(--wird-text)] font-mono tabular-nums">
               {formatTime(secondsElapsed)}
             </div>
           </div>
           <div>
-            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">سلسلة المواظبة</div>
-            <div className="text-lg font-bold text-[#C59B27] dark:text-[#E0A96D] font-mono tabular-nums flex items-center justify-center gap-1">
-              <Flame className="w-4 h-4 fill-[#C59B27] dark:fill-[#E0A96D]" />
+            <div className="text-[var(--wird-muted)]">سلسلة المواظبة</div>
+            <div className="text-lg font-bold text-[var(--wird-accent)] font-mono tabular-nums flex items-center justify-center gap-1">
+              <Flame className="w-4 h-4 fill-[var(--wird-accent)]" />
               <span>{profile.streakDays} يوم</span>
             </div>
           </div>
@@ -1165,14 +1165,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               setCurrentAyahIndex(0);
               setSecondsElapsed(0);
             }}
-            className="min-h-11 px-4 py-2.5 bg-[#F2EDE2] hover:bg-[#E6DFCE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl text-xs font-semibold"
+            className="min-h-11 px-4 py-2.5 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] border border-[var(--wird-border)] rounded-xl text-xs font-semibold"
           >
             {mode === 'review' ? 'إعادة المراجعة' : 'تكرار الجلسة للتثبيت'}
           </button>
 
           <button
             onClick={handleExit}
-            className="min-h-11 px-6 py-2.5 bg-[#1C4E46] dark:bg-[#1E4A47] hover:bg-[#143D36] text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+            className="min-h-11 px-6 py-2.5 bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] rounded-xl text-xs font-bold shadow-xs transition-colors"
           >
             العودة للرئيسية
           </button>
@@ -1194,7 +1194,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         <span role="alert" className="text-sm text-rose-700 dark:text-rose-300">
           تعذر تحميل النص الإملائي المعتمد لهذه الآية؛ أعد المحاولة قبل متابعة التسميع.
         </span>
-      ) : words.length === 0 ? <span role="status" className="text-sm text-[#5B6F6B] dark:text-[#8B9E9B]">جارٍ تجهيز نص الآية للتسميع...</span> : (
+      ) : words.length === 0 ? <span role="status" className="text-sm text-[var(--wird-muted)]">جارٍ تجهيز نص الآية للتسميع...</span> : (
         words.map((word, idx) => {
           const masked = isWordMasked(idx);
           if (masked) {
@@ -1206,7 +1206,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 type="button"
                 onClick={() => handleToggleWordReveal(idx)}
                 aria-label={`إظهار الكلمة رقم ${idx + 1}`}
-                className="min-h-11 px-3 py-0.5 inline-flex items-center justify-center rounded-lg select-none bg-[#E6DFCE] dark:bg-[#162744] text-[#9A7415]/80 dark:text-[#E0A96D]/80 cursor-pointer active:scale-95 border border-dashed border-[#C59B27]/70 dark:border-[#E0A96D]/50 text-[0.7em] tracking-widest transition-colors"
+                className="min-h-11 px-3 py-0.5 inline-flex items-center justify-center rounded-lg select-none bg-[var(--wird-surface-muted)] text-[var(--wird-accent)]/85 cursor-pointer active:scale-95 border border-dashed border-[var(--wird-border-gold)] text-[0.7em] tracking-widest transition-colors"
                 title="اضغط لإظهار الكلمة للتسميع"
               >
                 <span aria-hidden="true">{'•'.repeat(dotCount)}</span>
@@ -1234,22 +1234,22 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           <button
             type="button"
             onClick={handleExit}
-            className="min-h-11 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 px-3 py-2 text-xs font-bold text-[#142421] hover:border-[#C59B27] dark:text-[#F5F1E8] transition-colors"
+            className="min-h-11 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--wird-border)] px-3 py-2 text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] dark:text-[var(--wird-text)] transition-colors"
           >
-            <ArrowRight className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <ArrowRight className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
             <span>خروج من الجلسة</span>
           </button>
 
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 min-w-0 text-xs">
-            <span className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
+            <span className="font-bold text-sm text-[var(--wird-text)] font-quran">
               سورة {surahMeta.name}
             </span>
-            <span aria-hidden="true" className="text-[#5B6F6B]/50 dark:text-[#8B9E9B]/50">·</span>
-            <span aria-live="polite" className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums font-semibold">
+            <span aria-hidden="true" className="text-[var(--wird-muted)]/50">·</span>
+            <span aria-live="polite" className="text-[var(--wird-muted)] font-mono tabular-nums font-semibold">
               الآية {currentAyah.numberInSurah} (نطاق {startAyah}–{endAyah})
             </span>
-            <span aria-hidden="true" className="text-[#5B6F6B]/50 dark:text-[#8B9E9B]/50">·</span>
-            <span className="font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+            <span aria-hidden="true" className="text-[var(--wird-muted)]/50">·</span>
+            <span className="font-mono tabular-nums font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
               {formatTime(secondsElapsed)}
             </span>
             <button
@@ -1258,8 +1258,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               aria-expanded={isRangeEditorOpen}
               className={`min-h-9 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ${
                 isRangeEditorOpen
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
               }`}
             >
               <span>تغيير النطاق</span>
@@ -1272,7 +1272,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               type="button"
               disabled={isCompleting}
               onClick={() => void handleRequestCompleteSession()}
-              className="min-h-11 inline-flex items-center gap-1.5 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white px-3.5 py-2 text-xs font-bold shadow-xs transition-colors disabled:opacity-60"
+              className="min-h-11 inline-flex items-center gap-1.5 rounded-xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] px-3.5 py-2 text-xs font-bold shadow-xs transition-colors disabled:opacity-60"
             >
               {isCompleting ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Check className="w-4 h-4 shrink-0" />}
               <span>{isCompleting ? 'جارٍ الحفظ...' : 'إنهاء وإتمام الجلسة'}</span>
@@ -1284,16 +1284,16 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               onClick={() => setSettingsOpenPersist(prev => !prev)}
               aria-expanded={isSettingsOpen}
               aria-controls={settingsPanelId}
-              className={`min-h-11 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              className={`min-h-11 inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
                 isSettingsOpen
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
               }`}
             >
               <SlidersHorizontal className="w-4 h-4 shrink-0" />
               <span>إعدادات العرض والصوت</span>
               <span className={`hidden sm:inline text-[10px] font-mono tabular-nums ${
-                isSettingsOpen ? 'text-[#F5F1E8]/85' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+                isSettingsOpen ? 'text-white/90' : 'text-[var(--wird-muted)]'
               }`}>
                 {displayPreferences.uiScale}% · {displayPreferences.fontSize}px
               </span>
@@ -1306,10 +1306,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           <div
             role="region"
             aria-label="نطاق السورة والآيات في الجلسة"
-            className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3 text-xs"
+            className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] p-3 text-xs"
           >
             <label className="flex flex-col gap-1 sm:col-span-2">
-              <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">السورة</span>
+              <span className="font-bold text-[var(--wird-text)]">السورة</span>
               <select
                 aria-label="اختيار سورة جلسة الحفظ"
                 value={surahNumber}
@@ -1318,7 +1318,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   const nextMeta = ALL_SURAHS[nextSurahNum - 1];
                   if (nextMeta) applySessionRange(nextMeta.number, 1, nextMeta.versesCount);
                 }}
-                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="min-h-11 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
               >
                 {ALL_SURAHS.map(s => (
                   <option key={s.number} value={s.number}>
@@ -1329,7 +1329,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">من آية</span>
+              <span className="font-bold text-[var(--wird-text)]">من آية</span>
               <select
                 aria-label="بداية نطاق الجلسة من الآية"
                 value={startAyah}
@@ -1337,7 +1337,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   const nextStart = Number(event.target.value);
                   applySessionRange(surahNumber, nextStart, Math.max(nextStart, endAyah));
                 }}
-                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] tabular-nums focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="min-h-11 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
               >
                 {Array.from({ length: surahMeta.versesCount }, (_, i) => i + 1).map(num => (
                   <option key={num} value={num}>آية {num}</option>
@@ -1347,12 +1347,12 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
             <div className="flex items-end gap-2">
               <label className="flex flex-col gap-1 flex-1">
-                <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">إلى آية</span>
+                <span className="font-bold text-[var(--wird-text)]">إلى آية</span>
                 <select
                   aria-label="نهاية نطاق الجلسة إلى الآية"
                   value={endAyah}
                   onChange={event => applySessionRange(surahNumber, startAyah, Number(event.target.value))}
-                  className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] tabular-nums focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  className="min-h-11 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                 >
                   {Array.from({ length: surahMeta.versesCount - startAyah + 1 }, (_, i) => startAyah + i).map(num => (
                     <option key={num} value={num}>آية {num}</option>
@@ -1363,7 +1363,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               <button
                 type="button"
                 onClick={() => applySessionRange(surahNumber, 1, surahMeta.versesCount)}
-                className="min-h-11 px-3 rounded-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/35 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 text-[#9A7415] dark:text-[#E0A96D] text-[11px] font-bold whitespace-nowrap hover:bg-[#C59B27]/20 transition-colors"
+                className="min-h-11 px-3 rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] text-[11px] font-bold whitespace-nowrap hover:bg-[var(--wird-accent-soft)] transition-colors"
                 title="تحديد كامل آيات السورة"
               >
                 كاملة
@@ -1379,10 +1379,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           aria-valuemax={sessionAyahs.length}
           aria-valuenow={currentAyahIndex + 1}
           aria-valuetext={`الآية ${currentAyah.numberInSurah} من ${sessionAyahs.length}`}
-          className="h-1.5 w-full overflow-hidden rounded-full bg-[#1C4E46]/12 dark:bg-[#162744]"
+          className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--wird-primary-soft)] dark:bg-[var(--wird-surface-muted)]"
         >
           <div
-            className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-all duration-300"
+            className="h-full rounded-full bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] transition-all duration-300"
             style={{ width: `${((currentAyahIndex + 1) / Math.max(1, sessionAyahs.length)) * 100}%` }}
           />
         </div>
@@ -1390,18 +1390,18 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         {isSettingsOpen && (
           <div
             id={settingsPanelId}
-            className="border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 pt-4 mt-1 grid grid-cols-1 lg:grid-cols-2 gap-6"
+            className="border-t border-[var(--wird-border)] pt-4 mt-1 grid grid-cols-1 lg:grid-cols-2 gap-6"
           >
             {/* Column 1: Display & Mushaf Controls */}
             <section aria-label="إعدادات عرض جلسة الحفظ" className="space-y-4">
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                <h3 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--wird-border)]">
+                <h3 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   إعدادات العرض والمصحف
                 </h3>
                 <button
                   type="button"
                   onClick={() => setDisplayPreferences({ ...DEFAULT_MEMORIZATION_DISPLAY_PREFERENCES })}
-                  className="min-h-11 inline-flex items-center gap-1.5 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 py-1.5 text-[11px] font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] transition-colors"
+                  className="min-h-11 inline-flex items-center gap-1.5 rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 py-1.5 text-[11px] font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>إعادة ضبط العرض</span>
@@ -1411,10 +1411,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <label htmlFor="session-ui-scale" className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+                    <label htmlFor="session-ui-scale" className="text-xs font-bold text-[var(--wird-text)]">
                       حجم واجهة الجلسة
                     </label>
-                    <output htmlFor="session-ui-scale" aria-live="polite" className="text-xs font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    <output htmlFor="session-ui-scale" aria-live="polite" className="text-xs font-mono tabular-nums text-[var(--wird-muted)]">
                       {displayPreferences.uiScale}%
                     </output>
                   </div>
@@ -1428,16 +1428,16 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     value={displayPreferences.uiScale}
                     aria-valuetext={`${displayPreferences.uiScale}%`}
                     onChange={event => updateDisplayPreferences({ uiScale: Number(event.target.value) })}
-                    className="min-h-11 w-full accent-[#1C4E46] dark:accent-[#E0A96D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                    className="min-h-11 w-full accent-[var(--wird-primary)] dark:accent-[var(--wird-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <label htmlFor="session-ayah-font-size" className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8]">
+                    <label htmlFor="session-ayah-font-size" className="text-xs font-bold text-[var(--wird-text)]">
                       حجم خط الآيات
                     </label>
-                    <output htmlFor="session-ayah-font-size" aria-live="polite" className="text-xs font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    <output htmlFor="session-ayah-font-size" aria-live="polite" className="text-xs font-mono tabular-nums text-[var(--wird-muted)]">
                       {displayPreferences.fontSize}px
                     </output>
                   </div>
@@ -1451,14 +1451,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     value={displayPreferences.fontSize}
                     aria-valuetext={`${displayPreferences.fontSize} بكسل`}
                     onChange={event => updateDisplayPreferences({ fontSize: Number(event.target.value) })}
-                    className="min-h-11 w-full accent-[#1C4E46] dark:accent-[#E0A96D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                    className="min-h-11 w-full accent-[var(--wird-primary)] dark:accent-[var(--wird-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">عرض الآيات</span>
+                  <span className="block text-[11px] font-bold text-[var(--wird-muted)]">عرض الآيات</span>
                   <div role="group" aria-label="طريقة عرض الآيات" className="grid grid-cols-2 gap-1.5">
                     <button
                       type="button"
@@ -1466,8 +1466,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                       onClick={() => updateDisplayPreferences({ viewMode: 'focused' })}
                       className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
                         displayPreferences.viewMode === 'focused'
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                          ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                          : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                       }`}
                     >
                       آية واحدة
@@ -1478,8 +1478,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                       onClick={() => updateDisplayPreferences({ viewMode: 'page' })}
                       className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
                         displayPreferences.viewMode === 'page'
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                          ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                          : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                       }`}
                     >
                       كل آيات الجلسة
@@ -1488,7 +1488,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">المسافات والسطور</span>
+                  <span className="block text-[11px] font-bold text-[var(--wird-muted)]">المسافات والسطور</span>
                   <div role="group" aria-label="كثافة عرض العناصر" className="grid grid-cols-2 gap-1.5">
                     <button
                       type="button"
@@ -1496,8 +1496,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                       onClick={() => updateDisplayPreferences({ density: 'comfortable' })}
                       className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
                         displayPreferences.density === 'comfortable'
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                          ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                          : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                       }`}
                     >
                       مريحة
@@ -1508,8 +1508,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                       onClick={() => updateDisplayPreferences({ density: 'compact' })}
                       className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
                         displayPreferences.density === 'compact'
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                          ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                          : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                       }`}
                     >
                       مضغوطة
@@ -1519,7 +1519,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
 
                 {displayPreferences.viewMode === 'page' && (
                   <div className="space-y-1.5 sm:col-span-2">
-                    <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">نمط المصحف عند عرض كل الآيات</span>
+                    <span className="block text-[11px] font-bold text-[var(--wird-muted)]">نمط المصحف عند عرض كل الآيات</span>
                     <div role="group" aria-label="نمط المصحف في الجلسة" className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
@@ -1527,8 +1527,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                         onClick={() => updateDisplayPreferences({ mushafStyle: 'connected' })}
                         className={`min-h-11 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
                           displayPreferences.mushafStyle === 'connected'
-                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                            ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                            : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                         }`}
                       >
                         <BookText className="w-3.5 h-3.5 shrink-0" />
@@ -1543,8 +1543,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                         }}
                         className={`min-h-11 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
                           displayPreferences.mushafStyle === 'printed'
-                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                            ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                            : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                         }`}
                       >
                         <FileImage className="w-3.5 h-3.5 shrink-0" />
@@ -1555,7 +1555,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 )}
 
                 <div className="space-y-1.5 sm:col-span-2">
-                  <span className="block text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">اتساع مساحة الصفحة</span>
+                  <span className="block text-[11px] font-bold text-[var(--wird-muted)]">اتساع مساحة الصفحة</span>
                   <div role="group" aria-label="عرض مساحة صفحة الحفظ" className="grid grid-cols-3 gap-1.5">
                     {([
                       { value: 'comfortable', label: 'قياسية' },
@@ -1569,8 +1569,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                         onClick={() => updateDisplayPreferences({ pageWidth: option.value })}
                         className={`min-h-11 px-2.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
                           displayPreferences.pageWidth === option.value
-                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                            ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                            : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                         }`}
                       >
                         {option.label}
@@ -1580,32 +1580,32 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 </div>
               </div>
 
-              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <p className="text-[11px] text-[var(--wird-muted)]">
                 تُحفظ إعدادات العرض على هذا الجهاز فقط دون مزامنة مع تقدم الحفظ.
               </p>
             </section>
 
             {/* Column 2: Audio & Segment Repetition Controls */}
             <section aria-label="إعدادات الصوت والمقطع الصوتي" className="space-y-4">
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                <h3 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--wird-border)]">
+                <h3 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   إعدادات الصوت والمقطع
                 </h3>
                 {sessionAyahs[segmentStartIndex] && sessionAyahs[segmentEndIndex] && (
-                  <span className="text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                  <span className="text-[11px] font-bold text-[var(--wird-muted)]">
                     المقطع: من آية {sessionAyahs[segmentStartIndex].numberInSurah} إلى آية {sessionAyahs[segmentEndIndex].numberInSurah}
                   </span>
                 )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] sm:col-span-2">
-                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">القارئ المعتمد</span>
+                <label className="flex flex-col gap-1 text-xs text-[var(--wird-muted)] sm:col-span-2">
+                  <span className="font-bold text-[var(--wird-text)]">القارئ المعتمد</span>
                   <select
                     aria-label="اختيار القارئ في الجلسة"
                     value={activeReciter}
                     onChange={event => handleReciterChange(event.target.value as ReciterId)}
-                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                    className="min-h-11 w-full rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                   >
                     {RECITERS.map(reciter => (
                       <option key={reciter.id} value={reciter.id}>{reciter.name}</option>
@@ -1617,13 +1617,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   <AudioPlaybackRateControl value={playbackRate} onChange={handlePlaybackRateChange} />
                 </div>
 
-                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
-                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">تكرار الآية الواحدة</span>
+                <label className="flex flex-col gap-1 text-xs text-[var(--wird-muted)]">
+                  <span className="font-bold text-[var(--wird-text)]">تكرار الآية الواحدة</span>
                   <select
                     aria-label="عدد مرات تكرار الصوت"
                     value={audioRepeatCount}
                     onChange={event => handleAudioRepeatCountChange(Number(event.target.value) as AudioRepeatCount)}
-                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                    className="min-h-11 w-full rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                   >
                     <option value={1}>مرة واحدة</option>
                     <option value={2}>مرتان</option>
@@ -1634,8 +1634,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
-                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">بداية المقطع (من آية)</span>
+                <label className="flex flex-col gap-1 text-xs text-[var(--wird-muted)]">
+                  <span className="font-bold text-[var(--wird-text)]">بداية المقطع (من آية)</span>
                   <select
                     aria-label="بداية المقطع الصوتي في الجلسة"
                     value={segmentStartIndex}
@@ -1645,7 +1645,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                       setSegmentStartIndex(next);
                       if (segmentEndIndex < next) setSegmentEndIndex(next);
                     }}
-                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                    className="min-h-11 w-full rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                   >
                     {sessionAyahs.map((ayah, index) => (
                       <option key={ayah.number} value={index}>آية {ayah.numberInSurah}</option>
@@ -1653,14 +1653,14 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
-                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">نهاية المقطع (إلى آية)</span>
+                <label className="flex flex-col gap-1 text-xs text-[var(--wird-muted)]">
+                  <span className="font-bold text-[var(--wird-text)]">نهاية المقطع (إلى آية)</span>
                   <select
                     aria-label="نهاية المقطع الصوتي في الجلسة"
                     value={segmentEndIndex}
                     disabled={!sessionAyahs.length}
                     onChange={event => setSegmentEndIndex(Number(event.target.value))}
-                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                    className="min-h-11 w-full rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                   >
                     {sessionAyahs.slice(segmentStartIndex).map((ayah, offset) => (
                       <option key={ayah.number} value={segmentStartIndex + offset}>آية {ayah.numberInSurah}</option>
@@ -1668,13 +1668,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] sm:col-span-2">
-                  <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">تكرار المقطع الصوتي كاملاً</span>
+                <label className="flex flex-col gap-1 text-xs text-[var(--wird-muted)] sm:col-span-2">
+                  <span className="font-bold text-[var(--wird-text)]">تكرار المقطع الصوتي كاملاً</span>
                   <select
                     aria-label="عدد مرات تكرار المقطع الصوتي"
                     value={segmentRepeatCount}
                     onChange={event => handleSegmentRepeatCountChange(Number(event.target.value) as AudioRepeatCount)}
-                    className="min-h-11 w-full rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                    className="min-h-11 w-full rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-3 text-xs font-semibold text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                   >
                     <option value={1}>مرة واحدة</option>
                     <option value={2}>مرتان</option>
@@ -1695,15 +1695,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         {displayPreferences.viewMode === 'page' ? (
           <section
             aria-label="كل آيات الجلسة"
-            className="mushaf-page-frame rounded-3xl bg-[#F9F6EE] dark:bg-[#0B132B] px-4 py-5 sm:px-8 sm:py-7 shadow-md space-y-5"
+            className="mushaf-page-frame rounded-3xl bg-[var(--wird-surface-muted)] px-4 py-5 sm:px-8 sm:py-7 shadow-md space-y-5"
           >
             {/* Mushaf Header with quick style switch (Connected vs Printed Facsimile) */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#C59B27]/35 dark:border-[#E0A96D]/25 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--wird-border-gold)] pb-3">
               <div className="space-y-0.5">
-                <h3 className="text-base font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+                <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   سورة {surahMeta.name}
                 </h3>
-                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <p className="text-[11px] text-[var(--wird-muted)]">
                   كل آيات الجلسة · من آية {sessionAyahs[0]?.numberInSurah ?? startAyah} إلى آية {sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah} · اضغط على أي آية للانتقال إليها
                 </p>
               </div>
@@ -1711,17 +1711,17 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               <div className="flex flex-wrap items-center gap-2">
                 {displayPreferences.mushafStyle === 'printed' && (
                   <>
-                    <div className="inline-flex items-center gap-1 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white/80 dark:bg-[#111F36] p-1 text-xs">
+                    <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--wird-border)] bg-white/80 dark:bg-[var(--wird-surface)] p-1 text-xs">
                       <button
                         type="button"
                         disabled={printedPage <= 1}
                         onClick={() => handlePrintedPageStep('prev')}
-                        className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        className="min-h-11 px-2.5 rounded-lg font-bold text-[var(--wird-text)] disabled:opacity-40 hover:bg-[var(--wird-surface-hover)]"
                         aria-label="صفحة المصحف السابقة في الجلسة"
                       >
                         السابقة
                       </button>
-                      <span className="px-2 font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                      <span className="px-2 font-mono tabular-nums font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                         ص {printedPage}
                         {sessionPages.length > 1 ? ` · الورد (${sessionPages[0]}–${sessionPages[sessionPages.length - 1]})` : ''}
                       </span>
@@ -1729,7 +1729,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                         type="button"
                         disabled={printedPage >= 604}
                         onClick={() => handlePrintedPageStep('next')}
-                        className="min-h-11 px-2.5 rounded-lg font-bold text-[#142421] dark:text-[#F5F1E8] disabled:opacity-40 hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        className="min-h-11 px-2.5 rounded-lg font-bold text-[var(--wird-text)] disabled:opacity-40 hover:bg-[var(--wird-surface-hover)]"
                         aria-label="صفحة المصحف التالية في الجلسة"
                       >
                         التالية
@@ -1742,8 +1742,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                       onClick={() => setPrintedTafsirAyah(prev => (prev ? null : currentAyah))}
                       className={`min-h-11 px-3 py-1.5 rounded-xl border text-xs font-bold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${
                         printedTafsirAyah
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                          : 'bg-white/90 dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                          ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                          : 'bg-white/90 dark:bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                       }`}
                     >
                       <BookOpen className="w-3.5 h-3.5" />
@@ -1759,8 +1759,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     onClick={() => updateDisplayPreferences({ mushafStyle: 'connected' })}
                     className={`min-h-11 px-3 py-1.5 rounded-xl font-bold transition-colors whitespace-nowrap ${
                       displayPreferences.mushafStyle === 'connected'
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
-                        : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-xs'
+                        : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
                     }`}
                   >
                     صفحة متصلة
@@ -1774,8 +1774,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     }}
                     className={`min-h-11 px-3 py-1.5 rounded-xl font-bold transition-colors whitespace-nowrap ${
                       displayPreferences.mushafStyle === 'printed'
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
-                        : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-xs'
+                        : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
                     }`}
                   >
                     مصحف مطبوع
@@ -1796,9 +1796,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   return (
                     <div
                       role="status"
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#C59B27]/45 bg-[#C59B27]/12 dark:bg-[#E0A96D]/12 px-3.5 py-2 text-xs"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] px-3.5 py-2 text-xs"
                     >
-                      <span className="font-semibold text-[#142421] dark:text-[#F5F1E8] tabular-nums">
+                      <span className="font-semibold text-[var(--wird-text)] tabular-nums">
                         تصفح حر · ص {printedPage} (الآية الحالية في ص {currentAyah.page})
                       </span>
                       <button
@@ -1808,7 +1808,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                           setOutOfRangeNotice(null);
                           setPrintedPage(currentAyah.page);
                         }}
-                        className="min-h-10 rounded-xl bg-[#1C4E46] dark:bg-[#1E4A47] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#143D36] transition-colors"
+                        className="min-h-10 rounded-xl bg-[var(--wird-primary)] px-3 py-1.5 text-xs font-bold text-white hover:bg-[var(--wird-primary-hover)] transition-colors"
                       >
                         العودة إلى آية الجلسة (آية {currentAyah.numberInSurah})
                       </button>
@@ -1839,7 +1839,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 />
 
                 {outOfRangeNotice && (
-                  <p role="status" className="text-center text-xs font-semibold text-[#9A7415] dark:text-[#E0A96D]">
+                  <p role="status" className="text-center text-xs font-semibold text-[var(--wird-accent)]">
                     {outOfRangeNotice}
                   </p>
                 )}
@@ -1847,15 +1847,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             ) : (
               <div className="space-y-4">
                 <div className="surah-header-banner rounded-2xl py-3 px-5 text-white text-center shadow-xs">
-                  <div className="flex items-center justify-between text-[11px] text-[#F5F1E8]/90 font-sans-ui border-b border-[#C59B27]/35 pb-1.5 mb-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-white/90 font-sans-ui border-b border-[var(--wird-border-gold)] pb-1.5 mb-1.5">
                     <span>{surahMeta.revelationType}</span>
-                    <span className="font-quran text-xl md:text-2xl font-bold text-[#E0A96D]">سورة {surahMeta.name}</span>
+                    <span className="font-quran text-xl md:text-2xl font-bold text-[var(--wird-accent)]">سورة {surahMeta.name}</span>
                     <span>الجزء {currentAyah.juz}</span>
                   </div>
                 </div>
 
                 {sessionAyahs[0]?.numberInSurah === 1 && surahNumber !== 1 && surahNumber !== 9 && (
-                  <p className="font-quran text-xl md:text-2xl text-[#1C4E46] dark:text-[#E0A96D] text-center py-1">
+                  <p className="font-quran text-xl md:text-2xl text-[var(--wird-primary)] dark:text-[var(--wird-accent)] text-center py-1">
                     <QuranBasmala surahNumber={surahNumber} />
                   </p>
                 )}
@@ -1865,13 +1865,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     تعذر تحميل النص القرآني المعتمد لهذا النطاق؛ لم نعرض نصًا بديلًا. أعد المحاولة أو استخدم عرض الآية الواحدة.
                   </p>
                 ) : pageDisplayTexts.length !== sessionAyahs.length ? (
-                  <p role="status" className="px-3 py-5 text-sm text-[#5B6F6B] dark:text-[#8B9E9B] text-center">
+                  <p role="status" className="px-3 py-5 text-sm text-[var(--wird-muted)] text-center">
                     جارٍ تحميل نص الآيات المعتمد...
                   </p>
                 ) : (
                   <div
                     dir="rtl"
-                    className={`quran-text font-quran text-right text-[#142421] dark:text-[#F5F1E8] max-h-[62vh] overflow-y-auto overscroll-contain px-1 sm:px-3 ${
+                    className={`quran-text font-quran text-right text-[var(--wird-text)] max-h-[62vh] overflow-y-auto overscroll-contain px-1 sm:px-3 ${
                       displayPreferences.density === 'compact' ? 'py-1' : 'py-2'
                     }`}
                     style={{
@@ -1887,7 +1887,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                           <span
                             key={ayah.numberInSurah}
                             id="active-connected-ayah"
-                            className="inline-flex flex-wrap items-center gap-x-2 gap-y-2 rounded-xl bg-[#1C4E46]/10 dark:bg-[#1E4A47]/65 ring-1 ring-[#C59B27]/60 mx-1 px-2.5 py-1 align-baseline"
+                            className="inline-flex flex-wrap items-center gap-x-2 gap-y-2 rounded-xl bg-[var(--wird-primary-soft)] ring-1 ring-[var(--wird-accent)]/60 mx-1 px-2.5 py-1 align-baseline"
                           >
                             {renderMaskedWords()}
                             <button
@@ -1917,10 +1917,10 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                           }}
                           className={`inline text-right rounded-xl transition-colors cursor-pointer mx-0.5 px-1.5 py-0.5 ${
                             isActive
-                              ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/65 ring-1 ring-[#C59B27]/60'
+                              ? 'bg-[var(--wird-primary-soft)] ring-1 ring-[var(--wird-accent)]/60'
                               : isMastered
-                                ? 'bg-[#C59B27]/8 dark:bg-[#E0A96D]/10 hover:bg-[#1C4E46]/8'
-                                : 'hover:bg-[#1C4E46]/5 dark:hover:bg-[#162744]/70'
+                                ? 'bg-[var(--wird-accent-soft)] hover:bg-[var(--wird-primary-soft)]'
+                                : 'hover:bg-[var(--wird-surface-hover)]'
                           }`}
                         >
                           <span>{pageDisplayTexts[index]}</span>
@@ -1935,16 +1935,16 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           </section>
         ) : (
           /* Single Focused Ayah Studio (only when viewMode === 'focused') */
-          <div className={`bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl ${displayPreferences.density === 'compact' ? 'p-4 md:p-6 space-y-3' : 'p-6 md:p-10 space-y-5'} border border-[#C59B27]/35 dark:border-[#E0A96D]/25 shadow-xs text-center relative`}>
+          <div className={`bg-[var(--wird-surface)] rounded-3xl ${displayPreferences.density === 'compact' ? 'p-4 md:p-6 space-y-3' : 'p-6 md:p-10 space-y-5'} border border-[var(--wird-border-gold)] shadow-xs text-center relative`}>
             {currentAyah.numberInSurah === 1 && surahNumber !== 1 && surahNumber !== 9 && (
-              <div className="font-quran text-lg text-[#1C4E46] dark:text-[#E0A96D] pb-2 border-b border-[#C59B27]/20">
+              <div className="font-quran text-lg text-[var(--wird-primary)] dark:text-[var(--wird-accent)] pb-2 border-b border-[var(--wird-border-gold)]">
                 <QuranBasmala surahNumber={surahNumber} />
               </div>
             )}
 
             <div className="min-h-[140px] flex items-center justify-center py-3">
               <p
-                className="quran-text font-quran text-[#142421] dark:text-[#F5F1E8] flex flex-wrap items-center justify-center gap-x-3 gap-y-4"
+                className="quran-text font-quran text-[var(--wird-text)] flex flex-wrap items-center justify-center gap-x-3 gap-y-4"
                 style={{
                   fontSize: `${displayPreferences.fontSize}px`,
                   lineHeight: displayPreferences.density === 'compact' ? 1.8 : 2.25
@@ -1962,15 +1962,15 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           {/* Masking Controls (Enabled in both Connected and Focused views; disabled only in Printed facsimile view) */}
           <div className="flex flex-col gap-2 text-xs">
             <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5">
-              <div className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] font-semibold">
-                <EyeOff className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
+              <div className="inline-flex items-center gap-1.5 text-[var(--wird-muted)] font-semibold">
+                <EyeOff className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0" />
                 <span>الإخفاء:</span>
               </div>
 
               <div
                 role="group"
                 aria-label="خيارات إخفاء الكلمات للتسميع"
-                className={`flex flex-wrap items-center bg-[#F2EDE2] dark:bg-[#0B132B] p-1 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 gap-1 ${
+                className={`flex flex-wrap items-center bg-[var(--wird-surface-muted)] p-1 rounded-xl border border-[var(--wird-border)] gap-1 ${
                   isMaskingDisabled ? 'opacity-65' : ''
                 }`}
               >
@@ -1990,8 +1990,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     title={isMaskingDisabled ? 'أوقف وضع المصحف المطبوع لتفعيل الإخفاء التفاعلي على الآية الحالية' : undefined}
                     className={`min-h-11 px-3 py-1.5 rounded-lg font-bold transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${
                       !isMaskingDisabled && maskLevel === m.level
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs'
-                        : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-xs'
+                        : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
                     }`}
                   >
                     {m.label}
@@ -2001,12 +2001,12 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             </div>
 
             {isMaskingDisabled && (
-              <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--wird-muted)]">
                 <span>الإخفاء التفاعلي متاح في العرض المتصل وآية واحدة</span>
                 <button
                   type="button"
                   onClick={() => updateDisplayPreferences({ mushafStyle: 'connected' })}
-                  className="min-h-11 px-3 py-1.5 rounded-xl border border-[#1C4E46]/25 dark:border-[#E0A96D]/30 bg-white dark:bg-[#111F36] text-[#1C4E46] dark:text-[#E0A96D] font-bold hover:border-[#C59B27] transition-colors whitespace-nowrap"
+                  className="min-h-11 px-3 py-1.5 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-bold hover:border-[var(--wird-accent)] transition-colors whitespace-nowrap"
                 >
                   العودة للعرض المتصل
                 </button>
@@ -2014,18 +2014,18 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             )}
           </div>
 
-          <div className="h-px lg:h-8 lg:w-px bg-[#1C4E46]/12 dark:bg-[#E0A96D]/18 shrink-0" aria-hidden="true" />
+          <div className="h-px lg:h-8 lg:w-px bg-[var(--wird-primary-soft)] dark:bg-[var(--wird-accent-soft)] shrink-0" aria-hidden="true" />
 
           {/* Manual Repetition Counter */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
-                <h4 className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">
+                <Sparkles className="w-4 h-4 text-[var(--wird-accent)]" />
+                <h4 className="font-bold text-xs text-[var(--wird-text)]">
                   عدّاد التكرار والتثبيت ({repeatCount} / {targetRepeats})
                 </h4>
               </div>
-              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <p className="text-[11px] text-[var(--wird-muted)]">
                 اختصار لوحة المفاتيح: مسافة (Space)
               </p>
             </div>
@@ -2034,7 +2034,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               <button
                 type="button"
                 onClick={() => setRepeatCount(c => Math.max(0, c - 1))}
-                className="min-h-11 min-w-11 rounded-xl bg-[#F2EDE2] hover:bg-[#E6DFCE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] font-bold text-xs flex items-center justify-center border border-[#1C4E46]/12 dark:border-[#E0A96D]/20"
+                className="min-h-11 min-w-11 rounded-xl bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] font-bold text-xs flex items-center justify-center border border-[var(--wird-border)]"
                 title="إنقاص مرة واحدة"
               >
                 -1
@@ -2056,7 +2056,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         <div className="wird-card rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3 text-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">أسلوب الحفظ:</span>
+              <span className="font-bold text-[var(--wird-muted)]">أسلوب الحفظ:</span>
               <div role="group" aria-label="اختيار أسلوب جلسة الحفظ" className="inline-flex items-center gap-1.5">
                 <button
                   type="button"
@@ -2064,8 +2064,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   onClick={() => setStudyMethod(saveStudyMethod(surahNumber, startAyah, endAyah, 'free'))}
                   className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border transition-colors whitespace-nowrap ${
                     studyMethod === 'free'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                   }`}
                 >
                   حفظ حر
@@ -2076,8 +2076,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   onClick={() => setStudyMethod(saveStudyMethod(surahNumber, startAyah, endAyah, 'cumulative_linking'))}
                   className={`min-h-11 px-3 py-1.5 rounded-xl font-bold border inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${
                     studyMethod === 'cumulative_linking'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                   }`}
                 >
                   <Link2 className="w-3.5 h-3.5" />
@@ -2094,11 +2094,11 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   disabled={isCapturingWeakVerse}
                   className={`min-h-11 px-3.5 py-2 rounded-xl border font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
                     weakMarkedAyahs.has(`${surahNumber}:${currentAyah.numberInSurah}`)
-                      ? 'bg-[#C59B27]/15 dark:bg-[#E0A96D]/20 border-[#C59B27] text-[#9A7512] dark:text-[#E0A96D]'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#C59B27]/40 dark:border-[#E0A96D]/30 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-accent-soft)] border-[var(--wird-accent)] text-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border-gold)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
-                  <AlertTriangle className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-[var(--wird-accent)] shrink-0" />
                   <span>
                     {isCapturingWeakVerse
                       ? 'جارٍ التوثيق...'
@@ -2115,17 +2115,17 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             <p
               role="status"
               aria-live="polite"
-              className={`text-[11px] font-semibold ${weakCaptureFeedback.success ? 'text-[#1C4E46] dark:text-[#E0A96D]' : 'text-rose-600 dark:text-rose-300'}`}
+              className={`text-[11px] font-semibold ${weakCaptureFeedback.success ? 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]' : 'text-rose-600 dark:text-rose-300'}`}
             >
               {weakCaptureFeedback.message}
             </p>
           )}
 
           {studyMethod === 'cumulative_linking' && (
-            <div className="pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 space-y-3">
+            <div className="pt-3 border-t border-[var(--wird-border)] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-[#142421] dark:text-[#F5F1E8]">
-                  <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                <div className="flex items-center gap-2 text-[var(--wird-text)]">
+                  <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                     مسار التثبيت والربط الخماسي:
                   </span>
                   <span className="font-mono tabular-nums">
@@ -2140,8 +2140,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     onClick={() => setCumulativeProgress(prev => ({ ...prev, windowMode: 'from_start' }))}
                     className={`min-h-11 px-2.5 py-1 rounded-lg border text-[11px] font-bold whitespace-nowrap ${
                       cumulativeProgress.windowMode === 'from_start'
-                        ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/50 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
-                        : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                        ? 'bg-[var(--wird-primary-soft)] border-[var(--wird-primary)] dark:border-[var(--wird-accent)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
+                        : 'border-[var(--wird-border)] text-[var(--wird-muted)]'
                     }`}
                   >
                     من أول الورد (آية {sessionAyahs[0]?.numberInSurah ?? startAyah})
@@ -2152,8 +2152,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     onClick={() => setCumulativeProgress(prev => ({ ...prev, windowMode: 'last_n' }))}
                     className={`min-h-11 px-2.5 py-1 rounded-lg border text-[11px] font-bold whitespace-nowrap ${
                       cumulativeProgress.windowMode === 'last_n'
-                        ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/50 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
-                        : 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                        ? 'bg-[var(--wird-primary-soft)] border-[var(--wird-primary)] dark:border-[var(--wird-accent)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
+                        : 'border-[var(--wird-border)] text-[var(--wird-muted)]'
                     }`}
                   >
                     آخر {cumulativeProgress.windowSize} آيات
@@ -2166,7 +2166,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                         ...prev,
                         windowSize: Number(event.target.value) as CumulativeWindowSize
                       }))}
-                      className="min-h-11 rounded-lg border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-2 text-[11px] font-bold text-[#142421] dark:text-[#F5F1E8]"
+                      className="min-h-11 rounded-lg border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-2 text-[11px] font-bold text-[var(--wird-text)]"
                     >
                       {CUMULATIVE_WINDOW_SIZES.map(size => (
                         <option key={size} value={size}>{size} آيات</option>
@@ -2183,19 +2183,19 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 const isMastered = masteredIndices.has(currentAyahIndex);
                 return (
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px]">
-                    <div className={`p-2 rounded-xl border ${activeStage === 'listen_repeat' ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                    <div className={`p-2 rounded-xl border ${activeStage === 'listen_repeat' ? 'border-[var(--wird-primary)] dark:border-[var(--wird-accent)] bg-[var(--wird-primary-soft)] font-bold text-[var(--wird-text)]' : 'border-[var(--wird-border)] text-[var(--wird-muted)]'}`}>
                       1. استماع وتكرار ({repeatCount}/{Math.ceil(targetRepeats * 0.4)})
                     </div>
-                    <div className={`p-2 rounded-xl border ${activeStage === 'conceal_recall' ? 'border-[#1C4E46] dark:border-[#E0A96D] bg-[#1C4E46]/8 dark:bg-[#1E4A47]/35 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                    <div className={`p-2 rounded-xl border ${activeStage === 'conceal_recall' ? 'border-[var(--wird-primary)] dark:border-[var(--wird-accent)] bg-[var(--wird-primary-soft)] font-bold text-[var(--wird-text)]' : 'border-[var(--wird-border)] text-[var(--wird-muted)]'}`}>
                       2. تسميع بالإخفاء ({maskLevel === 0 ? 'مظهرة' : maskLevel === 1 ? '30%' : maskLevel === 2 ? '60%' : '100%'})
                     </div>
-                    <div className={`p-2 rounded-xl border ${isRecallVerified ? 'border-[#1C4E46]/50 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 font-bold text-[#1C4E46] dark:text-[#E0A96D]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                    <div className={`p-2 rounded-xl border ${isRecallVerified ? 'border-[var(--wird-border-strong)] bg-[var(--wird-primary-soft)] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]' : 'border-[var(--wird-border)] text-[var(--wird-muted)]'}`}>
                       3. {isRecallVerified ? 'تم تحقق الاسترجاع' : 'تحقق الاسترجاع'}
                     </div>
-                    <div className={`p-2 rounded-xl border ${activeStage === 'cumulative_bridge' || activeStage === 'connected_loop' ? 'border-[#C59B27] bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                    <div className={`p-2 rounded-xl border ${activeStage === 'cumulative_bridge' || activeStage === 'connected_loop' ? 'border-[var(--wird-accent)] bg-[var(--wird-accent-soft)] font-bold text-[var(--wird-text)]' : 'border-[var(--wird-border)] text-[var(--wird-muted)]'}`}>
                       4. الربط ({sessionAyahs[cumulativeStartIndex]?.numberInSurah}–{currentAyah.numberInSurah})
                     </div>
-                    <div className={`p-2 rounded-xl border ${isMastered ? 'border-[#C59B27] bg-[#C59B27]/18 dark:bg-[#E0A96D]/20 font-bold text-[#142421] dark:text-[#F5F1E8]' : 'border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                    <div className={`p-2 rounded-xl border ${isMastered ? 'border-[var(--wird-accent)] bg-[var(--wird-accent-soft)] font-bold text-[var(--wird-text)]' : 'border-[var(--wird-border)] text-[var(--wird-muted)]'}`}>
                       5. {isMastered ? 'متقنة ومثبتة' : 'تثبيت الإتقان'}
                     </div>
                   </div>
@@ -2203,7 +2203,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               })()}
 
               {masteryFeedback && (
-                <p role="alert" className="text-xs font-semibold text-amber-800 dark:text-[#E0A96D]">
+                <p role="alert" className="text-xs font-semibold text-amber-800 dark:text-[var(--wird-accent)]">
                   {masteryFeedback}
                 </p>
               )}
@@ -2215,8 +2215,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     onClick={handleVerifyRecallForCurrentAyah}
                     className={`min-h-11 px-3.5 py-2 rounded-xl border font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
                       recallVerifiedIndices.has(currentAyahIndex)
-                        ? 'bg-[#1C4E46]/12 dark:bg-[#1E4A47]/60 border-[#1C4E46] dark:border-[#E0A96D] text-[#1C4E46] dark:text-[#E0A96D]'
-                        : 'bg-white dark:bg-[#0B132B] border-[#1C4E46]/25 dark:border-[#E0A96D]/30 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]'
+                        ? 'bg-[var(--wird-primary-soft)] border-[var(--wird-primary)] dark:border-[var(--wird-accent)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
+                        : 'bg-[var(--wird-surface)] border-[var(--wird-border-strong)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
                     }`}
                   >
                     <Check className="w-3.5 h-3.5 shrink-0" />
@@ -2233,8 +2233,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                     disabled={!sessionAyahs.length}
                     className={`min-h-11 px-4 py-2 rounded-xl font-bold inline-flex items-center gap-2 whitespace-nowrap transition-colors ${
                       isCumulativePlaying
-                        ? 'bg-[#C59B27] text-[#0B132B]'
-                        : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
+                        ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                        : 'bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)]'
                     }`}
                   >
                     <Link2 className="w-4 h-4 shrink-0" />
@@ -2249,9 +2249,9 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 <button
                   type="button"
                   onClick={handleConfirmCurrentAyahMastery}
-                  className="min-h-11 px-4 py-2 rounded-xl border border-[#C59B27]/60 dark:border-[#E0A96D]/45 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#142421] dark:text-[#F5F1E8] font-bold inline-flex items-center gap-1.5 whitespace-nowrap hover:border-[#C59B27] transition-colors"
+                  className="min-h-11 px-4 py-2 rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] text-[var(--wird-text)] font-bold inline-flex items-center gap-1.5 whitespace-nowrap hover:border-[var(--wird-accent)] transition-colors"
                 >
-                  <Check className="w-4 h-4 shrink-0 text-[#1C4E46] dark:text-[#E0A96D]" />
+                  <Check className="w-4 h-4 shrink-0 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                   <span>
                     {currentAyahIndex < sessionAyahs.length - 1 ? 'تثبيت الإتقان والانتقال للتالية' : 'تثبيت إتقان الآية'}
                   </span>
@@ -2273,8 +2273,8 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 onClick={handleToggleAudio}
                 className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center shadow-xs transition-all ${
                   isPlaying
-                    ? 'bg-[#C59B27] text-[#0B132B]'
-                    : 'bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white'
+                    ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                    : 'bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)]'
                 }`}
                 title={isPlaying ? 'إيقاف مؤقت' : 'استماع للآية'}
                 aria-label={isPlaying ? 'إيقاف مؤقت' : 'استماع للآية'}
@@ -2283,29 +2283,29 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               </button>
               <div className="min-w-0 space-y-0.5">
                 <div className="flex items-center gap-1.5">
-                  <Volume2 className="w-3.5 h-3.5 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
-                  <h4 className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">تلاوة الآية الحالية</h4>
+                  <Volume2 className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0" />
+                  <h4 className="font-bold text-xs text-[var(--wird-text)]">تلاوة الآية الحالية</h4>
                 </div>
-                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] truncate">
+                <p className="text-[11px] text-[var(--wird-muted)] truncate">
                   السرعة {playbackRate}× · تكرار الآية: {formatRepeatBadge(audioRepeatCount, 'مستمر')}
                 </p>
               </div>
             </div>
             {isAudioLoading && (
-              <span role="status" className="text-xs font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] whitespace-nowrap">
+              <span role="status" className="text-xs font-semibold text-[var(--wird-muted)] whitespace-nowrap">
                 جارٍ تحميل التلاوة…
               </span>
             )}
           </div>
 
           {/* Selected Segment Playback */}
-          <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3 md:border-t-0 md:pt-0 md:border-r md:border-[#1C4E46]/12 md:dark:border-[#E0A96D]/18 md:pr-4">
+          <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[var(--wird-border)] pt-3 md:border-t-0 md:pt-0 md:border-r md:border-[var(--wird-border)] md:pr-4">
             <div className="space-y-0.5 min-w-0">
               <div className="flex items-center gap-1.5">
-                <Repeat className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
-                <span className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">المقطع الصوتي المحدد</span>
+                <Repeat className="w-3.5 h-3.5 text-[var(--wird-accent)] shrink-0" />
+                <span className="font-bold text-xs text-[var(--wird-text)]">المقطع الصوتي المحدد</span>
               </div>
-              <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <p className="text-[11px] text-[var(--wird-muted)]">
                 {sessionAyahs[segmentStartIndex] && sessionAyahs[segmentEndIndex]
                   ? `من آية ${sessionAyahs[segmentStartIndex].numberInSurah} إلى آية ${sessionAyahs[segmentEndIndex].numberInSurah}`
                   : 'نطاق الجلسة'}
@@ -2320,7 +2320,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 disabled={!sessionAyahs.length}
                 onClick={handleToggleSegmentAudio}
                 className={`min-h-11 rounded-xl px-4 text-xs font-bold transition-colors disabled:opacity-50 whitespace-nowrap ${
-                  isSegmentPlaying ? 'bg-[#C59B27] text-[#0B132B]' : 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white hover:bg-[#143D36]'
+                  isSegmentPlaying ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]' : 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] hover:bg-[var(--wird-primary-hover)]'
                 }`}
               >
                 {isSegmentPlaying ? 'إيقاف مؤقت للمقطع الصوتي' : isSegmentPaused ? 'استئناف المقطع الصوتي' : 'تشغيل المقطع الصوتي المحدد'}
@@ -2332,7 +2332,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   setSettingsOpenPersist(true);
                   settingsToggleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
-                className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-[#F9F6EE] dark:bg-[#0B132B] px-3 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] transition-colors whitespace-nowrap"
+                className="min-h-11 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] px-3 text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] transition-colors whitespace-nowrap"
               >
                 ضبط الصوت والمقطع
               </button>
@@ -2341,7 +2341,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
         </div>
 
         {segmentProgress && (
-          <div aria-live="polite" className="pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums text-center sm:text-right">
+          <div aria-live="polite" className="pt-2 border-t border-[var(--wird-border)] text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums text-center sm:text-right">
             قيد التلاوة: آية {segmentProgress.ayahNumber} · تكرار الآية {segmentProgress.ayahIteration}/{normalizeAyahSegmentRepeatCount(audioRepeatCount)} · دورة المقطع {segmentProgress.cycle}{segmentRepeatCount === -1 ? ' (مستمر)' : `/${segmentRepeatCount}`}
           </div>
         )}
@@ -2380,16 +2380,16 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             aria-labelledby="cumulative-confirm-dialog-title"
             aria-label="تأكيد إتمام المقطع المتصل"
             onClick={event => event.stopPropagation()}
-            className="w-full max-w-md rounded-3xl border border-[#C59B27]/55 dark:border-[#E0A96D]/40 bg-[#F9F6EE] dark:bg-[#0B132B] p-6 shadow-2xl space-y-4 text-right"
+            className="w-full max-w-md rounded-3xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-6 shadow-2xl space-y-4 text-right"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
-                <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   الربط التراكمي والمنهجي
                 </span>
                 <h3
                   id="cumulative-confirm-dialog-title"
-                  className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]"
+                  className="text-base font-bold text-[var(--wird-text)]"
                 >
                   تأكيد الربط الختامي للورد ({sessionAyahs[0]?.numberInSurah ?? startAyah}–{sessionAyahs[sessionAyahs.length - 1]?.numberInSurah ?? endAyah})
                 </h3>
@@ -2399,19 +2399,19 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 disabled={isCompleting}
                 onClick={() => setAwaitingFinalConfirm(false)}
                 aria-label="إغلاق حوار التأكيد"
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs leading-6 text-[#5B6F6B] dark:text-[#8B9E9B]">
+            <p className="text-xs leading-6 text-[var(--wird-muted)]">
               أكّد تسميع ومراجعة كامل مقطع الجلسة متصلاً قبل تسجيل إتمام جلسة الحفظ في سجلك اليومي.
             </p>
 
-            <div className="rounded-2xl bg-white/80 dark:bg-[#111F36] border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 px-4 py-3 text-xs flex items-center justify-between">
-              <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">الآيات المثبتة في هذه الجلسة</span>
-              <span className="font-mono tabular-nums font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+            <div className="rounded-2xl bg-white/80 dark:bg-[var(--wird-surface)] border border-[var(--wird-border)] px-4 py-3 text-xs flex items-center justify-between">
+              <span className="text-[var(--wird-muted)]">الآيات المثبتة في هذه الجلسة</span>
+              <span className="font-mono tabular-nums font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                 {masteredIndices.size} / {sessionAyahs.length}
               </span>
             </div>
@@ -2427,7 +2427,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                 type="button"
                 disabled={isCompleting}
                 onClick={() => setAwaitingFinalConfirm(false)}
-                className="min-h-11 px-4 py-2 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27]"
+                className="min-h-11 px-4 py-2 rounded-xl border border-[var(--wird-border-strong)] text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)]"
               >
                 مراجعة إضافية
               </button>
@@ -2442,7 +2442,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
                   setAwaitingFinalConfirm(false);
                   void finalizeSessionCompletion();
                 }}
-                className="min-h-11 px-4 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#E0A96D] dark:text-[#0B132B] text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
+                className="min-h-11 px-4 py-2 rounded-xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] dark:bg-[var(--wird-accent)] dark:text-[var(--wird-accent-ink)] text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-60"
               >
                 {isCompleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>تأكيد إتمام كامل المقطع</span>
@@ -2456,13 +2456,13 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
       <div
         role="group"
         aria-label="التنقل بين آيات جلسة الحفظ"
-        className="sticky bottom-2 z-30 flex items-center justify-between gap-2 rounded-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/25 bg-[#F9F6EE]/95 dark:bg-[#0B132B]/95 backdrop-blur-md p-2 sm:p-3 shadow-lg"
+        className="sticky bottom-2 z-30 flex items-center justify-between gap-2 rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface)]/95 backdrop-blur-md p-2 sm:p-3 shadow-lg"
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
       >
         <button
           onClick={handlePrevAyah}
           disabled={currentAyahIndex === 0}
-          className="min-h-14 flex flex-1 items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-[#F2EDE2] dark:bg-[#111F36] dark:hover:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 rounded-xl text-xs sm:text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="min-h-14 flex flex-1 items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-[var(--wird-surface-muted)] dark:bg-[var(--wird-surface)] dark:hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] border border-[var(--wird-border)] rounded-xl text-xs sm:text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight className="w-4 h-4 shrink-0" />
           <span>السابقة</span>
@@ -2480,7 +2480,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             handleStopAudio();
             setCurrentAyahIndex(nextIndex);
           }}
-          className="min-h-14 w-20 sm:w-28 shrink-0 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-1 text-center text-xs font-bold text-[#142421] dark:text-[#F5F1E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+          className="min-h-14 w-20 sm:w-28 shrink-0 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-1 text-center text-xs font-bold text-[var(--wird-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
         >
           {sessionAyahs.map((ayah, index) => (
             <option key={ayah.number} value={index}>آية {ayah.numberInSurah}</option>
@@ -2491,7 +2491,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
           type="button"
           disabled={isCompleting}
           onClick={handleNextAyah}
-          className="min-h-14 flex flex-[1.4] items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] dark:hover:bg-[#163A37] text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors active:scale-[0.98] disabled:opacity-60"
+          className="min-h-14 flex flex-[1.4] items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors active:scale-[0.98] disabled:opacity-60"
         >
           {isCompleting ? (
             <>

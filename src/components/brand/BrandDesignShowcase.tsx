@@ -1,46 +1,61 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Search,
-  Home,
-  Menu,
-  Bookmark,
-  Sparkles,
   BookOpen,
-  Award,
-  Flame,
-  ChevronLeft,
-  ChevronRight,
-  Sun,
-  Moon,
-  Layers,
-  Copy,
   Check,
-  Compass,
-  Sliders,
-  CheckCircle2,
-  X
+  Copy,
+  Moon,
+  Palette,
+  Repeat,
+  RotateCcw,
+  Sparkles,
+  Sun,
+  X,
 } from 'lucide-react';
-import { WirdAvatar } from './WirdAvatar';
-import { WirdSymbol, type WirdSymbolVariant } from './WirdLogo';
-import { WirdIslamicPattern, WirdMihrabArch } from './WirdPattern';
+import {
+  WIRD_THEME_PRESETS,
+  loadThemePreferences,
+  resetThemePreferences,
+  saveThemePreferences,
+  subscribeThemePreferences,
+  type WirdThemePreferences,
+  type WirdThemePresetId,
+} from '../../services/themePreferences';
+import { WirdBrandLockup } from './WirdLogo';
+import {
+  WirdButton,
+  WirdCard,
+  WirdCardHeader,
+  WirdEmptyState,
+  WirdMetadataRow,
+  WirdSegmentedTabs,
+} from '../ui/WirdPrimitives';
 
 interface BrandDesignShowcaseProps {
   onClose?: () => void;
 }
 
-export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClose }) => {
-  const [viewMode, setViewMode] = useState<'split' | 'day' | 'night'>('split');
-  const [sliderPosition, setSliderPosition] = useState<number>(50); // percentage for split
+export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
+  onClose,
+}) => {
+  const [themePrefs, setThemePrefs] = useState<WirdThemePreferences>(() =>
+    loadThemePreferences()
+  );
+  const [previewPreset, setPreviewPreset] = useState<WirdThemePresetId>(
+    themePrefs.preset
+  );
+  const [previewMode, setPreviewMode] = useState<'day' | 'night'>('day');
+  const [sampleTab, setSampleTab] = useState<'mushaf' | 'hifz' | 'adhkar'>(
+    'mushaf'
+  );
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const copyTimerRef = useRef<number | null>(null);
-  const [dayActiveBtn, setDayActiveBtn] = useState<'primary' | 'secondary' | 'accent'>('primary');
-  const [nightActiveBtn, setNightActiveBtn] = useState<'primary' | 'secondary' | 'accent'>('primary');
-  const [daySearchText, setDaySearchText] = useState('سورة الملك');
-  const [nightSearchText, setNightSearchText] = useState('سورة الكهف');
-  const [activeNavTab, setActiveNavTab] = useState<'home' | 'mushaf' | 'bookmark' | 'profile'>('home');
 
   useEffect(() => {
+    const unsub = subscribeThemePreferences((next) => {
+      setThemePrefs(next);
+    });
     return () => {
+      unsub();
       if (copyTimerRef.current !== null) {
         window.clearTimeout(copyTimerRef.current);
       }
@@ -49,7 +64,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
 
   const copyHex = (hex: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(hex);
+      void navigator.clipboard.writeText(hex);
       setCopiedHex(hex);
       if (copyTimerRef.current !== null) {
         window.clearTimeout(copyTimerRef.current);
@@ -57,559 +72,277 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({ onClos
       copyTimerRef.current = window.setTimeout(() => {
         setCopiedHex(null);
         copyTimerRef.current = null;
-      }, 2000);
+      }, 1800);
     }
   };
 
-  const daySwatches = [
-    { name: 'Naskh Cream', hex: '#F9F6EE', role: 'خلفية القراءة الهادئة' },
-    { name: 'Soft Mint Teal', hex: '#1C4E46', role: 'اللون التفاعلي الرئيسي' },
-    { name: 'Bright Gold', hex: '#C59B27', role: 'تطعيمات الشعار والإنجاز' },
-    { name: 'Warm Ivory', hex: '#F2EDE2', role: 'أسطح البطاقات الثانوية' },
-    { name: 'Deep Charcoal', hex: '#142421', role: 'نصوص واضحة مانعة للإجهاد' },
+  const selectedMeta =
+    WIRD_THEME_PRESETS.find((item) => item.id === previewPreset) ||
+    WIRD_THEME_PRESETS[0];
+  const palette =
+    previewMode === 'night' ? selectedMeta.night : selectedMeta.day;
+
+  const swatches = [
+    { label: 'خلفية القراءة (Canvas)', hex: palette.bg },
+    { label: 'السطح التحريري (Surface)', hex: palette.surface },
+    { label: 'اللون الأساسي (Primary)', hex: palette.primary },
+    { label: 'اللمسة المطفأة (Accent)', hex: palette.accent },
+    { label: 'النص الأساسي (Ink)', hex: palette.ink },
   ];
 
-  const nightSwatches = [
-    { name: 'Midnight Navy', hex: '#0B132B', role: 'سكون الليل والتركيز' },
-    { name: 'Dark Glass Navy', hex: '#111F36', role: 'أسطح زجاجية شفافة' },
-    { name: 'Muted Teal', hex: '#1E4A47', role: 'أزرار تفاعلية متزنة' },
-    { name: 'Glowing Amber', hex: '#E0A96D', role: 'توهج الذهب والمحراب' },
-    { name: 'Luminous Bronze', hex: '#C59B27', role: 'إطارات مضيئة ناعمة' },
-    { name: 'Soft Ivory', hex: '#F5F1E8', role: 'نصوص بيضاء دافئة' },
-  ];
+  const handleApplyPreset = (presetId: WirdThemePresetId) => {
+    const updated = saveThemePreferences({ preset: presetId });
+    setThemePrefs(updated);
+    setPreviewPreset(presetId);
+  };
 
   return (
-    <div dir="rtl" className="space-y-8 max-w-7xl mx-auto pb-24 text-right select-none">
-      {/* Top Showcase Navigation Bar */}
-      <header className="rounded-3xl p-5 md:p-6 bg-white dark:bg-[#111F36] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-md flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <WirdAvatar size="lg" shape="circle" withRing withGlow />
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl md:text-2xl font-black font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
-                معرض الهوية البصرية والتصميم الرقمي
-              </h1>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#C59B27]/15 text-[#9A7512] dark:bg-[#E0A96D]/15 dark:text-[#E0A96D] border border-[#C59B27]/30">
-                WIRD UI/UX
-              </span>
-            </div>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
-              عرض متقدم للسمة الثنائية: الوضع النهاري (Naskh Cream & Teal) والوضع الليلي (Midnight Navy & Glowing Amber)
-            </p>
+    <div dir="rtl" className="space-y-6 max-w-6xl mx-auto pb-16 text-right">
+      {/* Header Card */}
+      <WirdCard className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-2">
+            <WirdBrandLockup symbolSize={36} textSize="md" showSubtitle={false} />
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--wird-text)] wird-headline-balance">
+              نظام التصميم والهوية البصرية — WIRD Design System V2
+            </h1>
+            <WirdMetadataRow
+              items={[
+                '3 لوحات بصرية معتمدة',
+                'دعم نهاري وليلي متكامل',
+                'مكونات RTL مصممة يدوياً',
+              ]}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <WirdSegmentedTabs
+              ariaLabel="وضع المعاينة"
+              value={previewMode}
+              onChange={setPreviewMode}
+              options={[
+                { id: 'day', label: 'الوضع النهاري', icon: Sun },
+                { id: 'night', label: 'الوضع الليلي', icon: Moon },
+              ]}
+            />
+            {onClose && (
+              <WirdButton
+                variant="secondary"
+                size="icon"
+                onClick={onClose}
+                aria-label="إغلاق معرض التصميم"
+              >
+                <X className="w-4 h-4" />
+              </WirdButton>
+            )}
           </div>
         </div>
+      </WirdCard>
 
-        {/* Mode Switchers */}
-        <div className="flex items-center gap-2">
-          <div className="p-1 rounded-2xl bg-[#F2EDE2] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 flex items-center gap-1 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setViewMode('split')}
-              className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
-                viewMode === 'split'
-                  ? 'bg-gradient-to-r from-[#1C4E46] to-[#0B132B] text-white shadow-xs'
-                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
-              }`}
+      {/* Preset Comparison Grid */}
+      <section className="space-y-3">
+        <WirdCardHeader
+          title="الخطط البصرية المستخرجة من المراجع الأربعة"
+          subtitle="اختر أي خطة للمعاينة أو طبّقها مباشرة على التطبيق بأكمله."
+          action={
+            <WirdButton
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const reset = resetThemePreferences();
+                setThemePrefs(reset);
+                setPreviewPreset(reset.preset);
+              }}
             >
-              <Sliders className="w-3.5 h-3.5 text-[#C59B27]" />
-              <span>عرض ثنائي مقسم</span>
-            </button>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>استعادة الافتراضي</span>
+            </WirdButton>
+          }
+        />
 
-            <button
-              type="button"
-              onClick={() => setViewMode('day')}
-              className={`px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
-                viewMode === 'day'
-                  ? 'bg-[#1C4E46] text-white shadow-xs'
-                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
-              }`}
-            >
-              <Sun className="w-3.5 h-3.5 text-[#C59B27]" />
-              <span>الوضع النهاري</span>
-            </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {WIRD_THEME_PRESETS.map((preset) => {
+            const p = previewMode === 'night' ? preset.night : preset.day;
+            const isApplied = themePrefs.preset === preset.id;
+            const isPreviewed = previewPreset === preset.id;
+            return (
+              <div
+                key={preset.id}
+                className={`rounded-[var(--wird-radius-card)] border p-4 flex flex-col justify-between gap-4 transition-colors ${
+                  isPreviewed
+                    ? 'border-[var(--wird-accent)] bg-[var(--wird-surface)]'
+                    : 'border-[var(--wird-border)] bg-[var(--wird-surface)]'
+                }`}
+              >
+                <div className="space-y-3">
+                  {/* Live Mini UI Preview */}
+                  <div
+                    className="rounded-xl p-3.5 border space-y-2.5"
+                    style={{
+                      backgroundColor: p.bg,
+                      borderColor: `${p.accent}44`,
+                      color: p.ink,
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold">{preset.nameAr}</span>
+                      <span
+                        className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white"
+                        style={{ backgroundColor: p.primary }}
+                      >
+                        ورد اليوم
+                      </span>
+                    </div>
+                    <div
+                      className="rounded-lg p-2.5 border text-xs leading-relaxed font-quran"
+                      style={{
+                        backgroundColor: p.surface,
+                        borderColor: `${p.ink}18`,
+                      }}
+                    >
+                      ﴿ إِنَّ هَـٰذَا ٱلْقُرْءَانَ يَهْدِى لِلَّتِى هِىَ أَقْوَمُ ﴾
+                    </div>
+                  </div>
 
-            <button
-              type="button"
-              onClick={() => setViewMode('night')}
-              className={`px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
-                viewMode === 'night'
-                  ? 'bg-[#111F36] text-[#E0A96D] border border-[#E0A96D]/30 shadow-xs'
-                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
-              }`}
-            >
-              <Moon className="w-3.5 h-3.5 text-[#E0A96D]" />
-              <span>الوضع الليلي</span>
-            </button>
-          </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-[var(--wird-text)]">
+                        {preset.nameAr}
+                      </h3>
+                      {isApplied && (
+                        <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                          مفعّلة الآن
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
+                      {preset.taglineAr}
+                    </p>
+                    <p className="text-[11px] text-[var(--wird-muted)] opacity-85">
+                      {preset.inspirationAr}
+                    </p>
+                  </div>
+                </div>
 
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2.5 rounded-2xl bg-[#F2EDE2] hover:bg-[#E7DFD0] dark:bg-[#0B132B] dark:hover:bg-[#162744] text-[#5B6F6B] dark:text-[#CBD5E1] transition-colors"
-              title="إغلاق المعرض"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+                <div className="flex items-center gap-2 pt-1">
+                  <WirdButton
+                    variant={isApplied ? 'secondary' : 'primary'}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleApplyPreset(preset.id)}
+                  >
+                    {isApplied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>مطبّقة</span>
+                      </>
+                    ) : (
+                      <>
+                        <Palette className="w-3.5 h-3.5" />
+                        <span>تطبيق الخطة</span>
+                      </>
+                    )}
+                  </WirdButton>
+                  <WirdButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreviewPreset(preset.id)}
+                  >
+                    فحص الألوان
+                  </WirdButton>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </header>
-
-      {/* Main Showcase Stage */}
-      <section className="relative rounded-3xl overflow-hidden border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-2xl">
-        {/* VIEW 1: SPLIT SCREEN (DAY on Left, NIGHT on Right as specified in brief) */}
-        {viewMode === 'split' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-[#C59B27]/30 min-h-[780px]">
-            {/* [Day Mode - Left Side in LTR, or First Section] */}
-            <div className="bg-[#F9F6EE] p-6 md:p-10 space-y-8 text-[#142421] relative overflow-hidden">
-              <div className="flex items-center justify-between border-b border-[#C59B27]/25 pb-4">
-                <div className="flex items-center gap-2">
-                  <Sun className="w-5 h-5 text-[#C59B27]" />
-                  <span className="font-bold text-sm text-[#1C4E46]">الوضع النهاري · Day Mode</span>
-                </div>
-                <span className="text-[11px] font-mono text-[#5B6F6B]">Canvas #F9F6EE · Naskh Cream</span>
-              </div>
-
-              {/* Day Header & Logo */}
-              <div className="flex items-center justify-between bg-white/90 p-4 rounded-2xl border border-[#1C4E46]/12 shadow-xs">
-                <div className="flex items-center gap-3">
-                  <WirdAvatar size={48} shape="circle" withRing />
-                  <div>
-                    <h2 className="font-quran text-2xl font-black text-[#1C4E46] leading-none">وِرْد</h2>
-                    <span className="text-[10px] tracking-widest text-[#C59B27] font-bold uppercase">WIRD APP</span>
-                  </div>
-                </div>
-
-                {/* Day Navigation Icons */}
-                <div className="flex items-center gap-1 text-[#1C4E46]">
-                  <button type="button" className="p-2 rounded-xl hover:bg-[#F2EDE2] transition-colors" title="الرئيسية">
-                    <Home className="w-5 h-5" />
-                  </button>
-                  <button type="button" className="p-2 rounded-xl hover:bg-[#F2EDE2] transition-colors" title="العلامات">
-                    <Bookmark className="w-5 h-5" />
-                  </button>
-                  <button type="button" className="p-2 rounded-xl hover:bg-[#F2EDE2] transition-colors" title="القائمة">
-                    <Menu className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Day Rounded Search Bar */}
-              <div className="relative">
-                <Search className="w-4 h-4 text-[#5B6F6B] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={daySearchText}
-                  onChange={e => setDaySearchText(e.target.value)}
-                  placeholder="ابحث عن آية، سورة، أو قارئ..."
-                  className="w-full pl-4 pr-11 py-3.5 bg-white text-[#142421] rounded-full text-xs md:text-sm shadow-xs border border-[#1C4E46]/15 focus:outline-none focus:ring-2 focus:ring-[#1C4E46] transition-all"
-                />
-              </div>
-
-              {/* Day Sample Hifz Profile Card */}
-              <div className="bg-white p-5 rounded-2xl border border-[#1C4E46]/12 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1C4E46] to-[#28665B] text-white flex items-center justify-center font-bold text-xs shadow-xs ring-2 ring-[#C59B27]/40 font-quran">
-                      وِرد
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#142421]">حافظ وِرد</h3>
-                        <CheckCircle2 className="w-4 h-4 text-[#1C4E46]" />
-                      </div>
-                      <p className="text-[11px] text-[#5B6F6B]">نموذج بطاقة متابعة · مسار سورة البقرة</p>
-                    </div>
-                  </div>
-
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#C59B27]/12 text-[#9A7512] border border-[#C59B27]/35 text-xs font-bold font-mono">
-                    <Flame className="w-3.5 h-3.5 fill-[#C59B27] text-[#C59B27]" />
-                    <span>14 يوم مواظبة</span>
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#1C4E46]/10 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-[#F9F6EE]">
-                    <div className="text-[10px] text-[#5B6F6B]">الآيات المتقنة</div>
-                    <div className="font-bold font-mono text-[#1C4E46] text-sm mt-0.5">286 آية</div>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#F9F6EE]">
-                    <div className="text-[10px] text-[#5B6F6B]">دقائق الورد</div>
-                    <div className="font-bold font-mono text-[#1C4E46] text-sm mt-0.5">420 دقيقة</div>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#F9F6EE]">
-                    <div className="text-[10px] text-[#5B6F6B]">نسبة التثبيت</div>
-                    <div className="font-bold font-mono text-[#C59B27] text-sm mt-0.5">98.5%</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Day Interactive Buttons States */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-bold text-[#5B6F6B]">حالات الأزرار التفاعلية (Active & Hover):</span>
-                <div className="flex flex-wrap gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setDayActiveBtn('primary')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      dayActiveBtn === 'primary'
-                        ? 'bg-[#1C4E46] text-white shadow-md'
-                        : 'bg-[#1C4E46]/10 text-[#1C4E46] hover:bg-[#C59B27] hover:text-white'
-                    }`}
-                  >
-                    <span>ابدأ التسميع (Soft Teal)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDayActiveBtn('accent')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      dayActiveBtn === 'accent'
-                        ? 'bg-[#C59B27] text-white shadow-md'
-                        : 'bg-[#C59B27]/15 text-[#8F6E18] hover:bg-[#C59B27] hover:text-white'
-                    }`}
-                  >
-                    <span>تثبيت الآية (Bright Gold)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDayActiveBtn('secondary')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                      dayActiveBtn === 'secondary'
-                        ? 'border-[#1C4E46] bg-white text-[#1C4E46]'
-                        : 'border-[#1C4E46]/20 bg-white text-[#142421] hover:border-[#C59B27]'
-                    }`}
-                  >
-                    <span>تفسير معتمد</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Day Typography Specimen */}
-              <div className="p-4 rounded-2xl bg-white border border-[#1C4E46]/12 space-y-2">
-                <span className="text-[10px] font-bold text-[#C59B27] uppercase tracking-wider">الخط العربي الأصيل</span>
-                <p className="font-quran text-lg md:text-xl text-[#142421] leading-relaxed">
-                  ﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾
-                </p>
-                <p className="text-xs text-[#5B6F6B] font-sans leading-relaxed">
-                  خط النسخ العربي المعتمد مع تباعد متزن يمنح القارئ سكينة وسهولة في مراجعة الأوراد اليومية.
-                </p>
-              </div>
-            </div>
-
-            {/* [Night Mode - Right Side in LTR, or Second Section] */}
-            <div className="bg-[#0B132B] p-6 md:p-10 space-y-8 text-[#F5F1E8] relative overflow-hidden">
-              <div className="flex items-center justify-between border-b border-[#E0A96D]/20 pb-4">
-                <div className="flex items-center gap-2">
-                  <Moon className="w-5 h-5 text-[#E0A96D]" />
-                  <span className="font-bold text-sm text-[#E0A96D]">الوضع الليلي · Night Mode</span>
-                </div>
-                <span className="text-[11px] font-mono text-[#8B9E9B]">Canvas #0B132B · Midnight Navy</span>
-              </div>
-
-              {/* Night Header & Glowing Logo */}
-              <div className="flex items-center justify-between bg-[#111F36]/80 backdrop-blur-md p-4 rounded-2xl border border-[#E0A96D]/25 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <WirdAvatar size={48} shape="circle" withRing withGlow />
-                  <div>
-                    <h2 className="font-quran text-2xl font-black text-[#F5F1E8] leading-none drop-shadow-[0_0_8px_rgba(224,169,109,0.3)]">وِرْد</h2>
-                    <span className="text-[10px] tracking-widest text-[#E0A96D] font-bold uppercase">WIRD APP</span>
-                  </div>
-                </div>
-
-                {/* Night Navigation Icons */}
-                <div className="flex items-center gap-1 text-[#E0A96D]">
-                  <button type="button" className="p-2 rounded-xl hover:bg-white/10 transition-colors" title="الرئيسية">
-                    <Home className="w-5 h-5" />
-                  </button>
-                  <button type="button" className="p-2 rounded-xl hover:bg-white/10 transition-colors" title="العلامات">
-                    <Bookmark className="w-5 h-5" />
-                  </button>
-                  <button type="button" className="p-2 rounded-xl hover:bg-white/10 transition-colors" title="القائمة">
-                    <Menu className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Night Rounded Search Bar */}
-              <div className="relative">
-                <Search className="w-4 h-4 text-[#8B9E9B] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={nightSearchText}
-                  onChange={e => setNightSearchText(e.target.value)}
-                  placeholder="ابحث عن آية، سورة، أو قارئ..."
-                  className="w-full pl-4 pr-11 py-3.5 bg-[#111F36]/90 backdrop-blur-md text-[#F5F1E8] rounded-full text-xs md:text-sm shadow-md border border-[#E0A96D]/30 focus:outline-none focus:ring-2 focus:ring-[#E0A96D] transition-all"
-                />
-              </div>
-
-              {/* Night Glassmorphism Hifz Profile Card */}
-              <div className="bg-[#111F36]/85 backdrop-blur-xl p-5 rounded-2xl border border-[#E0A96D]/30 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_15px_rgba(224,169,109,0.06)] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#1E4A47] to-[#E0A96D] text-[#0B132B] flex items-center justify-center font-bold text-xs shadow-md ring-2 ring-[#E0A96D]/60 font-quran">
-                      وِرد
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#F5F1E8]">حافظ وِرد</h3>
-                        <CheckCircle2 className="w-4 h-4 text-[#E0A96D]" />
-                      </div>
-                      <p className="text-[11px] text-[#8B9E9B]">نموذج بطاقة متابعة · مسار سورة البقرة</p>
-                    </div>
-                  </div>
-
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#E0A96D]/15 text-[#E0A96D] border border-[#E0A96D]/35 text-xs font-bold font-mono">
-                    <Flame className="w-3.5 h-3.5 fill-[#E0A96D] text-[#E0A96D]" />
-                    <span>14 يوم مواظبة</span>
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-[#0B132B]/70 border border-white/5">
-                    <div className="text-[10px] text-[#8B9E9B]">الآيات المتقنة</div>
-                    <div className="font-bold font-mono text-[#E0A96D] text-sm mt-0.5">286 آية</div>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#0B132B]/70 border border-white/5">
-                    <div className="text-[10px] text-[#8B9E9B]">دقائق الورد</div>
-                    <div className="font-bold font-mono text-[#F5F1E8] text-sm mt-0.5">420 دقيقة</div>
-                  </div>
-                  <div className="p-2 rounded-xl bg-[#0B132B]/70 border border-white/5">
-                    <div className="text-[10px] text-[#8B9E9B]">نسبة التثبيت</div>
-                    <div className="font-bold font-mono text-[#E0A96D] text-sm mt-0.5">98.5%</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Night Interactive Buttons States */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-bold text-[#8B9E9B]">حالات الأزرار التفاعلية (Muted Teal & Glowing Amber):</span>
-                <div className="flex flex-wrap gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setNightActiveBtn('primary')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      nightActiveBtn === 'primary'
-                        ? 'bg-[#1E4A47] text-white border border-[#1E4A47] shadow-[0_0_15px_rgba(30,74,71,0.5)]'
-                        : 'bg-[#111F36] text-[#8B9E9B] hover:bg-[#E0A96D] hover:text-[#0B132B]'
-                    }`}
-                  >
-                    <span>ابدأ التسميع (Dark Teal)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setNightActiveBtn('accent')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      nightActiveBtn === 'accent'
-                        ? 'bg-gradient-to-r from-[#F3B77B] to-[#E0A96D] text-[#0B132B] shadow-[0_0_20px_rgba(224,169,109,0.4)]'
-                        : 'bg-[#E0A96D]/15 text-[#E0A96D] hover:bg-[#E0A96D] hover:text-[#0B132B]'
-                    }`}
-                  >
-                    <span>تثبيت الآية (Glowing Amber)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setNightActiveBtn('secondary')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                      nightActiveBtn === 'secondary'
-                        ? 'border-[#E0A96D] bg-[#111F36] text-[#E0A96D]'
-                        : 'border-white/15 bg-[#111F36]/50 text-white/80 hover:border-[#E0A96D]'
-                    }`}
-                  >
-                    <span>تفسير معتمد</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Night Typography Specimen */}
-              <div className="p-4 rounded-2xl bg-[#111F36]/70 border border-[#E0A96D]/20 space-y-2">
-                <span className="text-[10px] font-bold text-[#E0A96D] uppercase tracking-wider">توهج الخط القرآني الليلي</span>
-                <p className="font-quran text-lg md:text-xl text-[#F5F1E8] leading-relaxed drop-shadow-[0_0_6px_rgba(224,169,109,0.25)]">
-                  ﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾
-                </p>
-                <p className="text-xs text-[#8B9E9B] font-sans leading-relaxed">
-                  سكينة الليل مع تباين ذهبي دافئ على درجات الكحلي الملكي، لإراحة العين أثناء تلاوة أوراد قيام الليل.
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {/* VIEW 2: FULL DAY MODE */}
-        {viewMode === 'day' && (
-          <div className="bg-[#F9F6EE] p-8 md:p-14 space-y-8 text-[#142421]">
-            <div className="flex items-center gap-3">
-              <Sun className="w-6 h-6 text-[#C59B27]" />
-              <h2 className="text-2xl font-bold font-quran text-[#1C4E46]">الوضع النهاري الكامل (Day Mode Presentation)</h2>
-            </div>
-            <p className="text-sm text-[#5B6F6B] max-w-2xl leading-relaxed">
-              يعتمد هذا الوضع على أرضية ناعمة من درجات الكريمة Naskh Cream المريحة التي تُحاكي صفحات المصاحف الكلاسيكية القديمة دون إبهار العين أو انعكاسات قاسية، مع لمسات التيل والذهب.
-            </p>
-          </div>
-        )}
-
-        {/* VIEW 3: FULL NIGHT MODE */}
-        {viewMode === 'night' && (
-          <div className="bg-[#0B132B] p-8 md:p-14 space-y-8 text-[#F5F1E8]">
-            <div className="flex items-center gap-3">
-              <Moon className="w-6 h-6 text-[#E0A96D]" />
-              <h2 className="text-2xl font-bold font-quran text-[#E0A96D]">الوضع الليلي الكامل (Night Mode Presentation)</h2>
-            </div>
-            <p className="text-sm text-[#8B9E9B] max-w-2xl leading-relaxed">
-              وضع السكينة والخشوع بأسلوب زجاجي داكن (Dark Glassmorphism) على خلفية كحلية عميقة مع حدود مشعة خفيفة بالأمبر والتوهج الذهبي المستوحى من أضواء المحاريب والمآذن.
-            </p>
-          </div>
-        )}
       </section>
 
-      {/* Scalable Vector Emblem & Architectural Mihrab Art Gallery */}
-      <section className="bg-white dark:bg-[#111F36] rounded-3xl p-6 md:p-8 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-md space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
-              الشعار الهندسي المتجهي والزخرفة المعمارية (Scalable Vector Emblem & Mihrab Art)
-            </h2>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] mt-1">
-              هندسة نجمة ربع الحزب الثمانية مع قوس المحراب والمصحف المفتوح على الرحل بدقة SVG متجهية لا تفقد وضوحها عند أي مقاس
-            </p>
-          </div>
-          <span className="wird-section-badge">SVG Vector · Zero-Latency</span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {(
-            [
-              { variant: 'primary', label: 'الأساسي · Primary' },
-              { variant: 'light', label: 'النهاري · Light' },
-              { variant: 'dark', label: 'الليلي · Dark' },
-              { variant: 'gold', label: 'الذهبي · Gold' },
-              { variant: 'monochrome', label: 'أحادي · Mono' },
-              { variant: 'simplified', label: 'مُبسّط · Compact' },
-            ] as Array<{ variant: WirdSymbolVariant; label: string }>
-          ).map(item => (
-            <div
-              key={item.variant}
-              className="flex flex-col items-center justify-center gap-3 p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20"
+      {/* Active Preset Token Inspector */}
+      <WirdCard className="space-y-4">
+        <WirdCardHeader
+          title={`توكنز الألوان — ${selectedMeta.nameAr}`}
+          subtitle="انقر على أي لون لنسخ قيمته القياسية."
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {swatches.map((swatch) => (
+            <button
+              key={`${selectedMeta.id}-${swatch.label}`}
+              type="button"
+              onClick={() => copyHex(swatch.hex)}
+              className="p-3 rounded-[var(--wird-radius-control)] border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-strong)] transition-colors text-right space-y-2 wird-focus-ring"
             >
-              <WirdSymbol size={60} variant={item.variant} withGlow={item.variant === 'primary' || item.variant === 'dark'} />
-              <span className="text-[11px] font-bold text-[#142421] dark:text-[#F5F1E8]">{item.label}</span>
-            </div>
+              <div
+                className="h-12 w-full rounded-lg border border-black/10 dark:border-white/10"
+                style={{ backgroundColor: swatch.hex }}
+              />
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-[var(--wird-text)] truncate">
+                  {swatch.label}
+                </div>
+                <div className="flex items-center justify-between text-[11px] font-mono wird-tabular text-[var(--wird-muted)]">
+                  <span>{swatch.hex}</span>
+                  {copiedHex === swatch.hex ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 opacity-60" />
+                  )}
+                </div>
+              </div>
+            </button>
           ))}
         </div>
+      </WirdCard>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <div className="relative overflow-hidden rounded-2xl p-5 bg-[#F9F6EE] border border-[#1C4E46]/15 flex items-center justify-between gap-4">
-            <WirdIslamicPattern variant="emerald" opacity={0.05} />
-            <div className="relative z-10 space-y-1.5">
-              <span className="text-[10px] font-bold text-[#C59B27] uppercase tracking-wider">زخرفة المحراب النهارية</span>
-              <h3 className="text-sm font-bold font-quran text-[#1C4E46]">قوس المحراب والمشكاة المعلقة</h3>
-              <p className="text-xs text-[#5B6F6B] leading-relaxed">
-                تكوين معماري متجهي يُستخدم في ترويسات الأقسام وحالات الفراغ دون أي صور نقطية ثقيلة.
-              </p>
-            </div>
-            <WirdMihrabArch size={96} variant="emerald" className="relative z-10 shrink-0" />
+      {/* Live Hand-Crafted UI Primitives Demo */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <WirdCard className="lg:col-span-7 space-y-4">
+          <WirdCardHeader
+            title="المكونات الأساسية المصممة يدوياً"
+            subtitle="أزرار وتبويبات وبيانات وصفية خالية من الكبسولات العشوائية، متوافقة تماماً مع RTL."
+          />
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <WirdButton variant="primary">بدء ورد اليوم</WirdButton>
+            <WirdButton variant="secondary">تصفح المصحف</WirdButton>
+            <WirdButton variant="accent">تسجيل الإتمام</WirdButton>
+            <WirdButton variant="ghost">إلغاء</WirdButton>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl p-5 bg-[#0B132B] border border-[#E0A96D]/25 flex items-center justify-between gap-4 text-[#F5F1E8]">
-            <WirdIslamicPattern variant="gold" opacity={0.06} />
-            <div className="relative z-10 space-y-1.5">
-              <span className="text-[10px] font-bold text-[#E0A96D] uppercase tracking-wider">زخرفة المحراب الليلية</span>
-              <h3 className="text-sm font-bold font-quran text-[#F5F1E8]">توهج العنبر والذهب الكحلي</h3>
-              <p className="text-xs text-[#98ADAA] leading-relaxed">
-                تباين متزن يبرز تفاصيل المصحف المفتوح على الرحل فوق خلفية السكون الليلي.
-              </p>
-            </div>
-            <WirdMihrabArch size={96} variant="gold" className="relative z-10 shrink-0" />
+          <div className="pt-2 border-t border-[var(--wird-border)] space-y-3">
+            <WirdSegmentedTabs
+              ariaLabel="أقسام تجريبية"
+              value={sampleTab}
+              onChange={setSampleTab}
+              options={[
+                { id: 'mushaf', label: 'المصحف المطبوع', icon: BookOpen, count: 604 },
+                { id: 'hifz', label: 'جلسة الحفظ', icon: Sparkles },
+                { id: 'adhkar', label: 'المراجعة', icon: Repeat, count: 5 },
+              ]}
+            />
+            <WirdMetadataRow
+              items={[
+                'سورة الكهف',
+                'الجزء 15',
+                'الصفحة 293',
+                '110 آيات',
+              ]}
+            />
           </div>
+        </WirdCard>
+
+        <div className="lg:col-span-5">
+          <WirdEmptyState
+            icon={BookOpen}
+            title="حالة فارغة موحدة وهادئة"
+            description="تُستخدم عبر الأقسام كافة عند عدم وجود بيانات، مع رسالة واضحة وإجراء واحد مباشر دون ازدحام."
+            action={
+              <WirdButton variant="primary" size="sm">
+                إضافة أول ورد
+              </WirdButton>
+            }
+          />
         </div>
-      </section>
-
-      {/* Color Swatches Palette Lab */}
-      <section className="bg-white dark:bg-[#111F36] rounded-3xl p-6 md:p-8 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 shadow-md space-y-6">
-        <div>
-          <h2 className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
-            لوحة الألوان الرسمية المعتمدة (Design Palette Tokens)
-          </h2>
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
-            اضغط على أي كود لنسخه مباشرة (HEX Code Copy)
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Day Palette */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
-              <Sun className="w-4 h-4 text-[#C59B27]" />
-              <span>ألوان النهار (Day Mode Palette)</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {daySwatches.map(swatch => (
-                <button
-                  type="button"
-                  key={swatch.hex}
-                  onClick={() => copyHex(swatch.hex)}
-                  className="flex items-center gap-3 p-2.5 rounded-xl border border-[#1C4E46]/15 hover:border-[#C59B27] transition-all bg-[#F9F6EE] text-right group cursor-pointer"
-                >
-                  <div
-                    className="w-10 h-10 rounded-lg shrink-0 border border-black/10 shadow-xs"
-                    style={{ backgroundColor: swatch.hex }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-xs text-[#142421] group-hover:text-[#1C4E46] flex items-center justify-between">
-                      <span>{swatch.name}</span>
-                      {copiedHex === swatch.hex ? (
-                        <Check className="w-3.5 h-3.5 text-[#1C4E46]" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-[#5B6F6B] opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                    <div className="text-[11px] font-mono text-[#5B6F6B]">{swatch.hex}</div>
-                    <div className="text-[10px] text-[#5B6F6B] truncate">{swatch.role}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Night Palette */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-[#E0A96D] flex items-center gap-1.5">
-              <Moon className="w-4 h-4 text-[#E0A96D]" />
-              <span>ألوان الليل (Night Mode Palette)</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {nightSwatches.map(swatch => (
-                <button
-                  type="button"
-                  key={swatch.hex}
-                  onClick={() => copyHex(swatch.hex)}
-                  className="flex items-center gap-3 p-2.5 rounded-xl border border-white/10 hover:border-[#E0A96D] transition-all bg-[#0B132B]/60 text-right group cursor-pointer"
-                >
-                  <div
-                    className="w-10 h-10 rounded-lg shrink-0 border border-white/15 shadow-xs"
-                    style={{ backgroundColor: swatch.hex }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-xs text-[#F5F1E8] group-hover:text-[#E0A96D] flex items-center justify-between">
-                      <span>{swatch.name}</span>
-                      {copiedHex === swatch.hex ? (
-                        <Check className="w-3.5 h-3.5 text-[#E0A96D]" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-white/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                    <div className="text-[11px] font-mono text-[#8B9E9B]">{swatch.hex}</div>
-                    <div className="text-[10px] text-[#8B9E9B] truncate">{swatch.role}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 };

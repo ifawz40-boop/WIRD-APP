@@ -4,6 +4,15 @@ import { AuthProvider } from './context/AuthContext.tsx';
 import { AuthGate } from './components/auth/AuthGate.tsx';
 import './index.css';
 import './wird-identity.css';
+import {
+  applyThemePreferencesToDocument,
+  loadThemePreferences,
+} from './services/themePreferences';
+
+applyThemePreferencesToDocument(
+  loadThemePreferences(),
+  document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+);
 
 createRoot(document.getElementById('root')!).render(
   <AuthProvider>

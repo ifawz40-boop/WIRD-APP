@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, Columns2, FileText } from 'lucide-react';
+import { BookOpen, Columns2, FileText, PanelLeft } from 'lucide-react';
 import type { Ayah } from '../../types/quran';
 import {
   DESKTOP_SPREAD_BREAKPOINT_PX,
@@ -162,9 +162,12 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     [anchorPage, onAnchorPageChange, onSelectAyah, autoOpenTafsirOnSelect, activeTafsirAyah, onTafsirAyahChange]
   );
 
-  const handleOpenPageTafsir = (targetPage: number) => {
+  const handleOpenPageTafsir = (targetPage: number, preferredLayout?: MushafTafsirDesktopLayout) => {
     const ayahs = resolvedByPage[targetPage];
     if (!ayahs?.length) return;
+    if (preferredLayout) {
+      handleChangeTafsirLayout(preferredLayout);
+    }
     if (targetPage !== anchorPage) {
       onAnchorPageChange?.(targetPage);
     }
@@ -214,16 +217,17 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
 
   return (
     <div className={`mx-auto w-full ${maxWidthClass} space-y-3`}>
-      {/* Compact Spread & Page Tafsir Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#C59B27]/30 bg-[#F2EDE2]/70 dark:border-[#E0A96D]/25 dark:bg-[#111F36]/80 px-3 py-2 text-xs">
+      {/* Compact Spread & Opposite-Page Tafsir Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)]/85 px-3.5 py-2.5 text-xs">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+          <span className="font-bold text-[var(--wird-primary)] tabular-nums">
             {isOppositeTafsirActive
               ? `الصفحة ${readingPage} · التفسير مقابلها`
               : isTwoPage
-              ? `الصفحتان ${rightPage} – ${leftPage}`
-              : `الصفحة ${readingPage}`}
+                ? `الصفحتان ${rightPage} – ${leftPage}`
+                : `الصفحة ${readingPage}`}
           </span>
+
           {visiblePages.map(pageNum => {
             const pageAyahs = resolvedByPage[pageNum];
             return (
@@ -232,29 +236,53 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 type="button"
                 disabled={!pageAyahs?.length}
                 onClick={() => handleOpenPageTafsir(pageNum)}
-                className="min-h-11 inline-flex items-center gap-1.5 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] px-3 py-1.5 font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] disabled:opacity-40 transition-colors whitespace-nowrap"
+                className="min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-1.5 font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] disabled:opacity-40 transition-colors whitespace-nowrap"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[#1C4E46] dark:text-[#E0A96D]" />
+                <BookOpen className="w-3.5 h-3.5 text-[var(--wird-primary)]" />
                 <span>تفسير صفحة {pageNum}</span>
               </button>
             );
           })}
+
+          {/* Direct 1-tap Opposite-Page Tafsir shortcut in 2-page desktop mode */}
+          {isDesktopViewport && isTwoPage && (
+            <button
+              type="button"
+              aria-pressed={isOppositeTafsirActive}
+              disabled={!isOppositeTafsirActive && !resolvedByPage[readingPage]?.length}
+              onClick={() => {
+                if (isOppositeTafsirActive) {
+                  handleCloseTafsir();
+                } else {
+                  handleOpenPageTafsir(readingPage, 'replace_opposite');
+                }
+              }}
+              className={`min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border px-3 py-1.5 font-bold transition-colors whitespace-nowrap disabled:opacity-40 ${
+                isOppositeTafsirActive
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                  : 'bg-[var(--wird-surface)] text-[var(--wird-primary)] border-[var(--wird-border-gold)] hover:bg-[var(--wird-accent-soft)]'
+              }`}
+            >
+              <PanelLeft className="w-3.5 h-3.5" />
+              <span>{isOppositeTafsirActive ? 'العودة لعرض الصفحتين' : 'عرض التفسير مكان المقابلة'}</span>
+            </button>
+          )}
         </div>
 
         {isDesktopViewport && (
           <div
             role="group"
             aria-label="نمط صفحات المصحف المطبوع"
-            className="inline-flex rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] p-0.5"
+            className="inline-flex rounded-[var(--wird-radius-control)] border border-[var(--wird-border)] bg-[var(--wird-surface)] p-0.5"
           >
             <button
               type="button"
               aria-pressed={isTwoPage}
               onClick={() => handleToggleSpreadMode('double')}
-              className={`min-h-10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1 font-bold transition-colors whitespace-nowrap ${
+              className={`min-h-9 inline-flex items-center gap-1.5 rounded-lg px-3 py-1 font-bold transition-colors whitespace-nowrap ${
                 isTwoPage
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                  : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
               }`}
             >
               <Columns2 className="w-3.5 h-3.5" />
@@ -264,10 +292,10 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
               type="button"
               aria-pressed={!isTwoPage}
               onClick={() => handleToggleSpreadMode('single')}
-              className={`min-h-10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1 font-bold transition-colors whitespace-nowrap ${
+              className={`min-h-9 inline-flex items-center gap-1.5 rounded-lg px-3 py-1 font-bold transition-colors whitespace-nowrap ${
                 !isTwoPage
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                  : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                  : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -290,7 +318,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 <section
                   key={`opposite-tafsir-${pageNum}`}
                   aria-label="التفسير بدلاً من الصفحة المقابلة"
-                  className="flex flex-col min-h-[520px] max-h-[820px] rounded-2xl border border-[#C59B27]/50 dark:border-[#E0A96D]/35 shadow-xl overflow-hidden bg-[#F9F6EE] dark:bg-[#111F36]"
+                  className="flex flex-col min-h-[520px] max-h-[820px] rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] shadow-lg overflow-hidden bg-[var(--wird-surface)]"
                 >
                   <TafsirContentPane
                     ayah={activeTafsirAyah}
@@ -314,10 +342,10 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
             return (
               <div key={`spread-page-${pageNum}`} className="min-w-0 flex flex-col gap-1.5">
                 {isTwoPage && (
-                  <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                  <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--wird-muted)] tabular-nums">
                     <span>صفحة {pageNum}</span>
                     {pageNum === readingPage && (
-                      <span className="text-[#1C4E46] dark:text-[#E0A96D]">الصفحة الحالية</span>
+                      <span className="text-[var(--wird-primary)]">الصفحة الحالية</span>
                     )}
                   </div>
                 )}
@@ -339,7 +367,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
         {showSideSlideOverPanel && activeTafsirAyah && (
           <aside
             aria-label="لوحة التفسير الجانبية"
-            className="w-full lg:w-[400px] xl:w-[440px] shrink-0 rounded-2xl border border-[#C59B27]/45 dark:border-[#E0A96D]/30 shadow-2xl overflow-hidden max-h-[820px] flex flex-col bg-[#F9F6EE] dark:bg-[#111F36]"
+            className="w-full lg:w-[400px] xl:w-[440px] shrink-0 rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] shadow-xl overflow-hidden max-h-[820px] flex flex-col bg-[var(--wird-surface)]"
           >
             <TafsirContentPane
               ayah={activeTafsirAyah}
@@ -374,4 +402,3 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
     </div>
   );
 };
-

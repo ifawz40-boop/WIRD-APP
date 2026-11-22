@@ -1,5 +1,17 @@
 import React from 'react';
-import { Play, Moon, Sun, Download, Cloud, CloudCheck, CloudOff, CloudAlert, RefreshCw, Menu } from 'lucide-react';
+import {
+  Play,
+  Moon,
+  Sun,
+  Download,
+  Cloud,
+  CloudCheck,
+  CloudOff,
+  CloudAlert,
+  RefreshCw,
+  Menu,
+  Palette,
+} from 'lucide-react';
 import { UserProfile } from '../../types/quran';
 import { useCloudSync } from '../../hooks/useCloudSync';
 
@@ -8,6 +20,7 @@ interface HeaderProps {
   tabTitle: string;
   profile: UserProfile;
   onToggleTheme: () => void;
+  onOpenThemeCustomizer?: () => void;
   onStartDailySession: () => void;
   pwaInstallPrompt?: any;
   isStandalone?: boolean;
@@ -16,53 +29,90 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
+const TAB_SECTION_GROUPS: Record<string, string> = {
+  dashboard: 'وِرد اليوم',
+  library: 'القراءة والتلاوة',
+  plans: 'الحفظ والتثبيت',
+  session: 'الحفظ والتثبيت',
+  revision: 'الحفظ والتثبيت',
+  tests: 'الحفظ والتثبيت',
+  progress: 'المتابعة',
+  adhkar: 'العبادة اليومية',
+  seerah: 'السيرة النبوية',
+  ruqyah: 'العبادة اليومية',
+  advisor: 'الإرشاد القرآني',
+  settings: 'النظام والحساب',
+  showcase: 'نظام التصميم',
+};
+
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
   tabTitle,
   profile,
   onToggleTheme,
+  onOpenThemeCustomizer,
   onStartDailySession,
   pwaInstallPrompt,
   isStandalone,
   onInstallPwa,
   isSidebarOpen,
-  onToggleSidebar
+  onToggleSidebar,
 }) => {
   const { status, pendingCount, triggerSync } = useCloudSync();
 
-  const tabSubtitles: Record<string, string> = {
-    dashboard: 'متابعة الورد اليومي والحفظ والمراجعة',
-    library: 'المصحف الشريف · تلاوة وتفسير واستماع',
-    plans: 'تخطيط ذكي وجدولة متوازنة',
-    session: 'بيئة تركيز وتكرار وتسميع تراكمي',
-    revision: 'تثبيت المحفوظ بنظام المراجعة المتباعدة',
-    tests: 'قياس الإتقان وجودة الاستحضار',
-    progress: 'خريطة المصحف وإحصاءات الإنجاز',
-    advisor: 'إرشاد منهجي وتوجيه قرآني',
-    adhkar: 'أذكار الصباح والمساء والأدعية القرآنية والنبوية',
-    seerah: 'كتاب السيرة النبوية السردي الموثق من المولد إلى الرفيق الأعلى',
-    ruqyah: 'آيات وأدعية نبوية موثقة',
-    settings: 'الحساب والمظهر والتخزين بدون إنترنت',
-    showcase: 'نظام التصميم والهوية البصرية',
-  };
+  const syncLabel =
+    status === 'synced'
+      ? 'مُزامن'
+      : status === 'partial'
+      ? 'مزامنة جزئية'
+      : status === 'syncing'
+      ? 'جارٍ المزامنة'
+      : status === 'offline'
+      ? 'دون اتصال'
+      : status === 'unverified'
+      ? 'تفعيل البريد'
+      : status === 'error'
+      ? 'تعذر المزامنة'
+      : 'محلي';
+
+  const syncTitle =
+    status === 'synced'
+      ? 'المزامنة السحابية مكتملة (انقر للتحديث)'
+      : status === 'partial'
+      ? 'تم الرفع السحابي بانتظار اكتمال الإسقاط المحلي'
+      : status === 'syncing'
+      ? 'جارٍ المزامنة مع السحابة...'
+      : status === 'offline'
+      ? 'الجهاز غير متصل بالإنترنت — كل تغييراتك محفوظة محلياً'
+      : status === 'unverified'
+      ? 'بانتظار تفعيل البريد الإلكتروني لتفعيل المزامنة'
+      : status === 'error'
+      ? 'تعذر إكمال المزامنة الأخيرة — انقر لإعادة المحاولة'
+      : 'نمط محلي على هذا الجهاز';
+
+  const sectionGroup = TAB_SECTION_GROUPS[currentTab];
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-[#F9F6EE]/92 dark:bg-[#0B132B]/92 backdrop-blur-xl border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 px-4 md:px-7 flex items-center justify-between gap-3 transition-colors">
-      {/* Page context with Sidebar Toggle */}
+    <header className="sticky top-0 z-30 h-14 sm:h-15 bg-[var(--wird-header-glass)] backdrop-blur-md border-b border-[var(--wird-border)] px-3.5 sm:px-6 flex items-center justify-between gap-3 transition-colors duration-150">
+      {/* Zone 1: Navigation Toggle + Editorial Breadcrumb Title */}
       <div className="flex items-center gap-2.5 min-w-0">
         {onToggleSidebar && (
           <button
             type="button"
             onClick={onToggleSidebar}
-            className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] shrink-0 ${
+            className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-[var(--wird-radius-control)] transition-colors wird-focus-ring shrink-0 ${
               !isSidebarOpen
-                ? 'bg-[#F2EDE2] dark:bg-[#111F36] text-[#1C4E46] dark:text-[#E0A96D] ring-1 ring-[#C59B27]/40 shadow-2xs'
-                : 'text-[#142421] dark:text-[#F5F1E8] hover:text-[#1C4E46] dark:hover:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36]'
+                ? 'bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border border-[var(--wird-border)]'
+                : 'text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)]'
             }`}
-            title={isSidebarOpen
-              ? 'إغلاق الشريط الجانبي (Ctrl+B / Cmd+B)'
-              : 'فتح الشريط الجانبي (Ctrl+B / Cmd+B)'}
-            aria-label={isSidebarOpen ? 'إغلاق الشريط الجانبي' : 'فتح الشريط الجانبي'}
+            title={
+              isSidebarOpen
+                ? 'إغلاق الشريط الجانبي (Ctrl+B / Cmd+B)'
+                : 'فتح الشريط الجانبي (Ctrl+B / Cmd+B)'
+            }
+            aria-label={
+              isSidebarOpen ? 'إغلاق الشريط الجانبي' : 'فتح الشريط الجانبي'
+            }
             data-sidebar-toggle="desktop"
             aria-keyshortcuts="Control+B Meta+B"
             aria-expanded={isSidebarOpen}
@@ -71,107 +121,112 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <div className="min-w-0 flex flex-col">
-          <h1 className="text-base md:text-lg font-bold text-[#142421] dark:text-[#F5F1E8] truncate font-quran leading-tight">
+
+        <div className="min-w-0 flex items-baseline gap-2">
+          <h1 className="text-sm sm:text-base font-bold text-[var(--wird-text)] truncate whitespace-nowrap leading-tight">
             {tabTitle}
           </h1>
-          {tabSubtitles[currentTab] && (
-            <span className="hidden md:block text-[11px] font-medium text-[#5B6F6B] dark:text-[#98ADAA] truncate">
-              {tabSubtitles[currentTab]}
+          {sectionGroup && (
+            <span className="hidden md:inline-flex items-center gap-2 text-xs text-[var(--wird-muted)] whitespace-nowrap shrink-0">
+              <span aria-hidden="true" className="opacity-45">
+                ·
+              </span>
+              <span>{sectionGroup}</span>
             </span>
           )}
         </div>
       </div>
 
-      {/* Actions: Optional PWA Install (only when prompt ready) + Sync + Theme + Session CTA on secondary views */}
-      <div className="flex items-center gap-2 shrink-0">
+      {/* Zone 2: Restraint Utility Controls & Single Contextual Primary Action */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         {!isStandalone && pwaInstallPrompt && onInstallPwa && (
           <button
             type="button"
             onClick={onInstallPwa}
-            className="hidden sm:inline-flex min-h-11 items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1C4E46] dark:text-[#E0A96D] bg-[#F2EDE2] dark:bg-[#111F36] border border-[#C59B27]/35 dark:border-[#E0A96D]/25 rounded-xl hover:border-[#C59B27] transition-colors"
-            title="تثبيت التطبيق على الجهاز كبرنامج مستقل"
+            className="hidden sm:inline-flex min-h-10 items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--wird-text)] bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] rounded-[var(--wird-radius-control)] hover:border-[var(--wird-border-strong)] transition-colors whitespace-nowrap shrink-0 wird-focus-ring"
+            title="تثبيت التطبيق على الجهاز للعمل دون إنترنت"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
             <span>تثبيت</span>
           </button>
         )}
 
+        {/* Honest Cloud Sync Trigger */}
         <button
           type="button"
           onClick={() => triggerSync()}
           disabled={status === 'syncing'}
-          className={`min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+          className={`min-h-11 inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-[var(--wird-radius-control)] transition-colors whitespace-nowrap shrink-0 wird-focus-ring ${
             status === 'synced'
-              ? 'text-[#1C4E46] dark:text-[#6EE7B7] hover:bg-[#1C4E46]/8 dark:hover:bg-[#1E4A47]/40'
-              : status === 'syncing'
-              ? 'text-[#9A7415] dark:text-[#E0A96D] bg-[#C59B27]/10 dark:bg-[#E0A96D]/12'
-              : status === 'unverified'
-              ? 'text-[#9A7415] dark:text-[#E0A96D] hover:bg-[#C59B27]/10 dark:hover:bg-[#E0A96D]/12'
-              : 'text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36]'
+              ? 'text-[var(--wird-primary)] dark:text-emerald-300 hover:bg-[var(--wird-surface-muted)]'
+              : status === 'syncing' || status === 'partial' || status === 'unverified'
+              ? 'text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-muted)]'
+              : status === 'error'
+              ? 'text-rose-700 dark:text-rose-300 hover:bg-[var(--wird-surface-muted)]'
+              : 'text-[var(--wird-muted)] hover:bg-[var(--wird-surface-muted)]'
           }`}
-          title={
-            status === 'synced'
-              ? 'المزامنة السحابية مكتملة (انقر لإعادة المزامنة)'
-              : status === 'syncing'
-              ? 'جاري المزامنة مع السحابة...'
-              : status === 'offline'
-              ? 'الجهاز غير متصل بالإنترنت'
-              : status === 'unverified'
-              ? 'بانتظار تفعيل البريد للمزامنة'
-              : 'نمط الزائر (محلي فقط)'
-          }
+          title={syncTitle}
+          aria-label={syncTitle}
         >
           {status === 'syncing' ? (
-            <RefreshCw className="w-4 h-4 animate-spin text-[#C59B27] dark:text-[#E0A96D]" />
+            <RefreshCw className="w-4 h-4 animate-spin" />
           ) : status === 'synced' ? (
-            <CloudCheck className="w-4 h-4 text-[#1C4E46] dark:text-[#6EE7B7]" />
+            <CloudCheck className="w-4 h-4" />
           ) : status === 'offline' ? (
-            <CloudOff className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B]" />
-          ) : status === 'unverified' ? (
-            <CloudAlert className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+            <CloudOff className="w-4 h-4" />
+          ) : status === 'unverified' || status === 'error' || status === 'partial' ? (
+            <CloudAlert className="w-4 h-4" />
           ) : (
-            <Cloud className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B]" />
+            <Cloud className="w-4 h-4" />
           )}
-          <span className="hidden sm:inline">
-            {status === 'synced'
-              ? 'مُزامن'
-              : status === 'syncing'
-              ? 'مزامنة...'
-              : status === 'offline'
-              ? 'أوفلاين'
-              : status === 'unverified'
-              ? 'تفعيل البريد'
-              : 'محلي'}
-          </span>
+          <span className="hidden sm:inline">{syncLabel}</span>
           {pendingCount > 0 && (
-            <span className="text-[#8A6914] dark:text-[#E0A96D] text-[11px] font-mono tabular-nums">
+            <span className="text-[11px] font-mono wird-tabular opacity-85">
               ({pendingCount})
             </span>
           )}
         </button>
 
+        {/* Live Theme & Layout Customizer Trigger */}
+        {onOpenThemeCustomizer && (
+          <button
+            type="button"
+            onClick={onOpenThemeCustomizer}
+            className="min-h-11 min-w-11 inline-flex items-center justify-center text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] rounded-[var(--wird-radius-control)] transition-colors wird-focus-ring"
+            title="تخصيص المظهر واللوحة البصرية"
+            aria-label="تخصيص المظهر واللوحة البصرية"
+          >
+            <Palette className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+          </button>
+        )}
+
+        {/* Quick Light/Dark Toggle */}
         <button
           type="button"
           onClick={onToggleTheme}
-          className="min-h-11 min-w-11 inline-flex items-center justify-center text-[#142421] dark:text-[#F5F1E8] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
-          title={profile.theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
+          className="min-h-11 min-w-11 inline-flex items-center justify-center text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] rounded-[var(--wird-radius-control)] transition-colors wird-focus-ring"
+          title={
+            profile.theme === 'dark'
+              ? 'التبديل إلى الوضع النهاري'
+              : 'التبديل إلى الوضع الليلي'
+          }
           aria-label="تبديل المظهر النهاري والليلي"
         >
           {profile.theme === 'dark' ? (
-            <Sun className="w-4 h-4 text-[#E0A96D]" />
+            <Sun className="w-4 h-4 text-[var(--wird-accent)]" />
           ) : (
-            <Moon className="w-4 h-4 text-[#1C4E46]" />
+            <Moon className="w-4 h-4 text-[var(--wird-primary)]" />
           )}
         </button>
 
+        {/* Single Contextual Primary Action on Secondary Views */}
         {currentTab !== 'dashboard' && currentTab !== 'session' && (
           <button
             type="button"
             onClick={onStartDailySession}
-            className="min-h-11 inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-bold text-white bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] rounded-xl shadow-xs transition-all active:scale-95 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/30"
+            className="wird-btn-primary min-h-10 sm:min-h-11 px-3.5 sm:px-4 py-2 text-xs sm:text-[13px] whitespace-nowrap shrink-0 wird-focus-ring"
           >
-            <Play className="w-3.5 h-3.5 fill-white" />
+            <Play className="w-3.5 h-3.5 fill-current" />
             <span>جلسة اليوم</span>
           </button>
         )}
@@ -179,4 +234,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-

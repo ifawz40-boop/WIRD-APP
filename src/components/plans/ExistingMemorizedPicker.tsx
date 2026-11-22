@@ -206,8 +206,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
             onClick={() => setMode('surahs')}
             className={`min-h-11 px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
               mode === 'surahs'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-2xs'
-                : 'text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-2xs'
+                : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
             }`}
           >
             <ListChecks className="w-4 h-4 shrink-0" />
@@ -221,8 +221,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
             onClick={() => setMode('juzs')}
             className={`min-h-11 px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
               mode === 'juzs'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-2xs'
-                : 'text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-2xs'
+                : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
             }`}
           >
             <Layers className="w-4 h-4 shrink-0" />
@@ -236,8 +236,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
             onClick={() => setMode('range')}
             className={`min-h-11 px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
               mode === 'range'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-2xs'
-                : 'text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-2xs'
+                : 'text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
             }`}
           >
             <SlidersHorizontal className="w-4 h-4 shrink-0" />
@@ -254,9 +254,9 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
               ? 'لا توجد مقاطع مسجلة في سجل الحفظ حتى الآن'
               : `استيراد ${recordedVersesCount} آية مسجلة في حسابك`
           }
-          className="min-h-11 px-3.5 py-2 rounded-xl border border-[#C59B27]/40 dark:border-[#E0A96D]/35 bg-[#C59B27]/10 dark:bg-[#E0A96D]/12 text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-45 disabled:cursor-not-allowed whitespace-nowrap"
+          className="min-h-11 px-3.5 py-2 rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] text-[var(--wird-text)] hover:border-[var(--wird-accent)] text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-45 disabled:cursor-not-allowed whitespace-nowrap"
         >
-          <Download className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D] shrink-0" />
+          <Download className="w-4 h-4 text-[var(--wird-accent)] shrink-0" />
           <span>
             {recordedRanges.length > 0
               ? `استيراد محفوظك المسجل (${recordedVersesCount} آية)`
@@ -267,24 +267,24 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
 
       {/* MODE 1: Multi-Select Surahs Grid */}
       {mode === 'surahs' && (
-        <div className="space-y-3 rounded-2xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE]/70 dark:bg-[#0B132B]/55 p-4">
+        <div className="space-y-3 rounded-2xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)]/75 p-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#5B6F6B] dark:text-[#8B9E9B] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={surahSearch}
                 onChange={e => setSurahSearch(e.target.value)}
                 placeholder="ابحث عن سورة بالاسم أو الرقم..."
                 aria-label="ابحث عن سورة للتحديد المتعدد"
-                className="w-full min-h-11 pl-8 pr-9 py-2 bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl text-xs text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="w-full min-h-11 pl-8 pr-9 py-2 bg-[var(--wird-surface)] border border-[var(--wird-border-strong)] rounded-xl text-xs text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
               />
               {surahSearch && (
                 <button
                   type="button"
                   aria-label="مسح البحث"
                   onClick={() => setSurahSearch('')}
-                  className="min-h-10 min-w-10 flex items-center justify-center absolute left-1 top-1/2 -translate-y-1/2 text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white"
+                  className="min-h-10 min-w-10 flex items-center justify-center absolute left-1 top-1/2 -translate-y-1/2 text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -306,8 +306,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                   onClick={() => setSurahFilter(filterOpt.id)}
                   className={`min-h-11 px-3 py-1.5 rounded-xl border text-xs font-bold whitespace-nowrap transition-colors ${
                     surahFilter === filterOpt.id
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
-                      : 'bg-white dark:bg-[#111F36] text-[#5B6F6B] dark:text-[#CBD5E1] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-muted)] border-[var(--wird-border)]'
                   }`}
                 >
                   {filterOpt.label}
@@ -316,7 +316,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--wird-muted)] pt-1">
             <span className="tabular-nums">
               انقر على أي سورة لتحديدها أو إلغائها مباشرة ({filteredSurahs.length} سورة معروضة)
             </span>
@@ -325,7 +325,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                 type="button"
                 onClick={handleSelectAllFilteredSurahs}
                 disabled={filteredSurahs.length === 0}
-                className="min-h-10 px-2.5 py-1 rounded-lg font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#1C4E46]/10 dark:hover:bg-[#E0A96D]/15 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+                className="min-h-10 px-2.5 py-1 rounded-lg font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-primary-soft)] disabled:opacity-40 transition-colors inline-flex items-center gap-1"
               >
                 <CheckSquare className="w-3.5 h-3.5" />
                 <span>تحديد المطابق</span>
@@ -334,7 +334,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                 type="button"
                 onClick={handleClearFilteredSurahs}
                 disabled={filteredSurahs.length === 0}
-                className="min-h-10 px-2.5 py-1 rounded-lg font-semibold text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-rose-700 dark:hover:text-rose-300 disabled:opacity-40 transition-colors"
+                className="min-h-10 px-2.5 py-1 rounded-lg font-semibold text-[var(--wird-muted)] hover:text-rose-700 dark:hover:text-rose-300 disabled:opacity-40 transition-colors"
               >
                 إلغاء المطابق
               </button>
@@ -352,10 +352,10 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                   onClick={() => handleToggleSurah(surah.number)}
                   className={`min-h-12 px-3 py-2 rounded-xl border text-right flex items-center justify-between gap-2 transition-colors ${
                     coverage === 'full'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
                       : coverage === 'partial'
-                      ? 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#142421] dark:text-[#F5F1E8] border-[#C59B27] dark:border-[#E0A96D]'
-                      : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/14 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-accent-soft)] text-[var(--wird-text)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   <span className="flex items-center gap-2 min-w-0">
@@ -363,7 +363,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                       className={`w-6 h-6 rounded-lg font-mono text-[11px] font-bold tabular-nums flex items-center justify-center shrink-0 ${
                         coverage === 'full'
                           ? 'bg-white/15 text-white'
-                          : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D]'
+                          : 'bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
                       }`}
                     >
                       {surah.number}
@@ -374,13 +374,13 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                   </span>
 
                   <span className="flex items-center gap-1.5 shrink-0 text-[11px] tabular-nums">
-                    <span className={coverage === 'full' ? 'text-white/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}>
+                    <span className={coverage === 'full' ? 'text-white/80' : 'text-[var(--wird-muted)]'}>
                       {coverage === 'partial' ? 'جزئي' : `${surah.versesCount} آية`}
                     </span>
                     {coverage !== 'none' && (
                       <Check
                         className={`w-3.5 h-3.5 ${
-                          coverage === 'full' ? 'text-[#E0A96D]' : 'text-[#C59B27] dark:text-[#E0A96D]'
+                          coverage === 'full' ? 'text-[var(--wird-accent)]' : 'text-[var(--wird-accent)]'
                         }`}
                       />
                     )}
@@ -389,7 +389,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
               );
             })}
             {filteredSurahs.length === 0 && (
-              <div className="col-span-full py-8 text-center text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="col-span-full py-8 text-center text-xs text-[var(--wird-muted)]">
                 لا توجد سور مطابقة للتصفية الحالية.
               </div>
             )}
@@ -399,8 +399,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
 
       {/* MODE 2: Exact 30-Juz Multi-Select */}
       {mode === 'juzs' && (
-        <div className="space-y-3 rounded-2xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE]/70 dark:bg-[#0B132B]/55 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+        <div className="space-y-3 rounded-2xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)]/75 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--wird-muted)]">
             <span>
               يُحتسب كل جزء بحدوده الدقيقة وفق رسم حفص دون إضافة آيات زائدة من السور المشتركة.
             </span>
@@ -410,7 +410,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                 const juz29And30 = [...getJuzAyahRanges(29), ...getJuzAyahRanges(30)];
                 onChange(mergeMemorizedRanges([...value, ...juz29And30]));
               }}
-              className="min-h-10 px-2.5 py-1 rounded-lg font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#1C4E46]/10 dark:hover:bg-[#E0A96D]/15 transition-colors whitespace-nowrap"
+              className="min-h-10 px-2.5 py-1 rounded-lg font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-primary-soft)] transition-colors whitespace-nowrap"
             >
               تحديد جزء تبارك وعمّ (29–30)
             </button>
@@ -427,10 +427,10 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                   onClick={() => handleToggleJuz(def.juzNumber)}
                   className={`min-h-14 p-3 rounded-xl border text-right flex items-center justify-between gap-2 transition-colors ${
                     coverage === 'full'
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
+                      ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
                       : coverage === 'partial'
-                      ? 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#142421] dark:text-[#F5F1E8] border-[#C59B27] dark:border-[#E0A96D]'
-                      : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/14 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                      ? 'bg-[var(--wird-accent-soft)] text-[var(--wird-text)] border-[var(--wird-accent)]'
+                      : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                   }`}
                 >
                   <div className="min-w-0 space-y-0.5">
@@ -439,7 +439,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                         className={`px-2 py-0.5 rounded-md font-mono text-[11px] font-bold tabular-nums shrink-0 ${
                           coverage === 'full'
                             ? 'bg-white/15 text-white'
-                            : 'bg-[#F2EDE2] dark:bg-[#0B132B] text-[#1C4E46] dark:text-[#E0A96D]'
+                            : 'bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
                         }`}
                       >
                         ج{def.juzNumber}
@@ -448,7 +448,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                     </div>
                     <p
                       className={`text-[10px] truncate tabular-nums ${
-                        coverage === 'full' ? 'text-white/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'
+                        coverage === 'full' ? 'text-white/80' : 'text-[var(--wird-muted)]'
                       }`}
                     >
                       {def.startSurahName} {def.startAyah} ← {def.endSurahName} {def.endAyah} · {def.totalVerses} آية
@@ -457,9 +457,9 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
 
                   <span className="shrink-0">
                     {coverage === 'full' ? (
-                      <Check className="w-4 h-4 text-[#E0A96D]" />
+                      <Check className="w-4 h-4 text-[var(--wird-accent)]" />
                     ) : coverage === 'partial' ? (
-                      <span className="text-[10px] font-bold text-[#9A7512] dark:text-[#E0A96D]">جزئي</span>
+                      <span className="text-[10px] font-bold text-[var(--wird-accent)]">جزئي</span>
                     ) : null}
                   </span>
                 </button>
@@ -471,7 +471,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
 
       {/* MODE 3: Custom Verse Count or Range from Specific Surah */}
       {mode === 'range' && (
-        <div className="space-y-4 rounded-2xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE]/70 dark:bg-[#0B132B]/55 p-4">
+        <div className="space-y-4 rounded-2xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)]/75 p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <SurahPickerControl
               label="اختر السورة"
@@ -484,7 +484,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
 
             <div className="space-y-3">
               <div>
-                <span className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-1.5">
+                <span className="block font-semibold text-[var(--wird-text)] mb-1.5">
                   طريقة التحديد داخل السورة:
                 </span>
                 <div className="wird-segmented-track inline-flex w-full gap-1">
@@ -494,8 +494,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                     onClick={() => setCustomRangeMode('first_n')}
                     className={`flex-1 min-h-11 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       customRangeMode === 'first_n'
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                        : 'text-[#5B6F6B] dark:text-[#CBD5E1]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                        : 'text-[var(--wird-muted)]'
                     }`}
                   >
                     أول عدد آيات
@@ -506,8 +506,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                     onClick={() => setCustomRangeMode('between')}
                     className={`flex-1 min-h-11 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       customRangeMode === 'between'
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white'
-                        : 'text-[#5B6F6B] dark:text-[#CBD5E1]'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                        : 'text-[var(--wird-muted)]'
                     }`}
                   >
                     من آية .. إلى آية
@@ -519,7 +519,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                 <div className="space-y-2">
                   <label
                     htmlFor="wird-first-n-ayahs"
-                    className="block font-semibold text-[#142421] dark:text-[#F5F1E8]"
+                    className="block font-semibold text-[var(--wird-text)]"
                   >
                     أول كم آية حفظت من سورة {selectedRangeSurahMeta.name}؟ (الحد الأقصى {selectedRangeSurahMeta.versesCount})
                   </label>
@@ -535,7 +535,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                           Math.max(1, Math.min(selectedRangeSurahMeta.versesCount, Number(e.target.value) || 1))
                         )
                       }
-                      className="w-28 min-h-11 px-3 py-2 bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                      className="w-28 min-h-11 px-3 py-2 bg-[var(--wird-surface)] border border-[var(--wird-border-strong)] rounded-xl font-mono font-bold tabular-nums text-[var(--wird-text)]"
                     />
                     {[10, 20, 50, 100]
                       .filter(n => n <= selectedRangeSurahMeta.versesCount)
@@ -546,8 +546,8 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                           onClick={() => setFirstNAyahs(preset)}
                           className={`min-h-11 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold tabular-nums transition-colors ${
                             firstNAyahs === preset
-                              ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                              : 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                              ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
+                              : 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)]'
                           }`}
                         >
                           {preset}
@@ -560,7 +560,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                   <div>
                     <label
                       htmlFor="wird-range-from-ayah"
-                      className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-1"
+                      className="block font-semibold text-[var(--wird-text)] mb-1"
                     >
                       من الآية:
                     </label>
@@ -578,13 +578,13 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                         setFromAyah(val);
                         if (toAyah < val) setToAyah(val);
                       }}
-                      className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                      className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface)] border border-[var(--wird-border-strong)] rounded-xl font-mono font-bold tabular-nums text-[var(--wird-text)]"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="wird-range-to-ayah"
-                      className="block font-semibold text-[#142421] dark:text-[#F5F1E8] mb-1"
+                      className="block font-semibold text-[var(--wird-text)] mb-1"
                     >
                       إلى الآية:
                     </label>
@@ -601,7 +601,7 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                         );
                         setToAyah(val);
                       }}
-                      className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#111F36] border border-[#1C4E46]/18 dark:border-[#E0A96D]/22 rounded-xl font-mono font-bold tabular-nums text-[#142421] dark:text-[#F5F1E8]"
+                      className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface)] border border-[var(--wird-border-strong)] rounded-xl font-mono font-bold tabular-nums text-[var(--wird-text)]"
                     />
                   </div>
                 </div>
@@ -609,9 +609,9 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-            <span className="text-xs text-[#5B6F6B] dark:text-[#CBD5E1] tabular-nums">
-              سيُضاف: <strong className="text-[#1C4E46] dark:text-[#E0A96D]">سورة {selectedRangeSurahMeta.name} · الآيات {customPreviewStart} – {customPreviewEnd}</strong> ({customPreviewCount} آية)
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[var(--wird-border)]">
+            <span className="text-xs text-[var(--wird-muted)] tabular-nums">
+              سيُضاف: <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">سورة {selectedRangeSurahMeta.name} · الآيات {customPreviewStart} – {customPreviewEnd}</strong> ({customPreviewCount} آية)
             </span>
             <button
               type="button"
@@ -626,15 +626,15 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
       )}
 
       {/* Consolidated Selected Memorized Ranges Summary */}
-      <div className="rounded-2xl border border-[#1C4E46]/14 dark:border-[#E0A96D]/20 bg-white dark:bg-[#111F36]/75 p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+      <div className="rounded-2xl border border-[var(--wird-border)] bg-[var(--wird-surface)]/75 p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--wird-border)]">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <BookOpen className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D] shrink-0" />
-            <span className="font-bold text-[#142421] dark:text-[#F5F1E8] tabular-nums">
+            <BookOpen className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0" />
+            <span className="font-bold text-[var(--wird-text)] tabular-nums">
               المحفوظ المضاف للمراجعة الكبرى ({summary.totalVerses} آية · {summary.items.length} نطاق)
             </span>
             {summary.completeJuzs.length > 0 && (
-              <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+              <span className="text-[11px] text-[var(--wird-muted)] tabular-nums">
                 · أجزاء مكتملة: {summary.completeJuzs.map(j => `ج${j}`).join('، ')}
               </span>
             )}
@@ -660,22 +660,22 @@ export const ExistingMemorizedPicker: React.FC<ExistingMemorizedPickerProps> = (
                 type="button"
                 aria-label={`إزالة سورة ${item.surahName} من المحفوظ`}
                 onClick={() => handleRemoveItem(item)}
-                className="min-h-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/35 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] hover:border-rose-400 text-xs font-semibold transition-colors"
+                className="min-h-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-rose-400 text-xs font-semibold transition-colors"
               >
-                <span className="font-quran font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                <span className="font-quran font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   سورة {item.surahName}
                 </span>
-                <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+                <span className="text-[11px] text-[var(--wird-muted)] tabular-nums">
                   {item.isFullSurah
                     ? `كاملة (${item.versesCount})`
                     : `${item.startAyah}–${item.endAyah} (${item.versesCount})`}
                 </span>
-                <X className="w-3.5 h-3.5 text-[#5B6F6B] hover:text-rose-600" />
+                <X className="w-3.5 h-3.5 text-[var(--wird-muted)] hover:text-rose-600" />
               </button>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed">
+          <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
             لم تُضف سوراً أو أجزاء محفوظة بعد. يمكنك تحديد عدة سور معاً، أو اختيار أجزاء كاملة، أو تحديد عدد آيات معين من أي سورة، أو استيراد محفوظك المسجل.
           </p>
         )}

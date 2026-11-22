@@ -1,13 +1,46 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-20 (Draft PR `#404` on `feat/platform-transformation-20261120` — Release Readiness Fixes Applied & Verified Locally; Pending Exact-Head CI Run)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (`origin/main` HEAD `61554d60da5a5bbb644f6698d7b6193068a4d70a`)  
-**Active feature branch & PR:** `feat/platform-transformation-20261120` → Draft PR `#404` (`https://github.com/ifawz40-boop/WIRD-APP/pull/404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
+**Last reconciled:** 2026-11-21 (Rebuild Wave 4A — Calm Editorial Dashboard, Printed Mushaf Default, Opposite-Page Tafsir + Bottom Navigation, Reading Khatma & Library Harmonized and Visually Verified in Headless Chromium)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (local workspace has no `.git` metadata in AI Studio container; live GitHub diff vs `origin/main` is `UNKNOWN` from local shell)  
+**Active feature branch & PR (prior checkpoint):** `feat/platform-transformation-20261120` → Draft PR `#404` (`https://github.com/ifawz40-boop/WIRD-APP/pull/404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Master Mission — Full Platform Transformation (2026-11-20)
+## Active Rebuild Wave — Complete & Premium Reconstruction (2026-11-21)
+
+### Completed in Wave 1 (Blueprint + Phase 2 Design System V2 + Phase 3 Application Shell)
+1. **Authoritative Blueprint (`WIRD_COMPLETE_REBUILD_BLUEPRINT.md`):** Documented verified workspace baseline, 4-reference licensing & extraction matrix (`Ummah Library` [AGPL-3.0, architectural/UX inspiration only, zero copied code], `ShadcnStore` [MIT], `Noor UI` [MIT], `Truvar Design System` [MIT]), Design System V2 3-preset token specification, non-negotiable data/religious integrity map, and Phases 0–6 acceptance gates.
+2. **Phase 2 — WIRD Design System V2 (`src/services/themePreferences.ts`, `src/wird-identity.css`, `src/index.css`, `src/components/ui/WirdPrimitives.tsx`, `src/components/ui/ThemeCustomizerSheet.tsx`, `src/components/brand/BrandDesignShowcase.tsx`):**
+   - Built a 3-preset × Day/Night semantic CSS token cascade (`emerald-editorial` [default], `mushaf-parchment`, `classic-midnight`) plus density (`comfortable` | `compact`) and corner geometry (`refined` | `soft`) modifiers persisted locally (`wird:ui-theme-prefs:v2`).
+   - Created hand-crafted RTL-first UI primitives (`WirdButton`, `WirdCard`, `WirdCardHeader`, `WirdMetadataRow`, `WirdSegmentedTabs`, `WirdEmptyState`, `WirdViewSkeleton`, `WirdSheet`) with zero new npm dependencies.
+3. **Phase 3 — Application Shell & Navigation (`src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/components/shared/AppErrorBoundary.tsx`, `src/App.tsx`, `src/main.tsx`, `index.html`):**
+   - Migrated Sidebar, Header, ErrorBoundary, Toast, and Session Exit modal to semantic `--wird-*` tokens, added Header Theme Customizer trigger, replaced Suspense spinner with `WirdViewSkeleton`, and added smooth compositor-only `.wird-view-enter` transitions.
+
+### Completed in Wave 4A (Calm Editorial Dashboard + Printed Mushaf Primary Experience + Opposite-Page Tafsir & Bottom Navigation)
+1. **Dashboard Reconstruction (`src/components/dashboard/DashboardView.tsx`):**
+   - Rebuilt with Design System V2 tokens across all 3 Day/Night presets, `.wird-hero-surface` welcome anchor with Hijri date + next prayer + direct `فتح المصحف المطبوع` & `ابدأ ورد اليوم` CTAs, unified Daily Wird & Revision cards, zero-pill metadata rows, and decoupled `#dashboard-prayer-card` from the Quick Actions card.
+   - Fixed Arabic comma glyph rendering in hero greeting by reserving `.font-quran` strictly for the quoted Quranic ayah.
+2. **Printed Mushaf Default, Opposite-Page Tafsir & Bottom Navigation (`src/components/library/QuranMushafReader.tsx`, `src/components/library/PrintedMushafSpread.tsx`, `src/components/library/TafsirContentPane.tsx`, `src/components/library/ReadingKhatmaPanel.tsx`, `src/components/library/QuranLibraryView.tsx`):**
+   - Made Printed Mushaf (`readerLayout === 'printed'`) the default reading experience while keeping Flexible Text (`النص المرن`) 1 click away.
+   - Added direct 1-tap `عرض التفسير مكان المقابلة` / `العودة لعرض الصفحتين` toggle on 2-page desktop spreads; stepping advances single-page (`1 -> 2` putting Tafsir in place of page 1) with an explicit `تخطي صفحتين` (+2) option.
+   - Added `<nav aria-label="التنقل السفلي بين صفحات المصحف">` directly below the Mushaf stage with Prev/Next, spread indicator, `+2` jump when opposite Tafsir is open, and quick bottom `تسجيل الصفحة كمقروءة` when a Reading Khatma is active.
+   - Defined `--wird-primary-ink` and `--wird-accent-ink` across all 6 Day/Night theme blocks in `src/wird-identity.css` (fixing unreadable dark-on-dark primary buttons caught during Round 1 Chromium inspection) and added mobile bottom clearance (`pb-24 lg:pb-6`) in `TafsirContentPane.tsx`.
+3. **Local & Browser Verification Executed (2026-11-21):**
+   - `npm test` (73 suites incl. Wave 4A assertions in `src/tests/designSystemV2.test.ts`): **PASSED** (`805 PASSED | 0 FAILED`)
+   - `lint_applet` (`tsc --noEmit` + Tanzil Simple validation + 114 Surah chunk generation): **PASSED**
+   - `compile_applet` (Vite production build): **PASSED**
+   - `npm run smoke:api-imports`: **PASSED**
+   - Headless Chromium (`playwright-cli`, desktop `1440x900` + mobile `390x844`): **PASSED** (0 console errors, 0 warnings, `overflow: false` on mobile, Round 1 defects fixed and re-verified in Round 2 across Day & Night modes).
+   - Firestore Rules Emulator (`npm run test:firestore-rules`): **BLOCKED** locally (`java` not installed in container).
+   - GitHub CI / Vercel Preview / Vercel Production: **NOT RUN** from this workspace.
+
+### Next Step
+- Begin **Phase 4 — Wave 4B**: Harmonize and upgrade **Memorization Session (`MemorizationSessionView.tsx`)**, **Memorization Plans (`PlansView.tsx`)**, **Revision Center (`RevisionCenterView.tsx`)**, **Memorization Tests (`MemorizationTestsView.tsx`)**, and **Progress Analytics (`ProgressView.tsx`)** onto WIRD Design System V2 tokens/primitives while preserving cumulative linking, SM-2 revision, and all test contracts.
+
+---
+
+## Prior Checkpoint — Full Platform Transformation (2026-11-20)
 
 The owner authorized a full phased platform transformation covering visual identity & design system, unified architecture, Quran/memorization/revision excellence, Adhkar & Duas with audio, a complete chronological sourced Prophetic Seerah experience, offline-first hardening, and bidirectional multi-device synchronization including safe tombstones/deletions.
 

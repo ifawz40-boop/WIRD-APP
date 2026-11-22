@@ -53,12 +53,12 @@ interface RevisionCenterViewProps {
 type RevisionTab = 'daily_queue' | 'weekly_overview' | 'weak_verses' | 'history' | 'retention_dashboard';
 
 const STATUS_LABELS: Record<PortionMemorizationStatus, { label: string; bg: string; text: string; border: string; dot: string }> = {
-  stable: { label: 'راسخ ومتقن', bg: 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40', text: 'text-[#1C4E46] dark:text-[#6EE7B7]', border: 'border-[#1C4E46]/25 dark:border-[#1E4A47]', dot: 'bg-[#1C4E46] dark:bg-[#6EE7B7]' },
+  stable: { label: 'راسخ ومتقن', bg: 'bg-[var(--wird-primary-soft)]', text: 'text-[var(--wird-primary)] dark:text-emerald-300', border: 'border-[var(--wird-border-strong)]', dot: 'bg-[var(--wird-primary)] dark:bg-emerald-400' },
   recently_memorized: { label: 'محفوظ حديثاً', bg: 'bg-sky-50 dark:bg-sky-950/40', text: 'text-sky-800 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800/60', dot: 'bg-sky-600 dark:bg-sky-400' },
-  needs_revision: { label: 'يحتاج مراجعة', bg: 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15', text: 'text-[#9A7415] dark:text-[#E0A96D]', border: 'border-[#C59B27]/35 dark:border-[#E0A96D]/35', dot: 'bg-[#C59B27] dark:bg-[#E0A96D]' },
+  needs_revision: { label: 'يحتاج مراجعة', bg: 'bg-[var(--wird-accent-soft)]', text: 'text-[var(--wird-accent)]', border: 'border-[var(--wird-border-gold)]', dot: 'bg-[var(--wird-accent)]' },
   weak: { label: 'ضعيف ويتفلت', bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-800 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800/60', dot: 'bg-rose-600 dark:bg-rose-400' },
   currently_memorizing: { label: 'قيد الحفظ', bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-800/60', dot: 'bg-purple-600 dark:bg-purple-400' },
-  not_memorized: { label: 'غير محفوظ', bg: 'bg-[#F2EDE2]/70 dark:bg-[#162744]/50', text: 'text-[#5B6F6B] dark:text-[#8B9E9B]', border: 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20', dot: 'bg-[#5B6F6B] dark:bg-[#8B9E9B]' }
+  not_memorized: { label: 'غير محفوظ', bg: 'bg-[var(--wird-surface-muted)]/50', text: 'text-[var(--wird-muted)]', border: 'border-[var(--wird-border)]', dot: 'bg-[var(--wird-muted)]' }
 };
 
 const PORTION_STATUS_OPTIONS: Array<{ value: PortionMemorizationStatus; label: string; hint: string }> = [
@@ -725,11 +725,11 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       <div className="wird-card rounded-3xl p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
-              <Repeat className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <h2 className="text-xl font-bold text-[var(--wird-text)] flex items-center gap-2">
+              <Repeat className="w-5 h-5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
               مركز المراجعة ومنظومة قياس جودة الرسوخ
             </h2>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+            <p className="text-xs text-[var(--wird-muted)] mt-1">
               خوارزمية التكرار المتباعد التكيفية لمتابعة محفوظك القرآني وتثبيت المتشابهات والمتفلتات
             </p>
           </div>
@@ -739,7 +739,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
               ref={addWeakVerseTriggerRef}
               type="button"
               onClick={() => setIsAddWeakVerseModalOpen(true)}
-              className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 text-[#9A7415] dark:text-[#E0A96D] hover:bg-[#C59B27]/20 rounded-xl text-xs font-bold border border-[#C59B27]/35 dark:border-[#E0A96D]/35 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              className="flex min-h-11 items-center gap-1.5 px-3.5 py-2 bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] hover:bg-[var(--wird-accent-soft)] rounded-xl text-xs font-bold border border-[var(--wird-border-gold)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
             >
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>تسجيل آية ملتبسة</span>
@@ -749,9 +749,9 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
               ref={addPortionTriggerRef}
               type="button"
               onClick={() => setIsAddPortionModalOpen(true)}
-              className="flex min-h-11 items-center gap-1.5 px-4 py-2 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#255C58] text-white rounded-xl text-xs font-bold transition-all shadow-xs border border-[#C59B27]/30 dark:border-[#E0A96D]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              className="flex min-h-11 items-center gap-1.5 px-4 py-2 bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] rounded-xl text-xs font-bold transition-all shadow-xs border border-[var(--wird-border-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
             >
-              <Plus className="w-4 h-4 text-[#E0A96D]" />
+              <Plus className="w-4 h-4 text-[var(--wird-accent)]" />
               <span>إضافة مقطع متابعة جديد</span>
             </button>
           </div>
@@ -761,10 +761,10 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
         {actionFeedback && (
           <div role="status" aria-live="polite" className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 ${
             actionFeedback.type === 'success' 
-              ? 'bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 border-[#1C4E46]/30 dark:border-[#6EE7B7]/30 text-[#1C4E46] dark:text-[#6EE7B7]' 
+              ? 'bg-[var(--wird-primary-soft)] border-[var(--wird-primary)]/35 dark:border-emerald-400/35 text-[var(--wird-primary)] dark:text-emerald-300' 
               : actionFeedback.type === 'warn'
               ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'
-              : 'bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 border-[#C59B27]/35 text-[#9A7415] dark:text-[#E0A96D]'
+              : 'bg-[var(--wird-accent-soft)] border-[var(--wird-border-gold)] text-[var(--wird-accent)]'
           }`}>
             <div className="flex items-center gap-2 font-medium">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -788,27 +788,27 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
         <HorizontalScrollRail
           ariaLabel="أقسام مركز المراجعة"
           activeKey={activeTab}
-          className="border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pt-3"
+          className="border-t border-[var(--wird-border)] pt-3"
           contentClassName="gap-2"
         >
           <button
             type="button"
             onClick={() => setActiveTab('daily_queue')}
             aria-pressed={activeTab === 'daily_queue'}
-            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               activeTab === 'daily_queue'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-transparent hover:text-[var(--wird-text)]'
             }`}
           >
             <Clock className="w-4 h-4" />
             <span>طابور المراجعة اليومي</span>
             <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
               activeTab === 'daily_queue'
-                ? 'bg-[#C59B27] text-[#0B132B] font-bold'
+                ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)] font-bold'
                 : dailyQueue.length > 0 
-                ? 'bg-[#1C4E46] text-white font-bold' 
-                : 'bg-white/70 dark:bg-[#0B132B]/70 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] font-bold' 
+                : 'bg-[var(--wird-surface)]/80 text-[var(--wird-muted)]'
             }`}>
               {dailyQueue.length}
             </span>
@@ -818,10 +818,10 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
             type="button"
             onClick={() => setActiveTab('weekly_overview')}
             aria-pressed={activeTab === 'weekly_overview'}
-            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               activeTab === 'weekly_overview'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-transparent hover:text-[var(--wird-text)]'
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -832,18 +832,18 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
             type="button"
             onClick={() => setActiveTab('weak_verses')}
             aria-pressed={activeTab === 'weak_verses'}
-            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               activeTab === 'weak_verses'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-transparent hover:text-[var(--wird-text)]'
             }`}
           >
-            <AlertTriangle className={`w-4 h-4 ${activeTab === 'weak_verses' ? 'text-[#E0A96D]' : 'text-[#C59B27] dark:text-[#E0A96D]'}`} />
+            <AlertTriangle className={`w-4 h-4 ${activeTab === 'weak_verses' ? 'text-[var(--wird-accent)]' : 'text-[var(--wird-accent)]'}`} />
             <span>الآيات الملتبسة والصعبة</span>
             <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
               activeTab === 'weak_verses'
-                ? 'bg-[#C59B27] text-[#0B132B]'
-                : 'bg-[#C59B27]/20 dark:bg-[#E0A96D]/20 text-[#9A7415] dark:text-[#E0A96D]'
+                ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                : 'bg-[var(--wird-accent-soft)] text-[var(--wird-accent)]'
             }`}>
               {weakVerses.length}
             </span>
@@ -853,18 +853,18 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
             type="button"
             onClick={() => setActiveTab('history')}
             aria-pressed={activeTab === 'history'}
-            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               activeTab === 'history'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-transparent hover:text-[var(--wird-text)]'
             }`}
           >
             <History className="w-4 h-4" />
             <span>سجل المراجعات السابقة</span>
             <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
               activeTab === 'history'
-                ? 'bg-[#C59B27] text-[#0B132B]'
-                : 'bg-white/70 dark:bg-[#0B132B]/70 text-[#5B6F6B] dark:text-[#8B9E9B]'
+                ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                : 'bg-[var(--wird-surface)]/80 text-[var(--wird-muted)]'
             }`}>
               {revisionHistory.length}
             </span>
@@ -874,18 +874,18 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
             type="button"
             onClick={() => setActiveTab('retention_dashboard')}
             aria-pressed={activeTab === 'retention_dashboard'}
-            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+            className={`flex min-h-11 shrink-0 snap-start items-center gap-2 px-3.5 py-2 rounded-xl transition-all border text-xs font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
               activeTab === 'retention_dashboard'
-                ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                : 'bg-[#F2EDE2]/70 dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] border-transparent hover:text-[#142421] dark:hover:text-[#F5F1E8]'
+                ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-transparent hover:text-[var(--wird-text)]'
             }`}
           >
             <TrendingUp className="w-4 h-4" />
             <span>لوحة قياس جودة الرسوخ</span>
             <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono tabular-nums ${
               activeTab === 'retention_dashboard'
-                ? 'bg-[#C59B27] text-[#0B132B]'
-                : 'bg-[#1C4E46]/15 dark:bg-[#1E4A47]/60 text-[#1C4E46] dark:text-[#E0A96D]'
+                ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                : 'bg-[var(--wird-primary-soft)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
             }`}>
               %{metrics.retentionScorePercentage}
             </span>
@@ -897,18 +897,18 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {/* VIEW 1: DAILY REVISION QUEUE */}
       {activeTab === 'daily_queue' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+          <div className="flex items-center justify-between text-xs text-[var(--wird-muted)]">
             <span>المقاطع المستحقة للمراجعة اليوم (مرتبة حسب الأولوية والحاجة للتثبيت):</span>
-            <span className="tabular-nums">إجمالي المقاطع المستحقة: <strong className="text-[#142421] dark:text-[#F5F1E8]">{dailyQueue.length}</strong></span>
+            <span className="tabular-nums">إجمالي المقاطع المستحقة: <strong className="text-[var(--wird-text)]">{dailyQueue.length}</strong></span>
           </div>
 
           {dailyQueue.length === 0 ? (
             <div className="wird-card rounded-2xl p-8 text-center space-y-3">
-              <Award className="w-12 h-12 text-[#1C4E46] dark:text-[#E0A96D] mx-auto" />
-              <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]">
+              <Award className="w-12 h-12 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] mx-auto" />
+              <h3 className="text-base font-bold text-[var(--wird-text)]">
                 أحسنت! أتممت جميع مراجعات اليوم بنجاح
               </h3>
-              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] max-w-md mx-auto">
+              <p className="text-xs text-[var(--wird-muted)] max-w-md mx-auto">
                 لا توجد مقاطع قرآنية مستحقة للمراجعة اليوم. تم حفظ جميع الفواصل الزمنية وفق جدول التكرار المتباعد.
               </p>
             </div>
@@ -929,7 +929,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+                          <h3 className="text-base font-bold text-[var(--wird-text)] font-quran">
                             سورة {item.surahName}
                           </h3>
                           <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md font-bold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
@@ -937,34 +937,34 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                             {statusStyle.label}
                           </span>
                         </div>
-                        <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1 tabular-nums">
+                        <div className="text-xs text-[var(--wird-muted)] mt-1 tabular-nums">
                           الآيات: {item.startAyah} إلى {item.endAyah} ({versesCount} آيات)
                           {item.pageNumber && ` • صفحة ${item.pageNumber}`}
                         </div>
                       </div>
 
-                      <div className="text-left font-mono tabular-nums text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+                      <div className="text-left font-mono tabular-nums text-[11px] text-[var(--wird-muted)]">
                         التكرار: {item.repetitionCount}x
                       </div>
                     </div>
 
                     {/* Stats strip */}
-                    <div className="grid grid-cols-3 gap-2 bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-2.5 rounded-xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px]">
+                    <div className="grid grid-cols-3 gap-2 bg-[var(--wird-surface-muted)] p-2.5 rounded-xl border border-[var(--wird-border)] text-[11px]">
                       <div>
-                        <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px]">الفاصل الحالي</div>
-                        <div className="font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
+                        <div className="text-[var(--wird-muted)] text-[10px]">الفاصل الحالي</div>
+                        <div className="font-bold text-[var(--wird-text)] font-mono tabular-nums">
                           {item.intervalDays} {item.intervalDays === 1 ? 'يوم' : 'أيام'}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px]">عامل السهولة (EF)</div>
-                        <div className="font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
+                        <div className="text-[var(--wird-muted)] text-[10px]">عامل السهولة (EF)</div>
+                        <div className="font-bold text-[var(--wird-text)] font-mono tabular-nums">
                           {item.easeFactor.toFixed(1)}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[#5B6F6B] dark:text-[#8B9E9B] text-[10px]">الأخطاء السابقة</div>
-                        <div className={`font-bold font-mono tabular-nums ${(item.mistakesCount || 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-[#1C4E46] dark:text-[#6EE7B7]'}`}>
+                        <div className="text-[var(--wird-muted)] text-[10px]">الأخطاء السابقة</div>
+                        <div className={`font-bold font-mono tabular-nums ${(item.mistakesCount || 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-[var(--wird-primary)] dark:text-emerald-300'}`}>
                           {item.mistakesCount || 0}
                         </div>
                       </div>
@@ -972,7 +972,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
                     {/* Action buttons */}
                     <div className="space-y-2 pt-1">
-                      <div className="text-[11px] font-semibold text-[#5B6F6B] dark:text-[#8B9E9B]">
+                      <div className="text-[11px] font-semibold text-[var(--wird-muted)]">
                         تقييم رسوخ المقطع بعد التسميع:
                       </div>
 
@@ -981,7 +981,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           type="button"
                           disabled={isSavingRating}
                           onClick={() => handleRatePortion('successful', item)}
-                          className="min-h-11 py-2 px-1 text-center bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 hover:bg-[#1C4E46]/20 text-[#1C4E46] dark:text-[#6EE7B7] rounded-xl text-xs font-bold border border-[#1C4E46]/25 dark:border-[#6EE7B7]/30 transition-all flex flex-col items-center justify-center gap-1"
+                          className="min-h-11 py-2 px-1 text-center bg-[var(--wird-primary-soft)] hover:bg-[var(--wird-primary-soft)] text-[var(--wird-primary)] dark:text-emerald-300 rounded-xl text-xs font-bold border border-[var(--wird-border-strong)] dark:border-emerald-400/35 transition-all flex flex-col items-center justify-center gap-1"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>ناجحة (متقن)</span>
@@ -991,7 +991,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           type="button"
                           disabled={isSavingRating}
                           onClick={() => handleRatePortion('difficult', item)}
-                          className="min-h-11 py-2 px-1 text-center bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 hover:bg-[#C59B27]/22 text-[#9A7415] dark:text-[#E0A96D] rounded-xl text-xs font-bold border border-[#C59B27]/35 dark:border-[#E0A96D]/35 transition-all flex flex-col items-center justify-center gap-1"
+                          className="min-h-11 py-2 px-1 text-center bg-[var(--wird-accent-soft)] hover:bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] rounded-xl text-xs font-bold border border-[var(--wird-border-gold)] transition-all flex flex-col items-center justify-center gap-1"
                         >
                           <Clock className="w-3.5 h-3.5" />
                           <span>صعبة (بتردد)</span>
@@ -1013,7 +1013,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                         <button
                           type="button"
                           onClick={() => onStartSession(item.surahNumber, item.startAyah, item.endAyah, 'review')}
-                          className="w-full mt-2 min-h-11 py-2 px-3 bg-[#F2EDE2]/75 dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white dark:hover:bg-[#1E4A47] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-[11px] font-bold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full mt-2 min-h-11 py-2 px-3 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-primary)] hover:text-white dark:hover:bg-[var(--wird-primary-hover)] text-[var(--wird-text)] rounded-xl text-[11px] font-bold border border-[var(--wird-border)] transition-colors flex items-center justify-center gap-1.5"
                         >
                           <Play className="w-3 h-3" />
                           <span>فتح المقطع في جلسة التسميع التفاعلية</span>
@@ -1031,7 +1031,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {/* VIEW 2: WEEKLY REVISION OVERVIEW */}
       {activeTab === 'weekly_overview' && (
         <div className="space-y-4">
-          <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+          <div className="text-xs text-[var(--wird-muted)]">
             توزيع المقاطع المجدولة للأيام السبعة القادمة حسب خوارزمية التكرار المتباعد:
           </div>
 
@@ -1041,29 +1041,29 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                 key={day.date}
                 className={`wird-card rounded-2xl p-4 flex flex-col justify-between min-h-[220px] transition-all ${
                   day.isToday 
-                    ? 'border-[#C59B27] dark:border-[#E0A96D] ring-2 ring-[#C59B27]/20 dark:ring-[#E0A96D]/20 shadow-sm' 
+                    ? 'border-[var(--wird-accent)] ring-2 ring-[var(--wird-border-gold)] shadow-sm' 
                     : ''
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8]">
+                    <span className="font-bold text-xs text-[var(--wird-text)]">
                       {day.dayName}
                     </span>
                     {day.isToday && (
-                      <span className="text-[10px] bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B] px-1.5 py-0.5 rounded-md font-bold">
+                      <span className="text-[10px] bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] text-white dark:text-[var(--wird-accent-ink)] px-1.5 py-0.5 rounded-md font-bold">
                         اليوم
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums mb-3">
+                  <div className="text-[10px] text-[var(--wird-muted)] font-mono tabular-nums mb-3">
                     {day.date}
                   </div>
 
                   {/* Scheduled Items list */}
                   <div className="space-y-2">
                     {day.portions.length === 0 ? (
-                      <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] italic py-4 text-center">
+                      <div className="text-[11px] text-[var(--wird-muted)] italic py-4 text-center">
                         لا توجد مراجعات مجدولة
                       </div>
                     ) : (
@@ -1072,16 +1072,16 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                         return (
                           <div 
                             key={p.id}
-                            className="p-2 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-[11px] space-y-1"
+                            className="p-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[11px] space-y-1"
                           >
-                            <div className="font-bold text-[#142421] dark:text-[#F5F1E8] font-quran truncate">
+                            <div className="font-bold text-[var(--wird-text)] font-quran truncate">
                               {p.surahName} ({p.startAyah}-{p.endAyah})
                             </div>
                             <div className="flex items-center justify-between text-[10px]">
                               <span className={statusBadge.text}>
                                 {p.status === 'weak' ? 'ضعيف' : p.status === 'needs_revision' ? 'يحتاج ضبط' : 'مراجعة دورية'}
                               </span>
-                              <span className="text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">{p.intervalDays}d</span>
+                              <span className="text-[var(--wird-muted)] font-mono tabular-nums">{p.intervalDays}d</span>
                             </div>
                           </div>
                         );
@@ -1090,9 +1090,9 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 mt-3 text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] flex justify-between items-center">
+                <div className="pt-3 border-t border-[var(--wird-border)] mt-3 text-[11px] text-[var(--wird-muted)] flex justify-between items-center">
                   <span>المجموع:</span>
-                  <span className="font-bold font-mono tabular-nums text-[#142421] dark:text-[#F5F1E8]">
+                  <span className="font-bold font-mono tabular-nums text-[var(--wird-text)]">
                     {day.portions.length}
                   </span>
                 </div>
@@ -1107,26 +1107,26 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute right-3 top-3.5 text-[#5B6F6B] dark:text-[#8B9E9B]" />
+              <Search className="w-4 h-4 absolute right-3 top-3.5 text-[var(--wird-muted)]" />
               <input
                 type="text"
                 aria-label="البحث في الآيات الملتبسة"
                 placeholder="ابحث في الآيات الملتبسة أو السور..."
                 value={weakSearchQuery}
                 onChange={e => setWeakSearchQuery(e.target.value)}
-                className="w-full min-h-11 pr-9 pl-4 py-2 bg-white dark:bg-[#111F36] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-xs text-[#142421] dark:text-[#F5F1E8] focus:ring-2 focus:ring-[#C59B27] focus:outline-none"
+                className="w-full min-h-11 pr-9 pl-4 py-2 bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-xs text-[var(--wird-text)] focus:ring-2 focus:ring-[var(--wird-ring)] focus:outline-none"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
-                إجمالي الآيات المرصودة: <strong className="text-[#142421] dark:text-[#F5F1E8]">{filteredWeakVerses.length}</strong>
+              <div className="text-xs text-[var(--wird-muted)] tabular-nums">
+                إجمالي الآيات المرصودة: <strong className="text-[var(--wird-text)]">{filteredWeakVerses.length}</strong>
               </div>
               {onOpenAdvisor && (
                 <button
                   type="button"
                   onClick={onOpenAdvisor}
-                  className="min-h-11 px-3.5 py-2 rounded-xl bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white text-[#1C4E46] dark:text-[#E0A96D] border border-[#C59B27]/35 dark:border-[#E0A96D]/35 text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                  className="min-h-11 px-3.5 py-2 rounded-xl bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-primary)] hover:text-white text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border border-[var(--wird-border-gold)] text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>حلّل مواضع التفلت مع المستشار</span>
@@ -1137,11 +1137,11 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
           {filteredWeakVerses.length === 0 ? (
             <div className="wird-card rounded-2xl p-8 text-center space-y-3">
-              <BookmarkCheck className="w-12 h-12 text-[#1C4E46] dark:text-[#E0A96D] mx-auto" />
-              <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]">
+              <BookmarkCheck className="w-12 h-12 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] mx-auto" />
+              <h3 className="text-base font-bold text-[var(--wird-text)]">
                 سجل الآيات الملتبسة نظيف ومثبت
               </h3>
-              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] max-w-md mx-auto">
+              <p className="text-xs text-[var(--wird-muted)] max-w-md mx-auto">
                 لم يتم تسجيل أي آيات متعثرة حالياً. يمكنك تسجيل أي آية تلتبس عليك أثناء القراءة أو التسميع لمراجعتها دورياً.
               </p>
             </div>
@@ -1155,14 +1155,14 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
+                        <span className="font-bold text-sm text-[var(--wird-text)] font-quran">
                           سورة {item.surahName}
                         </span>
-                        <span className="text-[11px] font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                        <span className="text-[11px] font-mono tabular-nums text-[var(--wird-muted)]">
                           الآية {item.ayahNumber}
                         </span>
                       </div>
-                      <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5 tabular-nums">
+                      <div className="text-[10px] text-[var(--wird-muted)] mt-0.5 tabular-nums">
                         آخر تعثر: {item.lastFailedDate}
                       </div>
                     </div>
@@ -1175,7 +1175,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
 
                   {/* Ayah Text in Uthmani Quranic Font */}
                   <div
-                    className="p-3 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 font-quran text-[#142421] dark:text-[#F5F1E8]"
+                    className="p-3 bg-[var(--wird-surface-muted)] rounded-xl border border-[var(--wird-border)] font-quran text-[var(--wird-text)]"
                     style={{
                       fontSize: `${Math.max(16, displayPreferences.fontSize - 4)}px`,
                       lineHeight: weakVerseLineHeight,
@@ -1185,7 +1185,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   </div>
 
                   {item.notes && (
-                    <div className="text-xs text-[#9A7415] dark:text-[#E0A96D] bg-[#C59B27]/10 dark:bg-[#E0A96D]/12 p-2.5 rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/25">
+                    <div className="text-xs text-[var(--wird-accent)] bg-[var(--wird-accent-soft)] p-2.5 rounded-xl border border-[var(--wird-border-gold)]">
                       <strong>ملاحظة التثبيت: </strong>{item.notes}
                     </div>
                   )}
@@ -1194,7 +1194,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                     <button
                       type="button"
                       onClick={() => handleResolveWeakVerse(item.id, `آية ${item.ayahNumber} من سورة ${item.surahName}`)}
-                      className="flex-1 min-h-11 py-2 px-3 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/45 hover:bg-[#1C4E46]/20 text-[#1C4E46] dark:text-[#6EE7B7] rounded-xl text-xs font-bold border border-[#1C4E46]/25 dark:border-[#6EE7B7]/30 transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 min-h-11 py-2 px-3 bg-[var(--wird-primary-soft)] hover:bg-[var(--wird-primary-soft)] text-[var(--wird-primary)] dark:text-emerald-300 rounded-xl text-xs font-bold border border-[var(--wird-border-strong)] dark:border-emerald-400/35 transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Check className="w-3.5 h-3.5" />
                       <span>إزالة من قائمة الالتباس</span>
@@ -1204,7 +1204,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onStartSession(item.surahNumber, item.ayahNumber, item.ayahNumber, 'review')}
-                        className="min-h-11 py-2 px-3 bg-[#F2EDE2]/80 dark:bg-[#162744] hover:bg-[#1C4E46] hover:text-white text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 transition-colors"
+                        className="min-h-11 py-2 px-3 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-primary)] hover:text-white text-[var(--wird-text)] rounded-xl text-xs font-bold border border-[var(--wird-border)] transition-colors"
                       >
                         تكرار وسماع
                       </button>
@@ -1221,24 +1221,24 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {activeTab === 'history' && (
         <div className="wird-card rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
-              <History className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <h3 className="text-sm font-bold text-[var(--wird-text)] flex items-center gap-2">
+              <History className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
               <span>سجل التدقيق الزمني لعمليات المراجعة والتسميع السابقة</span>
             </h3>
-            <span className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">
+            <span className="text-xs text-[var(--wird-muted)] font-mono tabular-nums">
               إجمالي السجلات: {revisionHistory.length}
             </span>
           </div>
 
           {revisionHistory.length === 0 ? (
-            <div className="text-center py-10 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+            <div className="text-center py-10 text-xs text-[var(--wird-muted)]">
               لم يتم تسجيل أي مراجعات سابقة بعد. ابدأ مراجعتك الأولى من طابور المراجعة اليومي.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
                 <thead>
-                  <tr className="border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/18 text-[#5B6F6B] dark:text-[#8B9E9B] pb-2">
+                  <tr className="border-b border-[var(--wird-border)] text-[var(--wird-muted)] pb-2">
                     <th className="py-2 px-3 font-semibold">التاريخ</th>
                     <th className="py-2 px-3 font-semibold">المقطع القرآني</th>
                     <th className="py-2 px-3 font-semibold">التقييم المسجل</th>
@@ -1246,28 +1246,28 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                     <th className="py-2 px-3 font-semibold">ملاحظات التثبيت</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1C4E46]/8 dark:divide-[#E0A96D]/10">
+                <tbody className="divide-y divide-[var(--wird-border)]">
                   {revisionHistory.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-[#F2EDE2]/50 dark:hover:bg-[#162744]/50">
-                      <td className="py-3 px-3 font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">{entry.date}</td>
-                      <td className="py-3 px-3 font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
+                    <tr key={entry.id} className="hover:bg-[var(--wird-surface-hover)]/70">
+                      <td className="py-3 px-3 font-mono tabular-nums text-[var(--wird-muted)]">{entry.date}</td>
+                      <td className="py-3 px-3 font-bold font-quran text-[var(--wird-text)]">
                         سورة {entry.surahName} ({entry.startAyah}-{entry.endAyah})
                       </td>
                       <td className="py-3 px-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
                           entry.rating === 'successful' 
-                            ? 'bg-[#1C4E46]/12 text-[#1C4E46] dark:bg-[#1E4A47]/50 dark:text-[#6EE7B7]'
+                            ? 'bg-[var(--wird-primary-soft)] text-[var(--wird-primary)] dark:bg-[var(--wird-primary-soft)] dark:text-emerald-300'
                             : entry.rating === 'difficult'
-                            ? 'bg-[#C59B27]/15 text-[#9A7415] dark:bg-[#E0A96D]/20 dark:text-[#E0A96D]'
+                            ? 'bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] dark:bg-[var(--wird-accent-soft)] dark:text-[var(--wird-accent)]'
                             : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                         }`}>
                           {entry.rating === 'successful' ? 'ناجحة (متقن)' : entry.rating === 'difficult' ? 'صعبة (بتردد)' : 'غير متقنة (يتفلت)'}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-mono tabular-nums text-[#5B6F6B] dark:text-[#8B9E9B]">
+                      <td className="py-3 px-3 font-mono tabular-nums text-[var(--wird-muted)]">
                         {entry.intervalDaysBefore}d ➔ {entry.intervalDaysAfter}d
                       </td>
-                      <td className="py-3 px-3 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                      <td className="py-3 px-3 text-[var(--wird-muted)]">
                         {entry.notes || '—'}
                       </td>
                     </tr>
@@ -1285,41 +1285,41 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
           {/* Key Metric Gauges */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="wird-card rounded-2xl p-5 space-y-1">
-              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">مؤشر جودة الرسوخ التراكمي</div>
-              <div className="text-3xl font-bold text-[#1C4E46] dark:text-[#6EE7B7] font-mono tabular-nums">
+              <div className="text-xs text-[var(--wird-muted)]">مؤشر جودة الرسوخ التراكمي</div>
+              <div className="text-3xl font-bold text-[var(--wird-primary)] dark:text-emerald-300 font-mono tabular-nums">
                 %{metrics.retentionScorePercentage}
               </div>
-              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="text-[11px] text-[var(--wird-muted)]">
                 مقياس علمي مبني على استقرار الفواصل
               </div>
             </div>
 
             <div className="wird-card rounded-2xl p-5 space-y-1">
-              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">المقاطع المتتبعة</div>
-              <div className="text-3xl font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
+              <div className="text-xs text-[var(--wird-muted)]">المقاطع المتتبعة</div>
+              <div className="text-3xl font-bold text-[var(--wird-text)] font-mono tabular-nums">
                 {metrics.totalTrackedPortions}
               </div>
-              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+              <div className="text-[11px] text-[var(--wird-muted)] tabular-nums">
                 تشمل {metrics.totalMemorizedAyahs} آية محفوظة
               </div>
             </div>
 
             <div className="wird-card rounded-2xl p-5 space-y-1">
-              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">متوسط عامل السهولة (EF)</div>
-              <div className="text-3xl font-bold text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums">
+              <div className="text-xs text-[var(--wird-muted)]">متوسط عامل السهولة (EF)</div>
+              <div className="text-3xl font-bold text-[var(--wird-text)] font-mono tabular-nums">
                 {metrics.averageEaseFactor}
               </div>
-              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] tabular-nums">
+              <div className="text-[11px] text-[var(--wird-muted)] tabular-nums">
                 المعدل الطبيعي: 2.2 - 2.8
               </div>
             </div>
 
             <div className="wird-card rounded-2xl p-5 space-y-1">
-              <div className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">الآيات المتعثرة حالياً</div>
-              <div className="text-3xl font-bold text-[#C59B27] dark:text-[#E0A96D] font-mono tabular-nums">
+              <div className="text-xs text-[var(--wird-muted)]">الآيات المتعثرة حالياً</div>
+              <div className="text-3xl font-bold text-[var(--wird-accent)] font-mono tabular-nums">
                 {metrics.weakVersesCount}
               </div>
-              <div className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <div className="text-[11px] text-[var(--wird-muted)]">
                 تحتاج تركيزاً في الأيام القادمة
               </div>
             </div>
@@ -1328,72 +1328,72 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
           {/* Breakdown by 6 Exact Statuses */}
           <div className="wird-card rounded-2xl p-6 space-y-5">
             <div>
-              <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+              <h3 className="text-base font-bold text-[var(--wird-text)] flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                 <span>توزيع المحفوظ القرآني حسب الحالات الست الدقيقة</span>
               </h3>
-              <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+              <p className="text-xs text-[var(--wird-muted)] mt-1">
                 تصنيف إحصائي شامل لجميع مقاطع وسور القرآن المتتبعة
               </p>
             </div>
 
             {/* Visual Multi-Segment Bar */}
             <div className="space-y-2">
-              <div className="w-full h-4 bg-[#F2EDE2] dark:bg-[#0B132B] rounded-full overflow-hidden flex">
-                <div style={{ width: `${metrics.statusPercentages.stable}%` }} className="bg-[#1C4E46]" title={`راسخ: ${metrics.statusPercentages.stable}%`} />
+              <div className="w-full h-4 bg-[var(--wird-surface-muted)] rounded-full overflow-hidden flex">
+                <div style={{ width: `${metrics.statusPercentages.stable}%` }} className="bg-[var(--wird-primary)]" title={`راسخ: ${metrics.statusPercentages.stable}%`} />
                 <div style={{ width: `${metrics.statusPercentages.recently_memorized}%` }} className="bg-sky-500" title={`محفوظ حديثاً: ${metrics.statusPercentages.recently_memorized}%`} />
-                <div style={{ width: `${metrics.statusPercentages.needs_revision}%` }} className="bg-[#C59B27]" title={`يحتاج مراجعة: ${metrics.statusPercentages.needs_revision}%`} />
+                <div style={{ width: `${metrics.statusPercentages.needs_revision}%` }} className="bg-[var(--wird-accent)]" title={`يحتاج مراجعة: ${metrics.statusPercentages.needs_revision}%`} />
                 <div style={{ width: `${metrics.statusPercentages.weak}%` }} className="bg-rose-500" title={`ضعيف: ${metrics.statusPercentages.weak}%`} />
                 <div style={{ width: `${metrics.statusPercentages.currently_memorizing}%` }} className="bg-purple-500" title={`قيد الحفظ: ${metrics.statusPercentages.currently_memorizing}%`} />
               </div>
 
               {/* Legend & Count Cards */}
               <div className="grid grid-cols-2 md:grid-cols-6 gap-3 pt-2 text-xs">
-                <div className="p-3 bg-[#1C4E46]/10 dark:bg-[#1E4A47]/40 rounded-xl border border-[#1C4E46]/25 dark:border-[#1E4A47]">
-                  <div className="font-bold text-[#1C4E46] dark:text-[#6EE7B7]">راسخ ومتقن</div>
-                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[#142421] dark:text-[#F5F1E8]">{metrics.statusBreakdown.stable}</div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.stable}</div>
+                <div className="p-3 bg-[var(--wird-primary-soft)] rounded-xl border border-[var(--wird-border-strong)]">
+                  <div className="font-bold text-[var(--wird-primary)] dark:text-emerald-300">راسخ ومتقن</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[var(--wird-text)]">{metrics.statusBreakdown.stable}</div>
+                  <div className="text-[10px] text-[var(--wird-muted)] font-mono tabular-nums">%{metrics.statusPercentages.stable}</div>
                 </div>
 
                 <div className="p-3 bg-sky-50/70 dark:bg-sky-950/30 rounded-xl border border-sky-200 dark:border-sky-800/40">
                   <div className="font-bold text-sky-900 dark:text-sky-300">محفوظ حديثاً</div>
                   <div className="text-lg font-bold font-mono tabular-nums mt-1 text-sky-800 dark:text-sky-200">{metrics.statusBreakdown.recently_memorized}</div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.recently_memorized}</div>
+                  <div className="text-[10px] text-[var(--wird-muted)] font-mono tabular-nums">%{metrics.statusPercentages.recently_memorized}</div>
                 </div>
 
-                <div className="p-3 bg-[#C59B27]/12 dark:bg-[#E0A96D]/15 rounded-xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30">
-                  <div className="font-bold text-[#9A7415] dark:text-[#E0A96D]">يحتاج مراجعة</div>
-                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[#142421] dark:text-[#F5F1E8]">{metrics.statusBreakdown.needs_revision}</div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.needs_revision}</div>
+                <div className="p-3 bg-[var(--wird-accent-soft)] rounded-xl border border-[var(--wird-border-gold)]">
+                  <div className="font-bold text-[var(--wird-accent)]">يحتاج مراجعة</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[var(--wird-text)]">{metrics.statusBreakdown.needs_revision}</div>
+                  <div className="text-[10px] text-[var(--wird-muted)] font-mono tabular-nums">%{metrics.statusPercentages.needs_revision}</div>
                 </div>
 
                 <div className="p-3 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-800/40">
                   <div className="font-bold text-rose-900 dark:text-rose-300">ضعيف ويتفلت</div>
                   <div className="text-lg font-bold font-mono tabular-nums mt-1 text-rose-800 dark:text-rose-200">{metrics.statusBreakdown.weak}</div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.weak}</div>
+                  <div className="text-[10px] text-[var(--wird-muted)] font-mono tabular-nums">%{metrics.statusPercentages.weak}</div>
                 </div>
 
                 <div className="p-3 bg-purple-50/70 dark:bg-purple-950/30 rounded-xl border border-purple-200 dark:border-purple-800/40">
                   <div className="font-bold text-purple-900 dark:text-purple-300">قيد الحفظ</div>
                   <div className="text-lg font-bold font-mono tabular-nums mt-1 text-purple-800 dark:text-purple-200">{metrics.statusBreakdown.currently_memorizing}</div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] font-mono tabular-nums">%{metrics.statusPercentages.currently_memorizing}</div>
+                  <div className="text-[10px] text-[var(--wird-muted)] font-mono tabular-nums">%{metrics.statusPercentages.currently_memorizing}</div>
                 </div>
 
-                <div className="p-3 bg-[#F2EDE2]/70 dark:bg-[#162744]/60 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/15">
-                  <div className="font-bold text-[#5B6F6B] dark:text-[#8B9E9B]">غير محفوظ</div>
-                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[#142421] dark:text-[#F5F1E8]">{metrics.statusBreakdown.not_memorized}</div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B]">باقي المصحف</div>
+                <div className="p-3 bg-[var(--wird-surface-muted)]/60 rounded-xl border border-[var(--wird-border)]">
+                  <div className="font-bold text-[var(--wird-muted)]">غير محفوظ</div>
+                  <div className="text-lg font-bold font-mono tabular-nums mt-1 text-[var(--wird-text)]">{metrics.statusBreakdown.not_memorized}</div>
+                  <div className="text-[10px] text-[var(--wird-muted)]">باقي المصحف</div>
                 </div>
               </div>
             </div>
 
             {/* Smart Pedagogical Guidance */}
-            <div className="p-4 bg-[#F9F6EE] dark:bg-[#0B132B]/70 rounded-xl border border-[#C59B27]/30 dark:border-[#E0A96D]/25 space-y-2 text-xs">
-              <div className="font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+            <div className="p-4 bg-[var(--wird-surface-muted)] rounded-xl border border-[var(--wird-border-gold)] space-y-2 text-xs">
+              <div className="font-bold text-[var(--wird-text)] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[var(--wird-accent)]" />
                 <span>توصية منهجية لمسارك الحالي:</span>
               </div>
-              <p className="text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed text-[11px]">
+              <p className="text-[var(--wird-muted)] leading-relaxed text-[11px]">
                 {metrics.statusBreakdown.weak > 0 
                   ? `لديك ${metrics.statusBreakdown.weak} مقطع بحاجة إلى رعاية عاجلة وتكرار يومي. نوصيك بتقديم مراجعة المقاطع الضعيفة قبل البدء بأي حفظ جديد، تماشياً مع قاعدة الإمام الشاطبي: «والتثبيت مقدم على الاستكثار».`
                   : 'نسبة الرسوخ لديك ممتازة ومستقرة! يمكنك مواصلة إدراج سور جديدة وفق خطتك مع الالتزام بالورد اليومي للتكرار المتباعد.'}
@@ -1407,23 +1407,23 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {/* MODAL: RATE FAILED REVISION DETAILS */}
       {ratingPortion && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={ratingDialogRef} role="dialog" aria-modal="true" aria-labelledby="revision-rating-dialog-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-md w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4">
+          <div ref={ratingDialogRef} role="dialog" aria-modal="true" aria-labelledby="revision-rating-dialog-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[var(--wird-surface)] rounded-3xl p-6 max-w-md w-full border border-[var(--wird-border-gold)] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 id="revision-rating-dialog-title" className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+              <h3 id="revision-rating-dialog-title" className="text-base font-bold text-[var(--wird-text)]">
                 تسجيل تعثر في سورة {ratingPortion.surahName}
               </h3>
-              <button ref={ratingCloseRef} type="button" aria-label="إغلاق نافذة تسجيل التعثر" disabled={isSavingRating} onClick={() => { setRatingPortion(null); setReviewNotes(''); setWeakAyahNum(''); }} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]">
+              <button ref={ratingCloseRef} type="button" aria-label="إغلاق نافذة تسجيل التعثر" disabled={isSavingRating} onClick={() => { setRatingPortion(null); setReviewNotes(''); setWeakAyahNum(''); }} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+            <p className="text-xs text-[var(--wird-muted)]">
               سيتم إعادة ضبط فاصل المراجعة إلى يوم واحد للمراجعة غداً. هل ترغب في تحديد رقم الآية التي حدث فيها اللبس لحفظها في قائمة المتشابهات والمتعثرات؟
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                <label className="block text-[var(--wird-text)] font-bold mb-1">
                   رقم الآية الملتبسة (اختياري، بين {ratingPortion.startAyah} و {ratingPortion.endAyah}):
                 </label>
                 <input
@@ -1433,17 +1433,17 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   value={weakAyahNum}
                   onChange={e => setWeakAyahNum(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="مثال: 8"
-                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27] font-mono tabular-nums"
+                  className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)] font-mono tabular-nums"
                 />
                 {ratingWeakAyahPreview && (
-                  <div className="mt-2 p-2.5 rounded-xl bg-white/80 dark:bg-[#0B132B]/70 border border-[#C59B27]/30 font-quran text-sm text-[#142421] dark:text-[#F5F1E8] leading-loose">
+                  <div className="mt-2 p-2.5 rounded-xl bg-[var(--wird-surface)]/85 border border-[var(--wird-border-gold)] font-quran text-sm text-[var(--wird-text)] leading-loose">
                     <QuranText>{ratingWeakAyahPreview}</QuranText>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                <label className="block text-[var(--wird-text)] font-bold mb-1">
                   ملاحظة سبب الخطأ أو الكلمة المشكلة:
                 </label>
                 <input
@@ -1451,7 +1451,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   value={reviewNotes}
                   onChange={e => setReviewNotes(e.target.value)}
                   placeholder="مثال: نسيان رأس الآية، التباس بآية أخرى..."
-                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                  className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-ring)]"
                 />
               </div>
             </div>
@@ -1461,7 +1461,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                 type="button"
                 disabled={isSavingRating}
                 onClick={() => { setRatingPortion(null); setReviewNotes(''); setWeakAyahNum(''); }}
-                className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                className="min-h-11 px-4 py-2 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] rounded-xl text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
               >
                 إلغاء
               </button>
@@ -1481,12 +1481,12 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {/* MODAL: ADD NEW PORTION */}
       {isAddPortionModalOpen && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={addPortionDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-portion-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-lg w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4">
+          <div ref={addPortionDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-portion-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[var(--wird-surface)] rounded-3xl p-6 max-w-lg w-full border border-[var(--wird-border-gold)] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 id="wird-add-portion-title" className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+              <h3 id="wird-add-portion-title" className="text-base font-bold text-[var(--wird-text)]">
                 إضافة مقطع حفظ ومراجعة جديد
               </h3>
-              <button ref={addPortionCloseRef} type="button" aria-label="إغلاق نافذة إضافة مقطع" onClick={() => setIsAddPortionModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white">
+              <button ref={addPortionCloseRef} type="button" aria-label="إغلاق نافذة إضافة مقطع" onClick={() => setIsAddPortionModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1509,7 +1509,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="revision-add-start-ayah" className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                    <label htmlFor="revision-add-start-ayah" className="block text-[var(--wird-text)] font-bold mb-1">
                       من الآية:
                     </label>
                     <div className="flex items-center gap-1.5">
@@ -1520,7 +1520,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           const next = Math.max(1, newStartAyah - 1);
                           setNewStartAyah(next);
                         }}
-                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        className="min-h-11 min-w-11 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-base font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-hover)]"
                       >
                         -
                       </button>
@@ -1537,7 +1537,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           setNewStartAyah(clamped);
                           if (newEndAyah < clamped) setNewEndAyah(clamped);
                         }}
-                        className="w-full min-h-11 px-3 py-2 text-center bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums"
+                        className="w-full min-h-11 px-3 py-2 text-center bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)] font-mono tabular-nums"
                         required
                       />
                       <button
@@ -1548,7 +1548,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           setNewStartAyah(next);
                           if (newEndAyah < next) setNewEndAyah(next);
                         }}
-                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        className="min-h-11 min-w-11 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-base font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-hover)]"
                       >
                         +
                       </button>
@@ -1556,7 +1556,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   </div>
 
                   <div>
-                    <label htmlFor="revision-add-end-ayah" className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                    <label htmlFor="revision-add-end-ayah" className="block text-[var(--wird-text)] font-bold mb-1">
                       إلى الآية:
                     </label>
                     <div className="flex items-center gap-1.5">
@@ -1567,7 +1567,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           const next = Math.max(newStartAyah, newEndAyah - 1);
                           setNewEndAyah(next);
                         }}
-                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        className="min-h-11 min-w-11 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-base font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-hover)]"
                       >
                         -
                       </button>
@@ -1583,7 +1583,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           const clamped = Math.min(selectedNewSurahMax, Math.max(newStartAyah, Math.trunc(parsed)));
                           setNewEndAyah(clamped);
                         }}
-                        className="w-full min-h-11 px-3 py-2 text-center bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-mono tabular-nums"
+                        className="w-full min-h-11 px-3 py-2 text-center bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)] font-mono tabular-nums"
                         required
                       />
                       <button
@@ -1593,7 +1593,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                           const next = Math.min(selectedNewSurahMax, newEndAyah + 1);
                           setNewEndAyah(next);
                         }}
-                        className="min-h-11 min-w-11 rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 bg-white dark:bg-[#0B132B] text-base font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744]"
+                        className="min-h-11 min-w-11 rounded-xl border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-base font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-hover)]"
                       >
                         +
                       </button>
@@ -1601,13 +1601,13 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[#F2EDE2]/70 dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 px-3 py-2 text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums text-center">
+                <div className="rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] px-3 py-2 text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums text-center">
                   النطاق المحدد: من آية {newStartAyah} إلى آية {newEndAyah} ({Math.max(1, newEndAyah - newStartAyah + 1)} آيات)
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <span className="block text-[#142421] dark:text-[#F5F1E8] font-bold">
+                <span className="block text-[var(--wird-text)] font-bold">
                   الحالة المبدئية للمقطع:
                 </span>
                 <div role="group" aria-label="الحالة المبدئية للمقطع" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1622,15 +1622,15 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                         onClick={() => setNewStatus(opt.value)}
                         className={`min-h-11 px-3 py-2 rounded-xl border text-right flex items-center justify-between gap-2 transition-all ${
                           isSelected
-                            ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs'
-                            : 'bg-white dark:bg-[#0B132B]/70 text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                            ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)] shadow-xs'
+                            : 'bg-[var(--wird-surface)]/70 text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-accent)]'
                         }`}
                       >
                         <span className="flex items-center gap-2 font-bold">
-                          <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-[#E0A96D]' : cfg.dot}`} />
+                          <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-[var(--wird-accent)]' : cfg.dot}`} />
                           <span>{opt.label}</span>
                         </span>
-                        <span className={`text-[10px] ${isSelected ? 'text-[#F5F1E8]/80' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                        <span className={`text-[10px] ${isSelected ? 'text-white/90' : 'text-[var(--wird-muted)]'}`}>
                           {opt.hint}
                         </span>
                       </button>
@@ -1639,17 +1639,17 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--wird-border)]">
                 <button
                   type="button"
                   onClick={() => setIsAddPortionModalOpen(false)}
-                  className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl font-bold"
+                  className="min-h-11 px-4 py-2 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] rounded-xl font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="min-h-11 px-5 py-2 bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#C59B27] dark:hover:bg-[#E0A96D] text-white dark:text-[#0B132B] rounded-xl font-bold shadow-xs"
+                  className="min-h-11 px-5 py-2 bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] rounded-xl font-bold shadow-xs transition-colors"
                 >
                   إضافة المقطع
                 </button>
@@ -1662,12 +1662,12 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
       {/* MODAL: ADD MANUAL WEAK VERSE */}
       {isAddWeakVerseModalOpen && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div ref={addWeakVerseDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-weak-verse-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#F9F6EE] dark:bg-[#111F36] rounded-3xl p-6 max-w-lg w-full border border-[#C59B27]/35 dark:border-[#E0A96D]/30 shadow-2xl space-y-4">
+          <div ref={addWeakVerseDialogRef} role="dialog" aria-modal="true" aria-labelledby="wird-add-weak-verse-title" className="max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[var(--wird-surface)] rounded-3xl p-6 max-w-lg w-full border border-[var(--wird-border-gold)] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 id="wird-add-weak-verse-title" className="text-base font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+              <h3 id="wird-add-weak-verse-title" className="text-base font-bold text-[var(--wird-text)]">
                 تسجيل آية ملتبسة أو متعثرة يدوياً
               </h3>
-              <button ref={addWeakVerseCloseRef} type="button" aria-label="إغلاق نافذة تسجيل آية ملتبسة" onClick={() => setIsAddWeakVerseModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] hover:text-[#142421] dark:hover:text-white">
+              <button ref={addWeakVerseCloseRef} type="button" aria-label="إغلاق نافذة تسجيل آية ملتبسة" onClick={() => setIsAddWeakVerseModalOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1688,7 +1688,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
               />
 
               <div>
-                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                <label className="block text-[var(--wird-text)] font-bold mb-1">
                   نص الآية (اختياري - يتم جلبه تلقائياً إن وُجد):
                 </label>
                 <textarea
@@ -1696,12 +1696,12 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   onChange={e => setManualWeakText(e.target.value)}
                   placeholder="اكتب نص الآية بالرسم القرآني إن أردت..."
                   rows={2}
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] font-quran"
+                  className="w-full px-3 py-2 bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)] font-quran"
                 />
               </div>
 
               <div>
-                <label className="block text-[#142421] dark:text-[#F5F1E8] font-bold mb-1">
+                <label className="block text-[var(--wird-text)] font-bold mb-1">
                   سبب اللبس أو المتشابه المشكل:
                 </label>
                 <input
@@ -1709,22 +1709,22 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                   value={manualWeakNotes}
                   onChange={e => setManualWeakNotes(e.target.value)}
                   placeholder="مثال: الخلط مع موضع سورة البقرة، أو تشابه خواتيم الآيات..."
-                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8]"
+                  className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface)] rounded-xl border border-[var(--wird-border-strong)] text-[var(--wird-text)]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--wird-border)]">
                 <button
                   type="button"
                   onClick={() => setIsAddWeakVerseModalOpen(false)}
-                  className="min-h-11 px-4 py-2 bg-[#F2EDE2] dark:bg-[#162744] hover:bg-[#E5DEC9] text-[#142421] dark:text-[#F5F1E8] rounded-xl font-bold"
+                  className="min-h-11 px-4 py-2 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-hover)] text-[var(--wird-text)] rounded-xl font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingWeakVerse}
-                  className="min-h-11 px-5 py-2 bg-[#C59B27] hover:bg-[#af851a] dark:bg-[#E0A96D] dark:hover:bg-[#f3b77b] text-[#0B132B] rounded-xl font-bold disabled:opacity-60"
+                  className="min-h-11 px-5 py-2 bg-[var(--wird-accent)] hover:opacity-90 text-[var(--wird-accent-ink)] rounded-xl font-bold disabled:opacity-60"
                 >
                   {isSavingWeakVerse ? 'جارٍ حفظ الآية...' : 'تسجيل الآية الملتبسة'}
                 </button>

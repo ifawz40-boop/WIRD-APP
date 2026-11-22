@@ -1,33 +1,33 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
-import { 
-  Home, 
-  BookOpen, 
-  Calendar, 
-  Sparkles, 
-  Repeat, 
-  CheckCircle, 
-  BarChart3, 
-  Settings, 
+import {
+  Home,
+  BookOpen,
+  Calendar,
+  Sparkles,
+  Repeat,
+  CheckCircle,
+  BarChart3,
+  Settings,
   X,
   ShieldCheck,
   Heart,
   ScrollText,
   Compass,
-  MoreHorizontal
+  MoreHorizontal,
 } from 'lucide-react';
 import { UserProfile } from '../../types/quran';
 import { WirdBrandLockup } from '../brand/WirdLogo';
 import { WirdAvatar } from '../brand/WirdAvatar';
 
-export type NavTabId = 
-  | 'dashboard' 
-  | 'library' 
-  | 'plans' 
-  | 'session' 
-  | 'revision' 
-  | 'tests' 
-  | 'progress' 
-  | 'advisor' 
+export type NavTabId =
+  | 'dashboard'
+  | 'library'
+  | 'plans'
+  | 'session'
+  | 'revision'
+  | 'tests'
+  | 'progress'
+  | 'advisor'
   | 'adhkar'
   | 'seerah'
   | 'ruqyah'
@@ -53,6 +53,13 @@ interface NavItem {
   badge?: number | string;
 }
 
+const MOBILE_PRIMARY_TABS: ReadonlySet<NavTabId> = new Set([
+  'dashboard',
+  'library',
+  'session',
+  'revision',
+]);
+
 export const Sidebar: React.FC<SidebarProps> = ({
   currentTab,
   onSelectTab,
@@ -62,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isDesktopOpen = true,
   onToggleDesktop,
   profile,
-  dueRevisionCount
+  dueRevisionCount,
 }) => {
   const mobileDrawerRef = useRef<HTMLDivElement | null>(null);
   const mobileCloseButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -73,7 +80,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   useEffect(() => {
     if (previousDesktopOpenRef.current && !isDesktopOpen) {
-      document.querySelector<HTMLButtonElement>('[data-sidebar-toggle="desktop"]')?.focus();
+      document
+        .querySelector<HTMLButtonElement>('[data-sidebar-toggle="desktop"]')
+        ?.focus();
     }
     previousDesktopOpenRef.current = isDesktopOpen;
   }, [isDesktopOpen]);
@@ -81,7 +90,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Attach modal Escape and focus-trap behavior synchronously with drawer commit.
   useLayoutEffect(() => {
     if (!isOpenMobile) return;
-    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     mobileCloseButtonRef.current?.focus();
 
     const handleDrawerKeyDown = (event: KeyboardEvent) => {
@@ -93,9 +105,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (event.key !== 'Tab') return;
       const drawer = mobileDrawerRef.current;
       if (!drawer) return;
-      const focusable = Array.from(drawer.querySelectorAll<HTMLElement>(
-        'button:not([disabled]):not([tabindex="-1"]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )).filter(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden');
+      const focusable = Array.from(
+        drawer.querySelectorAll<HTMLElement>(
+          'button:not([disabled]):not([tabindex="-1"]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter(
+        (element) =>
+          element.getClientRects().length > 0 &&
+          getComputedStyle(element).visibility !== 'hidden'
+      );
       if (focusable.length === 0) {
         event.preventDefault();
         return;
@@ -114,30 +132,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
     document.addEventListener('keydown', handleDrawerKeyDown);
     return () => {
       document.removeEventListener('keydown', handleDrawerKeyDown);
-      if (previousFocusRef.current?.isConnected) previousFocusRef.current.focus();
+      if (previousFocusRef.current?.isConnected) {
+        previousFocusRef.current.focus();
+      }
       previousFocusRef.current = null;
     };
   }, [isOpenMobile]);
 
   const navGroups: { label: string; items: NavItem[] }[] = [
     {
-      label: 'ابدأ',
+      label: 'القراءة والورد',
       items: [
         { id: 'dashboard', label: 'الرئيسية', icon: Home },
         { id: 'library', label: 'القرآن والمصحف', icon: BookOpen },
-      ]
+      ],
     },
     {
       label: 'الحفظ والتثبيت',
       items: [
         { id: 'session', label: 'جلسة الحفظ', icon: Sparkles },
         { id: 'plans', label: 'خطط الحفظ', icon: Calendar },
-        { id: 'revision', label: 'المراجعة', icon: Repeat, badge: dueRevisionCount > 0 ? dueRevisionCount : undefined },
+        {
+          id: 'revision',
+          label: 'المراجعة',
+          icon: Repeat,
+          badge: dueRevisionCount > 0 ? dueRevisionCount : undefined,
+        },
         { id: 'tests', label: 'اختبارات الحفظ', icon: CheckCircle },
-      ]
+      ],
     },
     {
-      label: 'المتابعة والمساندة',
+      label: 'العبادة والمعرفة',
       items: [
         { id: 'progress', label: 'التقدم والإنجاز', icon: BarChart3 },
         { id: 'adhkar', label: 'الأذكار والأدعية', icon: Heart },
@@ -145,8 +170,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'ruqyah', label: 'الرقية الشرعية', icon: ShieldCheck },
         { id: 'advisor', label: 'المستشار القرآني', icon: Compass },
         { id: 'settings', label: 'الإعدادات', icon: Settings },
-      ]
-    }
+      ],
+    },
   ];
 
   const handleSelect = (id: NavTabId) => {
@@ -155,34 +180,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const sidebarContent = (
-    <aside className="w-64 bg-[#F9F6EE] dark:bg-[#0B132B] border-l border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex flex-col h-full select-none transition-colors">
-      {/* Brand Header with Official WIRD Emblem & Wordmark */}
-      <div className="p-4 sm:p-5 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex items-center justify-between">
-        <WirdBrandLockup symbolSize={40} textSize="md" showSubtitle={true} />
+    <aside className="w-64 bg-[var(--wird-surface)] border-e border-[var(--wird-border)] flex flex-col h-full select-none transition-colors duration-150">
+      {/* Brand Header */}
+      <div className="px-4 py-3.5 border-b border-[var(--wird-border)] flex items-center justify-between gap-2">
+        <WirdBrandLockup symbolSize={36} textSize="md" showSubtitle={true} />
 
-        <div className="flex items-center gap-1">
-          {/* Close / Collapse button for Desktop */}
+        <div className="flex items-center gap-1 shrink-0">
           {onToggleDesktop && (
-            <button 
+            <button
               type="button"
               onClick={onToggleDesktop}
-              className="hidden lg:flex min-h-11 min-w-11 items-center justify-center p-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#1C4E46] dark:hover:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#111F36] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
-              title="إغلاق الشريط الجانبي (Ctrl+B / Cmd+B)"
+              className="hidden lg:flex min-h-10 min-w-10 items-center justify-center rounded-[var(--wird-radius-control)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] transition-colors wird-focus-ring"
+              title="طي الشريط الجانبي (Ctrl+B / Cmd+B)"
               aria-label="إغلاق الشريط الجانبي"
               aria-expanded="true"
               aria-keyshortcuts="Control+B Meta+B"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
 
-          {/* Close button for Mobile Drawer */}
           {isOpenMobile && (
-            <button 
+            <button
               type="button"
               ref={mobileCloseButtonRef}
               onClick={onCloseMobile}
-              className="lg:hidden min-h-11 min-w-11 flex items-center justify-center p-1.5 text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+              className="lg:hidden min-h-11 min-w-11 flex items-center justify-center rounded-[var(--wird-radius-control)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] transition-colors wird-focus-ring"
               title="إغلاق القائمة"
               aria-label="إغلاق القائمة"
             >
@@ -192,33 +215,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Grouped navigation */}
-      <nav aria-label="القائمة الرئيسية" className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
-        {navGroups.map(group => (
-          <div key={group.label} className="space-y-1.5">
-            <p className="px-3.5 text-[10px] font-bold tracking-wider text-[#5B6F6B] dark:text-[#98ADAA]">{group.label}</p>
-            {group.items.map(item => {
+      {/* Grouped Navigation */}
+      <nav
+        aria-label="القائمة الرئيسية"
+        className="flex-1 px-3 py-4 space-y-5 overflow-y-auto"
+      >
+        {navGroups.map((group) => (
+          <div key={group.label} className="space-y-1">
+            <p className="px-3 pb-1 text-[11px] font-semibold text-[var(--wird-muted)]">
+              {group.label}
+            </p>
+            {group.items.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => handleSelect(item.id)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`w-full min-h-11 flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+                  className={`w-full min-h-11 flex items-center justify-between px-3 py-2 rounded-[var(--wird-radius-control)] text-xs sm:text-[13px] font-semibold transition-colors duration-150 wird-focus-ring ${
                     isActive
-                      ? 'wird-nav-indicator bg-[#1C4E46] text-white shadow-xs dark:bg-[#1E4A47] ring-1 ring-[#C59B27]/40 dark:ring-[#E0A96D]/40'
-                      : 'text-[#142421] dark:text-[#F5F1E8] hover:bg-white/80 dark:hover:bg-[#111F36] hover:text-[#1C4E46] dark:hover:text-[#E0A96D]'
+                      ? 'wird-nav-indicator bg-[var(--wird-primary)] text-white'
+                      : 'text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)]'
                   }`}
                 >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#C59B27] dark:text-[#E0A96D]' : 'text-[#5B6F6B] dark:text-[#98ADAA]'}`} />
-                    <span className="truncate">{item.label}</span>
+                  <span className="flex items-center gap-2.5 min-w-0">
+                    <Icon
+                      className={`w-4 h-4 shrink-0 transition-colors ${
+                        isActive
+                          ? 'text-[var(--wird-accent)]'
+                          : 'text-[var(--wird-muted)]'
+                      }`}
+                    />
+                    <span className="truncate whitespace-nowrap">
+                      {item.label}
+                    </span>
                   </span>
                   {item.badge !== undefined && (
-                    <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold tabular-nums font-mono ${
-                      isActive ? 'bg-[#C59B27] text-[#0B132B]' : 'text-[#1C4E46] dark:text-[#E0A96D]'
-                    }`}>{item.badge}</span>
+                    <span
+                      className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold wird-tabular font-mono ${
+                        isActive
+                          ? 'bg-[var(--wird-accent)] text-[#0C1412]'
+                          : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
                   )}
                 </button>
               );
@@ -227,31 +270,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
 
-      {/* User Mini Profile */}
-      <div className="p-3.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-        <div className="flex items-center gap-3 px-1.5 py-1">
+      {/* Quiet User Profile Footer */}
+      <div className="px-3.5 py-3 border-t border-[var(--wird-border)]">
+        <button
+          type="button"
+          onClick={() => handleSelect('settings')}
+          className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-[var(--wird-radius-control)] hover:bg-[var(--wird-surface-muted)] transition-colors text-right wird-focus-ring"
+        >
           <WirdAvatar size="sm" shape="circle" variant="primary" />
-          <div className="min-w-0 flex-1 text-right">
-            <h4 className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] truncate">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold text-[var(--wird-text)] truncate">
               {profile.name}
-            </h4>
-            <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA] truncate">
-              {profile.memorizationGoal || 'طالب حفظ'}
-            </p>
+            </div>
+            <div className="text-[11px] text-[var(--wird-muted)] truncate">
+              {profile.memorizationGoal || 'طالب حفظ ومراجعة'}
+            </div>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );
 
+  const isSecondaryMobileTab = !MOBILE_PRIMARY_TABS.has(currentTab);
+
   return (
     <>
-      {/* Desktop Sidebar (Collapsible with smooth transition) */}
+      {/* Desktop Sidebar (Collapsible with smooth width transition) */}
       <div
         aria-hidden={!isDesktopOpen}
-        className={`hidden lg:block shrink-0 h-screen sticky top-0 transition-all duration-300 ease-in-out ${
-          isDesktopOpen 
-            ? 'w-64 opacity-100' 
+        className={`hidden lg:block shrink-0 h-screen sticky top-0 transition-all duration-200 ease-out ${
+          isDesktopOpen
+            ? 'w-64 opacity-100'
             : 'w-0 opacity-0 pointer-events-none overflow-hidden'
         }`}
       >
@@ -263,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
             aria-hidden="true"
-            className="fixed inset-0 bg-[#0B132B]/70 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/55 backdrop-blur-[2px] transition-opacity"
             onClick={onCloseMobile}
           />
           <div
@@ -278,45 +327,55 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      {/* Keep the memorization workspace distraction-free and controls unobstructed. */}
+      {/* Mobile Bottom Thumb-Zone Bar (Hidden in distraction-free memorization session) */}
       {currentTab !== 'session' && (
-      <nav className="wird-mobile-nav lg:hidden" aria-label="التنقل السريع">
-        {[
-          { id: 'dashboard' as NavTabId, label: 'الرئيسية', icon: Home },
-          { id: 'library' as NavTabId, label: 'القرآن', icon: BookOpen },
-          { id: 'session' as NavTabId, label: 'الحفظ', icon: Sparkles },
-          { id: 'revision' as NavTabId, label: 'المراجعة', icon: Repeat },
-        ].map(item => {
-          const Icon = item.icon;
-          const active = currentTab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleSelect(item.id)}
-              aria-current={active ? 'page' : undefined}
-              className={active ? 'wird-mobile-nav__item is-active' : 'wird-mobile-nav__item'}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.label}</span>
-              {item.id === 'revision' && dueRevisionCount > 0 && <span className="wird-mobile-nav__badge">{dueRevisionCount}</span>}
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          onClick={onOpenMobileMenu}
-          aria-label="المزيد من الأقسام"
-          aria-expanded={isOpenMobile}
-          aria-current={currentTab !== 'dashboard' && currentTab !== 'library' && currentTab !== 'revision' ? 'page' : undefined}
-          className={currentTab !== 'dashboard' && currentTab !== 'library' && currentTab !== 'revision'
-            ? 'wird-mobile-nav__item is-active'
-            : 'wird-mobile-nav__item'}
-        >
-          <MoreHorizontal className="h-5 w-5" />
-          <span>المزيد</span>
-        </button>
-      </nav>
+        <nav className="wird-mobile-nav lg:hidden" aria-label="التنقل السريع">
+          {[
+            { id: 'dashboard' as NavTabId, label: 'الرئيسية', icon: Home },
+            { id: 'library' as NavTabId, label: 'المصحف', icon: BookOpen },
+            { id: 'session' as NavTabId, label: 'الحفظ', icon: Sparkles },
+            { id: 'revision' as NavTabId, label: 'المراجعة', icon: Repeat },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = currentTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelect(item.id)}
+                aria-current={active ? 'page' : undefined}
+                className={
+                  active
+                    ? 'wird-mobile-nav__item is-active'
+                    : 'wird-mobile-nav__item'
+                }
+              >
+                <Icon className="h-[19px] w-[19px]" />
+                <span className="truncate">{item.label}</span>
+                {item.id === 'revision' && dueRevisionCount > 0 && (
+                  <span className="wird-mobile-nav__badge">
+                    {dueRevisionCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={onOpenMobileMenu}
+            aria-label="المزيد من الأقسام"
+            aria-expanded={isOpenMobile}
+            aria-current={isSecondaryMobileTab ? 'page' : undefined}
+            className={
+              isSecondaryMobileTab
+                ? 'wird-mobile-nav__item is-active'
+                : 'wird-mobile-nav__item'
+            }
+          >
+            <MoreHorizontal className="h-[19px] w-[19px]" />
+            <span>المزيد</span>
+          </button>
+        </nav>
       )}
     </>
   );
