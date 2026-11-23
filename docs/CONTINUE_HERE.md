@@ -1,13 +1,43 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-22 (Four-Variant Design Integration — Design A [الأندلسي التراثي] & Design B [العصري الهادئ] × Light / Dark, Unified Collapsible Sidebar, Reference-Backed Appearance Selector, Semantic Token & Dark-Contrast Harmonization)  
+**Last reconciled:** 2026-11-23 (Extensible Video Series Platform & Daily Dashboard Suggestion — «سلسلة بناء النفس المطمئنة» 13 Verified Episodes, UID-Scoped Watch Tracking & Notes, Multi-Series YouTube Playlist Importer)  
 **Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (AI Studio container has no `.git` directory; live GitHub diff vs `origin/main` is `UNKNOWN` locally)  
 **Prior merged baseline (owner prompt context):** Merge commit `419b8713078a72b7ef300a6531506d1a89b1e0f9` (2026-11-20, PR `#404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Checkpoint — Four-Variant Design Integration (2026-11-22)
+## Active Checkpoint — Extensible Video Series Platform & Daily Suggestion (2026-11-23)
+
+1. **Extensible Multi-Series Catalog (`src/data/videoSeriesCatalog.ts`):**
+   - Built a modular multi-series schema (`VideoSeriesDefinition`, `VideoLessonItem`, `VideoSeriesCategory`) seeded with the owner-requested YouTube playlist **`سلسلة بناء النفس المطمئنة` — م. علاء حامد** (`PLlciBs22ptiSJpZBg91Udlue8avJ7RtB5`), containing all **13 verified episodes** in exact playlist order with validated YouTube IDs, Arabic titles, topics, descriptions, and real durations (`16 ساعة و 15 دقيقة` total).
+   - Added strict YouTube URL/ID validators (`isValidYouTubeVideoId`, `isValidYouTubePlaylistId`, `extractYouTubePlaylistId`) and privacy-enhanced embed helpers (`https://www.youtube-nocookie.com/embed/...`) that reject unsafe schemes, non-YouTube domains, and malformed IDs.
+2. **UID-Scoped Progress, Daily Suggestion Engine & Multi-Series Store (`src/services/videoSeriesService.ts`, `src/services/storageService.ts`):**
+   - Registered `'wird.video.series.v1'` in `AUXILIARY_SCOPED_KEYS` for automatic per-UID storage isolation, guest-to-account legacy import migration, and clean reset.
+   - Implemented deterministic daily lesson recommendation (`getDailySuggestedLesson`) that pins the next unwatched lesson for the current local day, advances across days or after manual completion/skip (`advanceDailySuggestedLesson`), tracks per-lesson watch states (`unwatched` | `in_progress` | `completed`), stores personal lesson reflections (`videoNotes`), and supports registering/selecting/removing additional custom series and changing the featured Dashboard series (`setFeaturedSeries`).
+3. **Read-Only SSRF-Safe YouTube Playlist Resolver (`api/youtube-playlist.ts`, `server.ts`, `scripts/smoke-api-imports.mjs`):**
+   - Added `/api/youtube-playlist?list=<playlistId>` mounted in `server.ts` and validated in `scripts/smoke-api-imports.mjs`. Strictly validates `^[A-Za-z0-9_-]{10,64}$`, connects only to hardcoded `https://www.youtube.com` endpoints with timeouts and rate limiting, and returns HTTP `400` for invalid inputs.
+4. **Dashboard Daily Suggestion Card & Full Multi-Series Workspace (`src/components/series/DailyVideoSuggestionCard.tsx`, `src/components/series/VideoSeriesView.tsx`, `src/components/dashboard/DashboardView.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/services/router.ts`, `src/App.tsx`):**
+   - Integrated `DailyVideoSuggestionCard` (`#dashboard-daily-series`) onto the Dashboard with 16:9 thumbnail / inline `youtube-nocookie` player, one-click completion toggle (`تحديد كمكتمل`), next-lesson skip (`الدرس التالي`), progress bar, and direct deep-link (`#/series?series=<id>&video=<videoId>`) to the full series.
+   - Built lazy-loaded `VideoSeriesView` (`#/series`) featuring multi-series shelf switching, full 13-episode searchable/filterable checklist (`الكل` / `لم يُشاهد` / `قيد المشاهدة` / `مكتمل`), inline player with prev/next lesson navigation, per-lesson personal notes, featured-on-dashboard toggle, and an «إضافة سلسلة جديدة» sheet to import any public YouTube playlist (via `/api/youtube-playlist` or manual entry).
+   - Added `السلاسل المرئية` (`series`) to `Sidebar.tsx` (in `العبادة والمعرفة` above `الإعدادات`, preserving `Settings` as the final focusable item), `Header.tsx`, and `DashboardView.tsx` quick actions using pure WIRD semantic CSS tokens (zero legacy hex leaks).
+5. **Preserved Integrity & Verification Executed (2026-11-23):**
+   - **Untouched:** Quran corpus (`completeQuranData.json`, `src/data/sources/`), Hadith/Tafsir/Seerah/Adhkar/Ruqyah data, Firebase Auth & `firestore.rules`, Vercel env vars, and experimental sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`).
+   - `npm test` (74 suites incl. new `src/tests/videoSeriesSystem.test.ts` + Tanzil validation + 114 Surah chunk split): **PASS** (`812 PASSED | 0 FAILED`)
+   - `npm run smoke:api-imports` (incl. `api/youtube-playlist.ts`): **PASS**
+   - Live API check on `http://127.0.0.1:3000/api/youtube-playlist`: **PASS** (HTTP `200`, `13` videos for valid playlist; HTTP `400` for `../evil`)
+   - `lint_applet` (`tsc --noEmit`) & `compile_applet` (Vite production build): **PASS**
+   - Legacy hex scan across `src/components/series`: **PASS** (`NO_LEGACY_HEX_FOUND`)
+   - Headless Chromium visual & interaction verification (`1440x900` desktop Light/Dark + `390x844` mobile Dark on `http://127.0.0.1:3000`): **PASS** (`#dashboard-daily-series` visible, deep-link `#/series?series=bina-al-nafs-al-mutmainnah&video=HVNcSAD8xKs`, «إضافة سلسلة جديدة» sheet verified, `OVERFLOW_X: false`, `CONSOLE_ERRORS: []`, `PAGE_ERRORS: []`)
+   - `npm run test:firestore-rules`: **BLOCKED** locally (`java` not installed in container).
+   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from this workspace.
+
+### Next Step
+- Sync verified AI Studio workspace changes onto a clean GitHub feature branch (`WIRD-APP`) and execute the full exact-head GitHub Actions Quality Gate (including Java Firestore Rules Emulator and Playwright E2E) plus Preview review before any authorized merge.
+
+---
+
+## Prior Checkpoint — Four-Variant Design Integration (2026-11-22)
 
 1. **Centralized 2×2 Preference Engine (`src/services/themePreferences.ts`, `src/main.tsx`):**
    - Implemented two independent user preferences — **`design`: `'design-a' | 'design-b'`** (`التصميم A — الأندلسي التراثي` default, `التصميم B — العصري الهادئ`) and **`appearanceMode`: `'light' | 'dark'`** (`light` default) — producing **4 switchable combinations** (`schemaVersion: 3`, local keys `wird:ui-theme-prefs:v2` and `wird:ui-appearance-mode:v1`) without page reloads or cross-resetting.
@@ -30,9 +60,6 @@
    - Headless Chromium visual verification (desktop `1440x900` + mobile `390x844` via `playwright` on port `3000`): **PASS** — verified exact computed RGB backgrounds across all 4 combinations (`rgb(255, 249, 236)`, `rgb(4, 22, 16)`, `rgb(249, 251, 250)`, `rgb(8, 18, 30)`), zero horizontal overflow (`overflow: false`), `0` console/page errors, and crisp dark-mode text contrast in both `Design A Dark` and `Design B Dark`.
    - `npm run test:firestore-rules`: **BLOCKED** locally (`java` not installed in container).
    - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from this workspace.
-
-### Next Step
-- Sync verified AI Studio workspace changes onto a clean GitHub feature branch (`WIRD-APP`) and execute the full exact-head GitHub Actions Quality Gate (including Java Firestore Rules Emulator and Playwright E2E) plus Preview review before any authorized merge.
 
 ---
 

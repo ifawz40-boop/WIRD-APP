@@ -7,6 +7,7 @@ import tafsirHandler from './api/tafsir';
 import ruqyahHandler from './api/ruqyah';
 import quranAudioHandler from './api/quran-audio';
 import hadithReferencesHandler from './api/hadith-references';
+import youtubePlaylistHandler from './api/youtube-playlist';
 
 dotenv.config();
 
@@ -37,6 +38,11 @@ app.all('/api/ruqyah', (req: Request, res: Response) => {
 // Read-only catalog proxy for Al Furqan's verified Quran reciter directory.
 app.all('/api/quran-audio', (req: Request, res: Response) => {
   void quranAudioHandler(req, res);
+});
+
+// Read-only YouTube playlist metadata proxy for extensible learning series.
+app.all('/api/youtube-playlist', (req: Request, res: Response) => {
+  void youtubePlaylistHandler(req, res);
 });
 
 // In-memory rate limiter for Gemini Free Tier (15 requests/minute)

@@ -54,7 +54,8 @@ export const AUXILIARY_SCOPED_KEYS = [
   'wird.quran.lastReadingPosition.v1',
   'wird.adhkar.progress.v1',
   'wird.seerah.progress.v1',
-  'wird.prayer.cache.v1'
+  'wird.prayer.cache.v1',
+  'wird.video.series.v1'
 ] as const;
 
 /**

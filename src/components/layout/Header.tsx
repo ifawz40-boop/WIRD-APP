@@ -42,6 +42,7 @@ const TAB_SECTION_GROUPS: Record<string, string> = {
   progress: 'المتابعة',
   adhkar: 'العبادة اليومية',
   seerah: 'السيرة النبوية',
+  series: 'العلم والتزكية',
   ruqyah: 'العبادة اليومية',
   advisor: 'الإرشاد القرآني',
   settings: 'النظام والحساب',

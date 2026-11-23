@@ -985,3 +985,25 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
   - `npm run test:firestore-rules`: **BLOCKED** locally (`java` runtime absent).
   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
 
+## 2026-11-23 — Extensible Video Series Platform & Daily Dashboard Video Suggestion (AI Studio Workspace)
+
+- **Environment:** Google AI Studio container workspace (no `.git` directory; production settings, Firebase Rules, Vercel env vars, Quran corpus, and sync feature flags untouched).
+- **Owner Request & Scope Implemented:**
+  - Built an extensible multi-series video library architecture seeded with the requested YouTube playlist **«سلسلة بناء النفس المطمئنة» — م. علاء حامد** (`https://youtube.com/playlist?list=PLlciBs22ptiSJpZBg91Udlue8avJ7RtB5`, 13 verified episodes, `16 ساعة و 15 دقيقة`), surfacing a daily suggested lesson on the Dashboard (`#dashboard-daily-series`) with watch-status completion tracking (`unwatched` / `in_progress` / `completed`), full episode browser (`#/series`), personal notes, and future-ready YouTube playlist import for adding unlimited new series.
+- **Key Files Created / Changed:**
+  - `src/data/videoSeriesCatalog.ts`: multi-series schema (`VideoSeriesDefinition`, `VideoLessonItem`, `VideoSeriesCategory`), 13 verified episodes of `BINA_AL_NAFS_SERIES`, safe YouTube video/playlist ID & URL validators, and `youtube-nocookie.com` embed helpers.
+  - `src/services/videoSeriesService.ts` & `src/services/storageService.ts`: UID-scoped key `'wird.video.series.v1'` in `AUXILIARY_SCOPED_KEYS`, deterministic daily suggestion picker + manual skip (`getDailySuggestedLesson`, `advanceDailySuggestedLesson`), per-lesson watch status & notes persistence, featured-series selector, and custom multi-series registration/removal.
+  - `api/youtube-playlist.ts`, `server.ts`, `scripts/smoke-api-imports.mjs`: read-only SSRF-safe `/api/youtube-playlist?list=...` resolver strictly validating playlist IDs and querying hardcoded `https://www.youtube.com` endpoints with timeout & rate limiting.
+  - `src/components/series/DailyVideoSuggestionCard.tsx`, `src/components/series/VideoSeriesView.tsx`, `src/components/dashboard/DashboardView.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/services/router.ts`, `src/App.tsx`: Dashboard daily video card, lazy-loaded `#/series` multi-series workspace with full episode checklist, filters, inline player, notes, and «إضافة سلسلة جديدة» sheet, plus deep-linking (`#/series?series=...&video=...`) and Sidebar navigation before `الإعدادات`.
+  - `src/tests/videoSeriesSystem.test.ts` & `src/tests/runAllTests.ts`: 6 automated tests covering the 13-episode catalog, URL/ID security validation, UID-scoped watch tracking & notes, daily suggestion rotation/skip, multi-series registration/cleanup, router deep-linking, and `/api/youtube-playlist` invalid-input rejection.
+- **Verification Executed (after final edits):**
+  - `npm test` (74 suites incl. `videoSeriesSystem.test.ts`, Tanzil validation & 114 Surah chunk split): **PASS** (`812 PASSED | 0 FAILED`)
+  - `npm run smoke:api-imports`: **PASS**
+  - Live `GET /api/youtube-playlist` on `http://127.0.0.1:3000`: **PASS** (`200` with `13` videos for `PLlciBs22ptiSJpZBg91Udlue8avJ7RtB5`; `400` for `../evil`)
+  - Legacy hex grep across `src/components/series`: **PASS** (`NO_LEGACY_HEX_FOUND`)
+  - Headless Chromium visual & interaction verification (`1440x900` Light/Dark & `390x844` Dark on `http://127.0.0.1:3000`): **PASS** (`#dashboard-daily-series` visible, deep-link `#/series?series=bina-al-nafs-al-mutmainnah&video=HVNcSAD8xKs`, Add Series sheet verified, `OVERFLOW_X: false`, `CONSOLE_ERRORS: []`, `PAGE_ERRORS: []`, temporary `.verify-shots` cleaned up)
+  - `compile_applet` & `lint_applet`: executed on final workspace pass.
+  - `npm run test:firestore-rules`: **BLOCKED** locally (`java` runtime absent).
+  - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
+
+

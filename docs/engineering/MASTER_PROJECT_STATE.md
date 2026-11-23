@@ -1,9 +1,35 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-22 (Google AI Studio Workspace — Four-Variant Design Integration: Design A & Design B × Light / Dark, Reference-Backed Appearance Selector, Semantic Token & Dark-Contrast Harmonization)  
+**Current snapshot reconciled:** 2026-11-23 (Google AI Studio Workspace — Extensible Video Series Platform & Daily Dashboard Suggestion: «سلسلة بناء النفس المطمئنة» 13 Episodes, UID-Scoped Watch Tracking, Multi-Series YouTube Playlist Importer)  
 **Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (AI Studio sandbox has no `.git` metadata)
 
-- **Local Workspace State & Verification (2026-11-22 — AI Studio Workspace, NOT committed/pushed to GitHub and NOT deployed to Vercel):**
+- **Local Workspace State & Verification (2026-11-23 — AI Studio Workspace, NOT committed/pushed to GitHub and NOT deployed to Vercel):**
+  - **Extensible Multi-Series Catalog & Safe YouTube Helpers (`src/data/videoSeriesCatalog.ts`):**
+    - Added extensible multi-series data schema (`VideoSeriesDefinition`, `VideoLessonItem`, `VideoSeriesCategory`) preloaded with all **13 verified episodes** of «سلسلة بناء النفس المطمئنة» (`PLlciBs22ptiSJpZBg91Udlue8avJ7RtB5`, م. علاء حامد, `16 ساعة و 15 دقيقة`), plus strict YouTube video/playlist ID validators and `youtube-nocookie.com` embed helpers.
+  - **UID-Scoped Watch Tracking, Daily Suggestion Engine & Multi-Series Store (`src/services/videoSeriesService.ts`, `src/services/storageService.ts`):**
+    - Registered `'wird.video.series.v1'` in `AUXILIARY_SCOPED_KEYS` for per-UID isolation, guest-to-account migration, and clean reset.
+    - Implemented deterministic daily lesson picker (`getDailySuggestedLesson`), manual next-suggestion stepping (`advanceDailySuggestedLesson`), per-lesson status transitions (`unwatched`/`in_progress`/`completed`), personal lesson notes, featured-series selection (`setFeaturedSeries`), and custom series registration/removal (`addCustomSeries`, `removeCustomSeries`).
+  - **Read-Only SSRF-Safe Playlist API (`api/youtube-playlist.ts`, `server.ts`, `scripts/smoke-api-imports.mjs`):**
+    - Added `/api/youtube-playlist?list=<playlistId>` strictly validating `^[A-Za-z0-9_-]{10,64}$` against hardcoded `https://www.youtube.com` endpoints with timeouts and rate limiting.
+  - **Dashboard Card, Full Series Workspace & Routing (`src/components/series/DailyVideoSuggestionCard.tsx`, `src/components/series/VideoSeriesView.tsx`, `src/components/dashboard/DashboardView.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/services/router.ts`, `src/App.tsx`):**
+    - Rendered `DailyVideoSuggestionCard` (`#dashboard-daily-series`) on the Dashboard with inline player, completion toggle, next-lesson skip, progress bar, and deep-link to `#/series?series=<id>&video=<videoId>`.
+    - Built lazy-loaded `VideoSeriesView` (`#/series`) with multi-series shelf, full searchable/filterable episode checklist, inline player, personal notes, and «إضافة سلسلة جديدة» YouTube playlist importer modal.
+    - Added `السلاسل المرئية` to `Sidebar.tsx` (preserving `الإعدادات` as the final focusable item) and `DashboardView.tsx` quick actions with pure semantic CSS tokens.
+  - **Local Verification Executed (2026-11-23):**
+    - `npm test` (74 suites incl. `src/tests/videoSeriesSystem.test.ts`, Tanzil validation & 114 Surah chunk build): **PASS** (`812 PASSED | 0 FAILED`)
+    - `npm run smoke:api-imports` (incl. `api/youtube-playlist.ts`): **PASS**
+    - Live `/api/youtube-playlist` check on port `3000`: **PASS** (HTTP `200`, `13` episodes for valid playlist; HTTP `400` for invalid ID)
+    - Legacy hex scan across `src/components/series`: **PASS** (`NO_LEGACY_HEX_FOUND`)
+    - Headless Chromium visual & interaction verification (`1440x900` desktop Light/Dark & `390x844` mobile Dark): **PASS** (Dashboard card, `#/series` deep-link, «إضافة سلسلة جديدة» modal, `overflowX: false`, `0` console/page errors)
+    - `compile_applet` & `lint_applet`: **PASS**
+    - `npm run test:firestore-rules`: **BLOCKED** locally (`java` absent in container).
+    - GitHub Actions CI, Vercel Preview, Vercel Production, Production Sync Flags, `firestore.rules`, and Quran corpus: **UNTOUCHED / NOT EXECUTED** from AI Studio.
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Workspace Snapshot — 2026-11-22 (Four-Variant Design Integration)
+
+- **Local Workspace State & Verification (2026-11-22 — AI Studio Workspace):**
   - **Four-Variant Preference & Token Engine (`src/services/themePreferences.ts`, `src/wird-identity.css`, `src/main.tsx`):**
     - Replaced 3 legacy UI presets with two orthogonal axes: `design` (`'design-a'` Andalusian Heritage `#FFF9EC`/`#041610` default, `'design-b'` Modern Calm Slate `#F9FBFA`/`#08121E`) and `appearanceMode` (`'light'` default, `'dark'`). Switching one axis never resets the other; `resetThemePreferences()` restores `design-a` + `light`; legacy stored presets migrate deterministically via `mapLegacyPresetToDesign`.
     - Resolved CSS specificity ordering in `src/wird-identity.css` using explicit `:root[data-wird-design='design-a'|'design-b']` and `:root.dark[data-wird-design='design-a'|'design-b']` blocks plus `--wird-sidebar-bg`, `--wird-mushaf-paper`, `--wird-primary-ink`, and `--wird-accent-ink`.
@@ -20,8 +46,6 @@
     - `compile_applet` & `lint_applet`: executed on final workspace pass.
     - `npm run test:firestore-rules`: **BLOCKED** locally (`java` absent in container).
     - GitHub Actions CI, Vercel Preview, Vercel Production, Production Sync Flags, `firestore.rules`, and Quran corpus: **UNTOUCHED / NOT EXECUTED** from AI Studio.
-
-> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
 
 ## Historical Platform Transformation Snapshot — 2026-11-20 (Draft PR `#404` on `feat/platform-transformation-20261120`)
 **Refreshed GitHub `origin/main` baseline (fetched 2026-11-20):** `61554d60da5a5bbb644f6698d7b6193068a4d70a` (`feat(ai): add chat history context and update styles`); previous CI-passing PR `#404` head: `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  

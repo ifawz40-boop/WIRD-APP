@@ -47,6 +47,7 @@ const ProgressAnalyticsView = React.lazy(() => import('./components/progress/Pro
 const QuranAdvisorView = React.lazy(() => import('./components/assistant/QuranAdvisorView').then(m => ({ default: m.QuranAdvisorView })));
 const AdhkarView = React.lazy(() => import('./components/adhkar/AdhkarView').then(m => ({ default: m.AdhkarView })));
 const SeerahView = React.lazy(() => import('./components/seerah/SeerahView').then(m => ({ default: m.SeerahView })));
+const VideoSeriesView = React.lazy(() => import('./components/series/VideoSeriesView').then(m => ({ default: m.VideoSeriesView })));
 const RuqyahView = React.lazy(() => import('./components/ruqyah/RuqyahView').then(m => ({ default: m.RuqyahView })));
 const SettingsView = React.lazy(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
 const BrandDesignShowcase = React.lazy(() => import('./components/brand/BrandDesignShowcase').then(m => ({ default: m.BrandDesignShowcase })));
@@ -185,6 +186,10 @@ export default function App() {
   const [sessionInProgress, setSessionInProgress] = useState<boolean>(false);
   const [pendingExitTab, setPendingExitTab] = useState<NavTabId | null>(null);
   const [pendingMushafResume, setPendingMushafResume] = useState<{ page: number; khatmaId?: string; nonce: number } | null>(null);
+  const [seriesParams, setSeriesParams] = useState<{ seriesId?: string; videoId?: string }>(() => ({
+    seriesId: initialRoute.seriesId,
+    videoId: initialRoute.videoId,
+  }));
   const currentTabRef = useRef(currentTab);
   currentTabRef.current = currentTab;
   const sessionInProgressRef = useRef(sessionInProgress);
@@ -280,6 +285,7 @@ export default function App() {
     advisor: 'المستشار القرآني',
     adhkar: 'الأذكار والأدعية اليومية',
     seerah: 'السيرة النبوية الشريفة',
+    series: 'السلاسل المرئية والدروس',
     ruqyah: 'الرقية الشرعية',
     settings: 'الإعدادات',
     showcase: 'نظام التصميم والهوية البصرية'
@@ -343,6 +349,9 @@ export default function App() {
       }
 
       setCurrentTab(route.tab);
+      if (route.tab === 'series') {
+        setSeriesParams({ seriesId: route.seriesId, videoId: route.videoId });
+      }
       if (route.surahNumber !== undefined) {
         const surahMeta = ALL_SURAHS[route.surahNumber - 1];
         if (surahMeta) {
@@ -417,6 +426,11 @@ export default function App() {
     }
     setPendingMushafResume({ page, khatmaId, nonce: Date.now() });
     handleNavigate('library');
+  };
+
+  const handleOpenSeries = (seriesId?: string, videoId?: string) => {
+    setSeriesParams({ seriesId, videoId });
+    navigateTo({ tab: 'series', seriesId, videoId });
   };
 
   // Start daily session handler with deep link URL
@@ -811,6 +825,7 @@ export default function App() {
                   onStartSession={handleStartSession}
                   onUpdateEnginePlans={handleUpdateEnginePlans}
                   onResumeReadingKhatma={handleResumeReadingKhatma}
+                  onOpenSeries={handleOpenSeries}
                   onToast={showToast}
                 />
               )}
@@ -903,6 +918,14 @@ export default function App() {
 
               {currentTab === 'seerah' && (
                 <SeerahView onToast={showToast} />
+              )}
+
+              {currentTab === 'series' && (
+                <VideoSeriesView
+                  initialSeriesId={seriesParams.seriesId}
+                  initialVideoId={seriesParams.videoId}
+                  onToast={showToast}
+                />
               )}
 
               {currentTab === 'ruqyah' && (

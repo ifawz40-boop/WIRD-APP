@@ -10,7 +10,8 @@ import {
   Check,
   Compass,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Tv
 } from 'lucide-react';
 import {
   UserProfile,
@@ -45,6 +46,7 @@ import {
   type DailyPrayerSchedule,
   type PrayerTimingKey,
 } from '../../services/prayerTimesService';
+import { DailyVideoSuggestionCard } from '../series/DailyVideoSuggestionCard';
 
 interface DashboardViewProps {
   profile: UserProfile;
@@ -56,6 +58,7 @@ interface DashboardViewProps {
   onStartSession: (surahNumber?: number, startAyah?: number, endAyah?: number, mode?: 'memorize' | 'review') => void;
   onUpdateEnginePlans?: (plans: EngineGeneratedPlan[]) => boolean | Promise<boolean>;
   onResumeReadingKhatma?: (page: number, khatmaId?: string) => void;
+  onOpenSeries?: (seriesId?: string, videoId?: string) => void;
   onToast?: (message: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
 }
 
@@ -68,6 +71,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onStartSession,
   onUpdateEnginePlans,
   onResumeReadingKhatma,
+  onOpenSeries,
   onToast
 }) => {
   const [dailyPreviewText, setDailyPreviewText] = useState('جارٍ تحميل نص الآية...');
@@ -264,6 +268,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {[
             { id: 'dashboard-daily-wird', label: 'ورد اليوم' },
             { id: 'dashboard-revision-card', label: 'المراجعة والتثبيت' },
+            { id: 'dashboard-daily-series', label: 'درس اليوم المرئي' },
             { id: 'dashboard-metrics-grid', label: 'الإحصائيات' },
             { id: 'dashboard-prayer-card', label: 'مواقيت الصلاة' },
             { id: 'dashboard-quick-actions', label: 'إجراءات سريعة' }
@@ -722,6 +727,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </section>
       </div>
 
+      {/* 2A. Daily Suggested Video Lesson from Curated / Custom Series */}
+      <DailyVideoSuggestionCard
+        onOpenSeriesLibrary={(seriesId, videoId) => {
+          if (onOpenSeries) onOpenSeries(seriesId, videoId);
+          else onNavigate('series');
+        }}
+        onToast={onToast}
+      />
+
       {/* 2B. Quick-Resume Multi-Khatma Reading Strip */}
       {activeReadingKhatmas.length > 0 && (
         <WirdCard aria-label="ختمات القراءة المتعددة والاستكمال السريع" className="space-y-3">
@@ -1052,6 +1066,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 title: 'السيرة النبوية الشريفة',
                 subtitle: 'كتاب سردي متصل بمصادر محققة',
                 icon: BookOpen
+              },
+              {
+                tab: 'series' as NavTabId,
+                title: 'السلاسل المرئية والدروس',
+                subtitle: 'سلسلة بناء النفس المطمئنة وسلاسل متجددة',
+                icon: Tv
               },
               {
                 tab: 'advisor' as NavTabId,

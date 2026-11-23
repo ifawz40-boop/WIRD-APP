@@ -14,6 +14,7 @@ import {
   ScrollText,
   Compass,
   MoreHorizontal,
+  Tv,
 } from 'lucide-react';
 import { UserProfile } from '../../types/quran';
 import { WirdBrandLockup } from '../brand/WirdLogo';
@@ -30,6 +31,7 @@ export type NavTabId =
   | 'advisor'
   | 'adhkar'
   | 'seerah'
+  | 'series'
   | 'ruqyah'
   | 'settings'
   | 'showcase';
@@ -167,6 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'progress', label: 'التقدم والإنجاز', icon: BarChart3 },
         { id: 'adhkar', label: 'الأذكار والأدعية', icon: Heart },
         { id: 'seerah', label: 'السيرة النبوية', icon: ScrollText },
+        { id: 'series', label: 'السلاسل المرئية', icon: Tv },
         { id: 'ruqyah', label: 'الرقية الشرعية', icon: ShieldCheck },
         { id: 'advisor', label: 'المستشار القرآني', icon: Compass },
         { id: 'settings', label: 'الإعدادات', icon: Settings },
