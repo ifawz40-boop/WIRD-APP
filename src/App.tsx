@@ -27,6 +27,7 @@ import {
 import { setActiveReadingKhatma } from './services/readingKhatmaService';
 import {
   applyThemePreferencesToDocument,
+  DEFAULT_APPEARANCE_MODE,
   loadThemePreferences,
   resetThemePreferences,
   saveThemePreferences,
@@ -314,6 +315,16 @@ export default function App() {
   const handleToggleTheme = async () => {
     const newTheme: 'light' | 'dark' = profile.theme === 'dark' ? 'light' : 'dark';
     await handleSetThemeMode(newTheme);
+  };
+
+  // Restore default Design (Design A) and Appearance Mode (Light)
+  const handleResetAppearance = () => {
+    const reset = resetThemePreferences();
+    setThemePrefs(reset);
+    if (profile.theme !== DEFAULT_APPEARANCE_MODE) {
+      void handleSetThemeMode(DEFAULT_APPEARANCE_MODE);
+    }
+    showToast('تمت استعادة الإعدادات الافتراضية للمظهر (التصميم A — الوضع النهاري).', 'info');
   };
 
   // Synchronize route with URL hash & browser history
@@ -737,6 +748,7 @@ export default function App() {
           currentTab={currentTab}
           tabTitle={tabTitles[currentTab]}
           profile={profile}
+          activeDesign={themePrefs.design}
           onToggleTheme={handleToggleTheme}
           onOpenThemeCustomizer={() => setIsThemeCustomizerOpen(true)}
           onStartDailySession={handleStartDailySession}
@@ -910,6 +922,15 @@ export default function App() {
                   isStandalone={isStandalone}
                   hasInstallPrompt={Boolean(pwaInstallPrompt)}
                   onInstallPwa={handleTriggerPwaInstall}
+                  themePreferences={themePrefs}
+                  onUpdateThemePreferences={(partial) => {
+                    const updated = saveThemePreferences(partial);
+                    setThemePrefs(updated);
+                  }}
+                  onSetAppearanceMode={(nextMode) => {
+                    void handleSetThemeMode(nextMode);
+                  }}
+                  onResetAppearance={handleResetAppearance}
                 />
               )}
 
@@ -935,11 +956,7 @@ export default function App() {
           const updated = saveThemePreferences(partial);
           setThemePrefs(updated);
         }}
-        onReset={() => {
-          const reset = resetThemePreferences();
-          setThemePrefs(reset);
-          showToast('تمت استعادة المظهر الافتراضي لنظام تصميم وِرد.', 'info');
-        }}
+        onReset={handleResetAppearance}
         onOpenShowcase={() => handleNavigate('showcase')}
       />
 

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>منصة وِرد • قيام الليل والأسحار</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Amiri, Newsreader, Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Noto+Naskh+Arabic:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-error-container": "#93000a",
+            "primary-fixed-dim": "#a3d0be",
+            "tertiary": "#00241b",
+            "secondary-fixed-dim": "#e9c176",
+            "secondary": "#775a19",
+            "on-tertiary-fixed-variant": "#155041",
+            "tertiary-fixed": "#b5efda",
+            "on-background": "#1d1c14",
+            "on-primary": "#ffffff",
+            "surface-container": "#f3ede0",
+            "on-tertiary-container": "#70a895",
+            "surface-container-highest": "#e8e2d5",
+            "surface": "#fff9ec",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-container": "#79a694",
+            "primary": "#00241a",
+            "on-primary-fixed": "#002117",
+            "primary-fixed": "#beedd9",
+            "on-tertiary-fixed": "#002018",
+            "outline-variant": "#c0c8c3",
+            "inverse-surface": "#333028",
+            "inverse-on-surface": "#f6f0e3",
+            "on-surface-variant": "#414845",
+            "background": "#fff9ec",
+            "surface-bright": "#fff9ec",
+            "tertiary-fixed-dim": "#99d2be",
+            "outline": "#717974",
+            "secondary-fixed": "#ffdea5",
+            "surface-dim": "#dfdacd",
+            "surface-container-low": "#f9f3e6",
+            "surface-container-high": "#eee8db",
+            "on-secondary-fixed-variant": "#5d4201",
+            "on-primary-fixed-variant": "#234e40",
+            "tertiary-container": "#003c2f",
+            "on-tertiary": "#ffffff",
+            "on-secondary": "#ffffff",
+            "on-secondary-fixed": "#261900",
+            "on-surface": "#1d1c14",
+            "on-secondary-container": "#785a1a",
+            "error": "#ba1a1a",
+            "surface-tint": "#3c6658",
+            "surface-variant": "#e8e2d5",
+            "secondary-container": "#fed488",
+            "inverse-primary": "#a3d0be",
+            "on-error": "#ffffff",
+            "primary-container": "#0d3b2e",
+            "error-container": "#ffdad6"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            "amiri": ["Amiri", "serif"],
+            "quran": ["Noto Naskh Arabic", "serif"],
+            "scripture-xl": ["Newsreader", "serif"],
+            "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg-mobile": ["Newsreader", "serif"],
+            "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "scripture-lg": ["Newsreader", "serif"],
+            "headline-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-md": ["Newsreader", "serif"],
+            "body-md": ["Plus Jakarta Sans", "sans-serif"],
+            "display-lg": ["Newsreader", "serif"],
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Newsreader", "serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #775a19;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#08121E] text-slate-100 font-['Plus_Jakarta_Sans',sans-serif] min-h-screen selection:bg-secondary-container selection:text-tertiary relative overflow-x-hidden">
+<!-- Subtle Night Grid Overlay -->
+<div class="fixed inset-0 pointer-events-none bg-[radial-gradient(#e2b15b12_1px,transparent_1px)] [background-size:24px_24px] opacity-40 z-0"></div>
+<div class="fixed top-0 right-1/4 w-96 h-96 bg-[#0B253A] rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+<div class="fixed bottom-0 left-1/4 w-[30rem] h-[30rem] bg-[#16273b] rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col min-h-screen">
+<!-- Shared Component: TopNavBar adapted with Royal Night Navy & Gold palette -->
+<header class="w-full border-b border-[#1c3048] bg-[#08121E]/90 backdrop-blur-md sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 whitespace-nowrap">
+<!-- Logo & Brand Title -->
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-gradient-to-tr from-[#162a3f] to-[#0c1b2c] border border-[#e2b15b]/30 shadow-[0_0_15px_rgba(226,177,91,0.15)] flex items-center justify-center text-[#E2B15B]">
+<svg class="size-6 text-[#E2B15B]" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<div>
+<h2 class="text-slate-100 font-bold text-base sm:text-lg tracking-tight font-amiri">منصة وِرد • قيام الليل والأسحار</h2>
+<span class="text-[11px] text-[#E2B15B] font-medium tracking-wide block -mt-1">الثلث الأخير • ليلة مباركة</span>
+</div>
+</div>
+<!-- Nav Items -->
+<nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+<a class="text-[#E2B15B] border-b-2 border-[#E2B15B] pb-1 font-bold transition" href="#">الرئيسية</a>
+<a class="text-slate-300 hover:text-white transition" href="#">المصحف المرتل</a>
+<a class="text-slate-300 hover:text-white transition flex items-center gap-1.5" href="#">
+<span>ختماتي</span>
+<span class="bg-[#1a384f] text-[#ffdea5] text-[10px] px-1.5 py-0.5 rounded-full font-bold">٢ نشطة</span>
+</a>
+<a class="text-slate-300 hover:text-white transition" href="#">الأذكار والتهجد</a>
+</nav>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="relative flex items-center justify-center rounded-lg h-9 w-9 bg-[#0e2133] hover:bg-[#152e46] text-[#E2B15B] border border-[#214364]/50 transition" title="نمط الإضاءة الخافتة">
+<span class="material-symbols-outlined text-[19px]">bedtime</span>
+</button>
+<button class="relative flex items-center justify-center rounded-lg h-9 w-9 bg-[#0e2133] hover:bg-[#152e46] text-slate-300 hover:text-white border border-[#214364]/50 transition" title="تنبيهات الأسحار">
+<span class="material-symbols-outlined text-[19px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#E2B15B] ring-2 ring-[#08121E]"></span>
+</button>
+<div class="h-6 w-px bg-[#1c3048] mx-1 hidden sm:block"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0e2133] hover:bg-[#152e46] border border-[#214364]/70 transition">
+<span class="material-symbols-outlined text-[#E2B15B] text-[20px]">account_circle</span>
+<span class="text-xs font-semibold text-slate-200 hidden sm:inline">أحمد عبد الله</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Container -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<!-- Nocturnal Header & Countdown Widget -->
+<section class="bg-gradient-to-b from-[#0c1e30] to-[#081524] rounded-2xl p-6 sm:p-8 border border-[#203a55] shadow-2xl relative overflow-hidden">
+<div class="absolute -left-12 -bottom-12 w-48 h-48 bg-[#e2b15b]/5 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
+<!-- Scripture Header Quote -->
+<div class="text-center lg:text-right space-y-2 max-w-2xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#14283d] border border-[#e2b15b]/20 text-[#E2B15B] text-xs font-medium mb-1">
+<span class="material-symbols-outlined text-[16px]">stars</span>
+<span>بركة السحر وساعة الاستجابة</span>
+</div>
+<h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold font-amiri text-slate-100 leading-snug">
+              وِرد الأسحار والتهجد • <span class="text-[#E2B15B]">طوبى لمن بات تالياً لكتاب الله</span>
+</h1>
+<p class="text-slate-400 text-sm sm:text-base font-normal">
+              الثلث الأخير من الليل • ينزل ربنا تبارك وتعالى كل ليلة إلى السماء الدنيا حين يبقى ثلث الليل الآخر
+            </p>
+</div>
+<!-- Countdown Timer Widget -->
+<div class="bg-[#060e17]/80 backdrop-blur-md border border-[#24425e] p-4 rounded-xl flex flex-col items-center gap-3 min-w-[280px]">
+<span class="text-xs font-medium text-[#E2B15B] tracking-wide flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">alarm</span>
+<span>متبقي على أذان الفجر (٠٤:٣٨ ص)</span>
+</span>
+<div class="grid grid-cols-3 gap-3 w-full" id="countdown-timer">
+<div class="flex flex-col items-center bg-[#0d1d2c] border border-[#1b344e] rounded-lg py-2 px-1">
+<span class="text-2xl font-bold text-slate-100 font-mono tracking-tight" id="timer-hours">01</span>
+<span class="text-[10px] text-slate-400 font-medium">ساعة</span>
+</div>
+<div class="flex flex-col items-center bg-[#0d1d2c] border border-[#1b344e] rounded-lg py-2 px-1">
+<span class="text-2xl font-bold text-[#E2B15B] font-mono tracking-tight" id="timer-mins">42</span>
+<span class="text-[10px] text-slate-400 font-medium">دقيقة</span>
+</div>
+<div class="flex flex-col items-center bg-[#0d1d2c] border border-[#1b344e] rounded-lg py-2 px-1">
+<span class="text-2xl font-bold text-slate-100 font-mono tracking-tight" id="timer-secs">18</span>
+<span class="text-[10px] text-slate-400 font-medium">ثانية</span>
+</div>
+</div>
+<div class="w-full flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-[#1a324b]">
+<span>شروق الشمس: ٠٦:٠٤ ص</span>
+<span class="text-[#E2B15B]">مضى ثلثا الليل</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Primary Highlight Card: Nightly Tahajjud Flow & Audio Player -->
+<section class="bg-gradient-to-br from-[#0c1c2e] via-[#091523] to-[#07111b] border border-[#1e3852] rounded-2xl shadow-xl overflow-hidden relative">
+<div class="grid grid-cols-1 lg:grid-cols-12 items-stretch">
+<!-- Ayat Display & Reflection -->
+<div class="p-6 sm:p-8 lg:col-span-7 flex flex-col justify-between space-y-6">
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-[#E2B15B] animate-pulse"></span>
+<span class="text-xs font-semibold text-[#E2B15B] tracking-wider uppercase">الورد الليلي المستمر</span>
+</div>
+<div class="text-xs text-slate-400 bg-[#122438] px-2.5 py-1 rounded-md border border-[#1f3d5e]">
+                  سورة الإسراء • الآية ٧٨ - ٨٢
+                </div>
+</div>
+<!-- Sanctified Quranic Calligraphy Style -->
+<div class="bg-[#050c14]/60 border border-[#18314a] p-6 rounded-xl relative">
+<span class="material-symbols-outlined absolute top-2 right-2 text-slate-700/30 text-5xl pointer-events-none">format_quote</span>
+<p class="font-amiri text-xl sm:text-2xl leading-loose text-slate-100 text-center select-all">
+                  ﴿أَقِمِ الصَّلَاةَ لِدُلُوكِ الشَّمْسِ إِلَىٰ غَسَقِ اللَّيْلِ وَقُرْآنَ الْفَجْرِ ۖ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا • وَمِنَ اللَّيْلِ فَتَهَجَّدْ بِهِ نَافِلَةً لَّكَ عَسَىٰ أَن يَبْعَثَكَ رَبُّكَ مَقَامًا مَّحْمُودًا﴾
+                </p>
+<div class="text-center mt-3 text-xs text-[#E2B15B] font-medium font-amiri">
+                  [سورة الإسراء: ٧٨ - ٧٩]
+                </div>
+</div>
+<!-- Contextual Reader Note -->
+<div class="flex flex-wrap items-center justify-between text-xs text-slate-300 gap-2">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-[#E2B15B]">mic</span>
+<span>القارئ: <strong>الشيخ عبد الباسط عبد الصمد</strong> (تلاوة مرتلة هادئة)</span>
+</span>
+<span class="text-slate-400">الحزب الثلاثون • الصفحة ٢٩٠</span>
+</div>
+</div>
+<!-- Integrated Audio Bar -->
+<div class="bg-[#06101a] border border-[#1c3550] p-3.5 rounded-xl space-y-2">
+<div class="flex items-center justify-between text-xs text-slate-400">
+<span id="player-current-time">٠٤:١٢</span>
+<div class="flex-1 mx-3 h-1.5 bg-[#172c42] rounded-full overflow-hidden cursor-pointer">
+<div class="h-full bg-gradient-to-r from-[#8e6822] to-[#E2B15B] w-2/5 rounded-full"></div>
+</div>
+<span>١٠:٤٥</span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-1">
+<button class="p-1 text-slate-400 hover:text-white" title="تكرار الآية">
+<span class="material-symbols-outlined text-[18px]">replay</span>
+</button>
+<button class="p-1 text-slate-400 hover:text-white" title="سرعة التلاوة (1.0x)">
+<span class="text-[11px] font-mono px-1 rounded bg-[#132537]">1.0x</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-slate-400 hover:text-white transition">
+<span class="material-symbols-outlined text-[20px]">skip_next</span>
+</button>
+<button class="size-9 rounded-full bg-[#E2B15B] text-[#08121E] flex items-center justify-center hover:bg-[#fed488] shadow-[0_0_12px_rgba(226,177,91,0.4)] transition" id="main-play-btn">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-slate-400 hover:text-white transition">
+<span class="material-symbols-outlined text-[20px]">skip_previous</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">volume_up</span>
+<div class="w-14 h-1 bg-[#172c42] rounded-full hidden sm:block">
+<div class="h-full bg-slate-300 w-3/4 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual Companion & Deep Read Action -->
+<div class="lg:col-span-5 relative min-h-[220px] lg:min-h-full border-t lg:border-t-0 lg:border-r border-[#1e3852] flex flex-col justify-end p-6">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="An atmospheric high-end night shot of an open illuminated Quran with gold leaf calligraphy resting on a carved dark wooden stand in a dim prayer hall, with soft amber lantern glow and serene deep royal navy shadows, serene spirituality" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA_RfkRhDHUp3YfDpr7BvzYhbBRXOqYxQpVha6TruPEiky61ssgGRTBqTfimj6O6fGVs6RVxlu8pt6y-DxxDmLtotRWr1jRGXGHQV-7YdWewEpoWh-e4J7vPLzvGcx-3JJtZDORVLx3jPOo4OY3yi35yEQlj8sMMOM5MUYyYhjoG1JBtAem01uZEKlZnfCwohQvNzDKqeXLk8zCLmeUcUx-dr-sF5ocyoBvlcrxkMP2')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#08121E] via-[#08121E]/70 to-transparent"></div>
+<div class="relative z-10 space-y-3">
+<span class="inline-block text-[11px] font-semibold tracking-wider text-[#ffdea5] uppercase bg-[#08121E]/80 backdrop-blur-sm px-2.5 py-1 rounded border border-[#e2b15b]/30">مصحف التهجد الكبير</span>
+<h3 class="text-lg font-bold text-white font-amiri">متابعة القراءة بالصفحة الكاملة مع التفسير الميسر</h3>
+<p class="text-xs text-slate-300 line-clamp-2">تأمل هدي النبي ﷺ في قيام الليل وتدبر معاني الإسراء والمعراج في ثلث الليل الأخير.</p>
+<div class="pt-1 flex items-center gap-2">
+<button class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#E2B15B] to-[#b38531] text-[#08121E] font-bold text-xs hover:brightness-110 shadow-lg flex items-center justify-center gap-1.5 transition">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+<span>فتح المصحف المرتل</span>
+</button>
+<button class="py-2.5 px-3 rounded-xl bg-[#0f2336]/80 hover:bg-[#15324c] border border-[#23466a] text-slate-200 text-xs transition" title="إضافة علامة مرجعية">
+<span class="material-symbols-outlined text-[18px]">bookmark_add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Dashboard Interactive Frosted Glass Cards Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1: Khatmah Tracker -->
+<div class="bg-[#0b1929]/80 backdrop-blur-md rounded-xl p-5 border border-[#1b344e] hover:border-[#e2b15b]/40 transition duration-300 flex flex-col justify-between space-y-4 group">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="p-2 rounded-lg bg-[#14283d] text-[#E2B15B]">
+<span class="material-symbols-outlined text-[20px]">library_books</span>
+</div>
+<span class="text-[11px] font-semibold text-[#E2B15B] bg-[#1a334d] px-2 py-0.5 rounded">ختمتان نشطتان</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-slate-100 group-hover:text-[#E2B15B] transition">ختمات القرآن الجارية</h3>
+<p class="text-xs text-slate-400 mt-0.5">معدل الإنجاز والورد اليومي</p>
+</div>
+<!-- Khatmah 1 -->
+<div class="space-y-1.5 pt-1">
+<div class="flex justify-between text-xs">
+<span class="text-slate-300 font-medium">ختمة التدبر الليلية</span>
+<span class="text-[#E2B15B] font-mono">٧٤٪</span>
+</div>
+<div class="h-1.5 w-full bg-[#132638] rounded-full overflow-hidden">
+<div class="h-full bg-[#E2B15B] rounded-full" style="width: 74%;"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate-400">
+<span>الجزء ٢٢</span>
+<span>باقي ٨ أجزاء</span>
+</div>
+</div>
+<!-- Khatmah 2 -->
+<div class="space-y-1.5 pt-1 border-t border-[#14273a]">
+<div class="flex justify-between text-xs">
+<span class="text-slate-300 font-medium">ختمة الأسحار والحفظ</span>
+<span class="text-teal-400 font-mono">٤١٪</span>
+</div>
+<div class="h-1.5 w-full bg-[#132638] rounded-full overflow-hidden">
+<div class="h-full bg-teal-500 rounded-full" style="width: 41%;"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate-400">
+<span>الجزء ١٣</span>
+<span>سورة يوسف</span>
+</div>
+</div>
+</div>
+<a class="inline-flex items-center justify-between text-xs text-[#E2B15B] font-medium hover:underline pt-2 border-t border-[#172c41]" href="#">
+<span>تفاصيل الختمات والجدولة</span>
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</a>
+</div>
+<!-- Card 2: Memory & Similarity Testing (Mutashabihat) -->
+<div class="bg-[#0b1929]/80 backdrop-blur-md rounded-xl p-5 border border-[#1b344e] hover:border-[#e2b15b]/40 transition duration-300 flex flex-col justify-between space-y-4 group">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="p-2 rounded-lg bg-[#14283d] text-[#ffdea5]">
+<span class="material-symbols-outlined text-[20px]">psychology_alt</span>
+</div>
+<span class="text-[11px] font-semibold text-slate-300 bg-[#152a3f] px-2 py-0.5 rounded">مراجعة ليلية</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-slate-100 group-hover:text-[#E2B15B] transition">اختبار المتشابهات والحفظ</h3>
+<p class="text-xs text-slate-400 mt-0.5">تثبيت الآيات بنظام إخفاء الكلمات</p>
+</div>
+<!-- Quiz preview item -->
+<div class="bg-[#071320] border border-[#19324c] rounded-lg p-3 space-y-2">
+<div class="text-[11px] text-slate-400">أكمل الفراغ من سورة آل عمران:</div>
+<p class="text-xs font-amiri leading-relaxed text-slate-200">
+                ﴿إِنَّ اللَّهَ اصْطَفَىٰ آدَمَ وَنُوحًا وَآلَ إِبْرَاهِيمَ وَآلَ عِمْرَانَ عَلَى
+                <span class="px-2 py-0.5 bg-[#173049] text-[#E2B15B] rounded border border-dashed border-[#e2b15b]/40 mx-1">...؟...</span>
+                ﴾
+              </p>
+<div class="grid grid-cols-2 gap-1.5 pt-1 text-[11px]">
+<button class="py-1 px-2 rounded bg-[#0d2134] hover:bg-[#1a3854] text-slate-300 text-center transition">العَالَمِينَ</button>
+<button class="py-1 px-2 rounded bg-[#0d2134] hover:bg-[#1a3854] text-slate-300 text-center transition">النَّاسِ</button>
+</div>
+</div>
+</div>
+<button class="w-full py-2 rounded-lg bg-[#13283c] hover:bg-[#1c3a57] border border-[#234568] text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition">
+<span class="material-symbols-outlined text-[16px] text-[#E2B15B]">play_circle</span>
+<span>بدء جلسة الاستذكار (١٠ دقائق)</span>
+</button>
+</div>
+<!-- Card 3: Nocturnal Adhkar & Ruqyah -->
+<div class="bg-[#0b1929]/80 backdrop-blur-md rounded-xl p-5 border border-[#1b344e] hover:border-[#e2b15b]/40 transition duration-300 flex flex-col justify-between space-y-4 group">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="p-2 rounded-lg bg-[#14283d] text-teal-400">
+<span class="material-symbols-outlined text-[20px]">night_shelter</span>
+</div>
+<span class="text-[11px] font-semibold text-teal-400 bg-[#0d2a33] px-2 py-0.5 rounded">صوت خافت</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-slate-100 group-hover:text-[#E2B15B] transition">أذكار النوم والرقية الشرعية</h3>
+<p class="text-xs text-slate-400 mt-0.5">حصن المسلم والسكينة الليلية</p>
+</div>
+<!-- Adhkar Playlist -->
+<div class="space-y-2">
+<div class="flex items-center justify-between p-2 rounded-lg bg-[#071320] border border-[#172f47] text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-400 text-[18px]">verified</span>
+<span class="text-slate-200 font-medium">أذكار النوم المأثورة</span>
+</div>
+<button class="text-[#E2B15B] hover:scale-110 transition">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-[#071320] border border-[#172f47] text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-400 text-[18px]">health_and_safety</span>
+<span class="text-slate-200 font-medium">الرقية الشرعية للطمأنينة</span>
+</div>
+<button class="text-slate-400 hover:text-[#E2B15B] transition">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-[#071320] border border-[#172f47] text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-400 text-[18px]">favorite</span>
+<span class="text-slate-200 font-medium">سيد الاستغفار ودعاء السحر</span>
+</div>
+<span class="text-[10px] text-[#E2B15B] font-mono">تم ٧/٧</span>
+</div>
+</div>
+</div>
+<a class="inline-flex items-center justify-between text-xs text-[#E2B15B] font-medium hover:underline pt-2 border-t border-[#172c41]" href="#">
+<span>قائمة الأوراد الصوتية الكاملة</span>
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</a>
+</div>
+<!-- Card 4: Nightly Metrics & Spiritual Hours -->
+<div class="bg-[#0b1929]/80 backdrop-blur-md rounded-xl p-5 border border-[#1b344e] hover:border-[#e2b15b]/40 transition duration-300 flex flex-col justify-between space-y-4 group">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="p-2 rounded-lg bg-[#14283d] text-[#E2B15B]">
+<span class="material-symbols-outlined text-[20px]">trending_up</span>
+</div>
+<span class="text-[11px] font-semibold text-emerald-400 bg-[#0d2a21] px-2 py-0.5 rounded">+٢.٥ س هذا الأسبوع</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-slate-100 group-hover:text-[#E2B15B] transition">إحصائيات الأسحار الأسبوعية</h3>
+<p class="text-xs text-slate-400 mt-0.5">معدل التلاوة والاستماع بالليل</p>
+</div>
+<!-- Mini Weekly Bars -->
+<div class="space-y-2 pt-1">
+<div class="flex items-end justify-between h-20 gap-1.5 px-1 pb-1">
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-[#1b3652] rounded-t h-8"></div>
+<span class="text-[9px] text-slate-400">س</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-[#1b3652] rounded-t h-12"></div>
+<span class="text-[9px] text-slate-400">ح</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-[#1b3652] rounded-t h-10"></div>
+<span class="text-[9px] text-slate-400">ن</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-[#1b3652] rounded-t h-14"></div>
+<span class="text-[9px] text-slate-400">ث</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-[#1b3652] rounded-t h-11"></div>
+<span class="text-[9px] text-slate-400">ر</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-gradient-to-t from-[#8f6a24] to-[#E2B15B] rounded-t h-16 shadow-[0_0_8px_rgba(226,177,91,0.3)]"></div>
+<span class="text-[9px] text-[#E2B15B] font-bold">خ</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1">
+<div class="w-full bg-[#142637] rounded-t h-6 border-dashed border-t border-[#315174]"></div>
+<span class="text-[9px] text-slate-500">ج</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 text-center pt-1 border-t border-[#14263a]">
+<div class="bg-[#071320] p-1.5 rounded">
+<div class="text-[10px] text-slate-400">تلاوة وقراءة</div>
+<div class="text-xs font-bold text-slate-100 font-mono">٨.٤ ساعة</div>
+</div>
+<div class="bg-[#071320] p-1.5 rounded">
+<div class="text-[10px] text-slate-400">استماع وتدبر</div>
+<div class="text-xs font-bold text-[#E2B15B] font-mono">٥.٢ ساعة</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text-[11px] text-slate-400 flex items-center justify-between pt-1">
+<span>معدل الالتزام الشهري:</span>
+<span class="text-[#E2B15B] font-bold">٩٢٪ ثابت</span>
+</div>
+</div>
+</section>
+<!-- Prayer Times Ribbon for the Night -->
+<section class="bg-[#091524] border border-[#1c3550] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-[#112437] text-[#E2B15B]">
+<span class="material-symbols-outlined text-[20px]">wb_twilight</span>
+</div>
+<div>
+<div class="text-xs text-slate-400">مواقيت التهجد والفجر الليلة</div>
+<div class="text-sm font-bold text-slate-200">الرياض، المملكة العربية السعودية (حسب تقويم أم القرى)</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-3 sm:gap-6 text-xs font-mono">
+<div class="flex items-center gap-1.5 text-slate-400">
+<span>العشاء:</span>
+<span class="text-slate-200 font-semibold">٠٧:٤٢ م</span>
+</div>
+<div class="flex items-center gap-1.5 text-[#E2B15B] bg-[#162a3f] px-2.5 py-1 rounded-md border border-[#e2b15b]/20">
+<span>الثلث الأخير:</span>
+<span class="font-bold">٠١:٥٥ ص</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-100 bg-[#0d2235] px-2.5 py-1 rounded-md border border-[#214364]">
+<span class="material-symbols-outlined text-[14px] text-[#E2B15B]">notifications_active</span>
+<span>الفجر:</span>
+<span class="font-bold text-teal-300">٠٤:٣٨ ص</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-400">
+<span>الشروق:</span>
+<span class="text-slate-200 font-semibold">٠٦:٠٤ ص</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer with Royal Gold Embellishments -->
+<footer class="border-t border-[#152a3f] bg-[#050c14] py-8 mt-12 text-center text-xs text-slate-400">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+<div class="flex items-center justify-center gap-2 text-[#E2B15B]">
+<span class="h-px w-12 bg-gradient-to-l from-[#e2b15b]/40 to-transparent"></span>
+<span class="material-symbols-outlined text-[16px]">all_inclusive</span>
+<span class="font-amiri text-sm">اللهم اجعل القرآن ربيع قلوبنا ونور صدورنا وجلاء أحزاننا</span>
+<span class="material-symbols-outlined text-[16px]">all_inclusive</span>
+<span class="h-px w-12 bg-gradient-to-r from-[#e2b15b]/40 to-transparent"></span>
+</div>
+<p class="text-slate-500">
+          منصة وِرد — مصممة خصيصاً بنمط عالي التباين لحماية النظر في ظلمة الليل وإعانة المسلمين على قيام الأسحار والتدبر.
+        </p>
+<div class="flex justify-center gap-6 text-[11px] text-slate-400 pt-1">
+<a class="hover:text-[#E2B15B] transition" href="#">المصحف بالرسم العثماني</a>
+<span>•</span>
+<a class="hover:text-[#E2B15B] transition" href="#">تنبيهات التهجد التلقائية</a>
+<span>•</span>
+<a class="hover:text-[#E2B15B] transition" href="#">ضوابط الخصوصية</a>
+</div>
+</div>
+</footer>
+</div>
+<!-- Inline Vanilla Script for Micro-Interactions -->
+<script>
+    // Countdown Timer Simulation
+    let totalSeconds = (1 * 3600) + (42 * 60) + 18;
+    const hoursEl = document.getElementById('timer-hours');
+    const minsEl = document.getElementById('timer-mins');
+    const secsEl = document.getElementById('timer-secs');
+
+    function updateCountdown() {
+      if (totalSeconds > 0) {
+        totalSeconds--;
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        if (hoursEl) hoursEl.textContent = String(h).padStart(2, '0');
+        if (minsEl) minsEl.textContent = String(m).padStart(2, '0');
+        if (secsEl) secsEl.textContent = String(s).padStart(2, '0');
+      }
+    }
+    setInterval(updateCountdown, 1000);
+
+    // Audio Play/Pause Button Toggle Micro-interaction
+    const playBtn = document.getElementById('main-play-btn');
+    let isPlaying = false;
+    if (playBtn) {
+      playBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        const iconSpan = playBtn.querySelector('.material-symbols-outlined');
+        if (iconSpan) {
+          iconSpan.textContent = isPlaying ? 'pause' : 'play_arrow';
+        }
+      });
+    }
+  </script>
+</body></html>

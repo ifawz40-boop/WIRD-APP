@@ -88,7 +88,7 @@ export const TafsirSheet: React.FC<TafsirSheetProps> = ({
         aria-modal="true"
         aria-labelledby="wird-tafsir-dialog-title"
         onClick={event => event.stopPropagation()}
-        className="w-full sm:max-w-3xl max-h-[92vh] sm:max-h-[88vh] bg-[#F9F6EE] dark:bg-[#111F36] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 overflow-hidden flex flex-col"
+        className="w-full sm:max-w-3xl max-h-[92vh] sm:max-h-[88vh] bg-[var(--wird-surface)] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[var(--wird-border-gold)] overflow-hidden flex flex-col"
       >
         <TafsirContentPane
           ayah={currentAyah}

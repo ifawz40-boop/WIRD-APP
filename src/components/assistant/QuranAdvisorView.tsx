@@ -272,11 +272,11 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
       <div className="wird-card rounded-2xl p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="text-xl font-bold text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2 font-quran">
-              <Compass className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <h2 className="text-xl font-bold text-[var(--wird-text)] flex items-center gap-2 font-quran">
+              <Compass className="w-5 h-5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
               المستشار القرآني ومنهجيات الحفظ والتثبيت
             </h2>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+            <p className="text-xs text-[var(--wird-muted)] mt-1">
               إرشاد ذكي مبني على بياناتك الفعلية وخلاصة تجارب أئمة الإقراء (الشناقطة، الشاطبي، ابن الجزري)
             </p>
           </div>
@@ -284,13 +284,13 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
           {/* AI Availability Text (unboxed, zero pulsing dots) */}
           <div className="flex items-center gap-2 shrink-0 text-xs font-bold">
             {advisorStatus?.available ? (
-              <span className="inline-flex items-center gap-1.5 text-[#1C4E46] dark:text-[#E0A96D]">
+              <span className="inline-flex items-center gap-1.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>المساعد الذكي متاح</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-[#9A7512] dark:text-[#E0A96D]">
-                <Zap className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+              <span className="inline-flex items-center gap-1.5 text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)]">
+                <Zap className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
                 <span>النمط الذاتي الحتمي</span>
               </span>
             )}
@@ -304,10 +304,10 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               type="button"
               onClick={() => setSelectedTopic('ai_advisor')}
               aria-pressed={selectedTopic === 'ai_advisor'}
-              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
                 selectedTopic === 'ai_advisor'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                  ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)] shadow-xs font-bold'
+                  : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
               }`}
             >
               <Bot className="w-4 h-4" />
@@ -318,10 +318,10 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               type="button"
               onClick={() => setSelectedTopic('methods')}
               aria-pressed={selectedTopic === 'methods'}
-              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
                 selectedTopic === 'methods'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                  ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)] shadow-xs font-bold'
+                  : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
               }`}
             >
               <BookOpen className="w-4 h-4" />
@@ -332,10 +332,10 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               type="button"
               onClick={() => setSelectedTopic('mutashabihat_rules')}
               aria-pressed={selectedTopic === 'mutashabihat_rules'}
-              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
                 selectedTopic === 'mutashabihat_rules'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                  ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)] shadow-xs font-bold'
+                  : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
               }`}
             >
               <ShieldCheck className="w-4 h-4" />
@@ -346,10 +346,10 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               type="button"
               onClick={() => setSelectedTopic('calculator')}
               aria-pressed={selectedTopic === 'calculator'}
-              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27] ${
+              className={`shrink-0 snap-start flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
                 selectedTopic === 'calculator'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-xs font-bold'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#CBD5E1] hover:text-[#142421] dark:hover:text-white'
+                  ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)] shadow-xs font-bold'
+                  : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] dark:hover:text-white'
               }`}
             >
               <Calculator className="w-4 h-4" />
@@ -362,18 +362,18 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
       {/* VIEW 1: AI ADVISOR & CHAT WITH 8 CAPABILITIES */}
       {selectedTopic === 'ai_advisor' && (
         <div className="space-y-4">
-          <p className="rounded-xl border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 px-4 py-2.5 text-[11px] leading-6 text-[#142421] dark:text-[#F5F1E8]">
+          <p className="rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] px-4 py-2.5 text-[11px] leading-6 text-[var(--wird-text)]">
             المستشار مخصص لتنظيم الحفظ والمراجعة فقط؛ لا تعتمد عليه في نقل نص القرآن أو تفسيره أو إصدار أحكام شرعية.
           </p>
 
           {/* Quick Action Capabilities Strip */}
           <div className="wird-card rounded-2xl p-5 space-y-3">
-            <div className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs font-bold text-[var(--wird-text)] flex flex-wrap items-center justify-between gap-2">
               <span className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+                <Sparkles className="w-4 h-4 text-[var(--wird-accent)]" />
                 <span>تحليلات واستشارات سريعة بنقرة واحدة:</span>
               </span>
-              <span className="text-[10px] font-medium text-[#5B6F6B] dark:text-[#8B9E9B]">تستند حصرًا لبياناتك المحفوظة</span>
+              <span className="text-[10px] font-medium text-[var(--wird-muted)]">تستند حصرًا لبياناتك المحفوظة</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -383,12 +383,12 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                   type="button"
                   onClick={() => handleRunQuickAction(action)}
                   disabled={isLoading}
-                  className="min-h-11 p-3.5 bg-[#F9F6EE] dark:bg-[#0B132B]/75 hover:bg-[#F2EDE2] dark:hover:bg-[#162744] rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]/50 dark:hover:border-[#E0A96D]/50 text-right transition-all group disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                  className="min-h-11 p-3.5 bg-[var(--wird-surface-muted)] hover:bg-[var(--wird-surface-muted)] rounded-xl border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]/50 dark:hover:border-[#E0A96D]/50 text-right transition-all group disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                 >
-                  <div className="font-bold text-xs text-[#142421] dark:text-[#F5F1E8] group-hover:text-[#1C4E46] dark:group-hover:text-[#E0A96D]">
+                  <div className="font-bold text-xs text-[var(--wird-text)] group-hover:text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:group-hover:text-[#E0A96D]">
                     {action.title}
                   </div>
-                  <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+                  <div className="text-[10px] text-[var(--wird-muted)] mt-1">
                     {action.desc}
                   </div>
                 </button>
@@ -409,24 +409,24 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                   >
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                       isUser
-                        ? 'bg-[#1C4E46] dark:bg-[#E0A96D] text-white dark:text-[#0B132B]'
-                        : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#1C4E46] dark:text-[#E0A96D] border border-[#C59B27]/35'
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                        : 'bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border border-[#C59B27]/35'
                     }`}>
                       {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                     </div>
 
                     <div className={`p-4 rounded-2xl max-w-[85%] text-xs leading-relaxed space-y-1.5 shadow-2xs ${
                       isUser
-                        ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white rounded-tl-xs font-medium border border-[#C59B27]/30'
-                        : 'bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#142421] dark:text-[#F5F1E8] rounded-tr-xs'
+                        ? 'bg-[var(--wird-primary)] text-white rounded-tl-xs font-medium border border-[#C59B27]/30'
+                        : 'bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[var(--wird-text)] rounded-tr-xs'
                     }`}>
                       <div className="whitespace-pre-line leading-relaxed font-sans">
                         {msg.text}
                       </div>
 
                       {!isUser && msg.isFallback && (
-                        <div className="text-[10px] text-[#5B6F6B] dark:text-[#8B9E9B] pt-1.5 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 flex items-center gap-1">
-                          <Check className="w-3 h-3 text-[#1C4E46] dark:text-[#E0A96D]" />
+                        <div className="text-[10px] text-[var(--wird-muted)] pt-1.5 border-t border-[var(--wird-border)] flex items-center gap-1">
+                          <Check className="w-3 h-3 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                           <span>إرشاد مبني على الخوارزمية الحتمية المدمجة</span>
                         </div>
                       )}
@@ -436,15 +436,15 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               })}
 
               {isLoading && (
-                <div role="status" className="flex items-center gap-2 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] py-2">
-                  <RefreshCw className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D] animate-spin" />
+                <div role="status" className="flex items-center gap-2 text-xs text-[var(--wird-muted)] py-2">
+                  <RefreshCw className="w-3.5 h-3.5 text-[var(--wird-accent)] animate-spin" />
                   <span>المستشار يحلل بيانات الحفظ والمراجعة...</span>
                 </div>
               )}
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSendCustomMessage} className="mt-4 pt-3 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/18 flex items-center gap-2">
+            <form onSubmit={handleSendCustomMessage} className="mt-4 pt-3 border-t border-[var(--wird-border)] flex items-center gap-2">
               <input
                 type="text"
                 aria-label="رسالتك إلى المستشار القرآني"
@@ -453,13 +453,13 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                 onChange={e => setUserQuery(e.target.value)}
                 placeholder="اسأل المستشار القرآني عن طرائق الحفظ، ضبط المتشابهات، أو تنظيم وقتك..."
                 disabled={isLoading}
-                className="flex-1 min-h-11 px-4 py-2.5 bg-[#F9F6EE] dark:bg-[#0B132B] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-xs text-[#142421] dark:text-[#F5F1E8] placeholder:text-[#5B6F6B]/60 dark:placeholder:text-[#8B9E9B]/60 focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="flex-1 min-h-11 px-4 py-2.5 bg-[var(--wird-surface-muted)] rounded-xl border border-[var(--wird-border)] text-xs text-[var(--wird-text)] placeholder:text-[var(--wird-muted)]/60 dark:placeholder:text-[#8B9E9B]/60 focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
               />
               <button
                 type="submit"
                 disabled={isLoading || !userQuery.trim()}
                 aria-label="إرسال الرسالة"
-                className="min-h-11 min-w-11 p-2.5 bg-[#1C4E46] hover:bg-[#143b35] dark:bg-[#E0A96D] dark:hover:bg-[#f0b97e] disabled:opacity-50 text-white dark:text-[#0B132B] rounded-xl transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                className="min-h-11 min-w-11 p-2.5 bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] disabled:opacity-50 text-[var(--wird-primary-ink)] rounded-xl transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                 title="إرسال"
               >
                 <Send className="w-4 h-4" />
@@ -475,22 +475,22 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
           {methodologies.map((m, idx) => (
             <div key={idx} className="wird-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   {m.tag}
                 </span>
-                <h3 className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8] font-quran">
+                <h3 className="font-bold text-sm text-[var(--wird-text)] font-quran">
                   {m.title}
                 </h3>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#CBD5E1] leading-relaxed">
+                <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
                   {m.description}
                 </p>
               </div>
 
-              <div className="bg-[#F9F6EE] dark:bg-[#0B132B]/70 p-3.5 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/18 space-y-1.5 text-xs text-[#142421] dark:text-[#F5F1E8]">
-                <div className="font-bold text-[11px] text-[#1C4E46] dark:text-[#E0A96D]">خطوات التطبيق:</div>
+              <div className="bg-[var(--wird-surface-muted)] p-3.5 rounded-xl border border-[var(--wird-border)] space-y-1.5 text-xs text-[var(--wird-text)]">
+                <div className="font-bold text-[11px] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">خطوات التطبيق:</div>
                 {m.tips.map((tip, i) => (
                   <div key={i} className="flex items-start gap-1.5 text-[11px] leading-relaxed">
-                    <span className="text-[#C59B27] dark:text-[#E0A96D] font-bold">•</span>
+                    <span className="text-[var(--wird-accent)] font-bold">•</span>
                     <span>{tip}</span>
                   </div>
                 ))}
@@ -503,17 +503,17 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
       {/* VIEW 3: MUTASHABIHAT RULES */}
       {selectedTopic === 'mutashabihat_rules' && (
         <div className="space-y-4">
-          <p className="rounded-xl border border-[#C59B27]/45 dark:border-[#E0A96D]/35 bg-[#C59B27]/10 dark:bg-[#E0A96D]/10 px-4 py-2.5 text-[11px] leading-6 text-[#142421] dark:text-[#F5F1E8]">
+          <p className="rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] px-4 py-2.5 text-[11px] leading-6 text-[var(--wird-text)]">
             هذه الملاحظات وسائل تذكّر مساعدة وليست قواعد قطعية لضبط ألفاظ القرآن؛ المرجع دائماً المصحف المعتمد والمراجعة على شيخ متقن.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {mnemonicRules.map((rule, idx) => (
-              <div key={idx} className="wird-card rounded-2xl p-5 border border-[#C59B27]/35 dark:border-[#E0A96D]/30 space-y-2">
-                <div className="font-bold text-sm text-[#9A7512] dark:text-[#E0A96D] flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              <div key={idx} className="wird-card rounded-2xl p-5 border border-[var(--wird-border-gold)] space-y-2">
+                <div className="font-bold text-sm text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[var(--wird-accent)]" />
                   <span>{rule.rule}</span>
                 </div>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#CBD5E1] leading-relaxed">
+                <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
                   {rule.explanation}
                 </p>
               </div>
@@ -526,11 +526,11 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
       {selectedTopic === 'calculator' && (
         <div className="wird-card rounded-2xl p-5 sm:p-6 space-y-5">
           <div>
-            <h3 className="font-bold text-base text-[#142421] dark:text-[#F5F1E8] flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+            <h3 className="font-bold text-base text-[var(--wird-text)] flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
               <span>حاسبة التخطيط القرآني التقديرية</span>
             </h3>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] mt-1">
+            <p className="text-xs text-[var(--wird-muted)] mt-1">
               احسب الزمن المتوقع لإتمام هدفك القرآني بحسب الوقت المتاح يومياً
             </p>
           </div>
@@ -538,14 +538,14 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[#142421] dark:text-[#F5F1E8] font-semibold mb-1.5">
+                <label className="block text-[var(--wird-text)] font-semibold mb-1.5">
                   الهدف القرآني المراد حفظه:
                 </label>
                 <select
                   aria-label="الهدف القرآني المراد حفظه"
                   value={targetAjza}
                   onChange={e => setTargetAjza(Number(e.target.value))}
-                  className="w-full min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                  className="w-full min-h-11 px-3 py-2 bg-[var(--wird-surface-muted)] text-[var(--wird-text)] rounded-xl border border-[var(--wird-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                 >
                   <option value={1}>جزء واحد (20 صفحة)</option>
                   <option value={3}>3 أجزاء (60 صفحة)</option>
@@ -556,7 +556,7 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[#142421] dark:text-[#F5F1E8] font-semibold">
+                <label className="block text-[var(--wird-text)] font-semibold">
                   الوقت المتاح يومياً (دقائق):
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
@@ -568,7 +568,7 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                     value={dailyMinutesInput}
                     onChange={e => setDailyMinutesInput(e.target.value)}
                     onBlur={() => setDailyMinutesInput(String(safeDailyMinutes))}
-                    className="w-28 min-h-11 px-3 py-2 bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 font-mono tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+                    className="w-28 min-h-11 px-3 py-2 bg-[var(--wird-surface-muted)] text-[var(--wird-text)] rounded-xl border border-[var(--wird-border)] font-mono tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
                   />
                   {[15, 30, 45, 60, 90].map(mins => (
                     <button
@@ -578,8 +578,8 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                       aria-pressed={Number(dailyMinutesInput) === mins}
                       className={`min-h-11 px-3 py-2 rounded-xl border font-bold font-mono tabular-nums transition-colors ${
                         Number(dailyMinutesInput) === mins
-                          ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D]'
-                          : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#5B6F6B] dark:text-[#CBD5E1] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                          ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)]'
+                          : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-[var(--wird-border)]'
                       }`}
                     >
                       {mins} د
@@ -591,20 +591,20 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
           </div>
 
           {/* Result Card */}
-          <div className="p-4 sm:p-5 bg-[#1C4E46]/8 dark:bg-[#1E4A47]/30 rounded-2xl border border-[#C59B27]/35 dark:border-[#E0A96D]/30 space-y-2.5 text-xs">
-            <div className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+          <div className="p-4 sm:p-5 bg-[var(--wird-primary)]/8 dark:bg-[var(--wird-primary)] rounded-2xl border border-[var(--wird-border-gold)] space-y-2.5 text-xs">
+            <div className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
               الخلاصة التقديرية للحفظ المتزن:
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div className="rounded-xl bg-white/80 dark:bg-[#0B132B]/70 px-3.5 py-2.5 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المدة التقديرية: </span>
-                <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D] font-mono tabular-nums">
+              <div className="rounded-xl bg-white/80 dark:bg-[var(--wird-surface-muted)] px-3.5 py-2.5 border border-[var(--wird-border)]">
+                <span className="text-[var(--wird-muted)]">المدة التقديرية: </span>
+                <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-mono tabular-nums">
                   {estimatedDays} يوماً
                 </span>
               </div>
-              <div className="rounded-xl bg-white/80 dark:bg-[#0B132B]/70 px-3.5 py-2.5 border border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
-                <span className="text-[#5B6F6B] dark:text-[#8B9E9B]">المقدار اليومي المقترح: </span>
-                <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+              <div className="rounded-xl bg-white/80 dark:bg-[var(--wird-surface-muted)] px-3.5 py-2.5 border border-[var(--wird-border)]">
+                <span className="text-[var(--wird-muted)]">المقدار اليومي المقترح: </span>
+                <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   {safeDailyMinutes >= 45 ? 'صفحة كاملة' : safeDailyMinutes >= 25 ? 'نصف صفحة' : '3-5 آيات'}
                 </span>
               </div>

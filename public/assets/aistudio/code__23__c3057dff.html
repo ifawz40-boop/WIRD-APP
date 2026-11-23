@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>مركز المراجعة الذكي - حفظ القرآن الكريم</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Amiri:wght@400;700&amp;family=Tajawal:wght@300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#eee8db",
+            "background": "#fff9ec",
+            "on-secondary-fixed-variant": "#5d4201",
+            "tertiary-fixed-dim": "#99d2be",
+            "outline": "#717974",
+            "surface-container": "#f3ede0",
+            "error": "#ba1a1a",
+            "surface-bright": "#fff9ec",
+            "surface-container-low": "#f9f3e6",
+            "secondary-fixed-dim": "#e9c176",
+            "primary-container": "#0d3b2e",
+            "on-tertiary-fixed-variant": "#155041",
+            "on-secondary-fixed": "#261900",
+            "tertiary-fixed": "#b5efda",
+            "on-surface-variant": "#414845",
+            "on-primary-fixed": "#002117",
+            "inverse-surface": "#333028",
+            "on-secondary-container": "#785a1a",
+            "secondary-fixed": "#ffdea5",
+            "on-tertiary-container": "#70a895",
+            "inverse-primary": "#a3d0be",
+            "outline-variant": "#c0c8c3",
+            "on-secondary": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "secondary-container": "#fed488",
+            "tertiary-container": "#003c2f",
+            "on-tertiary-fixed": "#002018",
+            "on-background": "#1d1c14",
+            "surface-container-highest": "#e8e2d5",
+            "surface-dim": "#dfdacd",
+            "surface-variant": "#e8e2d5",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-fixed-variant": "#234e40",
+            "on-error-container": "#93000a",
+            "surface-tint": "#3c6658",
+            "primary-fixed-dim": "#a3d0be",
+            "on-error": "#ffffff",
+            "surface": "#fff9ec",
+            "on-primary-container": "#79a694",
+            "on-surface": "#1d1c14",
+            "on-primary": "#ffffff",
+            "secondary": "#775a19",
+            "tertiary": "#00241b",
+            "primary": "#00241a",
+            "inverse-on-surface": "#f6f0e3",
+            "primary-fixed": "#beedd9",
+            "error-container": "#ffdad6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline-lg": ["Newsreader", "serif"],
+            "headline-md": ["Newsreader", "serif"],
+            "headline-sm": ["Plus Jakarta Sans", "Tajawal", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "Tajawal", "sans-serif"],
+            "body-md": ["Plus Jakarta Sans", "Tajawal", "sans-serif"],
+            "body-sm": ["Plus Jakarta Sans", "Tajawal", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "Tajawal", "sans-serif"],
+            "label-sm": ["Plus Jakarta Sans", "Tajawal", "sans-serif"],
+            "scripture": ["Amiri", "Newsreader", "serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: "Tajawal", "Plus Jakarta Sans", sans-serif;
+    }
+    .quran-font {
+      font-family: "Amiri", "Newsreader", serif;
+    }
+  </style>
+</head>
+<body class="bg-[#f9fbfa] text-[#0f1a17] min-h-screen antialiased selection:bg-tertiary-fixed selection:text-tertiary">
+<!-- ================= Shared Component: TopNavBar ================= -->
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-[#f9fbfa] group/design-root overflow-x-hidden" style='font-family: Newsreader, "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-12 lg:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e9f2ef] px-4 md:px-10 py-3">
+<div class="flex items-center gap-4 text-[#0f1a17]">
+<div class="size-4">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-[#0f1a17] text-lg font-bold leading-tight tracking-[-0.015em]">مركز المراجعة الذكي</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="flex gap-2">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#e9f2ef] text-[#0f1a17] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<div class="text-[#0f1a17]" data-icon="Bell" data-size="20px" data-weight="regular">
+<svg fill="currentColor" height="20px" viewbox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+</svg>
+</div>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#e9f2ef] text-[#0f1a17] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<div class="text-[#0f1a17]" data-icon="Gear" data-size="20px" data-weight="regular">
+<svg fill="currentColor" height="20px" viewbox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"></path>
+</svg>
+</div>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="A refined minimalist studio portrait of an Arabic learner wearing simple modern linen clothes, bathed in soft warm daylight with calm green ambient tones in the background, clean composition, fine details." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDZ1YB3TPjXcOOYcrFeh_G1cDEvDLTHyoWZTqHTlC33TFCYAfI191zSnEBYXYD6xfuKw70JVG2dKDhra4Jbrc8wwWzzyrLr6zoe-CbTOkbT72BQ5w6pJBnKqH5HcW5iljHyFF7yqA2I1hnaJpg_a5tmyKcXk2_IWLL86fmJp3JOK9hKsmo2BRcBjqNAxCXxgkM871G1fjhblPB3mrkb5Zw38FjuHU43KiLfQVvvpw3-");'></div>
+</div>
+</header>
+<div class="flex flex-wrap gap-4 p-4">
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#d2e5df]">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">نسبة استبقاء الذاكرة</p>
+<p class="text-[#0f1a17] tracking-light text-2xl font-bold leading-tight">96.2%</p>
+<p class="text-[#07882e] text-base font-medium leading-normal">+1.4%</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#d2e5df]">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">المستحق اليوم</p>
+<p class="text-[#0f1a17] tracking-light text-2xl font-bold leading-tight">12 وجه</p>
+<p class="text-[#559180] text-base font-medium leading-normal">0%</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#d2e5df]">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">أوجه جديدة</p>
+<p class="text-[#0f1a17] tracking-light text-2xl font-bold leading-tight">2 وجه</p>
+<p class="text-[#07882e] text-base font-medium leading-normal">+100%</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#d2e5df]">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">أيام الاستمرارية</p>
+<p class="text-[#0f1a17] tracking-light text-2xl font-bold leading-tight">45 يوماً</p>
+<p class="text-[#07882e] text-base font-medium leading-normal">+1</p>
+</div>
+</div>
+<div class="p-4 @container">
+<div class="flex flex-col items-stretch justify-start rounded-lg @xl:flex-row @xl:items-start shadow-[0_0_4px_rgba(0,0,0,0.1)] bg-[#f9fbfa]">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg" data-alt="An ethereal minimalist visual showing open Quranic pages illuminated with soft volumetric sunbeams streaming through a contemporary Islamic architectural window, soft sage and warm sand palette, elegant clean atmosphere." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCCmsfkOjkD6NGRA0NEhvXxxyAbYQ62SIVBlHAngN0yyOg10cciye1GrZIg06n3B3JGkfPOEzhE_nlOuJyB9W_Kl5Hx1Vmb8jTUpJzAefb_sAMgUMCMwIvrG-CVdUMHgvX65MK5IEJBjQ8Fj411CT5pF8uRMAw-hX1FobgvGdKacAAVwRrSsqf3axoweHA1M5oOPvjwJX4wfGOQvDI59x0U5z5zKEGWgswB2_kMhXgF");'></div>
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 @xl:px-4 px-4">
+<p class="text-[#559180] text-sm font-normal leading-normal">التكرار المتباعد الذكي • جاهز للبدء</p>
+<p class="text-[#0f1a17] text-lg font-bold leading-tight tracking-[-0.015em]">جلسة الذكاء الاصطناعي لاختبار الحفظ</p>
+<div class="flex items-end gap-3 justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-[#559180] text-base font-normal leading-normal">فحص فوري ودقيق لنطق الآيات والأحكام عبر التعرف الصوتي المباشر</p>
+<p class="text-[#559180] text-base font-normal leading-normal">المقدار المقترح: سورة النور (الربع الأول والثاني)</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#0d3b2e] text-[#f9fbfa] text-sm font-medium leading-normal hover:bg-opacity-90 transition-all">
+<span class="truncate">بدء التسميع الصوتي</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<h3 class="text-[#0f1a17] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">فواصل المراجعة الذكية للورد الحالي</h3>
+<div class="grid grid-cols-[40px_1fr] gap-x-2 px-4">
+<div class="flex flex-col items-center gap-1 pt-3">
+<div class="text-[#0f1a17]" data-icon="CheckCircle" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path>
+</svg>
+</div>
+<div class="w-[1.5px] bg-[#d2e5df] h-2 grow"></div>
+</div>
+<div class="flex flex-1 flex-col py-3">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">المراجعة الأولى (اليوم) - تثبيت متقن</p>
+<p class="text-[#559180] text-base font-normal leading-normal">مستحق الآن</p>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-[1.5px] bg-[#d2e5df] h-2"></div>
+<div class="text-[#0f1a17]" data-icon="Clock" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"></path>
+</svg>
+</div>
+<div class="w-[1.5px] bg-[#d2e5df] h-2 grow"></div>
+</div>
+<div class="flex flex-1 flex-col py-3">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">المراجعة الثانية (بعد 3 أيام) - فحص الاسترجاع</p>
+<p class="text-[#559180] text-base font-normal leading-normal">مجدول تلقائياً</p>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-[1.5px] bg-[#d2e5df] h-2"></div>
+<div class="text-[#0f1a17]" data-icon="CalendarBlank" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"></path>
+</svg>
+</div>
+<div class="w-[1.5px] bg-[#d2e5df] h-2 grow"></div>
+</div>
+<div class="flex flex-1 flex-col py-3">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">المراجعة الثالثة (بعد أسبوعين) - النقل للذاكرة طويلة المدى</p>
+<p class="text-[#559180] text-base font-normal leading-normal">بانتظار الإنجاز</p>
+</div>
+<div class="flex flex-col items-center gap-1 pb-3">
+<div class="w-[1.5px] bg-[#d2e5df] h-2"></div>
+<div class="text-[#0f1a17]" data-icon="SealCheck" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-11.55,39.29c-4.79,5-9.75,10.17-12.38,16.52-2.52,6.1-2.63,13.07-2.73,19.82-.1,7-.21,14.33-3.32,17.43s-10.39,3.22-17.43,3.32c-6.75.1-13.72.21-19.82,2.73-6.35,2.63-11.52,7.59-16.52,12.38S132,224,128,224s-9.15-4.92-14.11-9.69-10.17-9.75-16.52-12.38c-6.1-2.52-13.07-2.63-19.82-2.73-7-.1-14.33-.21-17.43-3.32s-3.22-10.39-3.32-17.43c-.1-6.75-.21-13.72-2.73-19.82-2.63-6.35-7.59-11.52-12.38-16.52S32,132,32,128s4.92-9.15,9.69-14.11,9.75-10.17,12.38-16.52c2.52-6.1,2.63-13.07,2.73-19.82.1-7,.21-14.33,3.32-17.43S70.51,56.9,77.55,56.8c6.75-.1,13.72-.21,19.82-2.73,6.35-2.63,11.52-7.59,16.52-12.38S124,32,128,32s9.15,4.92,14.11,9.69,10.17,9.75,16.52,12.38c6.1,2.52,13.07,2.63,19.82,2.73,7,.1,14.33.21,17.43,3.32s3.22,10.39,3.32,17.43c.1,6.75.21,13.72,2.73,19.82,2.63,6.35,7.59,11.52,12.38,16.52S224,124,224,128,219.08,137.15,214.31,142.11ZM173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"></path>
+</svg>
+</div>
+</div>
+<div class="flex flex-1 flex-col py-3">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">المراجعة الرابعة (بعد شهرين) - اختبار الإتقان الشامل</p>
+<p class="text-[#559180] text-base font-normal leading-normal">المرحلة النهائية</p>
+</div>
+</div>
+<!-- ================= NEW SECTION 1: المتشابهات اللفظية الذكية ================= -->
+<div class="p-4 mt-6">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">difference</span>
+<h3 class="text-[#0f1a17] text-lg font-bold leading-tight">مختبر المتشابهات اللفظية الذكي</h3>
+</div>
+<span class="text-xs bg-surface-container-low text-[#559180] border border-[#d2e5df] px-3 py-1 rounded-full font-medium">تحليل سياقي فوري</span>
+</div>
+<div class="bg-surface-container-lowest border border-[#d2e5df] rounded-xl p-5 shadow-sm space-y-4">
+<div class="text-sm text-[#559180]">
+                مقارنة دقيقة للفروق البلاغية واللفظية بين الآيات الأكثر التباساً مع تظليل الفارق اللفظي لتثبيت الحفظ البصري:
+              </div>
+<!-- Comparison Card 1 -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-4 rounded-lg bg-surface-container-low border border-[#e9f2ef] relative">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold text-primary-container px-2.5 py-0.5 rounded bg-surface-container">سورة البقرة - آية 136</span>
+<span class="text-xs text-[#559180]">الجزء الأول</span>
+</div>
+<p class="quran-font text-lg leading-relaxed text-[#0f1a17] pt-2">
+                    قُولُوا آمَنَّا بِاللَّهِ وَمَا أُنزِلَ إِلَيْنَا وَمَا أُنزِلَ إِلَىٰ إِبْرَاهِيمَ وَإِسْمَاعِيلَ وَإِسْحَاقَ وَيَعْقُوبَ وَالْأَسْبَاطِ <span class="bg-secondary-fixed/50 text-on-secondary-fixed-variant px-1 rounded font-bold">وَمَا أُوتِيَ مُوسَىٰ وَعِيسَىٰ</span> وَمَا أُوتِيَ النَّبِيُّونَ...
+                  </p>
+<p class="text-xs text-[#559180] mt-3 border-t border-[#e9f2ef] pt-2">
+                    علامة الضبط: تكرار «أُوتِيَ» مع الأنبياء لأن السياق خطاب للأمة بعموم الإيمان.
+                  </p>
+</div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-[#e9f2ef] relative">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold text-primary-container px-2.5 py-0.5 rounded bg-surface-container">سورة آل عمران - آية 84</span>
+<span class="text-xs text-[#559180]">الجزء الثالث</span>
+</div>
+<p class="quran-font text-lg leading-relaxed text-[#0f1a17] pt-2">
+                    قُلْ آمَنَّا بِاللَّهِ وَمَا أُنزِلَ عَلَيْنَا وَمَا أُنزِلَ عَلَىٰ إِبْرَاهِيمَ وَإِسْمَاعِيلَ وَإِسْحَاقَ وَيَعْقُوبَ وَالْأَسْبَاطِ <span class="bg-tertiary-fixed text-on-tertiary-fixed-variant px-1 rounded font-bold">وَمَا أُوتِيَ مُوسَىٰ وَعِيسَىٰ وَالنَّبِيُّونَ</span>...
+                  </p>
+<p class="text-xs text-[#559180] mt-3 border-t border-[#e9f2ef] pt-2">
+                    علامة الضبط: العطف المباشر دون تكرار «أُوتِيَ» لإيجاز اللفظ في مقام الإقرار الفردي للنبي.
+                  </p>
+</div>
+</div>
+<!-- Interactive prompt -->
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-2 text-xs text-[#0f1a17]">
+<span class="material-symbols-outlined text-sm text-[#07882e]">auto_fix_high</span>
+<span>تم رصد التباس محتمل في آخر جلسة تسميع عند هذه الآية (نسبة الدقة 82%).</span>
+</div>
+<button class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+<span>اختبار سريع للمتشابه</span>
+<span class="material-symbols-outlined text-xs">arrow_left</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ================= NEW SECTION 2: خطط وتحديات الحفظ الأسبوعية ================= -->
+<div class="p-4 mt-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">track_changes</span>
+<h3 class="text-[#0f1a17] text-lg font-bold leading-tight">مسارات الخطط والتحديات الحالية</h3>
+</div>
+<button class="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+<span>تعديل الخطة</span>
+<span class="material-symbols-outlined text-xs">tune</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Plan 1 -->
+<div class="border border-[#d2e5df] rounded-xl p-5 bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-surface-container text-[#0f1a17]">الخطة المكثفة</span>
+<span class="text-xs font-bold text-[#07882e]">متبقي 4 أيام</span>
+</div>
+<h4 class="text-base font-bold text-[#0f1a17]">تثبيت سورة الكهف وضبط الروابط</h4>
+<p class="text-xs text-[#559180] mt-1">تسميع كامل متصل + مطابقة أواخر الآيات مع التكرار المتباعد</p>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-medium mb-1.5">
+<span class="text-[#0f1a17]">معدل الإنجاز الكلي</span>
+<span class="text-primary font-bold">78%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 mt-4 border-t border-[#e9f2ef] text-xs text-[#559180]">
+<span>الاختبار النهائي: الخميس القادم</span>
+<span class="font-bold text-[#0f1a17]">10 / 12 وجه</span>
+</div>
+</div>
+<!-- Plan 2 -->
+<div class="border border-[#d2e5df] rounded-xl p-5 bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-secondary-container/40 text-on-secondary-container">تحدي الإتقان اليومي</span>
+<span class="text-xs font-bold text-secondary">نشط الآن</span>
+</div>
+<h4 class="text-base font-bold text-[#0f1a17]">مسار إتقان المفصّل (جزء الذاريات)</h4>
+<p class="text-xs text-[#559180] mt-1">مراجعة سرد متواصل 3 صفحات يومياً صباحاً ومساءً</p>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-medium mb-1.5">
+<span class="text-[#0f1a17]">الورد المحقق اليوم</span>
+<span class="text-primary font-bold">2 من 3 صفحات</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-secondary h-2 rounded-full" style="width: 66%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 mt-4 border-t border-[#e9f2ef] text-xs text-[#559180]">
+<span>الورد المتبقي: سورة الطور</span>
+<button class="font-bold text-primary hover:underline">متابعة الآن</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= NEW SECTION 3: سجل التفريغ الصوتي والأخطاء الذكية ================= -->
+<div class="p-4 mt-2 mb-10">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">graphic_eq</span>
+<h3 class="text-[#0f1a17] text-lg font-bold leading-tight">سجل التسميع الصوتي وملاحظات المصحح الآلي</h3>
+</div>
+<span class="text-xs text-[#559180]">آخر جلسة: اليوم 06:45 ص</span>
+</div>
+<div class="border border-[#d2e5df] rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm">
+<div class="p-4 border-b border-[#e9f2ef] flex flex-wrap items-center justify-between gap-3 bg-surface-container-low/40">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl">mic</span>
+</div>
+<div>
+<h5 class="text-sm font-bold text-[#0f1a17]">جلسة سورة مريم (الآيات 1 - 36)</h5>
+<p class="text-xs text-[#559180]">المدة: 8 دقائق • تم فحص التجويد ومخارج الحروف بدقة 98%</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs bg-[#e9f2ef] text-[#0f1a17] px-2.5 py-1 rounded font-medium">خطأ نطق واحد</span>
+<span class="text-xs bg-[#e9f2ef] text-[#0f1a17] px-2.5 py-1 rounded font-medium">تردد لحظي (2)</span>
+</div>
+</div>
+<!-- Audio Waveform simulation & Error inspection -->
+<div class="p-4 space-y-3">
+<div class="p-3 rounded-lg bg-[#f9fbfa] border border-[#e9f2ef]">
+<div class="flex items-start justify-between gap-3">
+<div class="flex-1">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-error text-sm">error</span>
+<span class="text-xs font-bold text-error">ملاحظة تجويدية (إدغام ناقص بغنة):</span>
+</div>
+<p class="quran-font text-base text-[#0f1a17]">
+                        ﴿ وَإِنِّي خِفْتُ الْمَوَالِيَ مِن وَرَائِي ﴾
+                      </p>
+<p class="text-xs text-[#559180] mt-1">
+                        تم رصد إظهار عند النون الساكنة مع الواو في «مِن وَرَائِي»، والصواب إدغامها بغنة حركتين بمقدار معتدل.
+                      </p>
+</div>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#d2e5df] text-xs font-medium text-[#0f1a17] hover:bg-surface-container">
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+<span>سماع المقطع</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-center text-xs text-[#559180] pt-2 px-1">
+<span>تم حفظ التسجيل في قاعدة التكرار المتباعد لتكرار فحص الآية بعد 48 ساعة.</span>
+<a class="text-primary font-bold hover:underline" href="#">عرض كافة الجلسات السابقة (28)</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Subtle Footer -->
+<footer class="text-center py-6 border-t border-[#e9f2ef] text-xs text-[#559180]">
+<p>مركز الحفظ والمراجعة الذكي • خوارزمية التكرار المتباعد ومساعد التسميع الآلي</p>
+</footer>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Micro-interaction handlers
+    document.addEventListener("DOMContentLoaded", () => {
+      const audioButtons = document.querySelectorAll("button");
+      audioButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+          if (this.innerText.includes("سماع المقطع")) {
+            const icon = this.querySelector(".material-symbols-outlined");
+            if (icon && icon.innerText === "play_arrow") {
+              icon.innerText = "pause";
+              setTimeout(() => { icon.innerText = "play_arrow"; }, 2500);
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body></html>

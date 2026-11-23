@@ -280,16 +280,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </HorizontalScrollRail>
       </div>
 
-      {/* 1. Calm Editorial Welcome Anchor (Adapts to all 3 V2 Theme Presets) */}
+      {/* 1. Calm Editorial Welcome Anchor (Adapts to all 4 Design × Mode variants) */}
       <section
         aria-labelledby="dashboard-welcome-title"
-        className="wird-hero-surface relative rounded-[var(--wird-radius-card)] p-6 md:p-7 overflow-hidden"
+        className="wird-hero-surface relative rounded-[var(--wird-radius-card)] p-5 md:p-6 overflow-hidden"
       >
         <WirdIslamicPattern opacity={0.055} variant="gold" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
-          <div className="space-y-2 max-w-2xl text-right">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#F6F1E6]/90">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-1.5 max-w-2xl text-right">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#F6F1E6]/90">
               <span className="w-6 h-6 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
                 <WirdSymbol size={15} variant="gold" />
               </span>
@@ -299,11 +299,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <h2
               id="dashboard-welcome-title"
-              className="text-2xl md:text-[1.85rem] font-extrabold tracking-tight text-[#F9F6EE] leading-snug wird-headline-balance"
+              className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#F9F6EE] leading-snug wird-headline-balance"
             >
               السلام عليكم ورحمة الله، {profile.name}
             </h2>
-            <p className="text-[#F6F1E6]/88 text-sm leading-relaxed pt-0.5">
+            <p className="text-[#F6F1E6]/88 text-xs sm:text-sm leading-relaxed">
               <span className="font-quran text-[1.05rem] text-[#F9F6EE]">«وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ»</span> — استعن بالله وابدأ وِردك ليظل كتاب الله غضاً طرياً في صدرك.
             </p>
           </div>
@@ -424,7 +424,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3.5 border-b border-[var(--wird-border)]">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] flex items-center justify-center border border-[var(--wird-border-gold)] shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center justify-center border border-[var(--wird-border-gold)] shrink-0">
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
@@ -450,7 +450,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <div className="text-[11px] font-medium text-[var(--wird-muted)]">السورة والآيات</div>
-                  <div className="text-lg font-bold text-[var(--wird-primary)] font-quran">
+                  <div className="text-lg font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-quran">
                     {dailyTask.source === 'blocked'
                       ? dailyTask.label
                       : `سورة ${dailyTask.surahName} · الآيات (${dailyTask.startAyah} - ${dailyTask.endAyah})`}
@@ -494,7 +494,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('plans')}
-                    className="text-[var(--wird-primary)] font-bold hover:underline"
+                    className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-bold hover:underline"
                   >
                     عرض كل الخطط
                   </button>
@@ -508,7 +508,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     >
                       <div className="min-w-0 space-y-0.5 text-right">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-[var(--wird-primary)]">
+                          <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                             {item.planTitle}
                           </span>
                           <span className="text-[11px] font-semibold text-[var(--wird-muted)]">
@@ -535,7 +535,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       className="py-2.5 first:pt-1 last:pb-1 flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="min-w-0 space-y-0.5 text-right">
-                        <div className="font-bold text-[var(--wird-primary)]">{preset.planTitle}</div>
+                        <div className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">{preset.planTitle}</div>
                         <div className="text-[var(--wird-muted)]">
                           {preset.range
                             ? `سورة ${ALL_SURAHS.find(s => s.number === preset.range!.surahNumber)?.name || preset.range.surahNumber} (${preset.range.startAyah}–${preset.range.endAyah})`
@@ -563,7 +563,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       key={`done-${done.planId}-${done.scheduledDate}`}
                       className="py-2 first:pt-1 last:pb-1 flex items-center justify-between gap-3 text-[11px] text-[var(--wird-muted)]"
                     >
-                      <span className="font-semibold text-[var(--wird-primary)]">
+                      <span className="font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                         ✓ {done.planTitle}: سورة {done.task.surahName} ({done.task.startAyah}–{done.task.endAyah})
                       </span>
                       <span className="font-mono tabular-nums">
@@ -664,7 +664,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {displayedQueuePortions.length === 0 && (
                 <div className="text-center py-6 text-[var(--wird-muted)] text-xs space-y-1.5">
-                  <Check className="w-6 h-6 text-[var(--wird-primary)] mx-auto" />
+                  <Check className="w-6 h-6 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] mx-auto" />
                   <p>
                     {totalDueCount > 0
                       ? 'جلسة اليوم تعرض المراجعة ذات الأولوية؛ لا توجد مهام أخرى في القائمة.'
@@ -713,7 +713,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('revision')}
-              className="min-h-11 px-2 text-[var(--wird-primary)] font-bold hover:underline flex items-center gap-1"
+              className="min-h-11 px-2 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-bold hover:underline flex items-center gap-1"
             >
               <span>فتح مركز المراجعة الكامل</span>
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -727,7 +727,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <WirdCard aria-label="ختمات القراءة المتعددة والاستكمال السريع" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-[var(--wird-primary)]" />
+              <BookOpen className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
               <h3 className="font-bold text-sm text-[var(--wird-text)]">
                 ختمات القراءة والاستكمال السريع ({activeReadingKhatmas.length})
               </h3>
@@ -735,7 +735,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('library')}
-              className="text-xs font-bold text-[var(--wird-primary)] hover:underline"
+              className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:underline"
             >
               إدارة الختمات
             </button>
@@ -752,7 +752,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         {item.title || 'ختمة القراءة'}
                       </span>
                       {isSelectedKhatma && (
-                        <span className="text-[11px] font-bold text-[var(--wird-primary)]">· نشطة</span>
+                        <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">· نشطة</span>
                       )}
                       <span className="text-[11px] text-[var(--wird-muted)] tabular-nums">
                         {itemProgress.completedPages} / {itemProgress.totalScopePages} صفحة ({itemProgress.percent}%) · ورد اليوم {itemProgress.pagesReadToday}/{itemProgress.pagesPerDay}
@@ -801,7 +801,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           >
             <div className="bg-[var(--wird-primary)] h-full rounded-full" style={{ width: `${versesPercentage}%` }} />
           </div>
-          <div className="text-[11px] text-[var(--wird-primary)] mt-1.5 font-semibold tabular-nums">
+          <div className="text-[11px] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] mt-1.5 font-semibold tabular-nums">
             {versesPercentage}% · المتقن الراسخ: {masteredPortionsCount} مقطع
           </div>
         </WirdCard>
@@ -840,7 +840,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-xs text-[var(--wird-muted)]">دقيقة حفظ ومراجعة</span>
           </div>
           <div className="text-[11px] text-[var(--wird-muted)] mt-3 font-medium tabular-nums">
-            حفظ جديد: <strong className="text-[var(--wird-primary)]">{totalWeeklyAyahs} آية</strong> · مراجعة: <strong className="text-[var(--wird-text)]">{totalWeeklyReviewedPages} ص</strong>
+            حفظ جديد: <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">{totalWeeklyAyahs} آية</strong> · مراجعة: <strong className="text-[var(--wird-text)]">{totalWeeklyReviewedPages} ص</strong>
           </div>
         </WirdCard>
 
@@ -857,7 +857,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="text-[11px] text-[var(--wird-muted)] mt-2 space-y-0.5 tabular-nums">
             <div>مستوى التثبيت: <strong className="text-[var(--wird-text)]">{retentionStatusLabel}</strong></div>
-            <div>ختمة القراءة (منفصلة): <strong className="text-[var(--wird-primary)]">{readingKhatmaPagesCount} / {TOTAL_QURAN_PAGES} صفحة</strong></div>
+            <div>ختمة القراءة (منفصلة): <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">{readingKhatmaPagesCount} / {TOTAL_QURAN_PAGES} صفحة</strong></div>
           </div>
         </WirdCard>
       </div>
@@ -930,7 +930,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('progress')}
-                className="min-h-11 px-2 text-[var(--wird-primary)] font-semibold hover:underline flex items-center gap-1"
+                className="min-h-11 px-2 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-semibold hover:underline flex items-center gap-1"
               >
                 <span>عرض تفاصيل المصحف والتقارير</span>
                 <ArrowLeft className="w-3.5 h-3.5" />
@@ -946,7 +946,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] flex items-center justify-center border border-[var(--wird-border)]">
+                <div className="w-8 h-8 rounded-lg bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center justify-center border border-[var(--wird-border)]">
                   <Clock className="w-4 h-4" />
                 </div>
                 <div>
@@ -984,7 +984,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {nextPrayer.labelAr} · <span className="tabular-nums font-mono">{nextPrayer.time24}</span>
                 </div>
               </div>
-              <span className="text-xs font-bold text-[var(--wird-primary)] tabular-nums">
+              <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums">
                 {nextPrayer.remainingLabelAr}
               </span>
             </div>
@@ -1069,7 +1069,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   className="w-full min-h-14 flex items-center justify-between p-3 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)]/65 hover:bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] transition-colors text-right wird-focus-ring"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--wird-surface)] text-[var(--wird-primary)] border border-[var(--wird-border)] flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--wird-surface)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border border-[var(--wird-border)] flex items-center justify-center shrink-0">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">

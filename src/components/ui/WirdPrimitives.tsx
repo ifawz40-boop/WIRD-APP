@@ -27,11 +27,11 @@ export const WirdButton = React.forwardRef<HTMLButtonElement, WirdButtonProps>(
   ) => {
     const variantStyles: Record<NonNullable<WirdButtonProps['variant']>, string> = {
       primary:
-        'bg-[var(--wird-primary)] text-white hover:bg-[var(--wird-primary-hover)] border border-transparent',
+        'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] hover:bg-[var(--wird-primary-hover)] border border-transparent',
       secondary:
         'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)] hover:border-[var(--wird-border-strong)]',
       accent:
-        'bg-[var(--wird-accent)] text-[#0C1412] hover:bg-[var(--wird-accent-hover)] border border-transparent',
+        'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)] hover:bg-[var(--wird-accent-hover)] border border-transparent',
       ghost:
         'bg-transparent text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] border border-transparent',
       danger:

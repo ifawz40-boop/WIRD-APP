@@ -220,7 +220,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
       {/* Compact Spread & Opposite-Page Tafsir Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)]/85 px-3.5 py-2.5 text-xs">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-bold text-[var(--wird-primary)] tabular-nums">
+          <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums">
             {isOppositeTafsirActive
               ? `الصفحة ${readingPage} · التفسير مقابلها`
               : isTwoPage
@@ -238,7 +238,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 onClick={() => handleOpenPageTafsir(pageNum)}
                 className="min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-1.5 font-bold text-[var(--wird-text)] hover:border-[var(--wird-accent)] disabled:opacity-40 transition-colors whitespace-nowrap"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[var(--wird-primary)]" />
+                <BookOpen className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                 <span>تفسير صفحة {pageNum}</span>
               </button>
             );
@@ -260,7 +260,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
               className={`min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border px-3 py-1.5 font-bold transition-colors whitespace-nowrap disabled:opacity-40 ${
                 isOppositeTafsirActive
                   ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
-                  : 'bg-[var(--wird-surface)] text-[var(--wird-primary)] border-[var(--wird-border-gold)] hover:bg-[var(--wird-accent-soft)]'
+                  : 'bg-[var(--wird-surface)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border-[var(--wird-border-gold)] hover:bg-[var(--wird-accent-soft)]'
               }`}
             >
               <PanelLeft className="w-3.5 h-3.5" />
@@ -345,7 +345,7 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                   <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--wird-muted)] tabular-nums">
                     <span>صفحة {pageNum}</span>
                     {pageNum === readingPage && (
-                      <span className="text-[var(--wird-primary)]">الصفحة الحالية</span>
+                      <span className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الصفحة الحالية</span>
                     )}
                   </div>
                 )}

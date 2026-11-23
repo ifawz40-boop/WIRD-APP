@@ -12,13 +12,13 @@ import {
   X,
 } from 'lucide-react';
 import {
-  WIRD_THEME_PRESETS,
+  WIRD_DESIGNS,
   loadThemePreferences,
   resetThemePreferences,
   saveThemePreferences,
   subscribeThemePreferences,
+  type WirdDesignId,
   type WirdThemePreferences,
-  type WirdThemePresetId,
 } from '../../services/themePreferences';
 import { WirdBrandLockup } from './WirdLogo';
 import {
@@ -40,8 +40,8 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
   const [themePrefs, setThemePrefs] = useState<WirdThemePreferences>(() =>
     loadThemePreferences()
   );
-  const [previewPreset, setPreviewPreset] = useState<WirdThemePresetId>(
-    themePrefs.preset
+  const [previewPreset, setPreviewPreset] = useState<WirdDesignId>(
+    themePrefs.design
   );
   const [previewMode, setPreviewMode] = useState<'day' | 'night'>('day');
   const [sampleTab, setSampleTab] = useState<'mushaf' | 'hifz' | 'adhkar'>(
@@ -77,8 +77,8 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
   };
 
   const selectedMeta =
-    WIRD_THEME_PRESETS.find((item) => item.id === previewPreset) ||
-    WIRD_THEME_PRESETS[0];
+    WIRD_DESIGNS.find((item) => item.id === previewPreset) ||
+    WIRD_DESIGNS[0];
   const palette =
     previewMode === 'night' ? selectedMeta.night : selectedMeta.day;
 
@@ -90,10 +90,10 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
     { label: 'النص الأساسي (Ink)', hex: palette.ink },
   ];
 
-  const handleApplyPreset = (presetId: WirdThemePresetId) => {
-    const updated = saveThemePreferences({ preset: presetId });
+  const handleApplyPreset = (designId: WirdDesignId) => {
+    const updated = saveThemePreferences({ design: designId, preset: designId });
     setThemePrefs(updated);
-    setPreviewPreset(presetId);
+    setPreviewPreset(designId);
   };
 
   return (
@@ -104,13 +104,13 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
           <div className="space-y-2">
             <WirdBrandLockup symbolSize={36} textSize="md" showSubtitle={false} />
             <h1 className="text-xl sm:text-2xl font-bold text-[var(--wird-text)] wird-headline-balance">
-              نظام التصميم والهوية البصرية — WIRD Design System V2
+              نظام التصميم الرباعي — وِرد (Design A & B × Light / Dark)
             </h1>
             <WirdMetadataRow
               items={[
-                '3 لوحات بصرية معتمدة',
-                'دعم نهاري وليلي متكامل',
-                'مكونات RTL مصممة يدوياً',
+                'تصميمان مستقلان (A و B)',
+                'وضعان لونيان مستقلان (نهاري وليلي)',
+                '4 تجارب متكاملة بلا إعادة تحميل',
               ]}
             />
           </div>
@@ -139,11 +139,11 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
         </div>
       </WirdCard>
 
-      {/* Preset Comparison Grid */}
+      {/* Design Comparison Grid */}
       <section className="space-y-3">
         <WirdCardHeader
-          title="الخطط البصرية المستخرجة من المراجع الأربعة"
-          subtitle="اختر أي خطة للمعاينة أو طبّقها مباشرة على التطبيق بأكمله."
+          title="مقارنة التصميمين المعتمدين (A و B)"
+          subtitle="عاين كل تصميم في الوضع النهاري والليلي وطبّقه مباشرة على التطبيق بأكمله."
           action={
             <WirdButton
               variant="secondary"
@@ -151,7 +151,7 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
               onClick={() => {
                 const reset = resetThemePreferences();
                 setThemePrefs(reset);
-                setPreviewPreset(reset.preset);
+                setPreviewPreset(reset.design);
               }}
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -160,14 +160,14 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
           }
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {WIRD_THEME_PRESETS.map((preset) => {
-            const p = previewMode === 'night' ? preset.night : preset.day;
-            const isApplied = themePrefs.preset === preset.id;
-            const isPreviewed = previewPreset === preset.id;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {WIRD_DESIGNS.map((design) => {
+            const p = previewMode === 'night' ? design.night : design.day;
+            const isApplied = themePrefs.design === design.id;
+            const isPreviewed = previewPreset === design.id;
             return (
               <div
-                key={preset.id}
+                key={design.id}
                 className={`rounded-[var(--wird-radius-card)] border p-4 flex flex-col justify-between gap-4 transition-colors ${
                   isPreviewed
                     ? 'border-[var(--wird-accent)] bg-[var(--wird-surface)]'
@@ -175,51 +175,53 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
                 }`}
               >
                 <div className="space-y-3">
-                  {/* Live Mini UI Preview */}
+                  {/* Actual Reference Preview Image */}
                   <div
-                    className="rounded-xl p-3.5 border space-y-2.5"
+                    className="relative h-44 rounded-xl overflow-hidden border border-black/10 dark:border-white/15"
+                    style={{ backgroundColor: p.bg }}
+                  >
+                    <img
+                      src={p.previewImage}
+                      alt={`معاينة ${design.nameAr} — ${p.labelAr}`}
+                      loading="lazy"
+                      className="w-full h-full object-cover object-top"
+                    />
+                    <span
+                      className="absolute bottom-2 inset-inline-end-2 px-2.5 py-1 rounded-lg text-[11px] font-bold shadow-sm"
+                      style={{ backgroundColor: p.primary, color: '#F6F0E3' }}
+                    >
+                      {p.labelAr}
+                    </span>
+                  </div>
+
+                  {/* Live Typography Sample */}
+                  <div
+                    className="rounded-xl p-3 border text-xs leading-relaxed font-quran"
                     style={{
-                      backgroundColor: p.bg,
+                      backgroundColor: p.surface,
                       borderColor: `${p.accent}44`,
                       color: p.ink,
                     }}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold">{preset.nameAr}</span>
-                      <span
-                        className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white"
-                        style={{ backgroundColor: p.primary }}
-                      >
-                        ورد اليوم
-                      </span>
-                    </div>
-                    <div
-                      className="rounded-lg p-2.5 border text-xs leading-relaxed font-quran"
-                      style={{
-                        backgroundColor: p.surface,
-                        borderColor: `${p.ink}18`,
-                      }}
-                    >
-                      ﴿ إِنَّ هَـٰذَا ٱلْقُرْءَانَ يَهْدِى لِلَّتِى هِىَ أَقْوَمُ ﴾
-                    </div>
+                    ﴿ إِنَّ هَـٰذَا ٱلْقُرْءَانَ يَهْدِى لِلَّتِى هِىَ أَقْوَمُ ﴾
                   </div>
 
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="text-sm font-bold text-[var(--wird-text)]">
-                        {preset.nameAr}
+                        {design.nameAr}
                       </h3>
                       {isApplied && (
                         <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                          مفعّلة الآن
+                          مفعّل الآن
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
-                      {preset.taglineAr}
+                      {design.taglineAr}
                     </p>
                     <p className="text-[11px] text-[var(--wird-muted)] opacity-85">
-                      {preset.inspirationAr}
+                      {design.characterAr}
                     </p>
                   </div>
                 </div>
@@ -229,24 +231,24 @@ export const BrandDesignShowcase: React.FC<BrandDesignShowcaseProps> = ({
                     variant={isApplied ? 'secondary' : 'primary'}
                     size="sm"
                     className="flex-1"
-                    onClick={() => handleApplyPreset(preset.id)}
+                    onClick={() => handleApplyPreset(design.id)}
                   >
                     {isApplied ? (
                       <>
                         <Check className="w-3.5 h-3.5" />
-                        <span>مطبّقة</span>
+                        <span>مطبّق حالياً</span>
                       </>
                     ) : (
                       <>
                         <Palette className="w-3.5 h-3.5" />
-                        <span>تطبيق الخطة</span>
+                        <span>تطبيق {design.shortNameAr}</span>
                       </>
                     )}
                   </WirdButton>
                   <WirdButton
                     variant="ghost"
                     size="sm"
-                    onClick={() => setPreviewPreset(preset.id)}
+                    onClick={() => setPreviewPreset(design.id)}
                   >
                     فحص الألوان
                   </WirdButton>

@@ -385,14 +385,14 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                 }}
                 className={`min-h-12 shrink-0 snap-start px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all flex items-center gap-2.5 ${
                   isActive
-                    ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27] dark:border-[#E0A96D] shadow-sm'
-                    : 'bg-[#F9F6EE] dark:bg-[#0B132B]/70 text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                    ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)] shadow-sm'
+                    : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
                 }`}
               >
                 {cat.id === 'morning' || cat.id === 'waking_up' ? (
                   <Sun className={`w-4 h-4 ${isActive ? 'text-[#E0A96D]' : 'text-[#C59B27]'}`} />
                 ) : cat.id === 'evening' || cat.id === 'sleeping' ? (
-                  <Moon className={`w-4 h-4 ${isActive ? 'text-[#E0A96D]' : 'text-[#1C4E46] dark:text-[#E0A96D]'}`} />
+                  <Moon className={`w-4 h-4 ${isActive ? 'text-[#E0A96D]' : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'}`} />
                 ) : cat.id === 'quranic_duas' ? (
                   <BookOpen className="w-4 h-4 text-[#C59B27]" />
                 ) : (
@@ -405,7 +405,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                       ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
                       : isActive
                       ? 'bg-white/15 text-white'
-                      : 'bg-[#1C4E46]/10 dark:bg-white/10 text-[#5B6F6B] dark:text-[#98ADAA]'
+                      : 'bg-[var(--wird-primary)]/10 dark:bg-white/10 text-[var(--wird-muted)]'
                   }`}
                 >
                   {summary.completedItems}/{summary.totalItems}
@@ -416,17 +416,17 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
         </HorizontalScrollRail>
 
         {/* Controls Bar: Search, Filter, Reciter Picker, Category Progress */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-[var(--wird-border)]">
           <div className="flex flex-wrap items-center gap-2 flex-1">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="w-4 h-4 text-[#5B6F6B] dark:text-[#98ADAA] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 aria-label="البحث في الأذكار والأدعية"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="ابحث في نص الذكر، العنوان، الفضل، أو المصدر..."
-                className="w-full min-h-11 pr-10 pl-3 py-2 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-xs text-[#142421] dark:text-[#F5F1E8] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
+                className="w-full min-h-11 pr-10 pl-3 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
               />
             </div>
 
@@ -436,8 +436,8 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               onClick={() => setFilterMode(prev => (prev === 'favorites' ? 'all' : 'favorites'))}
               className={`min-h-11 px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
                 filterMode === 'favorites'
-                  ? 'bg-[#C59B27] text-[#0B132B] border-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)] border-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
               }`}
             >
               <Star className="w-3.5 h-3.5" />
@@ -450,17 +450,17 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               onClick={() => setFilterMode(prev => (prev === 'quran_audio' ? 'all' : 'quran_audio'))}
               className={`min-h-11 px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
                 filterMode === 'quran_audio'
-                  ? 'bg-[#1C4E46] text-white border-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  ? 'bg-[var(--wird-primary)] text-white border-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
               }`}
             >
-              <Volume2 className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+              <Volume2 className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
               <span>الأذكار القرآنية الصوتية</span>
             </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-[#5B6F6B] dark:text-[#98ADAA]">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--wird-muted)]">
               <span>القارئ:</span>
               <select
                 aria-label="اختيار قارئ الأذكار القرآنية"
@@ -471,7 +471,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                   setActiveReciter(next);
                   savePreferredReciter(next);
                 }}
-                className="min-h-11 px-3 py-1.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-xs font-bold text-[#142421] dark:text-[#F5F1E8]"
+                className="min-h-11 px-3 py-1.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)]"
               >
                 {RECITERS.map(r => (
                   <option key={r.id} value={r.id}>{r.name}</option>
@@ -485,7 +485,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                 setStore(resetAdhkarCategoryCounts(activeCategory, todayStr));
                 onToast?.(`تمت إعادة ضبط عدّاد «${activeCategoryMeta.label}» لليوم.`, 'info');
               }}
-              className="min-h-11 px-3 py-1.5 rounded-xl bg-[#F2EDE2] dark:bg-[#162744] text-xs font-bold text-[#142421] dark:text-[#F5F1E8] hover:border-[#C59B27] border border-transparent flex items-center gap-1.5"
+              className="min-h-11 px-3 py-1.5 rounded-xl bg-[var(--wird-surface-muted)] text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-border-gold)] border border-transparent flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>تصفير القسم</span>
@@ -494,13 +494,13 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
         </div>
 
         {/* Category Progress Summary Bar */}
-        <div className="p-3.5 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-2">
+        <div className="p-3.5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <div>
-              <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">{activeCategoryMeta.label}</span>
-              <span className="text-[#5B6F6B] dark:text-[#98ADAA]"> · {activeCategoryMeta.recommendedTimeAr}</span>
+              <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">{activeCategoryMeta.label}</span>
+              <span className="text-[var(--wird-muted)]"> · {activeCategoryMeta.recommendedTimeAr}</span>
             </div>
-            <div className="font-mono font-bold text-[#142421] dark:text-[#F5F1E8] tabular-nums">
+            <div className="font-mono font-bold text-[var(--wird-text)] tabular-nums">
               {categorySummary.completedItems} / {categorySummary.totalItems} ذكر مكتمل ({categorySummary.percent}%)
             </div>
           </div>
@@ -510,10 +510,10 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={categorySummary.percent}
-            className="w-full h-2 rounded-full bg-[#E5DEC9] dark:bg-[#162744] overflow-hidden"
+            className="w-full h-2 rounded-full bg-[#E5DEC9] dark:bg-[var(--wird-surface-elevated)] overflow-hidden"
           >
             <div
-              className="h-full rounded-full bg-gradient-to-l from-[#1C4E46] to-[#C59B27] transition-all duration-300"
+              className="h-full rounded-full bg-gradient-to-l from-[var(--wird-primary)] to-[var(--wird-accent)] transition-all duration-300"
               style={{ width: `${categorySummary.percent}%` }}
             />
           </div>
@@ -547,23 +547,23 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base md:text-lg font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
+                    <h3 className="text-base md:text-lg font-bold font-quran text-[var(--wird-text)]">
                       {item.title}
                     </h3>
                     <span
                       className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
                         item.kind === 'quran'
-                          ? 'bg-[#1C4E46]/12 text-[#1C4E46] dark:bg-[#1E4A47]/50 dark:text-[#6EE7B7] border-[#1C4E46]/25'
-                          : 'bg-[#C59B27]/12 text-[#9A7415] dark:bg-[#E0A96D]/15 dark:text-[#E0A96D] border-[#C59B27]/30'
+                          ? 'bg-[var(--wird-primary)]/12 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:bg-[var(--wird-primary)] dark:text-[#6EE7B7] border-[var(--wird-border)]'
+                          : 'bg-[#C59B27]/12 text-[#9A7415] dark:bg-[#E0A96D]/15 dark:text-[var(--wird-accent)] border-[#C59B27]/30'
                       }`}
                     >
                       {item.grade}
                     </span>
-                    <span className="text-[11px] font-bold text-[#5B6F6B] dark:text-[#98ADAA] font-mono tabular-nums">
+                    <span className="text-[11px] font-bold text-[var(--wird-muted)] font-mono tabular-nums">
                       التكرار المسنون: {targetCount === 1 ? 'مرة واحدة' : `${targetCount} مرات`}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">
+                  <p className="text-[11px] text-[var(--wird-muted)]">
                     المصدر: {item.source}
                   </p>
                 </div>
@@ -576,8 +576,8 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                       onClick={() => void handlePlayQuranicDhikr(item)}
                       className={`min-h-11 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${
                         isThisPlaying
-                          ? 'bg-[#C59B27] text-[#0B132B]'
-                          : 'bg-[#1C4E46] hover:bg-[#28665B] text-white'
+                          ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                          : 'bg-[var(--wird-primary)] hover:bg-[#28665B] text-white'
                       }`}
                     >
                       {isThisPlaying ? (
@@ -606,8 +606,8 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                     onClick={() => setStore(toggleAdhkarFavorite(item.id))}
                     className={`min-h-11 min-w-11 flex items-center justify-center rounded-xl border transition-colors ${
                       isFavorite
-                        ? 'bg-[#C59B27]/15 border-[#C59B27] text-[#C59B27] dark:text-[#E0A96D]'
-                        : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#98ADAA]'
+                        ? 'bg-[#C59B27]/15 border-[#C59B27] text-[var(--wird-accent)]'
+                        : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)]'
                     }`}
                   >
                     <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
@@ -617,7 +617,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                     type="button"
                     aria-label={`نسخ ${item.title}`}
                     onClick={() => handleCopyDhikr(item)}
-                    className="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#98ADAA] hover:text-[#1C4E46] dark:hover:text-[#E0A96D]"
+                    className="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:hover:text-[var(--wird-accent)]"
                   >
                     {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </button>
@@ -627,7 +627,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                       type="button"
                       aria-label={`تصفير عداد ${item.title}`}
                       onClick={() => setStore(resetAdhkarItemCount(item.id, todayStr))}
-                      className="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#98ADAA] hover:text-rose-600"
+                      className="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-rose-600"
                     >
                       <RotateCcw className="w-4 h-4" />
                     </button>
@@ -636,9 +636,9 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               </div>
 
               {/* Vocalized Text Body */}
-              <div className="p-4 md:p-5 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/10 dark:border-[#E0A96D]/18">
+              <div className="p-4 md:p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)]">
                 {item.kind === 'quran' ? (
-                  <p className="font-quran text-lg md:text-2xl leading-[2.35] text-[#142421] dark:text-[#F5F1E8] text-right">
+                  <p className="font-quran text-lg md:text-2xl leading-[2.35] text-[var(--wird-text)] text-right">
                     {resolvedAyahs && resolvedAyahs.length > 0 ? (
                       resolvedAyahs.map(ayah => (
                         <React.Fragment key={ayah.number}>
@@ -651,7 +651,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                     )}
                   </p>
                 ) : (
-                  <p className="hadith-matn text-[#142421] dark:text-[#F5F1E8]">
+                  <p className="hadith-matn text-[var(--wird-text)]">
                     {item.text}
                   </p>
                 )}
@@ -659,8 +659,8 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
 
               {/* Virtue Note & Interactive Counter Button */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] leading-relaxed flex-1">
-                  <strong className="text-[#1C4E46] dark:text-[#E0A96D]">الفضل والبيان: </strong>
+                <p className="text-xs text-[var(--wird-muted)] leading-relaxed flex-1">
+                  <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الفضل والبيان: </strong>
                   {item.virtue}
                 </p>
 
@@ -671,7 +671,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                   className={`min-h-12 px-6 py-3 rounded-2xl font-bold text-xs md:text-sm flex items-center justify-center gap-3 shrink-0 transition-all active:scale-95 ${
                     isCompleted
                       ? 'bg-emerald-700 text-white shadow-xs'
-                      : 'bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] dark:hover:bg-[#235D59] text-white ring-1 ring-[#C59B27]/45 shadow-sm'
+                      : 'bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-white ring-1 ring-[#C59B27]/45 shadow-sm'
                   }`}
                 >
                   {isCompleted ? (
@@ -692,9 +692,9 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
 
               {/* Subtle Item Progress Line */}
               {targetCount > 1 && (
-                <div className="w-full h-1 rounded-full bg-[#E5DEC9] dark:bg-[#162744] overflow-hidden">
+                <div className="w-full h-1 rounded-full bg-[#E5DEC9] dark:bg-[var(--wird-surface-elevated)] overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#1C4E46] dark:bg-[#E0A96D] transition-all duration-200"
+                    className="h-full rounded-full bg-[var(--wird-primary)] dark:bg-[#E0A96D] transition-all duration-200"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -705,11 +705,11 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
 
         {visibleItems.length === 0 && (
           <div className="wird-card p-10 text-center space-y-2">
-            <Heart className="w-8 h-8 text-[#C59B27] dark:text-[#E0A96D] mx-auto" />
-            <h3 className="text-base font-bold text-[#142421] dark:text-[#F5F1E8]">
+            <Heart className="w-8 h-8 text-[var(--wird-accent)] mx-auto" />
+            <h3 className="text-base font-bold text-[var(--wird-text)]">
               لا توجد أذكار مطابقة للبحث أو التصفية الحالية
             </h3>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA]">
+            <p className="text-xs text-[var(--wird-muted)]">
               جرّب عرض جميع الأذكار أو تغيير كلمة البحث.
             </p>
           </div>
@@ -719,15 +719,15 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
       {/* 4. Interactive Free Tasbih Counter (المسبحة الإلكترونية والذكر المفتوح) */}
       <section
         aria-labelledby="free-tasbih-title"
-        className="wird-card p-6 md:p-8 space-y-5 border border-[#C59B27]/35 dark:border-[#E0A96D]/30"
+        className="wird-card p-6 md:p-8 space-y-5 border border-[var(--wird-border-gold)]"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 id="free-tasbih-title" className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#F5F1E8] flex items-center gap-2">
-              <Flame className="w-5 h-5 text-[#C59B27] dark:text-[#E0A96D]" />
+            <h3 id="free-tasbih-title" className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)] flex items-center gap-2">
+              <Flame className="w-5 h-5 text-[var(--wird-accent)]" />
               <span>المسبحة الإلكترونية والذكر المفتوح</span>
             </h3>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] mt-0.5">
+            <p className="text-xs text-[var(--wird-muted)] mt-0.5">
               عدّاد تسبيح واستغفار مفتوح يُحفظ تلقائياً في حسابك مع إجمالي تسبيحاتك التراكمية
             </p>
           </div>
@@ -747,8 +747,8 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                 onClick={() => setStore(selectFreeTasbihPreset(preset.id))}
                 className={`min-h-11 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
                   isSelected
-                    ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
-                    : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                    ? 'bg-[var(--wird-primary)] text-white border-[#C59B27]'
+                    : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                 }`}
               >
                 {preset.phrase}
@@ -757,12 +757,12 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
           })}
         </div>
 
-        <div className="p-6 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="p-6 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1.5 text-center md:text-right">
-            <div className="text-xl md:text-2xl font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+            <div className="text-xl md:text-2xl font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
               {activeTasbihPreset.phrase}
             </div>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA]">
+            <p className="text-xs text-[var(--wird-muted)]">
               {activeTasbihPreset.virtue}
             </p>
           </div>
@@ -772,7 +772,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               type="button"
               onClick={() => setStore(incrementFreeTasbihCount())}
               aria-label="تسبيحة جديدة في المسبحة الإلكترونية"
-              className="min-h-16 px-8 py-4 rounded-2xl bg-gradient-to-l from-[#1C4E46] to-[#28665B] hover:brightness-105 text-white font-bold text-base shadow-md ring-2 ring-[#C59B27]/50 flex items-center gap-3 active:scale-95 transition-all"
+              className="min-h-16 px-8 py-4 rounded-2xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] hover:brightness-105 text-white font-bold text-base shadow-md ring-2 ring-[var(--wird-border-gold)] flex items-center gap-3 active:scale-95 transition-all"
             >
               <span>سبِّح</span>
               <span className="px-3 py-1 rounded-xl bg-black/25 font-mono text-lg tabular-nums">
@@ -784,7 +784,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
               type="button"
               aria-label="تصفير عداد المسبحة الحالي"
               onClick={() => setStore(resetFreeTasbihCount())}
-              className="min-h-12 min-w-12 flex items-center justify-center rounded-xl bg-white dark:bg-[#111F36] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 text-[#5B6F6B] dark:text-[#98ADAA] hover:text-rose-600"
+              className="min-h-12 min-w-12 flex items-center justify-center rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-rose-600"
             >
               <RotateCcw className="w-4 h-4" />
             </button>

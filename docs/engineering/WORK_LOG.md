@@ -965,3 +965,23 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
   - `npx.cmd --yes bun@1.4.4 install --frozen-lockfile`: **PASS** (`Checked 304 installs across 371 packages`)
   - `npx.cmd --yes bun@1.4.4 audit --audit-level=high`: **PASS** (`No vulnerabilities found (checked 360 packages)`)
 - **Production & Safety Confirmation:** ZERO edits to Quran corpus (`completeQuranData.json`, `src/data/sources/`), sync engine, `firestore.rules`, `authService.ts`, Vercel/Firebase settings, secrets, feature flags, or `main`. Exact-head CI (`WIRD Quality Gate`) triggered on push to PR `#404`.
+
+## 2026-11-22 — Four-Variant Design Integration (Design A & Design B × Light / Dark) & Global Token Harmonization (AI Studio Workspace)
+
+- **Environment:** Google AI Studio container workspace (no `.git` directory; production settings, Firebase Rules, Vercel env vars, and sync feature flags untouched).
+- **Decisions & Scope Implemented:**
+  - Two independent preferences (`design`: `'design-a' | 'design-b'`, default `'design-a'` Andalusian Heritage; `appearanceMode`: `'light' | 'dark'`, default `'light'`), unified collapsible right sidebar (`Sidebar.tsx`), and exposure of the selector in both `SettingsView.tsx` and header `ThemeCustomizerSheet.tsx` with legacy stored preset migration (`mapLegacyPresetToDesign`).
+- **Key Files Changed:**
+  - `src/services/themePreferences.ts` & `src/main.tsx`: 2×2 design/appearance model (`schemaVersion: 3`), independent persistence (`wird:ui-theme-prefs:v2`, `wird:ui-appearance-mode:v1`), `resetThemePreferences()`, reference preview/emblem mappings (`/public/assets/aistudio/`), pre-mount DOM attribute + `.dark` class + `<meta name="theme-color">` application.
+  - `src/wird-identity.css`: high-specificity `:root[data-wird-design='design-a'|'design-b']` and `:root.dark[data-wird-design='design-a'|'design-b']` CSS token cascades (`--wird-bg`, `--wird-surface`, `--wird-surface-muted`, `--wird-primary`, `--wird-primary-ink`, `--wird-accent`, `--wird-accent-ink`, `--wird-sidebar-bg`, `--wird-mushaf-paper`, subtle shell gradients).
+  - `src/components/ui/AppearanceSelectorPanel.tsx`, `src/components/ui/ThemeCustomizerSheet.tsx`, `src/components/settings/SettingsView.tsx`, `src/components/layout/Header.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/auth/AuthScreen.tsx`, `src/components/brand/BrandDesignShowcase.tsx`, `src/App.tsx`: reusable reference-backed Appearance Selector, header `A`/`B` trigger badge, Auth quick switcher, and showcase preview updates.
+  - Token & dark-mode contrast harmonization across 18 feature/shared components (`AuthScreen`, `AuthGate`, `SettingsView`, `AdhkarView`, `RuqyahView`, `RuqyahApiLibrary`, `SeerahView`, `QuranAdvisorView`, `QuranLibraryView`, `TafsirSheet`, `HorizontalScrollRail`, `DisplaySettingsMenu`, `OfflineStatusControls`, `RelatedHadithPanel`, `SurahPickerControl`, `AudioPlaybackRateControl`, `DirectOptionGroup`, `RouteErrorBoundary`, `WirdPrimitives`, `WirdLogo`) + 81 `dark:text-[var(--wird-accent)]` contrast pairings across 15 components + compact `DashboardView.tsx` welcome hero spacing + `src/tests/designSystemV2.test.ts`.
+- **Verification Executed (after final implementation edits):**
+  - `npm test` (73 suites incl. `designSystemV2.test.ts`, Tanzil validation & 114 Surah chunk split): **PASS** (`806 PASSED | 0 FAILED`)
+  - `npm run smoke:api-imports`: **PASS**
+  - Legacy hex grep across `src/components` (excluding `brand/`, `QuranMushafFacsimilePage.tsx`, `QuranTypographyLab.tsx`): **PASS** (`NO_LEGACY_HEX_FOUND`)
+  - Headless Chromium visual verification (`1440x900` desktop & `390x844` mobile on `http://127.0.0.1:3000`): **PASS** (`rgb(255, 249, 236)` A-Light, `rgb(4, 22, 16)` A-Dark, `rgb(249, 251, 250)` B-Light, `rgb(8, 18, 30)` B-Dark, `overflowX: false`, `0` page/console errors; final dark screenshots visually verified).
+  - `compile_applet` & `lint_applet`: executed on final workspace pass.
+  - `npm run test:firestore-rules`: **BLOCKED** locally (`java` runtime absent).
+  - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
+

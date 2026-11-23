@@ -199,7 +199,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
         <div className="min-w-0 space-y-0.5">
           <h2
             id="reading-khatma-title"
-            className="flex items-center gap-2 font-bold text-[var(--wird-primary)]"
+            className="flex items-center gap-2 font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]"
           >
             <BookOpenCheck className="h-5 w-5 shrink-0" />
             <span>ختمات القراءة المتعددة</span>
@@ -223,7 +223,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               className={`min-h-11 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border px-3.5 py-2 text-xs font-bold transition-colors whitespace-nowrap ${
                 isCreatingNew
                   ? 'border-[var(--wird-accent)] bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
-                  : 'border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] hover:border-[var(--wird-accent)]'
+                  : 'border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:border-[var(--wird-accent)]'
               }`}
             >
               {isCreatingNew ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -438,7 +438,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               </div>
             )}
 
-            <span className="text-[11px] font-semibold text-[var(--wird-primary)] tabular-nums">
+            <span className="text-[11px] font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums">
               الورد التقديري: {creatorDailyPreview} صفحة يومياً
             </span>
           </div>
@@ -461,7 +461,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
               <div className="space-y-0.5">
                 <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[var(--wird-text)]">
                   <span>{selectedKhatma.title || 'ختمة القراءة'}</span>
-                  <span className="text-xs font-mono tabular-nums text-[var(--wird-primary)]">
+                  <span className="text-xs font-mono tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                     · {progress.percent}٪ ({progress.completedPages} / {progress.totalScopePages} صفحة)
                   </span>
                 </div>
@@ -484,7 +484,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                     type="button"
                     disabled={progress.isPaused}
                     onClick={() => onContinue(progress.nextPage)}
-                    className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-2 text-xs font-bold text-[var(--wird-primary)] hover:border-[var(--wird-accent)] disabled:opacity-50"
+                    className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] px-3 py-2 text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:border-[var(--wird-accent)] disabled:opacity-50"
                   >
                     أول غير مقروءة (ص {progress.nextPage})
                   </button>
@@ -569,7 +569,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => onUpdatePlan({ durationDays, sessionsPerDay }, selectedKhatma.id, editTitle)}
-                  className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] px-3.5 py-2 text-xs font-bold text-[var(--wird-primary)] hover:bg-[var(--wird-surface)]"
+                  className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] px-3.5 py-2 text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface)]"
                 >
                   تحديث الخطة
                 </button>
@@ -633,7 +633,7 @@ export const ReadingKhatmaPanel: React.FC<Props> = ({
       )}
 
       {selectedKhatma?.completedAt && (
-        <div className="rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-4 text-sm font-semibold text-[var(--wird-primary)]">
+        <div className="rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-4 text-sm font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
           اكتملت الختمة الحالية، تقبل الله منك. يمكنك بدء ختمة جديدة مع الاحتفاظ بسجل الختمات السابقة.
         </div>
       )}

@@ -211,8 +211,8 @@ export const WirdSymbol: React.FC<WirdSymbolProps> = ({
   const pixelSize = typeof size === 'number' ? `${size}px` : size;
 
   const glowStyle = withGlow
-    ? 'shadow-[0_0_22px_rgba(224,169,109,0.38)] ring-2 ring-[#C59B27]/55'
-    : 'ring-1 ring-[#C59B27]/45 dark:ring-[#E0A96D]/45';
+    ? 'shadow-[0_0_22px_var(--wird-ring)] ring-2 ring-[var(--wird-border-gold)]'
+    : 'ring-1 ring-[var(--wird-border-gold)]';
 
   const filterStyle = variant === 'monochrome'
     ? 'grayscale opacity-85'
@@ -221,7 +221,7 @@ export const WirdSymbol: React.FC<WirdSymbolProps> = ({
   return (
     <div
       style={{ width: pixelSize, height: pixelSize }}
-      className={`relative inline-flex items-center justify-center shrink-0 rounded-full overflow-hidden bg-[#0B132B] select-none transition-transform duration-200 ${glowStyle} ${className}`}
+      className={`relative inline-flex items-center justify-center shrink-0 rounded-full overflow-hidden bg-[var(--wird-primary)] select-none transition-transform duration-200 ${glowStyle} ${className}`}
       role="img"
       aria-label="شعار وِرد الرسمي"
       data-emblem-mode={renderMode}
@@ -291,20 +291,20 @@ export const WirdWordmark: React.FC<WirdWordmarkProps> = ({
       <div className={`flex items-baseline ${sizeConfig.gap}`}>
         <span
           className={`font-black tracking-tight font-quran select-none ${sizeConfig.title} ${
-            textColor || 'text-[#1C4E46] dark:text-[#F5F1E8]'
+            textColor || 'text-[var(--wird-primary)] dark:text-[var(--wird-text)]'
           }`}
         >
           وِرد
         </span>
         <span
-          className={`font-extrabold uppercase font-sans-ui select-none ${sizeConfig.latin} text-[#C59B27] dark:text-[#E0A96D]`}
+          className={`font-extrabold uppercase font-sans-ui select-none ${sizeConfig.latin} text-[var(--wird-accent)]`}
         >
           WIRD
         </span>
       </div>
       {showSubtitle && (
         <span
-          className={`font-medium select-none ${sizeConfig.subtitle} text-[#5B6F6B] dark:text-[#98ADAA]`}
+          className={`font-medium select-none ${sizeConfig.subtitle} text-[var(--wird-muted)]`}
         >
           رفيق القرآن والورد اليومي
         </span>
@@ -341,15 +341,15 @@ export const WirdBrandLockup: React.FC<WirdBrandLockupProps> = ({
         <WirdSymbol size={symbolSize} variant={variant} withGlow={withGlow} />
         <div className="flex flex-col items-center">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl md:text-3xl font-black font-quran text-[#1C4E46] dark:text-[#F5F1E8]">
+            <span className="text-2xl md:text-3xl font-black font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)]">
               وِرد
             </span>
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#C59B27] dark:text-[#E0A96D]">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--wird-accent)]">
               WIRD
             </span>
           </div>
           {showSubtitle && (
-            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] mt-1 font-medium">
+            <p className="text-xs text-[var(--wird-muted)] mt-1 font-medium">
               حفظ وتثبيت القرآن الكريم وفق منهجيات المراجعة المتباعدة
             </p>
           )}

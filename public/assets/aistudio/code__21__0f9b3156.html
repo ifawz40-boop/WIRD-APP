@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+
+<html class="h-full" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>وِرد | WIRD - المصحف الشريف الرقمي</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&amp;family=Amiri:ital,wght@0,400;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Noto+Naskh+Arabic:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed": "#002018",
+            "inverse-primary": "#a3d0be",
+            "surface-tint": "#3c6658",
+            "on-surface-variant": "#414845",
+            "on-secondary-container": "#785a1a",
+            "on-secondary-fixed": "#261900",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#002117",
+            "surface-container-high": "#eee8db",
+            "surface-dim": "#dfdacd",
+            "tertiary-fixed-dim": "#99d2be",
+            "on-error-container": "#93000a",
+            "primary-fixed": "#beedd9",
+            "on-secondary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-fixed-variant": "#234e40",
+            "primary": "#00241a",
+            "secondary-container": "#fed488",
+            "outline-variant": "#c0c8c3",
+            "on-primary-container": "#79a694",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#f9f3e6",
+            "outline": "#717974",
+            "tertiary-fixed": "#b5efda",
+            "surface": "#fff9ec",
+            "surface-bright": "#fff9ec",
+            "tertiary-container": "#003c2f",
+            "background": "#fff9ec",
+            "surface-variant": "#e8e2d5",
+            "primary-container": "#0d3b2e",
+            "error-container": "#ffdad6",
+            "primary-fixed-dim": "#a3d0be",
+            "surface-container-highest": "#e8e2d5",
+            "secondary": "#775a19",
+            "on-surface": "#1d1c14",
+            "secondary-fixed": "#ffdea5",
+            "surface-container": "#f3ede0",
+            "on-secondary-fixed-variant": "#5d4201",
+            "tertiary": "#00241b",
+            "on-tertiary": "#ffffff",
+            "inverse-surface": "#333028",
+            "on-tertiary-container": "#70a895",
+            "secondary-fixed-dim": "#e9c176",
+            "error": "#ba1a1a",
+            "on-tertiary-fixed-variant": "#155041",
+            "inverse-on-surface": "#f6f0e3",
+            "on-background": "#1d1c14"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "quran": ["Amiri Quran", "Noto Naskh Arabic", "serif"],
+            "arabic": ["Noto Naskh Arabic", "sans-serif"],
+            "headline": ["Newsreader", "serif"],
+            "body": ["Plus Jakarta Sans", "Noto Naskh Arabic", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .quran-text {
+      font-family: 'Amiri Quran', 'Noto Naskh Arabic', serif;
+      word-spacing: 0.15em;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c0c8c3;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased font-body min-h-screen flex flex-col selection:bg-primary-fixed selection:text-primary">
+<!-- SHARED COMPONENT: TopNavBar -->
+<div class="relative flex h-auto w-full flex-col bg-[#f9fbfa] group/design-root overflow-x-hidden" style='font-family: Newsreader, "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e9f2ef] px-10 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-[#0f1a17]">
+<div class="size-4">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-[#0f1a17] text-lg font-bold leading-tight tracking-[-0.015em]">وِرد | WIRD</h2>
+</div>
+<label class="flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#559180] flex border-none bg-[#e9f2ef] items-center justify-center pl-4 rounded-l-lg border-r-0" data-icon="MagnifyingGlass" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+</svg>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0f1a17] focus:outline-0 focus:ring-0 border-none bg-[#e9f2ef] focus:border-none h-full placeholder:text-[#559180] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search" value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="flex items-center gap-9">
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">المصحف الشريف</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">ختماتي</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">المتشابهات اللفظية</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">التلاوات الصوتية</a>
+</div>
+<div class="flex gap-2">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d3b2e] text-[#f9fbfa] text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">تحميل السورة دون إنترنت</span>
+</button>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e9f2ef] text-[#0f1a17] text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">وضع التسميع والحفظ</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuChshmsfxvR47z7hd5pyPdmvHAOo3oQzjlcL0q20vyj40G5ny5om0LC0ukX9mLE1ZEGS6rMzLBUuIKQEawQmBj1D7yKCECPTDx9hQK1r8E5DxMk8qJ7Ge_wBdjO-dHXJxvtMMShVKtXItgB-07Dvo0CCerq-93NfNgM-ZhM_WZoxUm6OQzx91tfY5Yf5N77jygW0ZdzpUchGbJGZhSzlAC7e1kHWDIw_PK_HCj1DFoA");'></div>
+</div>
+</header>
+<div class="flex justify-between gap-2 px-4 py-3">
+<div class="flex gap-2">
+<button class="p-2 text-[#0f1a17]">
+<div class="text-[#0f1a17]" data-icon="MagnifyingGlass" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+</svg>
+</div>
+</button>
+<button class="p-2 text-[#0f1a17]">
+<div class="text-[#0f1a17]" data-icon="BookOpen" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M224,48H160a40,40,0,0,0-32,16A40,40,0,0,0,96,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H96a24,24,0,0,1,24,24,8,8,0,0,0,16,0,24,24,0,0,1,24-24h64a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48ZM96,192H32V64H96a24,24,0,0,1,24,24V200A39.81,39.81,0,0,0,96,192Zm128,0H160a39.81,39.81,0,0,0-24,8V88a24,24,0,0,1,24-24h64Z"></path>
+</svg>
+</div>
+</button>
+<button class="p-2 text-[#0f1a17]">
+<div class="text-[#0f1a17]" data-icon="BookmarkSimple" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z"></path>
+</svg>
+</div>
+</button>
+<button class="p-2 text-[#0f1a17]">
+<div class="text-[#0f1a17]" data-icon="TextT" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M208,56V88a8,8,0,0,1-16,0V64H136V192h24a8,8,0,0,1,0,16H96a8,8,0,0,1,0-16h24V64H64V88a8,8,0,0,1-16,0V56a8,8,0,0,1,8-8H200A8,8,0,0,1,208,56Z"></path>
+</svg>
+</div>
+</button>
+<button class="p-2 text-[#0f1a17]">
+<div class="text-[#0f1a17]" data-icon="ArrowsOut" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewbox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M216,48V96a8,8,0,0,1-16,0V67.31l-42.34,42.35a8,8,0,0,1-11.32-11.32L188.69,56H160a8,8,0,0,1,0-16h48A8,8,0,0,1,216,48ZM98.34,146.34,56,188.69V160a8,8,0,0,0-16,0v48a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16H67.31l42.35-42.34a8,8,0,0,0-11.32-11.32ZM208,152a8,8,0,0,0-8,8v28.69l-42.34-42.35a8,8,0,0,0-11.32,11.32L188.69,200H160a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V160A8,8,0,0,0,208,152ZM67.31,56H96a8,8,0,0,0,0-16H48a8,8,0,0,0-8,8V96a8,8,0,0,0,16,0V67.31l42.34,42.35a8,8,0,0,0,11.32-11.32Z"></path>
+</svg>
+</div>
+</button>
+</div>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#0d3b2e] text-[#f9fbfa] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4">
+<div class="text-[#f9fbfa]" data-icon="EyeSlash" data-size="20px" data-weight="fill">
+<svg fill="currentColor" height="20px" viewbox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm89,121.69a32,32,0,0,1-41.67-45.85Zm104.39-25.05c-.42.94-10.55,23.37-33.36,43.8a8,8,0,0,1-11.26-.57L101.4,63.07A8,8,0,0,1,106,49.79,134,134,0,0,1,128,48c34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,247.31,131.26Z"></path>
+</svg>
+</div>
+<span class="truncate">وضع الحفظ الذكي (إخفاء تدريجي)</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2 p-4">
+<a class="text-[#559180] text-base font-medium leading-normal" href="#">سورة الكهف</a>
+<span class="text-[#559180] text-base font-medium leading-normal">/</span>
+<a class="text-[#559180] text-base font-medium leading-normal" href="#">الجزء الخامس عشر</a>
+<span class="text-[#559180] text-base font-medium leading-normal">/</span>
+<span class="text-[#0f1a17] text-base font-medium leading-normal">الصفحة ٢٩٣</span>
+</div>
+<h2 class="text-[#0f1a17] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">سُورَةُ الكَهْفِ</h2>
+<p class="text-[#559180] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">مكية • آياتها ١١٠ • نزلت بعد الإسراء • متوفرة دون اتصال 100%</p>
+</div>
+</div>
+</div>
+</div>
+<!-- END SHARED COMPONENT -->
+<!-- MAIN CONTENT AREA -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 pb-32">
+<!-- Floating Smart Toolbar -->
+<div class="sticky top-4 z-40 my-4 bg-surface-container-lowest/90 backdrop-blur-md border border-outline-variant/40 shadow-sm rounded-xl px-4 py-2.5 flex items-center justify-between gap-4 transition-all">
+<div class="flex items-center gap-3">
+<!-- Quick Surah Dropdown & Search -->
+<div class="relative flex items-center bg-surface-container-low rounded-lg px-3 py-1.5 border border-outline-variant/30 text-sm">
+<span class="material-symbols-outlined text-surface-tint text-lg ml-1">auto_stories</span>
+<select class="bg-transparent text-primary font-medium focus:ring-0 focus:outline-none border-none py-0 pr-1 pl-6 text-sm cursor-pointer">
+<option>١٨. سورة الكهف</option>
+<option>١٩. سورة مريم</option>
+<option>٢٠. سورة طه</option>
+<option>٣٦. سورة يـس</option>
+<option>٥٥. سورة الرحمن</option>
+<option>٦٧. سورة الملك</option>
+</select>
+<span class="material-symbols-outlined text-outline text-base absolute left-2 pointer-events-none">expand_more</span>
+</div>
+<!-- Quick Page / Juz Selector -->
+<div class="flex items-center bg-surface-container-low rounded-lg border border-outline-variant/30 text-xs text-on-surface-variant divide-x divide-x-reverse divide-outline-variant/30 font-medium">
+<button class="px-2.5 py-1.5 hover:bg-surface-variant rounded-r-lg flex items-center gap-1 transition-colors" title="الصفحة السابقة">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span>صفحة ٢٩٣</span>
+</button>
+<button class="px-2.5 py-1.5 hover:bg-surface-variant rounded-l-lg flex items-center gap-1 transition-colors" title="الصفحة التالية">
+<span>الجزء ١٥</span>
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+</div>
+<!-- Offline Indicator Badge -->
+<div class="flex items-center gap-1.5 bg-primary-fixed/40 text-on-primary-fixed-variant px-2.5 py-1 rounded-full text-xs font-medium border border-primary-fixed">
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">offline_pin</span>
+<span>متوفرة دون إنترنت ١٠٠٪</span>
+</div>
+</div>
+<!-- Toolbar Right: Zoom & Memorization Switchers -->
+<div class="flex items-center gap-2">
+<!-- Memorization Level Switcher -->
+<div class="flex items-center bg-surface-container-low rounded-lg p-0.5 border border-outline-variant/30 text-xs">
+<button class="px-3 py-1 rounded-md text-on-surface hover:text-primary transition-all font-medium flex items-center gap-1.5" id="memorize-btn" onclick="toggleMemorization()">
+<span class="material-symbols-outlined text-sm">visibility</span>
+<span>إخفاء الكلمات (حفظ)</span>
+</button>
+</div>
+<!-- Text Resize Control -->
+<div class="flex items-center bg-surface-container-low rounded-lg border border-outline-variant/30 text-xs">
+<button class="p-1.5 hover:text-primary transition-colors text-on-surface-variant" onclick="changeFontSize(1)" title="تكبير الخط">
+<span class="material-symbols-outlined text-base">format_size</span>
+<span class="text-[10px] font-bold">+</span>
+</button>
+<div class="w-px h-4 bg-outline-variant/40"></div>
+<button class="p-1.5 hover:text-primary transition-colors text-on-surface-variant" onclick="changeFontSize(-1)" title="تصغير الخط">
+<span class="material-symbols-outlined text-base">format_size</span>
+<span class="text-[10px] font-bold">-</span>
+</button>
+</div>
+<!-- Toggle Drawer Button -->
+<button class="flex items-center gap-1.5 bg-surface-container hover:bg-surface-container-high text-primary px-3 py-1.5 rounded-lg text-xs font-semibold border border-outline-variant/30 transition-all" onclick="toggleSidePanel()">
+<span class="material-symbols-outlined text-base">difference</span>
+<span>المتشابهات والبيان</span>
+</button>
+</div>
+</div>
+<!-- Grid layout: Quran view + Collapsible Mutashabihat Panel -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
+<!-- Quran Reading Page Frame -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-sm p-8 sm:p-14 relative transition-all" id="quran-container">
+<!-- Elegant Page Header Decoration -->
+<div class="flex items-center justify-between pb-6 mb-8 border-b border-outline-variant/20 text-xs text-outline font-medium tracking-wide">
+<div class="flex items-center gap-2">
+<span>سُورَةُ الكَهْفِ</span>
+<span>•</span>
+<span>مَكِّيَّة</span>
+</div>
+<div class="text-surface-tint font-bold font-arabic">الجُزْءُ الْخَامِسَ عَشَرَ</div>
+<div>صَفْحَة ٢٩٣</div>
+</div>
+<!-- Bismillah Header -->
+<div class="text-center my-6">
+<div class="inline-block px-8 py-2 border-y border-outline-variant/30">
+<p class="font-quran text-2xl md:text-3xl text-primary tracking-wider leading-relaxed">
+            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+          </p>
+</div>
+</div>
+<!-- Digital Mushaf Verses Text Area -->
+<div class="quran-text text-[28px] md:text-[34px] leading-[3.1] text-justify text-on-surface transition-all select-text" id="mushaf-text">
+<!-- Verse 1 -->
+<span class="verse-unit group transition-colors rounded px-1 cursor-pointer hover:bg-primary-fixed/20" data-verse="1">
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلْحَمْدُ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لِلَّهِ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلَّذِىٓ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">أَنزَلَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">عَلَىٰ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">عَبْدِهِ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلْكِتَـٰبَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">وَلَمْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">يَجْعَل</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لَّهُۥ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">عِوَجَاۜ</span>
+<span class="inline-flex items-center justify-center size-8 mx-1 text-sm font-arabic font-bold text-surface-tint border border-surface-tint/40 rounded-full align-middle bg-surface-container-low shadow-sm">١</span>
+</span>
+<!-- Verse 2 (Interactive Karaoke highlight demo) -->
+<span class="verse-unit group transition-colors rounded px-1 cursor-pointer bg-primary-fixed/30 ring-1 ring-primary/20" data-verse="2">
+<span class="memorize-word inline-block transition-opacity duration-300 text-primary font-semibold underline decoration-surface-tint decoration-2">قَيِّمًا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لِّيُنذِرَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">بَأْسًا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">شَدِيدًا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">مِّن</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لَّدُنْهُ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">وَيُبَشِّرَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلْمُؤْمِنِينَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلَّذِينَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">يَعْمَلُونَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلصَّـٰلِحَـٰتِ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">أَنَّ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لَهُمْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">أَجْرًا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">حَسَنًا</span>
+<span class="inline-flex items-center justify-center size-8 mx-1 text-sm font-arabic font-bold text-primary bg-primary-fixed rounded-full align-middle shadow-sm">٢</span>
+</span>
+<!-- Verse 3 -->
+<span class="verse-unit group transition-colors rounded px-1 cursor-pointer hover:bg-primary-fixed/20" data-verse="3">
+<span class="memorize-word inline-block transition-opacity duration-300">مَّـٰكِثِينَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">فِيهِ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">أَبَدًا</span>
+<span class="inline-flex items-center justify-center size-8 mx-1 text-sm font-arabic font-bold text-surface-tint border border-surface-tint/40 rounded-full align-middle bg-surface-container-low shadow-sm">٣</span>
+</span>
+<!-- Verse 4 -->
+<span class="verse-unit group transition-colors rounded px-1 cursor-pointer hover:bg-primary-fixed/20" data-verse="4">
+<span class="memorize-word inline-block transition-opacity duration-300">وَيُنذِرَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلَّذِينَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">قَالُوا۟</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱتَّخَذَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱللَّهُ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">وَلَدًا</span>
+<span class="inline-flex items-center justify-center size-8 mx-1 text-sm font-arabic font-bold text-surface-tint border border-surface-tint/40 rounded-full align-middle bg-surface-container-low shadow-sm">٤</span>
+</span>
+<!-- Verse 5 -->
+<span class="verse-unit group transition-colors rounded px-1 cursor-pointer hover:bg-primary-fixed/20" data-verse="5">
+<span class="memorize-word inline-block transition-opacity duration-300">مَّا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لَهُم</span>
+<span class="memorize-word inline-block transition-opacity duration-300">بِهِۦ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">مِنْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">عِلْمٍ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">وَلَا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لِـَٔابَآئِهِمْۚ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">كَبُرَتْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">كَلِمَةً</span>
+<span class="memorize-word inline-block transition-opacity duration-300">تَخْرُجُ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">مِنْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">أَفْوَٰهِهِمْۚ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">إِن</span>
+<span class="memorize-word inline-block transition-opacity duration-300">يَقُولُونَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">إِلَّا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">كَذِبًا</span>
+<span class="inline-flex items-center justify-center size-8 mx-1 text-sm font-arabic font-bold text-surface-tint border border-surface-tint/40 rounded-full align-middle bg-surface-container-low shadow-sm">٥</span>
+</span>
+<!-- Verse 6 -->
+<span class="verse-unit group transition-colors rounded px-1 cursor-pointer hover:bg-primary-fixed/20" data-verse="6">
+<span class="memorize-word inline-block transition-opacity duration-300">فَلَعَلَّكَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">بَـٰخِعٌ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">نَّفْسَكَ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">عَلَىٰٓ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ءَاثَـٰرِهِمْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">إِن</span>
+<span class="memorize-word inline-block transition-opacity duration-300">لَّمْ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">يُؤْمِنُوا۟</span>
+<span class="memorize-word inline-block transition-opacity duration-300">بِهَـٰذَا</span>
+<span class="memorize-word inline-block transition-opacity duration-300">ٱلْحَدِيثِ</span>
+<span class="memorize-word inline-block transition-opacity duration-300">أَسَفًا</span>
+<span class="inline-flex items-center justify-center size-8 mx-1 text-sm font-arabic font-bold text-surface-tint border border-surface-tint/40 rounded-full align-middle bg-surface-container-low shadow-sm">٦</span>
+</span>
+</div>
+<!-- Page Bottom Micro Info -->
+<div class="mt-12 pt-4 border-t border-outline-variant/20 flex items-center justify-between text-xs text-outline">
+<span class="flex items-center gap-1 font-arabic">
+<span class="material-symbols-outlined text-sm">menu_book</span>
+          حزب ٢٩ • ربع ١
+        </span>
+<div class="flex items-center gap-3">
+<button class="hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">share</span>
+            مشاركة الصفحة
+          </button>
+<span>•</span>
+<button class="hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">bookmark_add</span>
+            حفظ الفاصل
+          </button>
+</div>
+</div>
+</div>
+<!-- Side Panel: Mutashabihat (Verbal Parallels) & Gharib Words -->
+<aside class="lg:col-span-4 space-y-4 transition-all duration-300" id="side-drawer">
+<!-- Mutashabihat Card -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant/20">
+<div class="flex items-center gap-2 text-primary font-bold">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">compare_arrows</span>
+<h3 class="text-base font-arabic">المتشابهات اللفظية بالآية</h3>
+</div>
+<span class="bg-secondary-container/40 text-on-secondary-container px-2 py-0.5 rounded text-[11px] font-semibold">مزامنة تلقائية</span>
+</div>
+<div class="mt-4 space-y-3.5">
+<!-- Item 1 -->
+<div class="bg-surface-container-low/60 rounded-xl p-3 border border-outline-variant/20 hover:border-secondary transition-all">
+<div class="flex items-center justify-between text-xs text-secondary font-semibold mb-1.5">
+<span>سورة الإسراء • آية ٩</span>
+<span class="text-[11px] font-normal text-outline">تشابه: ٩٢٪</span>
+</div>
+<p class="font-quran text-base text-on-surface leading-loose">
+              ﴿إِنَّ هَـٰذَا ٱلْقُرْءَانَ يَهْدِى لِلَّتِى هِىَ أَقْوَمُ <span class="bg-secondary-fixed/50 px-1 rounded text-primary">وَيُبَشِّرُ ٱلْمُؤْمِنِينَ ٱلَّذِينَ يَعْمَلُونَ ٱلصَّـٰلِحَـٰتِ أَنَّ لَهُمْ أَجْرًا كَبِيرًا</span>﴾
+            </p>
+<p class="text-xs text-on-surface-variant mt-2 bg-surface-container-lowest p-2 rounded border border-outline-variant/20 font-arabic">
+<strong class="text-primary">الفرق البياني:</strong> في الكهف «أَجْرًا حَسَنًا» لمناسبة وصف الجنة والبقاء فيها، وفي الإسراء «كَبِيرًا».
+            </p>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-low/60 rounded-xl p-3 border border-outline-variant/20 hover:border-secondary transition-all">
+<div class="flex items-center justify-between text-xs text-secondary font-semibold mb-1.5">
+<span>سورة مريم • آية ٨٨</span>
+<span class="text-[11px] font-normal text-outline">تشابه: ٨٥٪</span>
+</div>
+<p class="font-quran text-base text-on-surface leading-loose">
+              ﴿وَقَالُوا۟ <span class="bg-secondary-fixed/50 px-1 rounded text-primary">ٱتَّخَذَ ٱلرَّحْمَـٰنُ وَلَدًا</span>﴾
+            </p>
+<p class="text-xs text-on-surface-variant mt-1.5 font-arabic">
+              الكهف: «ٱتَّخَذَ ٱللَّهُ وَلَدًا» | مريم: «ٱتَّخَذَ ٱلرَّحْمَـٰنُ وَلَدًا».
+            </p>
+</div>
+</div>
+</div>
+<!-- Gharib al-Quran & Linguistic Context -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-sm">
+<div class="flex items-center gap-2 text-primary font-bold pb-3 border-b border-outline-variant/20">
+<span class="material-symbols-outlined text-surface-tint">spellcheck</span>
+<h3 class="text-base font-arabic">غريب الألفاظ واللطائف</h3>
+</div>
+<ul class="mt-3.5 space-y-3 text-sm">
+<li class="flex items-start gap-2.5">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-1.5 py-0.5 rounded text-xs font-bold font-arabic">عِوَجَا</span>
+<p class="text-xs leading-relaxed text-on-surface-variant font-arabic">انحرافاً وميلاً عن الحق، بل جعله قيماً مستقيماً معتدلاً لا تناقض فيه.</p>
+</li>
+<li class="flex items-start gap-2.5">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-1.5 py-0.5 rounded text-xs font-bold font-arabic">بَـٰخِعٌ</span>
+<p class="text-xs leading-relaxed text-on-surface-variant font-arabic">قاتلٌ ومُهلِكٌ نفسك حزناً وتأسفاً على إعراضهم عن الإيمان.</p>
+</li>
+<li class="flex items-start gap-2.5">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-1.5 py-0.5 rounded text-xs font-bold font-arabic">أَسَفًا</span>
+<p class="text-xs leading-relaxed text-on-surface-variant font-arabic">شديد الحزن والغضب معاً على ما فاتك من إيمانهم وهدايتهم.</p>
+</li>
+</ul>
+</div>
+<!-- Daily Memorization Progress Widget -->
+<div class="bg-gradient-to-br from-primary-container to-tertiary-container text-on-primary rounded-2xl p-5 shadow-sm">
+<div class="flex justify-between items-center mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed">insights</span>
+<span class="font-bold text-sm">إنجاز الورد اليومي</span>
+</div>
+<span class="text-xs text-primary-fixed font-bold font-arabic">٧٥٪ مكتمل</span>
+</div>
+<div class="w-full bg-white/20 rounded-full h-2 mb-3 overflow-hidden">
+<div class="bg-tertiary-fixed h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+</div>
+<div class="flex items-center justify-between text-xs text-surface-container-high">
+<span>الوقت المقضي: ٢٤ دقيقة</span>
+<span>الهدف: ٣٠ دقيقة</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- FLOATING COMPACT AUDIO PLAYER -->
+<footer class="fixed bottom-4 inset-x-4 md:inset-x-8 z-50 max-w-5xl mx-auto bg-surface-container-lowest/95 backdrop-blur-lg border border-outline-variant/40 rounded-2xl p-3 shadow-xl transition-all">
+<div class="flex flex-col md:flex-row items-center justify-between gap-3">
+<!-- Reciter info & Current Ayah -->
+<div class="flex items-center gap-3 w-full md:w-auto">
+<div class="size-11 rounded-xl bg-primary-container flex items-center justify-center text-primary-fixed shrink-0">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<h4 class="text-sm font-bold text-primary truncate">الشيخ مشاري بن راشد العفاسي</h4>
+<span class="px-1.5 py-0.2 bg-surface-container text-surface-tint rounded text-[10px] font-semibold border border-outline-variant/30">حفص عن عاصم</span>
+</div>
+<p class="text-xs text-on-surface-variant truncate">سورة الكهف • الآية ٢ من ١١٠ (مزامنة كلمة بكلمة)</p>
+</div>
+</div>
+<!-- Playback Controls -->
+<div class="flex items-center gap-3">
+<!-- Repeat mode -->
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container transition-colors" title="تكرار الآية (٣ مرات)">
+<span class="material-symbols-outlined text-lg">repeat_one</span>
+</button>
+<!-- Skip -10s -->
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container transition-colors" title="تأخير ١٠ ثوانٍ">
+<span class="material-symbols-outlined text-xl">replay_10</span>
+</button>
+<!-- Play / Pause primary button -->
+<button class="size-11 rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all" id="play-pause-btn" onclick="togglePlay()">
+<span class="material-symbols-outlined text-2xl" id="play-icon" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<!-- Skip +10s -->
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container transition-colors" title="تقديم ١٠ ثوانٍ">
+<span class="material-symbols-outlined text-xl">forward_10</span>
+</button>
+<!-- Speed / Rate -->
+<button class="px-2 py-1 text-xs font-semibold text-on-surface-variant hover:text-primary rounded bg-surface-container-low border border-outline-variant/20 hover:bg-surface-container transition-colors">
+        1.0x
+      </button>
+</div>
+<!-- Audio Scrubber & Timing -->
+<div class="flex items-center gap-3 w-full md:w-72">
+<span class="text-xs font-mono text-outline">00:42</span>
+<div class="relative flex-1 group py-2 cursor-pointer">
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full transition-all" style="width: 35%"></div>
+</div>
+<div class="absolute right-[35%] top-1/2 -translate-y-1/2 size-3 bg-primary rounded-full shadow-md scale-0 group-hover:scale-100 transition-transform"></div>
+</div>
+<span class="text-xs font-mono text-outline">02:18</span>
+<!-- Volume control toggle -->
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-lg">volume_up</span>
+</button>
+</div>
+</div>
+</footer>
+<!-- Interactive Vanilla JavaScript -->
+<script>
+  let isMemorizeMode = false;
+  let isPlaying = true;
+  let currentFontSizeLevel = 0;
+
+  function toggleMemorization() {
+    isMemorizeMode = !isMemorizeMode;
+    const words = document.querySelectorAll('.memorize-word');
+    const btn = document.getElementById('memorize-btn');
+    
+    words.forEach((word, index) => {
+      // Blur or hide alternating words to practice memorization
+      if (isMemorizeMode) {
+        if (index % 2 === 1) {
+          word.classList.add('opacity-0', 'hover:opacity-100', 'bg-surface-container-high', 'rounded', 'select-none');
+        }
+      } else {
+        word.classList.remove('opacity-0', 'hover:opacity-100', 'bg-surface-container-high', 'rounded', 'select-none');
+      }
+    });
+
+    if (isMemorizeMode) {
+      btn.classList.add('bg-primary-container', 'text-on-primary');
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm">visibility_off</span><span>إلغاء وضع الحفظ</span>';
+    } else {
+      btn.classList.remove('bg-primary-container', 'text-on-primary');
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm">visibility</span><span>إخفاء الكلمات (حفظ)</span>';
+    }
+  }
+
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    const playIcon = document.getElementById('play-icon');
+    if (isPlaying) {
+      playIcon.innerText = 'pause';
+    } else {
+      playIcon.innerText = 'play_arrow';
+    }
+  }
+
+  function changeFontSize(delta) {
+    const textEl = document.getElementById('mushaf-text');
+    currentFontSizeLevel = Math.max(-2, Math.min(3, currentFontSizeLevel + delta));
+    
+    const sizes = ['text-[24px]', 'text-[28px]', 'text-[32px]', 'text-[36px]', 'text-[40px]', 'text-[44px]'];
+    // Base is index 2
+    const chosenIndex = 2 + currentFontSizeLevel;
+    textEl.style.fontSize = (28 + (currentFontSizeLevel * 4)) + 'px';
+  }
+
+  function toggleSidePanel() {
+    const sideDrawer = document.getElementById('side-drawer');
+    const quranContainer = document.getElementById('quran-container');
+    
+    if (sideDrawer.classList.contains('hidden')) {
+      sideDrawer.classList.remove('hidden');
+      quranContainer.classList.remove('lg:col-span-12');
+      quranContainer.classList.add('lg:col-span-8');
+    } else {
+      sideDrawer.classList.add('hidden');
+      quranContainer.classList.remove('lg:col-span-8');
+      quranContainer.classList.add('lg:col-span-12');
+    }
+  }
+</script>
+</body></html>

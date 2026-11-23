@@ -6,12 +6,15 @@ import './index.css';
 import './wird-identity.css';
 import {
   applyThemePreferencesToDocument,
+  loadSavedAppearanceMode,
   loadThemePreferences,
 } from './services/themePreferences';
 
 applyThemePreferencesToDocument(
   loadThemePreferences(),
-  document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  loadSavedAppearanceMode(
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  )
 );
 
 createRoot(document.getElementById('root')!).render(

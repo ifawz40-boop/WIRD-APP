@@ -1,131 +1,179 @@
-export type WirdThemePresetId =
-  | 'emerald-editorial'
-  | 'mushaf-parchment'
-  | 'classic-midnight';
+export type WirdDesignId = 'design-a' | 'design-b';
+export type WirdAppearanceMode = 'light' | 'dark';
+
+/** Backward-compatible alias for legacy imports. */
+export type WirdThemePresetId = WirdDesignId;
 
 export type WirdLayoutDensity = 'comfortable' | 'compact';
 export type WirdCornerStyle = 'refined' | 'soft';
 
 export interface WirdThemePreferences {
-  schemaVersion: 2;
-  preset: WirdThemePresetId;
+  schemaVersion: 3;
+  design: WirdDesignId;
+  /** Synchronized mirror of `design` for backward compatibility. */
+  preset: WirdDesignId;
   density: WirdLayoutDensity;
   corners: WirdCornerStyle;
 }
 
-export interface WirdThemePresetMeta {
-  id: WirdThemePresetId;
-  nameAr: string;
-  taglineAr: string;
-  inspirationAr: string;
-  day: {
-    bg: string;
-    surface: string;
-    primary: string;
-    accent: string;
-    ink: string;
-    themeColor: string;
-  };
-  night: {
-    bg: string;
-    surface: string;
-    primary: string;
-    accent: string;
-    ink: string;
-    themeColor: string;
-  };
+export interface WirdVariantPalette {
+  labelAr: string;
+  descriptionAr: string;
+  bg: string;
+  surface: string;
+  surfaceMuted: string;
+  primary: string;
+  accent: string;
+  ink: string;
+  themeColor: string;
+  previewImage: string;
+  emblemImage: string;
 }
 
+export interface WirdDesignMeta {
+  id: WirdDesignId;
+  code: 'A' | 'B';
+  nameAr: string;
+  shortNameAr: string;
+  taglineAr: string;
+  characterAr: string;
+  day: WirdVariantPalette;
+  night: WirdVariantPalette;
+}
+
+/** Backward-compatible alias. */
+export type WirdThemePresetMeta = WirdDesignMeta;
+
 export const WIRD_THEME_PREFS_STORAGE_KEY = 'wird:ui-theme-prefs:v2';
+export const WIRD_APPEARANCE_MODE_STORAGE_KEY = 'wird:ui-appearance-mode:v1';
+
+export const DEFAULT_APPEARANCE_MODE: WirdAppearanceMode = 'light';
 
 export const DEFAULT_THEME_PREFERENCES: WirdThemePreferences = {
-  schemaVersion: 2,
-  preset: 'emerald-editorial',
+  schemaVersion: 3,
+  design: 'design-a',
+  preset: 'design-a',
   density: 'comfortable',
   corners: 'refined',
 };
 
-export const WIRD_THEME_PRESETS: readonly WirdThemePresetMeta[] = [
+export const WIRD_DESIGNS: readonly WirdDesignMeta[] = [
   {
-    id: 'emerald-editorial',
-    nameAr: 'الزمرد والعاج التحريري',
-    taglineAr: 'تباين هادئ بالزمرد العميق والعاج الدافئ نهاراً، وغابي فحمي مريح ليلاً',
-    inspirationAr: 'هوية WIRD V2 المعتمدة · مستلهمة من هدوء Noor UI وShadcnStore',
+    id: 'design-a',
+    code: 'A',
+    nameAr: 'التصميم A — الأندلسي التراثي',
+    shortNameAr: 'التصميم A',
+    taglineAr:
+      'دفء المخطوطات التراثية نهاراً وعمق الزمرد الأندلسي ليلاً بلمسات ذهبية هادئة',
+    characterAr: 'تراثي أندلسي · رقّ دافئ وزمرد غابي',
     day: {
-      bg: '#F8F5EE',
+      labelAr: 'نهاري تراثي دافئ',
+      descriptionAr: 'رقّ كريمي دافئ مع زمرد عميق ولمسات ذهبية رقيقة',
+      bg: '#FFF9EC',
       surface: '#FFFFFF',
-      primary: '#14453D',
-      accent: '#B58D34',
-      ink: '#13221F',
-      themeColor: '#14453D',
+      surfaceMuted: '#F5EFE1',
+      primary: '#00241A',
+      accent: '#B58932',
+      ink: '#1D1C14',
+      themeColor: '#00241A',
+      previewImage: '/assets/aistudio/screen__10__7bd02a79.png',
+      emblemImage: '/assets/aistudio/screen__67__f2b24ad2.png',
     },
     night: {
-      bg: '#0C1412',
-      surface: '#131F1C',
-      primary: '#226358',
-      accent: '#D4B475',
-      ink: '#EFECE4',
-      themeColor: '#0C1412',
+      labelAr: 'ليلي أندلسي زمردي',
+      descriptionAr: 'زمرد غابي عميق بلا وهج مع ذهب دافئ وحروف عاجية واضحة',
+      bg: '#041610',
+      surface: '#0A241C',
+      surfaceMuted: '#071D16',
+      primary: '#124B3B',
+      accent: '#E9C176',
+      ink: '#F6F0E3',
+      themeColor: '#041610',
+      previewImage: '/assets/aistudio/screen__28__8cd915c9.png',
+      emblemImage: '/assets/aistudio/screen__69__cf31ae3c.png',
     },
   },
   {
-    id: 'mushaf-parchment',
-    nameAr: 'رقّ المصحف الهادئ',
-    taglineAr: 'ورق دافئ مانع للإجهاد لجلسات التلاوة الطويلة والتدبر والسيرة',
-    inspirationAr: 'مستلهمة من لوحات القراءة الورقية الدافئة في Ummah Library',
+    id: 'design-b',
+    code: 'B',
+    nameAr: 'التصميم B — العصري والأسحار',
+    shortNameAr: 'التصميم B',
+    taglineAr:
+      'صفاء عصري ناصع بنفحات النعناع نهاراً وكحلي الأسحار الملكي بذهب السراج ليلاً',
+    characterAr: 'عصري هادئ · ناصع نهاراً وكحلي ملكي ليلاً',
     day: {
-      bg: '#F4EDE0',
-      surface: '#FBF8F1',
-      primary: '#2D4A3E',
-      accent: '#9E7432',
-      ink: '#261E16',
-      themeColor: '#2D4A3E',
-    },
-    night: {
-      bg: '#141210',
-      surface: '#1D1A17',
-      primary: '#386353',
-      accent: '#CFA56A',
-      ink: '#F1EAE0',
-      themeColor: '#141210',
-    },
-  },
-  {
-    id: 'classic-midnight',
-    nameAr: 'سكون الليل الكلاسيكي',
-    taglineAr: 'هوية وِرد الأصلية بالكحلي الليلي والذهب الكهرماني مع تباين محسن',
-    inspirationAr: 'استمرارية هوية WIRD الكلاسيكية المعتادة',
-    day: {
-      bg: '#F9F6EE',
+      labelAr: 'نهاري عصري ناصع',
+      descriptionAr: 'خلفية رخامية صافية وبطاقات ناصعة وحدود هندسية دقيقة',
+      bg: '#F9FBFA',
       surface: '#FFFFFF',
-      primary: '#1C4E46',
-      accent: '#C59B27',
-      ink: '#142421',
-      themeColor: '#1C4E46',
+      surfaceMuted: '#EBF3F0',
+      primary: '#0D3B2E',
+      accent: '#9A7228',
+      ink: '#0F1A17',
+      themeColor: '#0D3B2E',
+      previewImage: '/assets/aistudio/screen__40__0ba4301f.png',
+      emblemImage: '/assets/aistudio/screen__68__7395aa77.png',
     },
     night: {
-      bg: '#0B132B',
-      surface: '#111F36',
-      primary: '#1E4A47',
-      accent: '#E0A96D',
-      ink: '#F5F1E8',
-      themeColor: '#0B132B',
+      labelAr: 'ليلي الأسحار الكحلي الملكي',
+      descriptionAr: 'كحلي ليلي عميق لقيام الأسحار مع ذهب السراج وتباين هادئ',
+      bg: '#08121E',
+      surface: '#0D1C2E',
+      surfaceMuted: '#0A1625',
+      primary: '#183B5E',
+      accent: '#E2B15B',
+      ink: '#F1F5F9',
+      themeColor: '#08121E',
+      previewImage: '/assets/aistudio/screen__42__2f2353c4.png',
+      emblemImage: '/assets/aistudio/screen__70__6ddee078.png',
     },
   },
 ] as const;
 
-const VALID_PRESETS = new Set<WirdThemePresetId>(
-  WIRD_THEME_PRESETS.map((preset) => preset.id)
-);
+/** Backward-compatible export alias. */
+export const WIRD_THEME_PRESETS = WIRD_DESIGNS;
+
+const VALID_DESIGNS = new Set<WirdDesignId>(WIRD_DESIGNS.map((d) => d.id));
 
 type ThemePrefsListener = (prefs: WirdThemePreferences) => void;
 const listeners = new Set<ThemePrefsListener>();
 
-export function getThemePresetMeta(id: WirdThemePresetId): WirdThemePresetMeta {
-  return (
-    WIRD_THEME_PRESETS.find((preset) => preset.id === id) ||
-    WIRD_THEME_PRESETS[0]
-  );
+export function mapLegacyPresetToDesign(value: unknown): WirdDesignId | null {
+  if (typeof value !== 'string') return null;
+  if (VALID_DESIGNS.has(value as WirdDesignId)) {
+    return value as WirdDesignId;
+  }
+  if (value === 'emerald-editorial' || value === 'mushaf-parchment') {
+    return 'design-a';
+  }
+  if (value === 'classic-midnight') {
+    return 'design-b';
+  }
+  return null;
+}
+
+export function getDesignMeta(id: WirdDesignId): WirdDesignMeta {
+  return WIRD_DESIGNS.find((design) => design.id === id) || WIRD_DESIGNS[0];
+}
+
+/** Backward-compatible alias for `getDesignMeta`. */
+export const getThemePresetMeta = getDesignMeta;
+
+export function getActiveVariantSummary(
+  designId: WirdDesignId,
+  mode: WirdAppearanceMode
+): {
+  design: WirdDesignMeta;
+  palette: WirdVariantPalette;
+  combinedLabelAr: string;
+} {
+  const design = getDesignMeta(designId);
+  const palette = mode === 'dark' ? design.night : design.day;
+  return {
+    design,
+    palette,
+    combinedLabelAr: `${design.shortNameAr} · ${palette.labelAr}`,
+  };
 }
 
 export function normalizeThemePreferences(
@@ -135,22 +183,46 @@ export function normalizeThemePreferences(
     return { ...DEFAULT_THEME_PREFERENCES };
   }
   const raw = candidate as Record<string, unknown>;
-  const preset: WirdThemePresetId =
-    typeof raw.preset === 'string' &&
-    VALID_PRESETS.has(raw.preset as WirdThemePresetId)
-      ? (raw.preset as WirdThemePresetId)
-      : DEFAULT_THEME_PREFERENCES.preset;
+  const resolvedDesign =
+    mapLegacyPresetToDesign(raw.design) ??
+    mapLegacyPresetToDesign(raw.preset) ??
+    DEFAULT_THEME_PREFERENCES.design;
+
   const density: WirdLayoutDensity =
     raw.density === 'compact' ? 'compact' : 'comfortable';
   const corners: WirdCornerStyle =
     raw.corners === 'soft' ? 'soft' : 'refined';
 
   return {
-    schemaVersion: 2,
-    preset,
+    schemaVersion: 3,
+    design: resolvedDesign,
+    preset: resolvedDesign,
     density,
     corners,
   };
+}
+
+export function loadSavedAppearanceMode(
+  fallback: WirdAppearanceMode = DEFAULT_APPEARANCE_MODE
+): WirdAppearanceMode {
+  try {
+    if (typeof localStorage === 'undefined') return fallback;
+    const saved = localStorage.getItem(WIRD_APPEARANCE_MODE_STORAGE_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch {
+    // Ignore restricted storage errors.
+  }
+  return fallback;
+}
+
+export function saveAppearanceModeLocal(mode: WirdAppearanceMode): void {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(WIRD_APPEARANCE_MODE_STORAGE_KEY, mode);
+    }
+  } catch {
+    // Ignore restricted storage errors.
+  }
 }
 
 export function loadThemePreferences(): WirdThemePreferences {
@@ -170,7 +242,18 @@ export function saveThemePreferences(
   partial: Partial<Omit<WirdThemePreferences, 'schemaVersion'>>
 ): WirdThemePreferences {
   const current = loadThemePreferences();
-  const next = normalizeThemePreferences({ ...current, ...partial });
+  const nextDesign =
+    partial.design !== undefined
+      ? partial.design
+      : partial.preset !== undefined
+      ? partial.preset
+      : current.design;
+  const next = normalizeThemePreferences({
+    ...current,
+    ...partial,
+    design: nextDesign,
+    preset: nextDesign,
+  });
   try {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(WIRD_THEME_PREFS_STORAGE_KEY, JSON.stringify(next));
@@ -185,7 +268,9 @@ export function saveThemePreferences(
 }
 
 export function resetThemePreferences(): WirdThemePreferences {
+  saveAppearanceModeLocal(DEFAULT_APPEARANCE_MODE);
   return saveThemePreferences({
+    design: DEFAULT_THEME_PREFERENCES.design,
     preset: DEFAULT_THEME_PREFERENCES.preset,
     density: DEFAULT_THEME_PREFERENCES.density,
     corners: DEFAULT_THEME_PREFERENCES.corners,
@@ -203,11 +288,14 @@ export function subscribeThemePreferences(
 
 export function applyThemePreferencesToDocument(
   prefs: WirdThemePreferences,
-  mode: 'light' | 'dark'
+  mode: WirdAppearanceMode
 ): void {
+  saveAppearanceModeLocal(mode);
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  root.setAttribute('data-wird-theme', prefs.preset);
+  root.setAttribute('data-wird-design', prefs.design);
+  root.setAttribute('data-wird-theme', prefs.design);
+  root.setAttribute('data-wird-mode', mode);
   root.setAttribute('data-wird-density', prefs.density);
   root.setAttribute('data-wird-corners', prefs.corners);
 
@@ -217,9 +305,9 @@ export function applyThemePreferencesToDocument(
     root.classList.remove('dark');
   }
 
-  const presetMeta = getThemePresetMeta(prefs.preset);
+  const designMeta = getDesignMeta(prefs.design);
   const themeColor =
-    mode === 'dark' ? presetMeta.night.themeColor : presetMeta.day.themeColor;
+    mode === 'dark' ? designMeta.night.themeColor : designMeta.day.themeColor;
   const metaTag = document.querySelector<HTMLMetaElement>(
     'meta[name="theme-color"]'
   );

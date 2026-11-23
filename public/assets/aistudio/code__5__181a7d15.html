@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container": "#f3ede0", "on-primary-fixed-variant": "#234e40", "inverse-surface": "#333028", "on-surface-variant": "#414845", "secondary-fixed-dim": "#e9c176", "tertiary-fixed-dim": "#99d2be", "on-primary-fixed": "#002117", "secondary-container": "#fed488", "outline-variant": "#c0c8c3", "on-tertiary-fixed": "#002018", "on-secondary-fixed": "#261900", "outline": "#717974", "surface-variant": "#e8e2d5", "surface": "#fff9ec", "error-container": "#ffdad6", "on-error": "#ffffff", "on-tertiary-container": "#70a895", "secondary-fixed": "#ffdea5", "error": "#ba1a1a", "on-secondary": "#ffffff", "surface-container-highest": "#e8e2d5", "tertiary": "#00241b", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "on-background": "#1d1c14", "surface-dim": "#dfdacd", "tertiary-fixed": "#b5efda", "on-error-container": "#93000a", "tertiary-container": "#003c2f", "on-tertiary": "#ffffff", "surface-tint": "#3c6658", "on-tertiary-fixed-variant": "#155041", "on-secondary-fixed-variant": "#5d4201", "surface-container-low": "#f9f3e6", "surface-container-high": "#eee8db", "on-secondary-container": "#785a1a", "secondary": "#775a19", "surface-bright": "#fff9ec", "primary-fixed": "#beedd9", "inverse-primary": "#a3d0be", "primary-container": "#0d3b2e", "inverse-on-surface": "#f6f0e3", "background": "#fff9ec", "on-surface": "#1d1c14", "primary": "#00241a", "on-primary-container": "#79a694", "primary-fixed-dim": "#a3d0be" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin-md": "2rem", "gutter-lg": "2rem", "gutter": "1.25rem", "space-xl": "2.5rem", "margin-lg": "3.5rem", "margin": "1.25rem", "space-md": "1rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "space-xs": "0.25rem" }, "fontFamily": { "headline-lg-mobile": ["Newsreader"], "body-sm": ["Plus Jakarta Sans"], "scripture-xl-mobile": ["Newsreader"], "headline-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-md": ["Newsreader"], "scripture-xl": ["Newsreader"], "body-md": ["Plus Jakarta Sans"], "scripture-lg": ["Newsreader"], "label-sm": ["Plus Jakarta Sans"], "headline-lg": ["Newsreader"], "display-lg": ["Newsreader"], "display-lg-mobile": ["Newsreader"], "body-lg": ["Plus Jakarta Sans"] }, "fontSize": { "headline-lg-mobile": ["1.625rem", { "lineHeight": "2.125rem", "fontWeight": "600" }], "body-sm": ["0.875rem", { "lineHeight": "1.45rem", "fontWeight": "400" }], "scripture-xl-mobile": ["1.875rem", { "lineHeight": "3.25rem", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "fontWeight": "600" }], "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "500" }], "scripture-xl": ["2.5rem", { "lineHeight": "4.25rem", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-md": ["1rem", { "lineHeight": "1.65rem", "fontWeight": "400" }], "scripture-lg": ["2rem", { "lineHeight": "3.5rem", "fontWeight": "400" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg": ["2rem", { "lineHeight": "2.6rem", "fontWeight": "600" }], "display-lg": ["3.5rem", { "lineHeight": "4.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "display-lg-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-lg": ["1.125rem", { "lineHeight": "1.85rem", "fontWeight": "400" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed right-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-md"><div class="px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-secondary-fixed"><span class="material-symbols-outlined text-[24px]">auto_stories</span></div><div><span class="font-headline-md text-headline-md text-primary block leading-none">وِرد</span><span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase">WIRD</span></div></div></div><nav class="flex flex-col gap-space-xs px-space-sm" data-active-classes="bg-primary-container text-on-primary font-bold"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-md text-body-md" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>الرئيسية (لوحة المتابعة)</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-md text-body-md" data-path="quran-kareem" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span><span>المصحف الشريف</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-md text-body-md" data-path="memorization-center" href="#"><span class="material-symbols-outlined text-[20px]">psychology</span><span>مركز الحفظ والمراجعة</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-md text-body-md" data-path="adhkar-ruqyah" href="#"><span class="material-symbols-outlined text-[20px]">mindfulness</span><span>الأذكار والرقية</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-md text-body-md" data-path="prayer-times" href="#"><span class="material-symbols-outlined text-[20px]">schedule</span><span>مواقيت الصلاة</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-md text-body-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>الإعدادات</span></a></nav></div><div class="px-space-md pt-space-sm flex flex-col gap-space-sm"><div class="bg-surface-container p-space-sm rounded-lg flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-secondary text-[18px]">verified</span><span class="font-label-sm text-label-sm text-on-surface">الختمة الحالية</span></div><span class="font-label-sm text-label-sm text-secondary font-bold">الجزء ١٤</span></div><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm px-space-xs"><span>الإصدار التعبدي ٢.٤</span><span class="text-secondary">١٤٤٦ هـ</span></div></div></aside><div class="pr-72"><header class="fixed top-0 right-72 left-0 h-16 bg-surface/85 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-xs rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.02)]"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-label-sm text-label-sm text-on-surface-variant">متصل / يعمل دون اتصال</span><span class="material-symbols-outlined text-secondary text-[16px]">cloud_done</span></div><div class="hidden md:flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm"><span class="material-symbols-outlined text-[16px]">event</span><span>اليوم: الثلاثاء، ربيع الآخر</span></div></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded-lg text-on-surface-variant hover:text-on-surface transition-colors font-label-sm text-label-sm" type="button"><span class="material-symbols-outlined text-[18px]">person_outline</span><span>وضع الضيف</span><span class="material-symbols-outlined text-[14px]">expand_more</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
+<!-- Top Sanctuary Header & Andalusian Crown Banner -->
+<section class="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary to-primary-container p-6 sm:p-10 shadow-xl text-on-primary">
+<!-- Decorative Arabesque Vector Overlay -->
+<div class="absolute -left-12 -top-12 w-64 h-64 opacity-10 pointer-events-none text-secondary-fixed">
+<svg class="w-full h-full" fill="currentColor" viewbox="0 0 200 200">
+<path d="M100 0 L125 75 L200 100 L125 125 L100 200 L75 125 L0 100 L75 75 Z"></path>
+<circle cx="100" cy="100" fill="none" r="45" stroke="currentColor" stroke-width="4"></circle>
+<path d="M20 20 L50 80 L80 50 Z M180 20 L150 80 L120 50 Z M20 180 L50 120 L80 150 Z M180 180 L150 120 L120 150 Z" opacity="0.6"></path>
+</svg>
+</div>
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+<div class="flex flex-col gap-2 max-w-2xl">
+<div class="flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest/10 backdrop-blur-md text-secondary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">mosque</span>
+<span>خزانة الأوراد والأذكار والرقية • الرونق الأندلسي الهادئ</span>
+</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed/20 text-secondary-fixed-dim font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">offline_pin</span>
+<span>محلي 100% بدون إنترنت (Offline Secured)</span>
+</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-surface-container-lowest tracking-tight pt-2">
+            أذكار الرسوخ والسكينة وحصن المسلم الجامع
+          </h1>
+<p class="font-body-md text-body-md text-surface-container-highest/90 leading-relaxed">
+            مستودع الأوراد النبوية المحققة من صحيحي البخاري ومسلم ومسنَد أحمد، مصممة لاستحضار القلب ونيل الطمأنينة وإتمام حرز اليوم والليلة بأرقى معايير الاتقان.
+          </p>
+</div>
+<!-- Metric Daily Completion Card -->
+<div class="flex items-center gap-4 bg-surface-container-lowest/10 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-secondary/30 shrink-0">
+<div class="relative w-16 h-16 flex items-center justify-center">
+<svg class="w-16 h-16 transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-lowest/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-secondary-fixed" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-headline-md text-headline-md text-secondary-fixed font-bold">85%</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary-fixed font-semibold uppercase tracking-wider">الإنجاز التعبدي اليومي</span>
+<span class="font-body-sm text-body-sm text-surface-container-lowest font-medium">أُنجِز ١٧ من أصل ٢٠ وِرداً</span>
+<span class="font-label-sm text-label-sm text-secondary-fixed-dim/80">تبقى: رقية الشفاء وورد النوم</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Grid: Digital Andalusian Misbaha & Core Recitation Area -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Column / Large Interactive Misbaha (7 cols) -->
+<section class="lg:col-span-7 flex flex-col gap-6">
+<!-- Misbaha Master Station -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-6 sm:p-8 shadow-lg flex flex-col gap-6">
+<div class="flex items-center justify-between pb-4 border-b border-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[24px]">flare</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">المسبحة الأندلسية الفاخرة</span>
+</div>
+<!-- Quick Preset Dropdown/Switch -->
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded-lg">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded bg-primary text-on-primary transition-all" id="mode-tasbeeh">الحوقلة</button>
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:text-on-surface transition-all" id="mode-tahmeed">الباقيات الصالحات</button>
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:text-on-surface transition-all" id="mode-istighfar">الاستغفار</button>
+</div>
+</div>
+<!-- Featured Dhikr Highlight -->
+<div class="text-center py-4 px-2 flex flex-col items-center gap-2">
+<span class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">stars</span>
+<span>كنزٌ من كنوز الجنة • باب الاستعانة والتسليم</span>
+</span>
+<p class="font-scripture-xl text-scripture-xl text-primary font-bold tracking-wide select-none transition-all" id="dhikr-phrase">
+              لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ
+            </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xl" id="dhikr-virtue">
+              قال النبي ﷺ لأبي موسى الأشعري رضي الله عنه: «ألا أدلك على كلمة هي كنز من كنوز الجنة؟ لا حول ولا قوة إلا بالله». تفك القيود وتشرح الصدور.
+            </p>
+</div>
+<!-- Interactive Andalusian Ring Counter Graphic -->
+<div class="flex flex-col items-center justify-center my-2 select-none">
+<div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+<!-- Subtle Rotating Star Pattern BG -->
+<svg class="absolute inset-0 w-full h-full text-secondary/20 pointer-events-none" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="46" stroke="currentColor" stroke-dasharray="1.5, 3" stroke-width="1"></circle>
+<polygon fill="none" opacity="0.6" points="50,6 63,38 97,50 63,62 50,94 37,62 3,50 37,38" stroke="currentColor" stroke-width="0.75"></polygon>
+</svg>
+<!-- Outer SVG Progress Circle -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle class="text-surface-container-high" cx="50" cy="50" fill="none" r="40" stroke="currentColor" stroke-width="5"></circle>
+<circle class="text-primary-container transition-all duration-200" cx="50" cy="50" fill="none" id="counter-svg-bar" r="40" stroke="currentColor" stroke-dasharray="251.2" stroke-dashoffset="180" stroke-linecap="round" stroke-width="5"></circle>
+</svg>
+<!-- Central Tap Counter Button -->
+<button class="absolute w-44 h-44 sm:w-48 sm:h-48 rounded-full bg-gradient-to-b from-primary-container to-primary text-on-primary shadow-2xl flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform cursor-pointer group" id="btn-count" type="button">
+<span class="font-label-sm text-label-sm text-secondary-fixed tracking-widest uppercase">العدد الحالي</span>
+<span class="font-display-lg text-display-lg text-surface-container-lowest leading-none" id="counter-value">٣٣</span>
+<div class="flex items-center gap-1 text-secondary-fixed/90 text-label-sm font-label-sm group-hover:text-secondary-fixed">
+<span class="material-symbols-outlined text-[16px]">touch_app</span>
+<span>انقر للتسبيح</span>
+</div>
+</button>
+</div>
+<!-- Goal & Cycle Indicators -->
+<div class="flex items-center gap-6 mt-4">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">الهدف المتبقي:</span>
+<span class="font-headline-sm text-headline-sm text-secondary font-bold" id="target-count">١٠٠</span>
+</div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">الدورات المكتملة:</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold" id="cycle-count">٢</span>
+</div>
+</div>
+</div>
+<!-- Misbaha Control Action Bar -->
+<div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-surface-variant">
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors" id="btn-reset">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span>تصفير العداد</span>
+</button>
+<button class="px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" id="btn-haptic" title="الاهتزاز اللمسي">
+<span class="material-symbols-outlined text-[18px]">vibration</span>
+</button>
+<button class="px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" id="btn-sound" title="الصوت الهادئ">
+<span class="material-symbols-outlined text-[18px]">volume_up</span>
+</button>
+</div>
+<button class="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center gap-2 shadow-sm transition-all" id="btn-log-record">
+<span class="material-symbols-outlined text-[18px]">bookmark_added</span>
+<span>تثبيت في السجل اليومي</span>
+</button>
+</div>
+</div>
+<!-- Prophet's Virtues & Andalusian Calligraphic Parchment Snippet -->
+<div class="rounded-xl bg-surface-container-low p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm">
+<div class="w-24 h-24 rounded-xl overflow-hidden shrink-0 shadow-md">
+<img class="w-full h-full object-cover" data-alt="Intricate golden and emerald Andalusian geometric mosaic tile work inside the Great Mosque of Cordoba, soft candlelight illuminating arabesque stone carvings, atmospheric architectural sacred serenity, rich gold leaf and deep jade colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUKb5uzMT0jB-1FsOhTWKeCfpEXlr3esecW0gqqgIh4VXJ0AYZkclxDJQp1eDebJr9nGtO7VzsjN5zP17MqbnjDx6vdKZCL8i6xsa3nrC69itHs5FLLueod3T2ofJv95o7dAP4d4wZ2_3E695E9tMS7wDAKVepF7OxXrAj6gofMVM2NCntaCW0H2kS4X2SkEHT4z6-QiVzUcAYbiotUS6jLovT9EQkhQbgFIQoNdaO"/>
+</div>
+<div class="flex flex-col gap-1.5 text-right">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">menu_book</span>
+<span class="font-headline-sm text-headline-sm text-primary">من لطائف الذكر وتزكية الروح</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              «أحبُّ الكلام إلى الله أربع: سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ، لا يضرك بأيِّهنَّ بدأتَ». استفتح بها أوقات إجابتك، واجعل لسانك رطباً بذكر مولاك في كل نَفَس.
+            </p>
+</div>
+</div>
+</section>
+<!-- Right Column / Comprehensive Adhkar Sorter & Quick Track (5 cols) -->
+<section class="lg:col-span-5 flex flex-col gap-6">
+<!-- Classified Adhkar Catalog -->
+<div class="rounded-xl bg-surface-container p-6 shadow-md flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[24px]">collections_bookmark</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">مصنف الأوراد النبوية</h2>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">محققة بالدليل</span>
+</div>
+<!-- Quick Filter Tabs -->
+<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm">أذكار الصباح</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-sm text-label-sm whitespace-nowrap transition-colors">أذكار المساء</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-sm text-label-sm whitespace-nowrap transition-colors">دبر الصلوات</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-sm text-label-sm whitespace-nowrap transition-colors">تفريج الكرب</button>
+</div>
+<!-- Interactive Fast-Check List -->
+<div class="flex flex-col gap-3">
+<!-- Item 1: Completed -->
+<div class="p-4 rounded-xl bg-surface-container-low flex items-start justify-between gap-4 transition-all">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-secondary font-bold">سيد الاستغفار</span>
+<span class="px-2 py-0.5 rounded text-[11px] bg-secondary-container text-on-secondary-container font-medium">مرة واحدة</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+                  «اللَّهُمَّ أَنْتَ رَبِّي لا إِلَهَ إِلا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ...»
+                </p>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-xs">تمت القراءة بعد صلاة الفجر</span>
+</div>
+<button class="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+</div>
+<!-- Item 2: In Progress -->
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-start justify-between gap-4 shadow-sm hover:shadow transition-all">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary font-bold">حرز الإصباح التام</span>
+<span class="px-2 py-0.5 rounded text-[11px] bg-surface-container-high text-on-surface-variant font-medium">٣ مرات</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+                  «بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ»
+                </p>
+<div class="flex items-center gap-3 mt-1">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">المتبقي: مرتان</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary flex items-center justify-center shrink-0 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Item 3: Not Completed -->
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-start justify-between gap-4 shadow-sm hover:shadow transition-all">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary font-bold">رضا الإيمان واليقين</span>
+<span class="px-2 py-0.5 rounded text-[11px] bg-surface-container-high text-on-surface-variant font-medium">٣ مرات</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+                  «رَضِيتُ بِاللَّهِ رَبّاً، وَبِالإِسْلاَمِ دِيناً، وَبِمُحَمَّدٍ صلى الله عليه وسلم نَبِيّاً»
+                </p>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-xs">من قالها حين يصبح كان حقاً على الله أن يرضيه</span>
+</div>
+<button class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary flex items-center justify-center shrink-0 transition-colors">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+</button>
+</div>
+<!-- Item 4: Fast Tap Single Recitation -->
+<div class="p-4 rounded-xl bg-surface-container-lowest flex items-start justify-between gap-4 shadow-sm hover:shadow transition-all">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary font-bold">تسبيح وتنزيه المئة</span>
+<span class="px-2 py-0.5 rounded text-[11px] bg-surface-container-high text-on-surface-variant font-medium">١٠٠ مرة</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+                  «سُبْحَانَ اللَّهِ وَبِحَمْدِهِ»
+                </p>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">حطت خطاياه وإن كانت مثل زبد البحر</span>
+</div>
+<button class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary flex items-center justify-center shrink-0 transition-colors">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Quick Action Footer for Adhkar -->
+<button class="w-full py-3 rounded-lg bg-surface-container-high hover:bg-surface-variant text-primary font-label-md text-label-md flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">playlist_add_check</span>
+<span>عرض كافة أذكار الصباح كاملة (٣٢ ذكراً)</span>
+</button>
+</div>
+<!-- Weekly Devotional Steadfastness Metric -->
+<div class="rounded-xl bg-surface-container-high p-6 flex flex-col gap-4 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">insights</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">مؤشر الرسوخ الإيماني الأسبوعي</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">آخر ٧ أيام</span>
+</div>
+<div class="grid grid-cols-7 gap-2 pt-2 text-center">
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-primary rounded-t" style="height: 90%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">السبت</span>
+</div>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-primary rounded-t" style="height: 100%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">الأحد</span>
+</div>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-primary rounded-t" style="height: 75%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">الاثنين</span>
+</div>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-secondary rounded-t" style="height: 85%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">اليوم</span>
+</div>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-outline-variant/40 rounded-t" style="height: 10%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">الأربعاء</span>
+</div>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-outline-variant/40 rounded-t" style="height: 10%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">الخميس</span>
+</div>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-full bg-surface-container rounded-t h-24 flex items-end justify-center p-1">
+<div class="w-full bg-outline-variant/40 rounded-t" style="height: 10%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">الجمعة</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant">إجمالي وقت الذكر هذا الأسبوع:</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">٤ ساعات و٢٠ دقيقة</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Section 2: Comprehensive Ruqyah Shari'ah Sanctuary & Audio Interface -->
+<section class="rounded-xl bg-surface-container p-6 sm:p-10 shadow-lg flex flex-col gap-8">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-surface-variant">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-secondary-fixed">
+<span class="material-symbols-outlined text-[28px]">shield</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">منصة الرقية الشرعية المنهجية الموثوقة</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">حفظ بالنفس واستشفاء بآيات التنزيل الحكيم والأدعية النبوية الثابتة</p>
+</div>
+</div>
+<!-- Ruqyah Audio Player Quick Dock -->
+<div class="flex items-center gap-3 bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm">
+<button class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-primary-container transition-all" id="ruqyah-play-btn">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+</button>
+<div class="flex flex-col min-w-[130px]">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">صوت الشيخ: عبدالباسط</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">آيات الشفاء (تكرار ×٣)</span>
+</div>
+<div class="flex items-center gap-1 pr-2">
+<button class="p-1 text-on-surface-variant hover:text-on-surface transition-colors" title="إعادة">
+<span class="material-symbols-outlined text-[18px]">replay</span>
+</button>
+<button class="p-1 text-on-surface-variant hover:text-on-surface transition-colors" title="التحكم بالسرعة">
+<span class="font-label-sm text-label-sm font-bold">1.0x</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Ruqyah Progressive Path (5 Step Interactive Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+<!-- Step 1 -->
+<div class="p-5 rounded-xl bg-surface-container-high hover:bg-surface-variant transition-all cursor-pointer flex flex-col gap-3 group">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">١</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">psychology_alt</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors">التمهيد والنية</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">اليقين التام بالشفاء واستحضار الطهارة واستقبال القبلة</span>
+</div>
+<span class="text-xs text-secondary font-medium mt-auto">٥ دقائق تمهيدية</span>
+</div>
+<!-- Step 2 -->
+<div class="p-5 rounded-xl bg-surface-container-high hover:bg-surface-variant transition-all cursor-pointer flex flex-col gap-3 group">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">٢</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">auto_stories</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors">الفاتحة والمعوذات</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">السبع المثاني، آية الكرسي، والإخلاص والمعوذتين مكررة</span>
+</div>
+<span class="text-xs text-secondary font-medium mt-auto">تكرار ٧ مرات</span>
+</div>
+<!-- Step 3: Active Focus Card -->
+<div class="p-5 rounded-xl bg-primary text-on-primary shadow-md flex flex-col gap-3 relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed text-xs font-bold flex items-center justify-center">٣</span>
+<span class="material-symbols-outlined text-secondary-fixed text-[20px]">healing</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-surface-container-lowest font-bold">آيات الشفاء الست</h3>
+<span class="font-label-sm text-label-sm text-surface-container-highest/90">«وَيَشْفِ صُدُورَ قَوْمٍ مُّؤْمِنِينَ»، وننزل من القرآن ما هو شفاء</span>
+</div>
+<div class="flex items-center gap-1 text-xs text-secondary-fixed font-semibold mt-auto">
+<span class="material-symbols-outlined text-[14px]">graphic_eq</span>
+<span>قيد القراءة التفاعلية الآن</span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="p-5 rounded-xl bg-surface-container-high hover:bg-surface-variant transition-all cursor-pointer flex flex-col gap-3 group">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">٤</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">gavel</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors">إبطال العين والأذى</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">آيات الأعراف ويونس وطه وحفظ السكينة ضد الوسواس</span>
+</div>
+<span class="text-xs text-secondary font-medium mt-auto">١٢ آية مختارة</span>
+</div>
+<!-- Step 5 -->
+<div class="p-5 rounded-xl bg-surface-container-high hover:bg-surface-variant transition-all cursor-pointer flex flex-col gap-3 group">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">٥</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">record_voice_over</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors">الأدعية النبوية الثابتة</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">«أذهب البأس رب الناس»، «بسم الله أرقيك من كل شيء يؤذيك»</span>
+</div>
+<span class="text-xs text-secondary font-medium mt-auto">بالنفث والمسح</span>
+</div>
+</div>
+<!-- Selected Ruqyah Reading Block & Reflection Pad -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+<!-- Recitation Box (8 cols) -->
+<div class="lg:col-span-8 p-6 sm:p-8 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-6">
+<div class="flex items-center justify-between border-b border-surface-variant pb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">auto_stories</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">المقطع الحالي: سورة الإسراء (الآية ٨٢) مع التكرار للشفاء</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1 text-on-surface-variant hover:text-on-surface" title="تكبير الخط">
+<span class="material-symbols-outlined text-[20px]">format_size</span>
+</button>
+<button class="p-1 text-on-surface-variant hover:text-on-surface" title="حفظ علامة">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+<div class="text-center py-6 px-4 flex flex-col items-center gap-4">
+<p class="font-scripture-xl text-scripture-xl text-primary font-bold leading-loose select-text">
+              ﴿ وَنُنَزِّلُ مِنَ الْقُرْآنِ مَا هُوَ شِفَاءٌ وَرَحْمَةٌ لِّلْمُؤْمِنِينَ ۙ وَلَا يَزِيدُ الظَّالِمِينَ إِلَّا خَسَارًا ﴾
+            </p>
+<div class="flex items-center gap-2 text-secondary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">volume_up</span>
+<span>تزامن القارئ: الشيخ مشاري العفاسي (تكرار: ٣ / ٧)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-variant">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+<span>الآية السابقة</span>
+</button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center gap-2 shadow transition-all">
+<span>تمت القراءة والتكرار</span>
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+</button>
+</div>
+</div>
+<!-- Devotional Notes & Reflection Journal (4 cols) -->
+<div class="lg:col-span-4 p-6 rounded-xl bg-surface-container-high shadow-sm flex flex-col justify-between gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">edit_note</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">خواطر الحصن والاستشفاء</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">خاص بك</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            سجّل مشاعرك الإيمانية، ما تجده من طمأنينة بعد ورد الرقية، أو آيات استوقفتك وترغب في استصحابها طوال يومك:
+          </p>
+<textarea class="w-full p-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-sm text-body-sm border-0 focus:outline-none focus:ring-2 focus:ring-primary resize-none placeholder:text-on-surface-variant/60 shadow-inner" placeholder="اكتب خواطرك وملاحظاتك التعبدية هنا..." rows="4"></textarea>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xs text-on-surface-variant">حفظ تلقائي محلي</span>
+<button class="px-4 py-2 rounded-lg bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-secondary/90 transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">save</span>
+<span>حفظ الخاطرة</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Showcase Banner: Export Dhikr Card / Da'wah Share -->
+<section class="rounded-xl bg-gradient-to-l from-surface-container-high to-surface-container p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 shadow-md">
+<img class="w-full h-full object-cover" data-alt="Traditional Andalusian carved plaster arabesque arch with illuminated lanterns hanging in a serene courtyard at twilight, deep emerald shadows and warm golden amber glow, highly spiritual and contemplative atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOeckFkIsi64dOXHvAUdhsU86px-DyI5ugaifQr9TZgAK0ViWATdQCxHw4hTAO2Ih9g7HKZ5NKau0IOLYhNTStHse8jBPQdLhXpSI6Idl5dJjO8pQGnu92bK52GOADhT0ZfE9DIJppa83zhkukxefbXiaza8TgpWuGNfYGw10IuarMC_gEfL6O51fF3LUMsPati7mP_XJhpiXWFnCbYicJ2PTF3mgBhWbxsc26uMRp"/>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-primary">تصدير بطاقة الذكر اليومي (بطاقة دعوية فاخرة)</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            شارك أجر التذكير بالله مع أهلك وأصحابك ببطاقة مصممة بنقاء الخط الأندلسي والزخرفة الإسلامية الملكية بنقرة واحدة.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="px-4 py-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-variant text-on-surface font-label-md text-label-md flex items-center gap-2 shadow-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span>معاينة البطاقة</span>
+</button>
+<button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center gap-2 shadow-md transition-all">
+<span class="material-symbols-outlined text-[18px]">share</span>
+<span>تصدير ومشاركة</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+<script>
+  (function initMisbaha() {
+    let count = 33;
+    let target = 100;
+    let cycles = 2;
+    const maxCircumference = 251.2;
+
+    const btnCount = document.getElementById('btn-count');
+    const counterVal = document.getElementById('counter-value');
+    const svgBar = document.getElementById('counter-svg-bar');
+    const btnReset = document.getElementById('btn-reset');
+    const targetCountEl = document.getElementById('target-count');
+    const cycleCountEl = document.getElementById('cycle-count');
+    const phraseEl = document.getElementById('dhikr-phrase');
+    const virtueEl = document.getElementById('dhikr-virtue');
+
+    // Modes
+    const modeTasbeeh = document.getElementById('mode-tasbeeh');
+    const modeTahmeed = document.getElementById('mode-tahmeed');
+    const modeIstighfar = document.getElementById('mode-istighfar');
+
+    function updateDisplay() {
+      // Arabic numerals representation
+      const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+      const toArabic = (num) => String(num).replace(/[0-9]/g, d => arabicNumbers[d]);
+      
+      counterVal.textContent = toArabic(count);
+      targetCountEl.textContent = toArabic(target);
+      cycleCountEl.textContent = toArabic(cycles);
+
+      // SVG progress update
+      const progress = (count % target) / target;
+      const offset = maxCircumference - (progress * maxCircumference);
+      svgBar.style.strokeDashoffset = offset;
+    }
+
+    if (btnCount) {
+      btnCount.addEventListener('click', () => {
+        count++;
+        if (count >= target) {
+          cycles++;
+          count = 0;
+        }
+        updateDisplay();
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        count = 0;
+        updateDisplay();
+      });
+    }
+
+    function setActiveMode(activeBtn, text, virtue) {
+      [modeTasbeeh, modeTahmeed, modeIstighfar].forEach(btn => {
+        if (!btn) return;
+        btn.classList.remove('bg-primary', 'text-on-primary');
+        btn.classList.add('text-on-surface-variant');
+      });
+      activeBtn.classList.add('bg-primary', 'text-on-primary');
+      activeBtn.classList.remove('text-on-surface-variant');
+
+      if (phraseEl) phraseEl.textContent = text;
+      if (virtueEl) virtueEl.textContent = virtue;
+      count = 0;
+      updateDisplay();
+    }
+
+    if (modeTasbeeh) {
+      modeTasbeeh.addEventListener('click', () => {
+        setActiveMode(modeTasbeeh, 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ', 'قال النبي ﷺ: كنز من كنوز الجنة. تفك الكرب وتدفع المشاق وتحقق تمام الاستعانة.');
+      });
+    }
+    if (modeTahmeed) {
+      modeTahmeed.addEventListener('click', () => {
+        setActiveMode(modeTahmeed, 'سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ', 'أحب الكلام إلى الله، وهن الباقيات الصالحات وغراس الجنة المستدام.');
+      });
+    }
+    if (modeIstighfar) {
+      modeIstighfar.addEventListener('click', () => {
+        setActiveMode(modeIstighfar, 'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ', 'من لزم الاستغفار جعل الله له من كل هم فرجا، ومن كل ضيق مخرجا، ورزقه من حيث لا يحتسب.');
+      });
+    }
+
+    // Interactive Ruqyah Play button
+    const ruqyahPlayBtn = document.getElementById('ruqyah-play-btn');
+    let isPlaying = false;
+    if (ruqyahPlayBtn) {
+      ruqyahPlayBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        ruqyahPlayBtn.innerHTML = isPlaying 
+          ? '<span class="material-symbols-outlined text-[20px]">pause</span>'
+          : '<span class="material-symbols-outlined text-[20px]">play_arrow</span>';
+      });
+    }
+
+    updateDisplay();
+  })();
+</script></main></div></body></html>

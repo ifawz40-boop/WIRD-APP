@@ -311,7 +311,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
               <button
                 type="button"
                 onClick={syncReadingPageAction.onSync}
-                className="min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] px-3 py-1.5 font-bold text-[var(--wird-primary)] hover:border-[var(--wird-accent)] transition-colors whitespace-nowrap"
+                className="min-h-10 inline-flex items-center gap-1.5 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] px-3 py-1.5 font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:border-[var(--wird-accent)] transition-colors whitespace-nowrap"
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>تفسير صفحة {syncReadingPageAction.pageNumber}</span>
@@ -420,7 +420,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
       <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-24 md:p-5 lg:pb-6 space-y-5">
         {viewMode === 'page_overview' && pageAyahs && pageAyahs.length > 0 && (
           <div className="rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-3.5 space-y-2.5">
-            <p className="text-xs font-bold text-[var(--wird-primary)]">
+            <p className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
               اختر آية من الصفحة {pageNumber ? `(${pageNumber})` : ''} لقراءة تفسيرها مباشرة:
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -473,7 +473,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center gap-3 py-12 text-[var(--wird-primary)]">
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
             <Loader2 className="w-7 h-7 animate-spin" />
             <p className="text-sm font-semibold">جارٍ تحميل التفسير المعتمد من المصدر الرسمي...</p>
           </div>
@@ -509,7 +509,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         {/* Tafsir Text */}
         {!isLoading && !error && segments.length > 0 && (
           <article className={`p-1 space-y-3 text-[var(--wird-text)] ${currentSizeConfig.sizeClass} text-justify font-sans-ui`}>
-            <div className="flex items-center gap-2 pb-2 text-xs font-bold text-[var(--wird-primary)] border-b border-[var(--wird-border)]">
+            <div className="flex items-center gap-2 pb-2 text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border-b border-[var(--wird-border)]">
               <Sparkles className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
               <span>بيان المعنى والشرح:</span>
             </div>
@@ -535,7 +535,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
             href="https://quran.com/ar/developers"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 font-semibold text-[var(--wird-primary)] hover:underline"
+            className="inline-flex items-center gap-1 font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:underline"
           >
             <span>منصة مطوري Quran.com</span>
             <ExternalLink className="w-3 h-3" />
@@ -581,7 +581,7 @@ function renderSegmentBlocks(segments: ReturnType<typeof parseTafsirToSegments>)
           return (
             <span
               key={seg.id}
-              className="font-bold text-[var(--wird-primary)] bg-[var(--wird-surface-muted)] px-1 py-0.5 rounded inline-block mx-0.5"
+              className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] bg-[var(--wird-surface-muted)] px-1 py-0.5 rounded inline-block mx-0.5"
             >
               {seg.text}
             </span>

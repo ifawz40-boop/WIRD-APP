@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>منصة وِرد القرآني — لوحة المتابعة والورد اليومي</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Noto+Naskh+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary": "#ffffff",
+            "on-primary-fixed": "#002117",
+            "on-tertiary-fixed-variant": "#155041",
+            "surface-container-high": "#eee8db",
+            "surface-container-lowest": "#ffffff",
+            "surface-dim": "#dfdacd",
+            "on-secondary-fixed": "#261900",
+            "surface-bright": "#fff9ec",
+            "inverse-surface": "#333028",
+            "on-primary-fixed-variant": "#234e40",
+            "tertiary-fixed": "#b5efda",
+            "secondary": "#775a19",
+            "on-surface": "#1d1c14",
+            "on-background": "#1d1c14",
+            "primary": "#00241a",
+            "secondary-fixed-dim": "#e9c176",
+            "outline-variant": "#c0c8c3",
+            "tertiary": "#00241b",
+            "tertiary-fixed-dim": "#99d2be",
+            "surface-container": "#f3ede0",
+            "tertiary-container": "#003c2f",
+            "outline": "#717974",
+            "secondary-container": "#fed488",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed-variant": "#5d4201",
+            "on-secondary-container": "#785a1a",
+            "surface-container-highest": "#e8e2d5",
+            "on-error-container": "#93000a",
+            "on-primary-container": "#79a694",
+            "primary-container": "#0d3b2e",
+            "on-tertiary-container": "#70a895",
+            "inverse-on-surface": "#f6f0e3",
+            "on-error": "#ffffff",
+            "primary-fixed": "#beedd9",
+            "inverse-primary": "#a3d0be",
+            "primary-fixed-dim": "#a3d0be",
+            "error": "#ba1a1a",
+            "on-surface-variant": "#414845",
+            "surface-variant": "#e8e2d5",
+            "error-container": "#ffdad6",
+            "on-tertiary-fixed": "#002018",
+            "surface-container-low": "#f9f3e6",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#3c6658",
+            "background": "#fff9ec",
+            "surface": "#fff9ec",
+            "secondary-fixed": "#ffdea5"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline-lg": ["Newsreader", "Noto Naskh Arabic", "serif"],
+            "scripture-lg": ["Amiri", "Newsreader", "serif"],
+            "scripture-xl": ["Amiri", "Newsreader", "serif"],
+            "display-lg": ["Newsreader", "Noto Naskh Arabic", "serif"],
+            "body-md": ["Plus Jakarta Sans", "Noto Naskh Arabic", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "Noto Naskh Arabic", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .quran-font {
+      font-family: 'Amiri', 'Noto Naskh Arabic', serif;
+    }
+    /* Subtle geometric Andalusian pattern overlay */
+    .andalus-pattern {
+      background-image: radial-gradient(rgba(181, 239, 218, 0.05) 1px, transparent 1px), radial-gradient(rgba(244, 212, 136, 0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased selection:bg-primary-container selection:text-primary-fixed">
+<!-- SHARED COMPONENT: TopNavBar (Exact Unaltered HTML) -->
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-[#f9fbfa] group/design-root overflow-x-hidden" style='font-family: Newsreader, "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e9f2ef] px-10 py-3">
+<div class="flex items-center gap-4 text-[#0f1a17]">
+<div class="size-4">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-[#0f1a17] text-lg font-bold leading-tight tracking-[-0.015em]">منصة وِرد القرآني</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="flex items-center gap-9">
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">الرئيسية</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">المصحف المرتل</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">محرك الحفظ والتكرار</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">الأذكار والسنن</a>
+<a class="text-[#0f1a17] text-sm font-medium leading-normal" href="#">المكتبة الصوتية</a>
+</div>
+<div class="flex gap-2">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d3b2e] text-[#f9fbfa] text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">الوضع الليلي الزمردي • نسخة الأندلس</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#e9f2ef] text-[#0f1a17] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<div class="text-[#0f1a17]" data-icon="Moon" data-size="20px" data-weight="regular">
+<svg fill="currentColor" height="20px" viewbox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106,106,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106,106,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z"></path>
+</svg>
+</div>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#e9f2ef] text-[#0f1a17] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<div class="text-[#0f1a17]" data-icon="Bell" data-size="20px" data-weight="regular">
+<svg fill="currentColor" height="20px" viewbox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+</svg>
+</div>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#e9f2ef] text-[#0f1a17] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<div class="text-[#0f1a17]" data-icon="Gear" data-size="20px" data-weight="regular">
+<svg fill="currentColor" height="20px" viewbox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"></path>
+</svg>
+</div>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="A distinguished circular portrait avatar with soft rim lighting reflecting warm antique gold, representing a serious Quranic scholar in modest attire against an emerald green ambient backdrop." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC9d9-o62fIX0Wc0O-6G98G044ljDxTvN3nrSuJ8qiXXN4giBoZKC3bg3aM9xA9-xbY77joSPoPP-5ITCLh27Ax3Z6wssub4V3ej48Sy21A5Z47f_Eqns3U2NtExtQRX1E2S0z92MLnUR0ptoi6EnZpsTeXyIugiOJMOr0IG5IOjfjN8VGRYyb5y5Ys9zoOrtv8ysvueOJiUAaJkW9BRdB3amUKMJf2Ot2sUhsjG4y9");'></div>
+</div>
+</header>
+<div class="flex flex-wrap justify-between gap-3 p-4">
+<div class="flex min-w-72 flex-col gap-3">
+<p class="text-[#0f1a17] text-4xl font-black leading-tight tracking-[-0.033em]">لوحة المتابعة والورد اليومي</p>
+<p class="text-[#559180] text-base font-normal leading-normal">١٤ رمضان ١٤٤٦ هـ • تلاوة ممتدة، وتثبيت متقن بالنمط الزمردي المهدئ</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e9f2ef] text-[#0f1a17] text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">تخصيص الخطة</span>
+</button>
+</div>
+<div class="p-4 @container">
+<div class="flex flex-col items-stretch justify-start rounded-lg @xl:flex-row @xl:items-start shadow-[0_0_4px_rgba(0,0,0,0.1)] bg-[#f9fbfa]">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg" data-alt="An ornate Andalusian Quranic manuscript illuminated with fine gold leaf calligraphy and deep emerald arabesque border motifs lying peacefully upon a polished dark walnut book stand." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCVceIAsIA7MP95pP4pLr4GiUil_vjHvasHl5gaqNmgU23ased-LFXJ4VTfM5GVx5hREM6A7dpdPtEHlckgzJ2mCBZVJ5KVlP3IWjlqynXyqPox0EO0lroeI6WORxbrcYHf-Sr9L8mGpqmVaCD_6DJuxklq68B7mAYQPvRZz_cu4Fcz8IKKU1tS4Ha51krgNCu9ac7AWofuCcOm9QWKdPwZdFU-v9xk4FmBPBnWg5dZ");'></div>
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 py-4 @xl:px-4 px-4">
+<p class="text-[#559180] text-sm font-normal leading-normal">الورد اليومي المجدول • حزب اليوم</p>
+<p class="text-[#0f1a17] text-lg font-bold leading-tight tracking-[-0.015em]">سورة يوسف — الربع الثالث</p>
+<div class="flex items-end gap-3 justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-[#559180] text-base font-normal leading-normal">بلغت ٦٥٪ من ورد اليوم المخصص. متبقي ٦ صفحات لإتمام الحزب مع تدبر التفاسير المعتمدة.</p>
+<p class="text-[#559180] text-base font-normal leading-normal">آخر موضع: الصفحة ٢٤٠، الآية ٥٣</p>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#0d3b2e] text-[#f9fbfa] text-sm font-medium leading-normal">
+<span class="truncate">استئناف القراءة من صفحة ٢٤٠ (سورة يوسف)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 p-4">
+<div class="flex gap-6 justify-between">
+<p class="text-[#0f1a17] text-base font-medium leading-normal">إنجاز ورد القراءة اليومي</p>
+<p class="text-[#0f1a17] text-sm font-normal leading-normal">65%</p>
+</div>
+<div class="rounded bg-[#d2e5df]"><div class="h-2 rounded bg-[#0d3b2e]" style="width: 65%;"></div></div>
+<p class="text-[#559180] text-sm font-normal leading-normal">١٤ من أصل ٢٠ صفحة</p>
+</div>
+<h2 class="text-[#0f1a17] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">نظام التكرار المتباعد الذكي (Ebbinghaus Spaced Repetition)</h2>
+<!-- EXTENDED COMPREHENSIVE LUXURY EMERALD SECTIONS -->
+<!-- 1. Deep Emerald Stats Metric Strip -->
+<div class="px-4 py-2 grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Metric 1: Verses -->
+<div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-on-surface-variant font-label-md">الآيات المتلوّة اليوم</span>
+<span class="material-symbols-outlined text-primary-container" style="font-size: 22px;">menu_book</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-primary font-display-lg">١١٨</span>
+<span class="text-xs text-primary-container font-medium">+١٥٪ عن أمس</span>
+</div>
+<div class="mt-2 text-xs text-outline">المستهدف: ١٦٠ آية اليوم</div>
+</div>
+<!-- Metric 2: Recitation Time -->
+<div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-on-surface-variant font-label-md">دقائق الخشوع والتلاوة</span>
+<span class="material-symbols-outlined text-primary-container" style="font-size: 22px;">hourglass_top</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-primary font-display-lg">٤٨</span>
+<span class="text-xs text-on-surface-variant font-normal">دقيقة</span>
+</div>
+<div class="mt-2 text-xs text-outline">جلسة الفجر + بعد العصر</div>
+</div>
+<!-- Metric 3: Mutashabihat Mastery -->
+<div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-on-surface-variant font-label-md">إتقان المتشابهات اللفظية</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 22px;">psychology</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-secondary font-display-lg">٩٤٪</span>
+<span class="text-xs text-secondary font-medium">ممتاز مرتفع</span>
+</div>
+<div class="mt-2 text-xs text-outline">اختبار هود ويوسف الأخير</div>
+</div>
+<!-- Metric 4: Offline Status -->
+<div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-on-surface-variant font-label-md">جاهزية التصفح دون إنترنت</span>
+<span class="material-symbols-outlined text-primary-container" style="font-size: 22px;">cloud_done</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-2xl font-bold text-primary font-display-lg">١٠٠٪</span>
+<span class="text-xs text-primary-container font-medium">مكتمل ومحفوظ</span>
+</div>
+<div class="mt-2 text-xs text-outline">مصحف المدينة بصوت الحصري</div>
+</div>
+</div>
+<!-- 2. Spaced Repetition Engine Interactive Hub -->
+<div class="p-4">
+<div class="p-6 rounded-2xl bg-primary text-surface-container-lowest shadow-lg relative overflow-hidden">
+<div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary-container/40 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row gap-8 justify-between items-start">
+<div class="max-w-xl">
+<div class="flex items-center gap-2 mb-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary-container text-primary-fixed border border-primary-fixed/20">
+<span class="material-symbols-outlined text-xs">auto_graph</span>
+                      خوارزمية ثبات الحفظ الموزون
+                    </span>
+<span class="text-xs text-primary-fixed-dim">فترة مراجعة حرجة اليوم</span>
+</div>
+<h3 class="text-2xl font-bold font-headline-md text-surface-container-lowest leading-relaxed">
+                    منحنى النسيان لـ «سورة هود» وصل إلى نقطة الاسترجاع الذهبية
+                  </h3>
+<p class="mt-2 text-sm text-primary-fixed-dim leading-relaxed">
+                    وفق جدول إبنجهاوس الرياضي، تكرار السورة اليوم بمعدل ربع حزب سيُثبّت حفظ الأرباع الستة لـ ٤٥ يوماً قادماً بنسبة رسوخ تتجاوز ٩٢٪.
+                  </p>
+<!-- Surah Retention Micro-Bar -->
+<div class="mt-6 flex flex-col gap-2">
+<div class="flex justify-between text-xs text-primary-fixed">
+<span>مستوى ثبات سورة هود: ٨١٪ (مرحلة التثبيت النهائي)</span>
+<span>جلسة التكرار الموصى بها: ٢٠ دقيقة</span>
+</div>
+<div class="w-full bg-primary-container rounded-full h-2.5 overflow-hidden">
+<div class="bg-secondary-fixed h-full rounded-full" style="width: 81%;"></div>
+</div>
+</div>
+<!-- Quick Action Buttons -->
+<div class="mt-6 flex flex-wrap gap-3">
+<button class="px-5 py-2.5 rounded-lg bg-secondary-fixed text-on-secondary-fixed font-bold text-sm hover:bg-secondary-fixed-dim transition flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">replay</span>
+                      بدء جلسة التكرار الذكي الآن
+                    </button>
+<button class="px-5 py-2.5 rounded-lg bg-primary-container text-surface-container-lowest font-medium text-sm border border-outline-variant/20 hover:bg-primary-container/80 transition flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                      تأجيل إلى ورد السحر
+                    </button>
+</div>
+</div>
+<!-- Spaced Repetition Surah Cards Matrix -->
+<div class="w-full lg:w-72 flex flex-col gap-3 bg-primary-container/60 p-4 rounded-xl border border-primary-fixed/15">
+<span class="text-xs font-semibold text-primary-fixed uppercase tracking-wider">السور المجدولة للتثبيت هذا الأسبوع</span>
+<div class="p-3 rounded-lg bg-primary/80 border border-primary-fixed/10 flex items-center justify-between">
+<div>
+<h4 class="text-sm font-bold text-surface-container-lowest">سورة يونس</h4>
+<p class="text-[11px] text-primary-fixed-dim">الموعد: غداً صباحاً</p>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-tertiary-fixed text-on-tertiary-fixed">قوي (٨٩٪)</span>
+</div>
+<div class="p-3 rounded-lg bg-primary/80 border border-secondary-fixed/30 flex items-center justify-between">
+<div>
+<h4 class="text-sm font-bold text-surface-container-lowest">سورة هود</h4>
+<p class="text-[11px] text-secondary-fixed">مستحق اليوم (عاجل)</p>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-secondary-container text-on-secondary-container">تثبيت (٨١٪)</span>
+</div>
+<div class="p-3 rounded-lg bg-primary/80 border border-primary-fixed/10 flex items-center justify-between">
+<div>
+<h4 class="text-sm font-bold text-surface-container-lowest">سورة الرعد</h4>
+<p class="text-[11px] text-primary-fixed-dim">الموعد: الأربعاء المقبل</p>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-tertiary-fixed text-on-tertiary-fixed">ممتاز (٩٦٪)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Azkar, Prayers, and Daily Sunnah Hub -->
+<div class="p-4 grid grid-cols-1 lg:grid-cols-3 gap-5">
+<!-- Prayer Tracking & Rawatib -->
+<div class="lg:col-span-2 p-6 rounded-2xl bg-surface-container-low border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary p-2 bg-surface-container rounded-lg">mosque</span>
+<div>
+<h3 class="text-base font-bold text-on-surface font-headline-sm">الصلوات المكتوبة والسنن الرواتب</h3>
+<p class="text-xs text-on-surface-variant">محافظة اليوم: ٤ من ٥ صلوات في وقتها • ٨ ركعات سنة راتبة</p>
+</div>
+</div>
+<span class="text-xs px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold">
+                  العصر قادم بعد: ١:٢٤ س
+                </span>
+</div>
+<!-- Prayer Beads Row -->
+<div class="grid grid-cols-5 gap-2 my-5 text-center">
+<div class="p-3 rounded-xl bg-surface-container border border-primary-container/20 flex flex-col items-center">
+<span class="text-xs text-on-surface-variant font-medium">الفجر</span>
+<span class="text-sm font-bold text-primary my-1">٤:٣٢ ص</span>
+<span class="material-symbols-outlined text-primary-container text-base">check_circle</span>
+<span class="text-[10px] text-primary-container mt-1 font-semibold">ركعتا الفجر ✓</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container border border-primary-container/20 flex flex-col items-center">
+<span class="text-xs text-on-surface-variant font-medium">الظهر</span>
+<span class="text-sm font-bold text-primary my-1">١٢:٠٥ م</span>
+<span class="material-symbols-outlined text-primary-container text-base">check_circle</span>
+<span class="text-[10px] text-primary-container mt-1 font-semibold">٤ قبل + ٢ بعد ✓</span>
+</div>
+<div class="p-3 rounded-xl bg-primary-container/10 border-2 border-primary-container flex flex-col items-center shadow-xs">
+<span class="text-xs text-primary-container font-bold">العصر</span>
+<span class="text-sm font-bold text-primary my-1">٣:٣٨ م</span>
+<span class="material-symbols-outlined text-primary-container text-base">timer</span>
+<span class="text-[10px] text-primary-container mt-1 font-semibold">الصلاة القادمة</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container border border-outline-variant/30 flex flex-col items-center opacity-70">
+<span class="text-xs text-on-surface-variant font-medium">المغرب</span>
+<span class="text-sm font-bold text-on-surface my-1">٦:١٢ م</span>
+<span class="material-symbols-outlined text-outline text-base">radio_button_unchecked</span>
+<span class="text-[10px] text-outline mt-1 font-semibold">ركعتان بعد</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container border border-outline-variant/30 flex flex-col items-center opacity-70">
+<span class="text-xs text-on-surface-variant font-medium">العشاء</span>
+<span class="text-sm font-bold text-on-surface my-1">٧:٤٢ م</span>
+<span class="material-symbols-outlined text-outline text-base">radio_button_unchecked</span>
+<span class="text-[10px] text-outline mt-1 font-semibold">الشفع والوتر</span>
+</div>
+</div>
+<!-- Quick Hadith/Spiritual Capsule -->
+<div class="p-3 rounded-xl bg-surface-container flex items-center justify-between text-xs text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">auto_awesome</span>
+<span>«من صلّى في يومٍ وليلة ثِنْتَيْ عَشْرَةَ رَكْعَةً بُنِيَ له بيتٌ في الجنّة»</span>
+</div>
+<a class="font-bold text-primary underline" href="#">سجل السنن</a>
+</div>
+</div>
+<!-- Adhkar & Supplication Station -->
+<div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant/20">
+<h3 class="text-base font-bold text-on-surface font-headline-sm">أذكار اليوم والمأثورات</h3>
+<span class="material-symbols-outlined text-primary-container">nights_stay</span>
+</div>
+<div class="mt-4 flex flex-col gap-3">
+<!-- Azkar Item 1 -->
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary-container text-lg">wb_sunny</span>
+<div>
+<p class="text-xs font-bold text-on-surface">أذكار الصباح كاملة</p>
+<p class="text-[10px] text-outline">تمت بحمد الله • ٦:١٠ ص</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary-container text-base">check_circle</span>
+</div>
+<!-- Azkar Item 2 -->
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container border border-secondary-fixed/40">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary text-lg">wb_twilight</span>
+<div>
+<p class="text-xs font-bold text-on-surface">أذكار المساء</p>
+<p class="text-[10px] text-secondary">حان وقت البدء (بعد العصر)</p>
+</div>
+</div>
+<button class="px-2.5 py-1 text-xs font-bold rounded bg-secondary-fixed text-on-secondary-fixed">
+                      ابدأ
+                    </button>
+</div>
+<!-- Azkar Item 3 -->
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container opacity-60">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">bedtime</span>
+<div>
+<p class="text-xs font-bold text-on-surface">أذكار النوم وسورة الملك</p>
+<p class="text-[10px] text-outline">مجدول عند ١٠:٣٠ م</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-base">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+<!-- Do Not Disturb & Quiet Hours Toggle -->
+<div class="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">do_not_disturb_on</span>
+                  وضع التهجد الهادئ (كتم الإشعارات)
+                </span>
+<input checked="" class="rounded text-primary-container focus:ring-0 focus:ring-offset-0 h-4 w-4" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- 4. Offline Reading & Cloud Synchronisation Bar -->
+<div class="p-4 mb-8">
+<div class="p-4 rounded-xl bg-surface-container-high border border-outline-variant/40 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="p-2.5 rounded-lg bg-primary-container text-surface-container-lowest">
+<span class="material-symbols-outlined text-xl">offline_pin</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-on-surface">كافة السور والتفاسير والمقاطع الصوتية محملة محلياً (Offline Ready)</h4>
+<p class="text-xs text-on-surface-variant">آخر مزامنة سحابية آمنة للملاحظات والتحديدات: اليوم الساعة ١١:٢٠ ص • التشفير تام (End-to-End)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 rounded-lg bg-surface-container border border-outline text-xs font-bold text-on-surface hover:bg-surface-dim transition flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">tune</span>
+                  إدارة التخزين المحلي (١.٤ جيجابايت)
+                </button>
+<button class="px-4 py-2 rounded-lg bg-primary-container text-surface-container-lowest text-xs font-bold hover:bg-primary transition flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">sync</span>
+                  مزامنة الآن
+                </button>
+</div>
+</div>
+</div>
+<!-- Footer Credit & Subtle Andalusian Touch -->
+<footer class="border-t border-outline-variant/30 py-6 px-4 flex flex-col md:flex-row items-center justify-between text-xs text-outline gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm">verified</span>
+<span>مصحف مجمع الملك فهد لطباعة المصحف الشريف — بالرسم العثماني برواية حفص عن عاصم</span>
+</div>
+<div>
+<span>منصة وِرد القرآني — وقف لله تعالى • الإصدار الأندلسي ٢.٤</span>
+</div>
+</footer>
+</div>
+</div>
+</div>
+</div>
+</body></html>

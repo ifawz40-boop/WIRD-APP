@@ -15,10 +15,13 @@ import {
 import { UserProfile } from '../../types/quran';
 import { useCloudSync } from '../../hooks/useCloudSync';
 
+import { type WirdDesignId } from '../../services/themePreferences';
+
 interface HeaderProps {
   currentTab: string;
   tabTitle: string;
   profile: UserProfile;
+  activeDesign?: WirdDesignId;
   onToggleTheme: () => void;
   onOpenThemeCustomizer?: () => void;
   onStartDailySession: () => void;
@@ -49,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentTab,
   tabTitle,
   profile,
+  activeDesign = 'design-a',
   onToggleTheme,
   onOpenThemeCustomizer,
   onStartDailySession,
@@ -187,16 +191,20 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </button>
 
-        {/* Live Theme & Layout Customizer Trigger */}
+        {/* Live Theme & Design Customizer Trigger */}
         {onOpenThemeCustomizer && (
           <button
             type="button"
             onClick={onOpenThemeCustomizer}
-            className="min-h-11 min-w-11 inline-flex items-center justify-center text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] rounded-[var(--wird-radius-control)] transition-colors wird-focus-ring"
-            title="تخصيص المظهر واللوحة البصرية"
-            aria-label="تخصيص المظهر واللوحة البصرية"
+            data-theme-customizer-trigger
+            className="min-h-11 inline-flex items-center justify-center gap-1.5 px-2.5 text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] rounded-[var(--wird-radius-control)] transition-colors wird-focus-ring"
+            title={`تخصيص التصميم والمظهر (النشط: ${activeDesign === 'design-b' ? 'التصميم B' : 'التصميم A'})`}
+            aria-label="تخصيص التصميم والمظهر"
           >
             <Palette className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+            <span className="hidden sm:inline text-[11px] font-bold text-[var(--wird-muted)]">
+              {activeDesign === 'design-b' ? 'B' : 'A'}
+            </span>
           </button>
         )}
 
@@ -215,7 +223,7 @@ export const Header: React.FC<HeaderProps> = ({
           {profile.theme === 'dark' ? (
             <Sun className="w-4 h-4 text-[var(--wird-accent)]" />
           ) : (
-            <Moon className="w-4 h-4 text-[var(--wird-primary)]" />
+            <Moon className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
           )}
         </button>
 

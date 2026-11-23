@@ -1,42 +1,38 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-21 (Rebuild Wave 4A — Calm Editorial Dashboard, Printed Mushaf Default, Opposite-Page Tafsir + Bottom Navigation, Reading Khatma & Library Harmonized and Visually Verified in Headless Chromium)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (local workspace has no `.git` metadata in AI Studio container; live GitHub diff vs `origin/main` is `UNKNOWN` from local shell)  
-**Active feature branch & PR (prior checkpoint):** `feat/platform-transformation-20261120` → Draft PR `#404` (`https://github.com/ifawz40-boop/WIRD-APP/pull/404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
+**Last reconciled:** 2026-11-22 (Four-Variant Design Integration — Design A [الأندلسي التراثي] & Design B [العصري الهادئ] × Light / Dark, Unified Collapsible Sidebar, Reference-Backed Appearance Selector, Semantic Token & Dark-Contrast Harmonization)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (AI Studio container has no `.git` directory; live GitHub diff vs `origin/main` is `UNKNOWN` locally)  
+**Prior merged baseline (owner prompt context):** Merge commit `419b8713078a72b7ef300a6531506d1a89b1e0f9` (2026-11-20, PR `#404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Rebuild Wave — Complete & Premium Reconstruction (2026-11-21)
+## Active Checkpoint — Four-Variant Design Integration (2026-11-22)
 
-### Completed in Wave 1 (Blueprint + Phase 2 Design System V2 + Phase 3 Application Shell)
-1. **Authoritative Blueprint (`WIRD_COMPLETE_REBUILD_BLUEPRINT.md`):** Documented verified workspace baseline, 4-reference licensing & extraction matrix (`Ummah Library` [AGPL-3.0, architectural/UX inspiration only, zero copied code], `ShadcnStore` [MIT], `Noor UI` [MIT], `Truvar Design System` [MIT]), Design System V2 3-preset token specification, non-negotiable data/religious integrity map, and Phases 0–6 acceptance gates.
-2. **Phase 2 — WIRD Design System V2 (`src/services/themePreferences.ts`, `src/wird-identity.css`, `src/index.css`, `src/components/ui/WirdPrimitives.tsx`, `src/components/ui/ThemeCustomizerSheet.tsx`, `src/components/brand/BrandDesignShowcase.tsx`):**
-   - Built a 3-preset × Day/Night semantic CSS token cascade (`emerald-editorial` [default], `mushaf-parchment`, `classic-midnight`) plus density (`comfortable` | `compact`) and corner geometry (`refined` | `soft`) modifiers persisted locally (`wird:ui-theme-prefs:v2`).
-   - Created hand-crafted RTL-first UI primitives (`WirdButton`, `WirdCard`, `WirdCardHeader`, `WirdMetadataRow`, `WirdSegmentedTabs`, `WirdEmptyState`, `WirdViewSkeleton`, `WirdSheet`) with zero new npm dependencies.
-3. **Phase 3 — Application Shell & Navigation (`src/components/layout/Sidebar.tsx`, `src/components/layout/Header.tsx`, `src/components/shared/AppErrorBoundary.tsx`, `src/App.tsx`, `src/main.tsx`, `index.html`):**
-   - Migrated Sidebar, Header, ErrorBoundary, Toast, and Session Exit modal to semantic `--wird-*` tokens, added Header Theme Customizer trigger, replaced Suspense spinner with `WirdViewSkeleton`, and added smooth compositor-only `.wird-view-enter` transitions.
-
-### Completed in Wave 4A (Calm Editorial Dashboard + Printed Mushaf Primary Experience + Opposite-Page Tafsir & Bottom Navigation)
-1. **Dashboard Reconstruction (`src/components/dashboard/DashboardView.tsx`):**
-   - Rebuilt with Design System V2 tokens across all 3 Day/Night presets, `.wird-hero-surface` welcome anchor with Hijri date + next prayer + direct `فتح المصحف المطبوع` & `ابدأ ورد اليوم` CTAs, unified Daily Wird & Revision cards, zero-pill metadata rows, and decoupled `#dashboard-prayer-card` from the Quick Actions card.
-   - Fixed Arabic comma glyph rendering in hero greeting by reserving `.font-quran` strictly for the quoted Quranic ayah.
-2. **Printed Mushaf Default, Opposite-Page Tafsir & Bottom Navigation (`src/components/library/QuranMushafReader.tsx`, `src/components/library/PrintedMushafSpread.tsx`, `src/components/library/TafsirContentPane.tsx`, `src/components/library/ReadingKhatmaPanel.tsx`, `src/components/library/QuranLibraryView.tsx`):**
-   - Made Printed Mushaf (`readerLayout === 'printed'`) the default reading experience while keeping Flexible Text (`النص المرن`) 1 click away.
-   - Added direct 1-tap `عرض التفسير مكان المقابلة` / `العودة لعرض الصفحتين` toggle on 2-page desktop spreads; stepping advances single-page (`1 -> 2` putting Tafsir in place of page 1) with an explicit `تخطي صفحتين` (+2) option.
-   - Added `<nav aria-label="التنقل السفلي بين صفحات المصحف">` directly below the Mushaf stage with Prev/Next, spread indicator, `+2` jump when opposite Tafsir is open, and quick bottom `تسجيل الصفحة كمقروءة` when a Reading Khatma is active.
-   - Defined `--wird-primary-ink` and `--wird-accent-ink` across all 6 Day/Night theme blocks in `src/wird-identity.css` (fixing unreadable dark-on-dark primary buttons caught during Round 1 Chromium inspection) and added mobile bottom clearance (`pb-24 lg:pb-6`) in `TafsirContentPane.tsx`.
-3. **Local & Browser Verification Executed (2026-11-21):**
-   - `npm test` (73 suites incl. Wave 4A assertions in `src/tests/designSystemV2.test.ts`): **PASSED** (`805 PASSED | 0 FAILED`)
-   - `lint_applet` (`tsc --noEmit` + Tanzil Simple validation + 114 Surah chunk generation): **PASSED**
-   - `compile_applet` (Vite production build): **PASSED**
-   - `npm run smoke:api-imports`: **PASSED**
-   - Headless Chromium (`playwright-cli`, desktop `1440x900` + mobile `390x844`): **PASSED** (0 console errors, 0 warnings, `overflow: false` on mobile, Round 1 defects fixed and re-verified in Round 2 across Day & Night modes).
-   - Firestore Rules Emulator (`npm run test:firestore-rules`): **BLOCKED** locally (`java` not installed in container).
-   - GitHub CI / Vercel Preview / Vercel Production: **NOT RUN** from this workspace.
+1. **Centralized 2×2 Preference Engine (`src/services/themePreferences.ts`, `src/main.tsx`):**
+   - Implemented two independent user preferences — **`design`: `'design-a' | 'design-b'`** (`التصميم A — الأندلسي التراثي` default, `التصميم B — العصري الهادئ`) and **`appearanceMode`: `'light' | 'dark'`** (`light` default) — producing **4 switchable combinations** (`schemaVersion: 3`, local keys `wird:ui-theme-prefs:v2` and `wird:ui-appearance-mode:v1`) without page reloads or cross-resetting.
+   - Added lossless migration (`mapLegacyPresetToDesign`) from prior preset IDs (`emerald-editorial` / `mushaf-parchment` → `design-a`; `classic-midnight` → `design-b`), `getActiveVariantSummary()`, instant DOM attribute application (`data-wird-design`, `data-wird-theme`, `data-wird-mode`, `.dark`, `meta[name="theme-color"]`), and full `resetThemePreferences()` to `design-a` + `light`.
+   - Wired authentic local reference preview PNGs and emblems under `/public/assets/aistudio/` (`screen__10__7bd02a79.png`, `screen__28__8cd915c9.png`, `screen__40__0ba4301f.png`, `screen__42__2f2353c4.png`, and emblems `screen__67__f2b24ad2.png`–`screen__70__6ddee078.png`).
+2. **4-Variant Semantic CSS Token Cascade (`src/wird-identity.css`):**
+   - Added explicit high-specificity rules (`:root[data-wird-design='design-a']`, `:root.dark[data-wird-design='design-a']`, `:root[data-wird-design='design-b']`, `:root.dark[data-wird-design='design-b']`) covering backgrounds, surfaces, muted panels, primary/accent inks, hairlines, `--wird-sidebar-bg`, `--wird-mushaf-paper`, and ambient shell gradients (`#FFF9EC`/`#041610` for Design A Light/Dark; `#F9FBFA`/`#08121E` for Design B Light/Dark).
+3. **Reference-Backed Appearance Selector & Unified Collapsible Navigation (`src/components/ui/AppearanceSelectorPanel.tsx`, `src/components/ui/ThemeCustomizerSheet.tsx`, `src/components/settings/SettingsView.tsx`, `src/components/layout/Header.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/auth/AuthScreen.tsx`, `src/components/brand/BrandDesignShowcase.tsx`, `src/App.tsx`):**
+   - Built `AppearanceSelectorPanel` (`layout="sheet" | "settings"`) with active combination summary banner, Light/Dark selector, Design A/B selector with authentic preview cards + color swatches, 4-tile live variant gallery (in `SettingsView`), density/corner controls, and Restore Defaults.
+   - Exposed the selector inside both **`SettingsView` (`#settings-appearance-section`)** and **`ThemeCustomizerSheet`** (header trigger showing active `A`/`B` design badge), kept the unified collapsible right sidebar (`Ctrl+B`/`Cmd+B`) across both Design A & B, and added a compact A/B + Light/Dark quick switcher in `AuthScreen.tsx`.
+4. **Global Semantic Token & Dark-Mode Contrast Harmonization (`18+` shared/feature components + `DashboardView.tsx` + `src/tests/designSystemV2.test.ts`):**
+   - Eliminated legacy hardcoded palette hexes (`#0B132B`, `#111F36`, `#1C4E46`, `#1E4A47`, `#0E192D`, `#152642`, `#162744`) across views/shared primitives (`grep` confirms zero leaks outside intentional `src/components/brand/`, `QuranMushafFacsimilePage.tsx`, and `QuranTypographyLab.tsx`).
+   - Fixed dark-mode text/icon contrast across 15 components by pairing `text-[var(--wird-primary)]` with `dark:text-[var(--wird-accent)]`.
+   - Tightened `DashboardView.tsx` welcome hero padding for compact above-the-fold layout and updated `src/tests/designSystemV2.test.ts` for all 4 design × appearance contracts.
+5. **Preserved Integrity & Verification Executed (2026-11-22):**
+   - **Untouched:** Quran corpus (`completeQuranData.json`, `src/data/sources/`), Hadith/Tafsir/Seerah/Ruqyah data, Firebase Auth & `firestore.rules`, Vercel env vars, and experimental sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`).
+   - `npm test` (73 suites incl. `designSystemV2.test.ts` + Tanzil validation + 114 Surah chunk split): **PASS** (`806 PASSED | 0 FAILED`)
+   - `npm run smoke:api-imports`: **PASS**
+   - `lint_applet` (`tsc --noEmit`) & `compile_applet` (Vite production build): verified in final build check.
+   - Headless Chromium visual verification (desktop `1440x900` + mobile `390x844` via `playwright` on port `3000`): **PASS** — verified exact computed RGB backgrounds across all 4 combinations (`rgb(255, 249, 236)`, `rgb(4, 22, 16)`, `rgb(249, 251, 250)`, `rgb(8, 18, 30)`), zero horizontal overflow (`overflow: false`), `0` console/page errors, and crisp dark-mode text contrast in both `Design A Dark` and `Design B Dark`.
+   - `npm run test:firestore-rules`: **BLOCKED** locally (`java` not installed in container).
+   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from this workspace.
 
 ### Next Step
-- Begin **Phase 4 — Wave 4B**: Harmonize and upgrade **Memorization Session (`MemorizationSessionView.tsx`)**, **Memorization Plans (`PlansView.tsx`)**, **Revision Center (`RevisionCenterView.tsx`)**, **Memorization Tests (`MemorizationTestsView.tsx`)**, and **Progress Analytics (`ProgressView.tsx`)** onto WIRD Design System V2 tokens/primitives while preserving cumulative linking, SM-2 revision, and all test contracts.
+- Sync verified AI Studio workspace changes onto a clean GitHub feature branch (`WIRD-APP`) and execute the full exact-head GitHub Actions Quality Gate (including Java Firestore Rules Emulator and Playwright E2E) plus Preview review before any authorized merge.
 
 ---
 

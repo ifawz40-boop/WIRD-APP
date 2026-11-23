@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#e8e2d5", "error": "#ba1a1a", "on-error-container": "#93000a", "primary": "#00241a", "secondary": "#775a19", "on-surface": "#1d1c14", "inverse-primary": "#a3d0be", "surface-container-high": "#eee8db", "tertiary-container": "#003c2f", "on-secondary-fixed": "#261900", "secondary-fixed": "#ffdea5", "on-primary-fixed": "#002117", "on-primary-fixed-variant": "#234e40", "surface-container-lowest": "#ffffff", "outline": "#717974", "surface-tint": "#3c6658", "primary-fixed-dim": "#a3d0be", "background": "#fff9ec", "surface": "#fff9ec", "on-tertiary-container": "#70a895", "on-background": "#1d1c14", "surface-dim": "#dfdacd", "on-tertiary": "#ffffff", "secondary-container": "#fed488", "on-secondary-fixed-variant": "#5d4201", "on-primary": "#ffffff", "on-error": "#ffffff", "on-surface-variant": "#414845", "secondary-fixed-dim": "#e9c176", "primary-fixed": "#beedd9", "on-primary-container": "#79a694", "surface-container": "#f3ede0", "on-tertiary-fixed": "#002018", "on-tertiary-fixed-variant": "#155041", "on-secondary-container": "#785a1a", "tertiary-fixed": "#b5efda", "outline-variant": "#c0c8c3", "surface-container-low": "#f9f3e6", "error-container": "#ffdad6", "tertiary-fixed-dim": "#99d2be", "surface-container-highest": "#e8e2d5", "surface-bright": "#fff9ec", "inverse-on-surface": "#f6f0e3", "inverse-surface": "#333028", "tertiary": "#00241b", "primary-container": "#0d3b2e", "on-secondary": "#ffffff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "1.25rem", "margin-lg": "3.5rem", "space-md": "1rem", "gutter": "1.25rem", "space-xs": "0.25rem", "space-xl": "2.5rem", "gutter-lg": "2rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "margin-md": "2rem" }, fontFamily: { "body-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Newsreader"], "scripture-xl-mobile": ["Newsreader"], "label-md": ["Plus Jakarta Sans"], "display-lg-mobile": ["Newsreader"], "headline-lg": ["Newsreader"], "scripture-xl": ["Newsreader"], "label-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "scripture-lg": ["Newsreader"], "headline-sm": ["Plus Jakarta Sans"], "display-lg": ["Newsreader"], "headline-md": ["Newsreader"] }, fontSize: { "body-md": ["1rem", { lineHeight: "1.65rem", fontWeight: "400" }], "headline-lg-mobile": ["1.625rem", { lineHeight: "2.125rem", fontWeight: "600" }], "scripture-xl-mobile": ["1.875rem", { lineHeight: "3.25rem", letterSpacing: "0.01em", fontWeight: "500" }], "label-md": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "0.02em", fontWeight: "600" }], "display-lg-mobile": ["2.25rem", { lineHeight: "2.75rem", letterSpacing: "-0.01em", fontWeight: "600" }], "headline-lg": ["2rem", { lineHeight: "2.6rem", fontWeight: "600" }], "scripture-xl": ["2.5rem", { lineHeight: "4.25rem", letterSpacing: "0.01em", fontWeight: "500" }], "label-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.04em", fontWeight: "500" }], "body-lg": ["1.125rem", { lineHeight: "1.85rem", fontWeight: "400" }], "body-sm": ["0.875rem", { lineHeight: "1.45rem", fontWeight: "400" }], "scripture-lg": ["2rem", { lineHeight: "3.5rem", fontWeight: "400" }], "headline-sm": ["1.25rem", { lineHeight: "1.75rem", fontWeight: "600" }], "display-lg": ["3.5rem", { lineHeight: "4.25rem", letterSpacing: "-0.02em", fontWeight: "600" }], "headline-md": ["1.5rem", { lineHeight: "2rem", fontWeight: "500" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-[20px]">auto_stories</span></div><div><span class="font-label-sm text-label-sm text-secondary block leading-none">وِرد المبارك</span><h1 class="font-headline-sm text-headline-sm text-primary tracking-tight leading-tight">Al Mazeed Wal Iedadat</h1></div></div><div class="flex items-center gap-space-xs"><button class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span></button><a class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary" data-path="al-mazeed-wal-iedadat" href="#"><span class="material-symbols-outlined text-[18px]">person</span></a></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface px-margin"><div class="flex flex-col w-full pb-8">
+<!-- Profile & Spiritual Streak Card -->
+<div class="relative overflow-hidden bg-surface-container rounded-xl p-space-lg shadow-sm mb-space-md">
+<div class="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-secondary-fixed/30 blur-2xl pointer-events-none"></div>
+<div class="flex items-center gap-space-md relative z-10">
+<div class="relative">
+<img class="w-16 h-16 rounded-full object-cover shadow-sm bg-surface-container-high" data-alt="A dignified portrait of a calm Middle Eastern man in pristine white linen thobe, warm daylight streaming through an arched mashrabiya window, cinematic soft focus, dignified contemplative gaze, high-end photography, 8k resolution, serene palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXW1WVwyDbsOC_CHNiVwnBEQWKwC9bZfVWmQWacby2dTImVLmdulUpp0vwbXENNp0whkD9ib31KGHlVnt5NlZtxJN8uJ3dCN5aqdkKsqY4j725nTOl3KTYPt8oEv90Q-b67-8iOUftKHSGcldrMd6pdqMnwrMZx0j4xmn9fFXWTEK__APSIW2_UeFe0LXvNkJgxY8cL3OipAk_bUYmlZ4QRpw3cwJlm-aFB1v2oVX7"/>
+<div class="absolute -bottom-1 -left-1 bg-secondary text-surface-container-lowest w-5 h-5 rounded-full flex items-center justify-center shadow-sm" title="موثق">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-space-xs">
+<h2 class="font-headline-sm text-headline-sm text-primary truncate">عبدالرحمن الشيخ</h2>
+<span class="bg-primary/10 text-primary font-label-sm text-label-sm px-2 py-0.5 rounded-full">حافظ معتمد</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">abdulrahman.sheikh@devout.io</p>
+<div class="flex items-center gap-1 mt-1 text-secondary">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span class="font-label-sm text-label-sm font-semibold">مستوى الإتقان المتقدم • ختمتان سنويًا</span>
+</div>
+</div>
+</div>
+<!-- Streak Ribbon -->
+<div class="mt-space-md pt-space-md bg-surface-container-low rounded-lg p-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">١٤ يومًا من الاتصال المتواصل</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">الورد اليومي لم ينقطع منذ رجب</div>
+</div>
+</div>
+<div class="text-secondary font-headline-md text-headline-md px-space-xs">١٤</div>
+</div>
+</div>
+<!-- Offline Sync & Cloud Storage Bento Section -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">cloud_sync</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">المزامنة والسعة المحلية</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">تشفير تام طرف-لطرف</span>
+</div>
+<!-- Storage Usage Bar Card -->
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex justify-between items-center">
+<div>
+<span class="font-label-md text-label-md text-primary block">ذاكرة المصحف والتلاوات دون إنترنت</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">١.٤ جيجابايت مستهلكة من أصل ٤.٠ جيجابايت</span>
+</div>
+<span class="font-label-md text-label-md text-secondary font-bold">٣٥٪</span>
+</div>
+<!-- Segmented Bar -->
+<div class="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 25%" title="تلاوات صوتية"></div>
+<div class="h-full bg-secondary" style="width: 7%" title="محرك الذكاء الاصطناعي"></div>
+<div class="h-full bg-primary-fixed-dim" style="width: 3%" title="بيانات التفاسير"></div>
+</div>
+<!-- Storage Legend -->
+<div class="flex items-center justify-between text-on-surface-variant pt-1 font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span>تلاوات (١.٠ جيجا)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span>محرك الذكاء (١٨٠ ميجا)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed-dim"></span>
+<span>نصوص وهوامش</span>
+</div>
+</div>
+</div>
+<!-- Offline Audio Packs -->
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="font-label-md text-label-md text-primary mb-1">حزم التلاوة المحمّلة بالكامل (دون اتصال)</div>
+<!-- Item 1: Minshawi -->
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">الشيخ محمد صديق المنشاوي</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">مرتل كامل (٦٠٤ صفحة) • جودة الاستوديو</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-secondary bg-secondary-fixed/40 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="font-label-sm text-label-sm font-semibold">محمّل ١٠٠٪</span>
+</div>
+</div>
+<!-- Item 2: Hussary -->
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">spatial_audio_off</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">الشيخ محمود خليل الحصري</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">المصحف المعلم ومخارج الحروف • كامل</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-secondary bg-secondary-fixed/40 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="font-label-sm text-label-sm font-semibold">محمّل ١٠٠٪</span>
+</div>
+</div>
+<!-- Local AI Engine Node -->
+<div class="flex items-center justify-between bg-tertiary-container/10 p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div>
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md text-primary font-bold">محرك AI التسميع الصوتي المحلي</span>
+<span class="bg-primary text-on-primary font-label-sm text-label-sm text-[10px] px-1.5 py-0.2 rounded">Whisper Lite</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">يعمل محلياً دون إرسال صوتك للسحابة • ١٨٠ ميجابايت</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-primary">
+<span class="w-2 h-2 rounded-full bg-surface-tint animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-semibold">نشط</span>
+</div>
+</div>
+<!-- Sync Actions -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<button class="flex items-center justify-center gap-1.5 bg-primary text-on-primary py-2.5 px-space-sm rounded-lg shadow-sm active:scale-95 transition-all" id="syncBtn">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span class="font-label-md text-label-md">مزامنة سحابية آمنة</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 bg-surface-container-high text-on-surface-variant hover:text-error py-2.5 px-space-sm rounded-lg active:scale-95 transition-all" id="clearCacheBtn">
+<span class="material-symbols-outlined text-[18px]">cleaning_services</span>
+<span class="font-label-md text-label-md">تفريغ الكاش المؤقت</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Mushaf & Recitation Preferences -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex items-center gap-space-xs px-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">menu_book</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">تفضيلات المصحف والتلاوة</h3>
+</div>
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+<!-- Script Selection -->
+<div>
+<label class="font-label-md text-label-md text-primary block mb-1">الرسم العثماني ونوع الخط</label>
+<div class="grid grid-cols-2 gap-space-xs">
+<button class="bg-primary text-on-primary p-space-sm rounded-lg flex items-center justify-between text-right">
+<div>
+<div class="font-label-md text-label-md">مصحف المدينة الملكي</div>
+<div class="font-label-sm text-label-sm opacity-80">برواية حفص عن عاصم</div>
+</div>
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+<button class="bg-surface-container-low text-on-surface-variant p-space-sm rounded-lg flex items-center justify-between text-right">
+<div>
+<div class="font-label-md text-label-md">المصحف الأميري العتيق</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">رسم عثماني تقليدي</div>
+</div>
+</button>
+</div>
+</div>
+<!-- Ayah Font Size Slider & Live Quranic Preview -->
+<div class="bg-surface-container-low rounded-lg p-space-md">
+<div class="flex justify-between items-center mb-space-sm">
+<span class="font-label-md text-label-md text-primary">حجم خط الآيات الكريمة</span>
+<span class="font-label-md text-label-md text-secondary" id="fontSizeDisplay">٢٤ نقطة</span>
+</div>
+<input class="w-full accent-primary h-1.5 bg-surface-container-high rounded-lg cursor-pointer appearance-none mb-space-md" id="fontSizeSlider" max="36" min="18" type="range" value="24"/>
+<!-- Sacred Micro Canvas Preview -->
+<div class="bg-surface rounded-lg p-space-md shadow-inner text-center">
+<span class="font-label-sm text-label-sm text-secondary block mb-1">معاينة مباشرة للرسم</span>
+<p class="font-scripture-xl-mobile text-primary transition-all duration-150 leading-loose" id="previewAyah">
+            ﴿الرَّحْمَٰنُ عَلَّمَ الْقُرْآنَ خَلَقَ الْإِنسَانَ عَلَّمَهُ الْبَيَانَ﴾
+          </p>
+</div>
+</div>
+<!-- Auto Night Mode with Prayer times -->
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">الوضع الليلي المتوافق مع الفلك</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">تعتيم هادئ تلقائيًا بعد العشاء وحتى الفجر</div>
+</div>
+</div>
+<button aria-checked="true" class="w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors" id="nightToggle">
+<div class="w-5 h-5 bg-on-primary rounded-full transform transition-transform -translate-x-6"></div>
+</button>
+</div>
+</div>
+</div>
+<!-- Reminders & Spiritual Alarms -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex items-center gap-space-xs px-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">notifications_active</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">التنبيهات والأذكار</h3>
+</div>
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<!-- Reminder 1: Qiyam & Last Third -->
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">nights_stay</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">منبه قيام الليل والثلث الأخير</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">صوت آذان هادئ قبل الفجر بساعة (٠٣:٣٠ ص)</div>
+</div>
+</div>
+<span class="font-label-md text-label-md text-secondary font-bold">مفعّل</span>
+</div>
+<!-- Reminder 2: Morning & Evening Adhkar -->
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">wb_twilight</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">أوراد الصباح والمساء الراتبة</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">تذكير لطيف بعد الفجر وعند العصر</div>
+</div>
+</div>
+<span class="font-label-md text-label-md text-secondary font-bold">مفعّل</span>
+</div>
+<!-- Reminder 3: Sunnah Fasting -->
+<div class="flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">event_repeat</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">تذكير صيام الاثنين والخميس والأيام البيض</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">إشعار مساء الأحد والأربعاء عند المغيب</div>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">متوقف</span>
+</div>
+</div>
+</div>
+<!-- Trust, Jurisprudence & Privacy Section -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex items-center gap-space-xs px-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">verified_user</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">التوثيق الفقهي والأمان</h3>
+</div>
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<a class="flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">approval</span>
+<div>
+<div class="font-label-md text-label-md text-primary">إجازة وتدقيق مجمع الملك فهد</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">رقم الإجازة القرآنية: ٤٤١٢/م.ف لعام ١٤٤٥هـ</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_left</span>
+</a>
+<a class="flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">lock</span>
+<div>
+<div class="font-label-md text-label-md text-primary">سياسة الخصوصية والتشفير التام</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">لا نشارك تلاواتك أو بيانات استماعك مطلقاً</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_left</span>
+</a>
+<a class="flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">support_agent</span>
+<div>
+<div class="font-label-md text-label-md text-primary">مركز الدعم والتوجيه القرآني</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">فريق المشايخ والتقنيين للإجابة عن الاستفسارات</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_left</span>
+</a>
+</div>
+</div>
+<!-- Logout and Version Metadata -->
+<div class="flex flex-col items-center gap-space-sm pt-space-xs">
+<button class="w-full flex items-center justify-center gap-space-xs py-3 px-space-md rounded-xl bg-error-container text-on-error-container hover:opacity-90 active:scale-98 transition-all font-label-md text-label-md" id="logoutBtn">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>تسجيل الخروج من الحساب</span>
+</button>
+<div class="text-center font-label-sm text-label-sm text-on-surface-variant opacity-70">
+      تطبيق وِرد المبارك • الإصدار 3.4.2 (Sanctuary Vellum) • وقف لوجه الله تعالى
+    </div>
+</div>
+</div>
+<script>
+  // Dynamic Font Size Micro-interaction
+  const fontSlider = document.getElementById('fontSizeSlider');
+  const previewAyah = document.getElementById('previewAyah');
+  const fontDisplay = document.getElementById('fontSizeDisplay');
+
+  if (fontSlider && previewAyah && fontDisplay) {
+    fontSlider.addEventListener('input', (e) => {
+      const val = e.target.value;
+      previewAyah.style.fontSize = `${val}px`;
+      previewAyah.style.lineHeight = `${val * 1.8}px`;
+      // Convert to Arabic numerals
+      const arabicNumerals = val.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+      fontDisplay.textContent = `${arabicNumerals} نقطة`;
+    });
+  }
+
+  // Interactive Night Mode Toggle
+  const nightToggle = document.getElementById('nightToggle');
+  if (nightToggle) {
+    let isActive = true;
+    nightToggle.addEventListener('click', () => {
+      isActive = !isActive;
+      nightToggle.setAttribute('aria-checked', isActive.toString());
+      const knob = nightToggle.querySelector('div');
+      if (isActive) {
+        nightToggle.classList.remove('bg-surface-container-high');
+        nightToggle.classList.add('bg-primary');
+        knob.classList.add('-translate-x-6');
+      } else {
+        nightToggle.classList.remove('bg-primary');
+        nightToggle.classList.add('bg-surface-container-high');
+        knob.classList.remove('-translate-x-6');
+      }
+    });
+  }
+
+  // Cloud Sync Micro-affirmation
+  const syncBtn = document.getElementById('syncBtn');
+  if (syncBtn) {
+    syncBtn.addEventListener('click', () => {
+      const icon = syncBtn.querySelector('.material-symbols-outlined');
+      const text = syncBtn.querySelector('span:last-child');
+      icon.classList.add('animate-spin');
+      text.textContent = 'جارٍ المزامنة السحابية...';
+      
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        icon.textContent = 'check';
+        text.textContent = 'تمت المزامنة بنجاح';
+        setTimeout(() => {
+          icon.textContent = 'sync';
+          text.textContent = 'مزامنة سحابية آمنة';
+        }, 2200);
+      }, 1200);
+    });
+  }
+
+  // Cache Clear Micro-interaction
+  const clearCacheBtn = document.getElementById('clearCacheBtn');
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', () => {
+      const originalText = clearCacheBtn.innerHTML;
+      clearCacheBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-secondary">done_all</span><span class="font-label-md text-label-md text-secondary">تم تحرير ٢٤٠ ميجابايت</span>';
+      setTimeout(() => {
+        clearCacheBtn.innerHTML = originalText;
+      }, 2000);
+    });
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(13,59,46,0.05)]" data-active-classes="text-primary font-bold"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant transition-colors" data-path="al-raisiya-wal-wird" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-sm text-label-sm">الرئيسية</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant transition-colors" data-path="al-mushaf-wal-tilawa" href="#"><span class="material-symbols-outlined text-[22px]">menu_book</span><span class="font-label-sm text-label-sm">المصحف</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant transition-colors" data-path="al-hifz-wal-mutashabihat" href="#"><span class="material-symbols-outlined text-[22px]">psychology_alt</span><span class="font-label-sm text-label-sm">الحفظ</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant transition-colors" data-path="al-adhkar-wal-misbaha" href="#"><span class="material-symbols-outlined text-[22px]">fingerprint</span><span class="font-label-sm text-label-sm">الأذكار</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 transition-colors text-primary font-bold" data-path="al-mazeed-wal-iedadat" href="#"><span class="material-symbols-outlined text-[22px]">more_horiz</span><span class="font-label-sm text-label-sm">المزيد</span></a></div></nav></body></html>

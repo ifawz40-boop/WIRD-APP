@@ -732,7 +732,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       className={`space-y-8 ${READING_PAGE_WIDTH_CLASSES[displayPreferences.pageWidth]} mx-auto pb-24 transition-all`}
     >
       {lastReadingPosition && (
-        <button type="button" onClick={handleResumeReading} className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] px-4 py-2 text-sm font-bold text-[var(--wird-primary)] hover:border-[var(--wird-accent)] transition-colors">
+        <button type="button" onClick={handleResumeReading} className="min-h-11 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] px-4 py-2 text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:border-[var(--wird-accent)] transition-colors">
           متابعة آخر موضع قراءة · سورة {ALL_SURAHS[lastReadingPosition.surahNumber - 1]?.name} · الآية {lastReadingPosition.ayahNumber}
         </button>
       )}
@@ -861,7 +861,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         {/* Global Controls: Direct Reciter Buttons + Audio Speed */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="inline-flex items-center gap-1.5 font-bold text-[var(--wird-primary)] shrink-0">
+            <span className="inline-flex items-center gap-1.5 font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0">
               <Volume2 className="w-4 h-4" />
               <span>القارئ:</span>
             </span>
@@ -955,7 +955,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-mono tabular-nums font-bold text-xs transition-colors ${
                         isSelected
                           ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-[var(--wird-accent)]'
-                          : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-primary)] group-hover:bg-[var(--wird-primary)] group-hover:text-[var(--wird-primary-ink)]'
+                          : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] group-hover:bg-[var(--wird-primary)] group-hover:text-[var(--wird-primary-ink)]'
                       }`}>
                         {surah.number}
                       </div>
@@ -967,7 +967,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                             onClick={() => handleOpenStudy(surah)}
                             aria-label={`فتح سورة ${surah.name} للدراسة`}
                             aria-pressed={isSelected}
-                            className="text-right text-[var(--wird-text)] hover:text-[var(--wird-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-accent)] rounded-md transition-colors"
+                            className="text-right text-[var(--wird-text)] hover:text-[var(--wird-primary)] dark:text-[var(--wird-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-accent)] rounded-md transition-colors"
                           >
                             سورة {surah.name}
                           </button>
@@ -1001,7 +1001,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                         }}
                         title="قراءة في المصحف"
                         aria-label={`قراءة سورة ${surah.name} في المصحف`}
-                        className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] hover:text-[var(--wird-primary)] transition-colors"
+                        className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] hover:text-[var(--wird-primary)] dark:text-[var(--wird-accent)] transition-colors"
                       >
                         <BookOpen className="w-4 h-4" />
                       </button>
@@ -1070,7 +1070,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                     <button
                       type="button"
                       onClick={() => handleOpenMushafPage(point?.page || 1)}
-                      className="min-h-11 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] hover:bg-[var(--wird-primary)] hover:text-[var(--wird-primary-ink)] font-bold transition-colors"
+                      className="min-h-11 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-primary)] hover:text-[var(--wird-primary-ink)] font-bold transition-colors"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>قراءة الجزء</span>
@@ -1090,13 +1090,13 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
           <div className="rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] bg-[var(--wird-surface)] p-6 md:p-8 text-center relative overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--wird-muted)] font-semibold border-b border-[var(--wird-border)] pb-3 mb-4">
               <span>الجزء {selectedSurah.juzStart} {selectedSurah.juzEnd !== selectedSurah.juzStart && `إلى ${selectedSurah.juzEnd}`}</span>
-              <span className="font-quran text-lg text-[var(--wird-primary)] font-bold">
+              <span className="font-quran text-lg text-[var(--wird-primary)] dark:text-[var(--wird-accent)] font-bold">
                 سورة {selectedSurah.name} ({selectedSurah.englishName})
               </span>
               <span className="tabular-nums">{selectedSurah.revelationType} · صفحة {selectedSurah.pageStart}</span>
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-black font-quran text-[var(--wird-primary)] my-2">
+            <h2 className="text-3xl md:text-5xl font-black font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] my-2">
               سُورَةُ {selectedSurah.name}
             </h2>
 
@@ -1106,7 +1106,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
             {/* Sacred Basmalah */}
             {selectedSurah.number !== 1 && selectedSurah.number !== 9 && (
-              <p className="font-quran text-2xl md:text-3xl text-[var(--wird-primary)] py-4 mt-2">
+              <p className="font-quran text-2xl md:text-3xl text-[var(--wird-primary)] dark:text-[var(--wird-accent)] py-4 mt-2">
                 <QuranBasmala surahNumber={selectedSurah.number} />
               </p>
             )}
@@ -1127,7 +1127,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 onClick={() => handleOpenMushafPage(selectedSurah.pageStart)}
                 className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-accent)] border border-[var(--wird-border-strong)] font-bold text-xs transition-colors"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[var(--wird-primary)]" />
+                <BookOpen className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
                 <span>فتح صفحة {selectedSurah.pageStart} في المصحف</span>
               </button>
 
@@ -1185,7 +1185,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
 
           {/* Verses Container */}
           {isLoadingSurah && (
-            <div className="py-24 text-center text-[#1C4E46] dark:text-[#E0A96D] space-y-2">
+            <div className="py-24 text-center text-[var(--wird-primary)] dark:text-[var(--wird-accent)] space-y-2">
               <div className="w-8 h-8 border-3 border-[#C59B27] border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-sm font-semibold">جارٍ تحميل آيات سورة {selectedSurah.name}...</p>
             </div>
@@ -1208,27 +1208,27 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
             <div className="space-y-4">
               <div className="wird-card space-y-3 rounded-2xl p-3.5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-bold text-[#142421] dark:text-[#F5F1E8]">طريقة عرض الآيات</p>
+                  <p className="text-sm font-bold text-[var(--wird-text)]">طريقة عرض الآيات</p>
                   <div className="flex flex-wrap items-center gap-2">
-                  <div role="group" aria-label="طريقة عرض آيات السورة" className="inline-flex rounded-xl bg-[#F2EDE2] p-1 dark:bg-[#0E1A2F]">
-                    <button type="button" aria-pressed={studyLayout === 'ayah-cards'} onClick={() => setStudyLayout('ayah-cards')} className={`min-h-11 rounded-lg px-3 text-sm font-bold transition-colors ${studyLayout === 'ayah-cards' ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                  <div role="group" aria-label="طريقة عرض آيات السورة" className="inline-flex rounded-xl bg-[var(--wird-surface-muted)] p-1 dark:bg-[var(--wird-surface-muted)]">
+                    <button type="button" aria-pressed={studyLayout === 'ayah-cards'} onClick={() => setStudyLayout('ayah-cards')} className={`min-h-11 rounded-lg px-3 text-sm font-bold transition-colors ${studyLayout === 'ayah-cards' ? 'bg-[var(--wird-primary)] text-white shadow-xs' : 'text-[var(--wird-muted)]'}`}>
                       آية آية
                     </button>
-                    <button type="button" aria-pressed={studyLayout === 'continuous'} onClick={() => setStudyLayout('continuous')} className={`min-h-11 rounded-lg px-3 text-sm font-bold transition-colors ${studyLayout === 'continuous' ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white shadow-xs' : 'text-[#5B6F6B] dark:text-[#8B9E9B]'}`}>
+                    <button type="button" aria-pressed={studyLayout === 'continuous'} onClick={() => setStudyLayout('continuous')} className={`min-h-11 rounded-lg px-3 text-sm font-bold transition-colors ${studyLayout === 'continuous' ? 'bg-[var(--wird-primary)] text-white shadow-xs' : 'text-[var(--wird-muted)]'}`}>
                       قراءة متصلة
                     </button>
                   </div>
-                  <button type="button" aria-expanded={showTypographyLab} onClick={() => setShowTypographyLab(value => !value)} className="min-h-11 rounded-xl border border-[#1C4E46]/30 dark:border-[#E0A96D]/30 px-3 text-sm font-bold text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] transition-colors">
+                  <button type="button" aria-expanded={showTypographyLab} onClick={() => setShowTypographyLab(value => !value)} className="min-h-11 rounded-xl border border-[var(--wird-border)] px-3 text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-muted)] transition-colors">
                     {showTypographyLab ? 'إخفاء مختبر الخطوط' : 'مختبر الخطوط'}
                   </button>
                   </div>
                 </div>
 
                 {/* Study Segment Audio Range + Dual Loop Repetition */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
-                  <div className="inline-flex flex-wrap items-center gap-2 rounded-xl border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 bg-[#F9F6EE]/70 dark:bg-[#0E1A2F] px-2.5 py-1" dir="rtl">
-                    <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">المقطع الصوتي</span>
-                    <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-[var(--wird-border)] text-xs">
+                  <div className="inline-flex flex-wrap items-center gap-2 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-bg)]/70 dark:bg-[var(--wird-surface-muted)] px-2.5 py-1" dir="rtl">
+                    <span className="font-bold text-[var(--wird-text)]">المقطع الصوتي</span>
+                    <label className="inline-flex items-center gap-1.5 text-[var(--wird-muted)]">
                       <span className="font-bold">من</span>
                       <select
                         aria-label="بداية المقطع الصوتي في الدراسة"
@@ -1238,20 +1238,20 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                           setSegmentStartIndex(next);
                           if (segmentEndIndex < next) setSegmentEndIndex(next);
                         }}
-                        className="min-h-11 min-w-24 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2.5 text-xs font-semibold"
+                        className="min-h-11 min-w-24 rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface)] text-[var(--wird-text)] px-2.5 text-xs font-semibold"
                       >
                         {currentAyahs.map((ayah, index) => (
                           <option key={ayah.number} value={index}>{formatAyahRangeOptionLabel(ayah.numberInSurah)}</option>
                         ))}
                       </select>
                     </label>
-                    <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    <label className="inline-flex items-center gap-1.5 text-[var(--wird-muted)]">
                       <span className="font-bold">إلى</span>
                       <select
                         aria-label="نهاية المقطع الصوتي في الدراسة"
                         value={segmentEndIndex}
                         onChange={event => setSegmentEndIndex(Number(event.target.value))}
-                        className="min-h-11 min-w-24 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2.5 text-xs font-semibold"
+                        className="min-h-11 min-w-24 rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface)] text-[var(--wird-text)] px-2.5 text-xs font-semibold"
                       >
                         {currentAyahs.slice(segmentStartIndex).map((ayah, offset) => (
                           <option key={ayah.number} value={segmentStartIndex + offset}>{formatAyahRangeOptionLabel(ayah.numberInSurah)}</option>
@@ -1259,20 +1259,20 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       </select>
                     </label>
                     {currentAyahs[segmentStartIndex] && currentAyahs[segmentEndIndex] && (
-                      <span className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+                      <span className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                         من آية {currentAyahs[segmentStartIndex].numberInSurah} إلى آية {currentAyahs[segmentEndIndex].numberInSurah}
                       </span>
                     )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    <label className="inline-flex items-center gap-1.5 text-[var(--wird-muted)]">
                       <span className="font-semibold">تكرار كل آية</span>
                       <select
                         aria-label="عدد مرات تكرار الآية في الدراسة"
                         value={normalizeAyahSegmentRepeatCount(repeatTarget)}
                         onChange={event => handleRepeatTargetChange(Number(event.target.value) as AudioRepeatCount)}
-                        className="min-h-11 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2.5 text-xs font-semibold"
+                        className="min-h-11 rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface)] text-[var(--wird-text)] px-2.5 text-xs font-semibold"
                       >
                         <option value={1}>مرة واحدة</option>
                         <option value={2}>مرتان</option>
@@ -1282,13 +1282,13 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       </select>
                     </label>
 
-                    <label className="inline-flex items-center gap-1.5 text-[#5B6F6B] dark:text-[#8B9E9B]">
+                    <label className="inline-flex items-center gap-1.5 text-[var(--wird-muted)]">
                       <span className="font-semibold">تكرار المقطع</span>
                       <select
                         aria-label="عدد مرات تكرار المقطع في الدراسة"
                         value={segmentRepeatCount}
                         onChange={event => handleSegmentRepeatCountChange(Number(event.target.value) as AudioRepeatCount)}
-                        className="min-h-11 rounded-lg border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] px-2.5 text-xs font-semibold"
+                        className="min-h-11 rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface)] text-[var(--wird-text)] px-2.5 text-xs font-semibold"
                       >
                         <option value={1}>مرة واحدة</option>
                         <option value={2}>مرتان</option>
@@ -1303,7 +1303,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       type="button"
                       onClick={handleToggleStudySegmentAudio}
                       className={`min-h-11 inline-flex items-center gap-1.5 rounded-xl px-4 text-xs font-bold transition-colors ${
-                        isSegmentPlaying ? 'bg-[#C59B27] text-[#0B132B]' : 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white hover:bg-[#143D36]'
+                        isSegmentPlaying ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]' : 'bg-[var(--wird-primary)] text-white hover:bg-[#143D36]'
                       }`}
                     >
                       {isSegmentPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -1313,7 +1313,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 </div>
 
                 {segmentStatus && (
-                  <p aria-live="polite" className="text-[11px] font-bold text-[#1C4E46] dark:text-[#E0A96D] tabular-nums">
+                  <p aria-live="polite" className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] tabular-nums">
                     جاري التلاوة: آية {segmentStatus.ayahNumber} · تكرار الآية {segmentStatus.ayahIteration}/{normalizeAyahSegmentRepeatCount(repeatTarget)} · دورة المقطع {segmentStatus.cycle}{segmentRepeatCount === -1 ? ' (مستمر)' : `/${segmentRepeatCount}`}
                   </p>
                 )}
@@ -1322,9 +1322,9 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
               {showTypographyLab && <QuranTypographyLab onClose={() => setShowTypographyLab(false)} />}
 
               {studyLayout === 'continuous' ? (
-                <div aria-label={`قراءة متصلة لسورة ${selectedSurah.name}`} className={`rounded-3xl border border-[#C59B27]/30 bg-[#F9F6EE] ${studyCardPaddingClass} text-right shadow-xs dark:border-[#E0A96D]/25 dark:bg-[#111F36]`}>
+                <div aria-label={`قراءة متصلة لسورة ${selectedSurah.name}`} className={`rounded-3xl border border-[#C59B27]/30 bg-[var(--wird-bg)] ${studyCardPaddingClass} text-right shadow-xs dark:border-[#E0A96D]/25 dark:bg-[var(--wird-surface)]`}>
                   <p
-                    className="quran-text font-quran text-[#142421] dark:text-[#F5F1E8]"
+                    className="quran-text font-quran text-[var(--wird-text)]"
                     style={{ fontSize: `${displayPreferences.fontSize}px`, lineHeight: studyLineHeight }}
                   >
                     {currentAyahs.map(ayah => {
@@ -1345,7 +1345,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                             type="button"
                             onClick={() => handlePlayAyah(ayah.numberInSurah)}
                             aria-label={`${isThisPlaying ? 'إيقاف' : 'استماع'} الآية ${ayah.numberInSurah} من سورة ${selectedSurah.name}`}
-                            className={`mx-1 inline-flex min-h-11 min-w-11 translate-y-1 items-center justify-center rounded-full align-baseline ${isThisPlaying ? 'bg-[#C59B27] text-[#0B132B]' : 'bg-[#1C4E46]/10 text-[#1C4E46] dark:bg-[#1E4A47] dark:text-[#E0A96D]'}`}
+                            className={`mx-1 inline-flex min-h-11 min-w-11 translate-y-1 items-center justify-center rounded-full align-baseline ${isThisPlaying ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]' : 'bg-[var(--wird-primary)]/12 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:bg-[var(--wird-primary)]/40 dark:text-[var(--wird-accent)]'}`}
                           >
                             {isThisPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                           </button>{' '}
@@ -1353,7 +1353,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                       );
                     })}
                   </p>
-                  <p className="mt-4 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">اضغط نص الآية لفتح تفسيرها، أو زر الاستماع لبدء التلاوة منها.</p>
+                  <p className="mt-4 text-xs text-[var(--wird-muted)]">اضغط نص الآية لفتح تفسيرها، أو زر الاستماع لبدء التلاوة منها.</p>
                 </div>
               ) : (
             <div className={studySpacingClass}>
@@ -1367,23 +1367,23 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                     id={`study-ayah-${ayah.numberInSurah}`}
                     className={`wird-card ${studyCardPaddingClass} rounded-3xl transition-all ${
                       isThisPlaying
-                        ? 'border-[#C59B27] dark:border-[#E0A96D] shadow-md ring-2 ring-[#C59B27]/40'
-                        : 'hover:border-[#C59B27]/60 dark:hover:border-[#E0A96D]/45'
+                        ? 'border-[var(--wird-border-gold)] shadow-md ring-2 ring-[#C59B27]/40'
+                        : 'hover:border-[var(--wird-border-gold)]/60 dark:hover:border-[#E0A96D]/45'
                     }`}
                   >
                     {/* Top Verse Toolbar */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-[var(--wird-border)] text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="tabular-nums font-bold text-xs bg-[#F2EDE2] dark:bg-[#0E1A2F] text-[#1C4E46] dark:text-[#E0A96D] px-2.5 py-1 rounded-lg border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+                        <span className="tabular-nums font-bold text-xs bg-[var(--wird-surface-muted)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] px-2.5 py-1 rounded-lg border border-[var(--wird-border)]">
                           الآية {ayah.numberInSurah}
                         </span>
 
-                        <span className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] hidden sm:inline tabular-nums">
+                        <span className="text-[11px] text-[var(--wird-muted)] hidden sm:inline tabular-nums">
                           صفحة {ayah.page} · جزء {ayah.juz}
                         </span>
 
                         {ayah.sajda && (
-                          <span className="text-[11px] text-[#C59B27] dark:text-[#E0A96D] font-bold">
+                          <span className="text-[11px] text-[var(--wird-accent)] font-bold">
                             · موضع سجدة
                           </span>
                         )}
@@ -1398,8 +1398,8 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                           title={isThisPlaying ? 'إيقاف مؤقت' : 'استمع لتلاوة الآية'}
                           className={`min-h-10 min-w-10 flex items-center justify-center rounded-xl transition-colors ${
                             isThisPlaying
-                              ? 'bg-[#C59B27] text-[#0B132B]'
-                              : 'bg-[#F2EDE2] dark:bg-[#162744] text-[#142421] dark:text-[#F5F1E8] hover:bg-[#1C4E46] hover:text-white'
+                              ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
+                              : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:bg-[var(--wird-primary)] hover:text-[var(--wird-primary-ink)]'
                           }`}
                         >
                           {isThisPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -1410,7 +1410,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                           onClick={() => { rememberReadingPosition(ayah.numberInSurah); setTafsirAyah(ayah); }}
                           title="عرض التفسير المعتمد (Quran.com v4)"
                           aria-label={`تفسير الآية ${ayah.numberInSurah}`}
-                          className="min-h-10 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#1C4E46]/10 dark:bg-[#1E4A47] text-[#1C4E46] dark:text-[#F5F1E8] hover:bg-[#1C4E46] hover:text-white transition-colors font-bold text-xs"
+                          className="min-h-10 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/40 text-[var(--wird-primary)] dark:text-[var(--wird-text)] hover:bg-[var(--wird-primary)] hover:text-[var(--wird-primary-ink)] transition-colors font-bold text-xs"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
                           <span>التفسير</span>
@@ -1421,18 +1421,18 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                           onClick={() => handleCopyAyah(ayah)}
                           title="نسخ نص الآية الكريمة"
                           aria-label={`نسخ الآية ${ayah.numberInSurah}`}
-                          className="min-h-10 min-w-10 flex items-center justify-center rounded-xl bg-[#F2EDE2] dark:bg-[#162744] text-[#5B6F6B] dark:text-[#8B9E9B] hover:text-[#142421] dark:hover:text-[#F5F1E8] transition-colors"
+                          className="min-h-10 min-w-10 flex items-center justify-center rounded-xl bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] transition-colors"
                         >
-                          {isCopied ? <Check className="w-4 h-4 text-[#1C4E46] dark:text-[#E0A96D]" /> : <Copy className="w-4 h-4" />}
+                          {isCopied ? <Check className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" /> : <Copy className="w-4 h-4" />}
                         </button>
 
                         <button
                           type="button"
                           onClick={() => onStartSession(selectedSurah.number, ayah.numberInSurah, ayah.numberInSurah)}
                           title="تدريب وحفظ هذه الآية"
-                          className="min-h-10 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#8A6914] dark:text-[#E0A96D] hover:bg-[#C59B27]/25 transition-colors font-bold text-xs border border-[#C59B27]/30"
+                          className="min-h-10 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[var(--wird-accent-soft)] text-[#8A6914] dark:text-[#E0A96D] hover:bg-[#C59B27]/25 transition-colors font-bold text-xs border border-[#C59B27]/30"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-[#C59B27] dark:text-[#E0A96D]" />
+                          <Sparkles className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
                           <span className="hidden sm:inline">تدريب وحفظ</span>
                         </button>
                       </div>
@@ -1441,7 +1441,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                     {/* Canonical Ayah Text */}
                     <div className="py-2 text-right">
                       <p
-                        className="font-quran text-[#142421] dark:text-[#F5F1E8] selection:bg-[#C59B27]/30"
+                        className="font-quran text-[var(--wird-text)] selection:bg-[#C59B27]/30"
                         style={{ fontSize: `${displayPreferences.fontSize}px`, lineHeight: studyLineHeight }}
                       >
                         <QuranText surahNumber={ayah.surahNumber} ayahNumber={ayah.numberInSurah}>{ayah.text}</QuranText>{' '}
@@ -1466,19 +1466,19 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         <aside
           role="region"
           aria-label="مشغل التلاوة الصوتي"
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[#F9F6EE]/95 dark:bg-[#0B132B]/95 backdrop-blur-md border-t border-[#C59B27]/35 dark:border-[#E0A96D]/25 shadow-2xl px-4 py-3 transition-transform animate-in slide-in-from-bottom duration-300"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--wird-header-glass)] backdrop-blur-md border-t border-[var(--wird-border-gold)] shadow-2xl px-4 py-3 transition-transform animate-in slide-in-from-bottom duration-300"
         >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             {/* Playing Context */}
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-2xl bg-[#1C4E46] text-[#E0A96D] flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-[var(--wird-primary)] text-[var(--wird-accent)] flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
                 <Volume2 className="w-5 h-5" />
               </div>
               <div className="min-w-0 text-right">
-                <h4 className="font-bold text-[#142421] dark:text-[#F5F1E8] text-sm truncate font-quran">
+                <h4 className="font-bold text-[var(--wird-text)] text-sm truncate font-quran">
                   سورة {selectedSurah.name} · الآية {playingAyah || 1}
                 </h4>
-                <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] truncate tabular-nums">
+                <p className="text-[11px] text-[var(--wird-muted)] truncate tabular-nums">
                   القارئ: {activeReciterName}
                   {segmentStatus
                     ? ` · الآية ${segmentStatus.ayahIteration}/${normalizeAyahSegmentRepeatCount(repeatTarget)} · المقطع ${segmentStatus.cycle}${segmentRepeatCount === -1 ? ' (مستمر)' : `/${segmentRepeatCount}`}`
@@ -1498,7 +1498,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 onClick={handlePrevAyah}
                 aria-label="الآية السابقة"
                 title="الآية السابقة"
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] transition-colors"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[var(--wird-muted)] hover:bg-[var(--wird-surface-muted)] transition-colors"
               >
                 <SkipForward className="w-4 h-4" />
               </button>
@@ -1507,7 +1507,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 type="button"
                 onClick={() => (isSegmentPlaying || isSegmentPaused) ? handleToggleStudySegmentAudio() : (playingAyah && handlePlayAyah(playingAyah))}
                 aria-label={isPlaying ? 'إيقاف مؤقت' : 'استئناف'}
-                className="w-11 h-11 rounded-2xl bg-[#1C4E46] hover:bg-[#143D36] dark:bg-[#1E4A47] text-white flex items-center justify-center shadow-md active:scale-95 transition-all"
+                className="w-11 h-11 rounded-2xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-white flex items-center justify-center shadow-md active:scale-95 transition-all"
               >
                 {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white mr-0.5" />}
               </button>
@@ -1517,20 +1517,20 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 onClick={handleNextAyah}
                 aria-label="الآية التالية"
                 title="الآية التالية"
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[#5B6F6B] dark:text-[#8B9E9B] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] transition-colors"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl text-[var(--wird-muted)] hover:bg-[var(--wird-surface-muted)] transition-colors"
               >
                 <SkipBack className="w-4 h-4" />
               </button>
 
               {/* Single Repeat Selector Dropdown */}
-              <label className="inline-flex items-center gap-1.5 text-xs text-[#5B6F6B] dark:text-[#8B9E9B]">
+              <label className="inline-flex items-center gap-1.5 text-xs text-[var(--wird-muted)]">
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span className="font-semibold">تكرار الآية</span>
                 <select
                   aria-label="مرات تكرار الآية للحفظ"
                   value={repeatTarget}
                   onChange={event => handleRepeatTargetChange(Number(event.target.value) as AudioRepeatCount)}
-                  className="min-h-11 rounded-xl border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 bg-white dark:bg-[#111F36] px-2.5 text-xs font-bold text-[#142421] dark:text-[#F5F1E8]"
+                  className="min-h-11 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface)] px-2.5 text-xs font-bold text-[var(--wird-text)]"
                 >
                   <option value={1}>مرة</option>
                   <option value={2}>2</option>
@@ -1550,7 +1550,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                 onClick={handleStopAudio}
                 aria-label="إغلاق المشغل"
                 title="إيقاف وإغلاق المشغل"
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl hover:bg-[#F2EDE2] dark:hover:bg-[#162744] text-[#5B6F6B] hover:text-[#142421] dark:hover:text-[#F5F1E8] transition-colors"
+                className="min-h-11 min-w-11 flex items-center justify-center rounded-xl hover:bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] hover:text-[var(--wird-text)] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1560,30 +1560,30 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
       )}
 
       {/* 7. Verification & Integrity Footer */}
-      <footer className="wird-card rounded-3xl p-6 text-xs text-[#5B6F6B] dark:text-[#8B9E9B] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <footer className="wird-card rounded-3xl p-6 text-xs text-[var(--wird-muted)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#1C4E46]/10 dark:bg-[#1E4A47]/60 flex items-center justify-center shrink-0 border border-[#C59B27]/30">
-            <CheckCircle2 className="w-5 h-5 text-[#1C4E46] dark:text-[#E0A96D]" />
+          <div className="w-10 h-10 rounded-2xl bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/40 flex items-center justify-center shrink-0 border border-[#C59B27]/30">
+            <CheckCircle2 className="w-5 h-5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
           </div>
           <div>
-            <div className="font-bold text-[#142421] dark:text-[#F5F1E8] flex flex-wrap items-center gap-2">
+            <div className="font-bold text-[var(--wird-text)] flex flex-wrap items-center gap-2">
               <span>قاعدة البيانات القرآنية الموثقة — 114 سورة كاملة (6,236 آية)</span>
-              <span className="text-[11px] font-mono text-[#1C4E46] dark:text-[#E0A96D]">
+              <span className="text-[11px] font-mono text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                 · Hafs 'an Asim
               </span>
             </div>
-            <p className="text-[11px] text-[#5B6F6B] dark:text-[#8B9E9B] mt-0.5">
+            <p className="text-[11px] text-[var(--wird-muted)] mt-0.5">
               النص المرجعي العثماني محفوظ دون تغيير، والعرض الافتراضي يستخدم نص Tanzil الرسمي بالرسم الإملائي Simple 1.1 كامل التشكيل.
             </p>
           </div>
         </div>
 
         <div className="text-right text-[11px] space-y-0.5 shrink-0">
-          <div className="text-[#142421] dark:text-[#F5F1E8]">
-            المصدر: <a href={QURAN_DATA_SOURCE_INFO.displaySourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#1C4E46] dark:text-[#E0A96D] underline underline-offset-2">{QURAN_DATA_SOURCE_INFO.provider}</a>
-            <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">{QURAN_DATA_SOURCE_INFO.displayVersion} · {QURAN_DATA_SOURCE_INFO.displayLicense}</div>
+          <div className="text-[var(--wird-text)]">
+            المصدر: <a href={QURAN_DATA_SOURCE_INFO.displaySourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] underline underline-offset-2">{QURAN_DATA_SOURCE_INFO.provider}</a>
+            <div className="text-[var(--wird-muted)]">{QURAN_DATA_SOURCE_INFO.displayVersion} · {QURAN_DATA_SOURCE_INFO.displayLicense}</div>
           </div>
-          <div className="text-[#5B6F6B] dark:text-[#8B9E9B]">
+          <div className="text-[var(--wird-muted)]">
             التفسير معتمد عبر بوابة مطوري Quran.com API v4
           </div>
         </div>

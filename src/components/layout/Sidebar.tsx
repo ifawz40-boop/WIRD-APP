@@ -180,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const sidebarContent = (
-    <aside className="w-64 bg-[var(--wird-surface)] border-e border-[var(--wird-border)] flex flex-col h-full select-none transition-colors duration-150">
+    <aside className="w-64 wird-sidebar-surface border-e border-[var(--wird-border)] flex flex-col h-full select-none transition-colors duration-150">
       {/* Brand Header */}
       <div className="px-4 py-3.5 border-b border-[var(--wird-border)] flex items-center justify-between gap-2">
         <WirdBrandLockup symbolSize={36} textSize="md" showSubtitle={true} />
@@ -236,7 +236,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   aria-current={isActive ? 'page' : undefined}
                   className={`w-full min-h-11 flex items-center justify-between px-3 py-2 rounded-[var(--wird-radius-control)] text-xs sm:text-[13px] font-semibold transition-colors duration-150 wird-focus-ring ${
                     isActive
-                      ? 'wird-nav-indicator bg-[var(--wird-primary)] text-white'
+                      ? 'wird-nav-indicator bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
                       : 'text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)]'
                   }`}
                 >
@@ -256,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <span
                       className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold wird-tabular font-mono ${
                         isActive
-                          ? 'bg-[var(--wird-accent)] text-[#0C1412]'
+                          ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
                           : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
                       }`}
                     >

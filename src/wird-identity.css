@@ -1,200 +1,184 @@
 /* ==========================================================================
-   WIRD — Master Visual Identity & Design System V2
-   Multi-Theme Semantic Token Cascade (3 Presets × Day/Night)
-   Presets:
-     1. emerald-editorial (Default V2):
-        - Day:   Warm Ivory (#F8F5EE) · Deep Emerald (#14453D) · Champagne Gold (#B58D34)
-        - Night: Deep Forest Charcoal (#0C1412) · Forest Surface (#131F1C) · Muted Gold (#D4B475)
-     2. mushaf-parchment (Reading Comfort — inspired by Ummah Library):
-        - Day:   Warm Parchment (#F4EDE0) · Ink Umber (#261E16) · Heritage Emerald (#2D4A3E)
-        - Night: Deep Espresso Charcoal (#141210) · Stone Surface (#1D1A17) · Warm Bronze (#CFA56A)
-     3. classic-midnight (Preserved Classic WIRD Identity):
-        - Day:   Naskh Cream (#F9F6EE) · Soft Mint Teal (#1C4E46) · Bright Gold (#C59B27)
-        - Night: Midnight Navy (#0B132B) · Dark Glass (#111F36) · Glowing Amber (#E0A96D)
+   WIRD — Four-Variant Centralized Design System
+   Two Independent Axes:
+     Axis 1 — Design:     data-wird-design="design-a" | "design-b"
+     Axis 2 — Appearance: Light (:root) | Dark (.dark)
+
+   Four Complete Cohesive Experiences:
+     1. Design A — Light (التراثي الأندلسي النهاري):
+        Warm Parchment Ivory (#FFF9EC) · Deep Emerald (#00241A) · Burnished Gold (#B58932)
+     2. Design A — Dark (ليلي أندلسي زمردي):
+        Deep Andalusian Emerald (#041610) · Forest Surface (#0A241C) · Luminous Gold (#E9C176)
+     3. Design B — Light (نهاري عصري ناصع):
+        Alabaster Gallery (#F9FBFA) · Pure White (#FFFFFF) · Pine Emerald (#0D3B2E) · Mint Sage (#EBF3F0)
+     4. Design B — Dark (ليلي الأسحار الكحلي الملكي):
+        Royal Midnight Navy (#08121E) · Frosted Navy (#0D1C2E) · Lantern Gold (#E2B15B)
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   1. DESIGN A — LIGHT (Default · التراثي الأندلسي النهاري)
+   -------------------------------------------------------------------------- */
 :root,
-:root[data-wird-theme='emerald-editorial'] {
+:root[data-wird-design='design-a'] {
   color-scheme: light;
 
   /* Raw Brand Constants */
-  --wird-brand-cream: #f8f5ee;
-  --wird-brand-teal: #14453d;
-  --wird-brand-teal-light: #1e5c52;
-  --wird-brand-gold: #b58d34;
-  --wird-brand-gold-bright: #c59b27;
-  --wird-brand-gold-amber: #d4b475;
-  --wird-brand-midnight: #0c1412;
-  --wird-brand-glass: #131f1c;
+  --wird-brand-cream: #fff9ec;
+  --wird-brand-teal: #00241a;
+  --wird-brand-teal-light: #0d3b2e;
+  --wird-brand-gold: #b58932;
+  --wird-brand-gold-bright: #c5a059;
+  --wird-brand-gold-amber: #e9c176;
+  --wird-brand-midnight: #041610;
+  --wird-brand-glass: #0a241c;
 
-  /* Semantic Light Mode Tokens (Editorial Emerald & Warm Ivory) */
-  --wird-bg: #f8f5ee;
+  /* Semantic Surface & Ink Tokens */
+  --wird-bg: #fff9ec;
   --wird-surface: #ffffff;
-  --wird-surface-muted: #efeae0;
-  --wird-surface-elevated: #ffffff;
-  --wird-header-glass: rgba(248, 245, 238, 0.9);
-  --wird-text: #13221f;
-  --wird-muted: #536661;
-  --wird-primary: #14453d;
-  --wird-primary-strong: #0e332d;
-  --wird-primary-hover: #1d5b51;
+  --wird-surface-muted: #f5efe1;
+  --wird-surface-elevated: #fffdf7;
+  --wird-sidebar-bg: #fbf5e7;
+  --wird-mushaf-paper: #fdf9ee;
+  --wird-header-glass: rgba(255, 249, 236, 0.9);
+  --wird-text: #1d1c14;
+  --wird-muted: #545247;
+  --wird-primary: #00241a;
+  --wird-primary-strong: #001a12;
+  --wird-primary-hover: #0d3b2e;
   --wird-primary-ink: #ffffff;
-  --wird-secondary: #1e5c52;
-  --wird-accent: #b58d34;
-  --wird-accent-hover: #9a7526;
-  --wird-accent-ink: #0c1412;
-  --wird-accent-soft: rgba(181, 141, 52, 0.12);
-  --wird-ring: rgba(181, 141, 52, 0.45);
-  --wird-border: rgba(20, 69, 61, 0.12);
-  --wird-border-strong: rgba(20, 69, 61, 0.22);
-  --wird-border-gold: rgba(181, 141, 52, 0.36);
-  --wird-hero-gradient: linear-gradient(135deg, #14453d 0%, #103831 58%, #0c2924 100%);
-  --wird-shadow: 0 1px 2px rgba(19, 34, 31, 0.04), 0 8px 24px -10px rgba(20, 69, 61, 0.08);
-  --wird-shadow-lg: 0 18px 36px -12px rgba(20, 69, 61, 0.14);
+  --wird-secondary: #0d3b2e;
+  --wird-accent: #b58932;
+  --wird-accent-hover: #8f691e;
+  --wird-accent-ink: #13110b;
+  --wird-accent-soft: rgba(181, 137, 50, 0.13);
+  --wird-ring: rgba(181, 137, 50, 0.48);
+  --wird-border: rgba(181, 137, 50, 0.22);
+  --wird-border-strong: rgba(0, 36, 26, 0.24);
+  --wird-border-gold: rgba(181, 137, 50, 0.42);
+  --wird-hero-gradient: linear-gradient(135deg, #00241a 0%, #083326 58%, #041d15 100%);
+  --wird-shadow: 0 1px 2px rgba(29, 28, 20, 0.04), 0 10px 26px -12px rgba(0, 36, 26, 0.09);
+  --wird-shadow-lg: 0 18px 36px -14px rgba(0, 36, 26, 0.16);
 
   /* Layout Rhythm & Geometry Tokens */
-  --wird-radius-card: 1.125rem;
-  --wird-radius-control: 0.75rem;
+  --wird-radius-card: 1.25rem;
+  --wird-radius-control: 0.8rem;
   --wird-card-pad: 1.25rem;
-  --wird-section-gap: 1.5rem;
+  --wird-section-gap: 1.35rem;
 }
 
+/* --------------------------------------------------------------------------
+   2. DESIGN A — DARK (ليلي أندلسي زمردي)
+   -------------------------------------------------------------------------- */
 .dark,
-.dark[data-wird-theme='emerald-editorial'] {
+:root.dark[data-wird-design='design-a'],
+.dark[data-wird-design='design-a'] {
   color-scheme: dark;
 
-  /* Semantic Dark Mode Tokens (Deep Forest Charcoal & Muted Champagne Gold) */
-  --wird-bg: #0c1412;
-  --wird-surface: #131f1c;
-  --wird-surface-muted: #101a17;
-  --wird-surface-elevated: #1a2a26;
-  --wird-header-glass: rgba(12, 20, 18, 0.9);
-  --wird-text: #efece4;
-  --wird-muted: #98aba6;
-  --wird-primary: #226358;
-  --wird-primary-strong: #29776a;
-  --wird-primary-hover: #2c7e70;
-  --wird-primary-ink: #f8f5ee;
-  --wird-secondary: #163731;
-  --wird-accent: #d4b475;
-  --wird-accent-hover: #e2c58a;
-  --wird-accent-ink: #0c1412;
-  --wird-accent-soft: rgba(212, 180, 117, 0.14);
-  --wird-ring: rgba(212, 180, 117, 0.48);
-  --wird-border: rgba(212, 180, 117, 0.14);
-  --wird-border-strong: rgba(212, 180, 117, 0.28);
-  --wird-border-gold: rgba(212, 180, 117, 0.32);
-  --wird-hero-gradient: linear-gradient(135deg, #132420 0%, #0f1c19 55%, #0c1412 100%);
-  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.32), 0 10px 28px -10px rgba(0, 0, 0, 0.55);
-  --wird-shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.72);
+  --wird-bg: #041610;
+  --wird-surface: #0a241c;
+  --wird-surface-muted: #071d16;
+  --wird-surface-elevated: #103227;
+  --wird-sidebar-bg: #061b14;
+  --wird-mushaf-paper: #091f18;
+  --wird-header-glass: rgba(4, 22, 16, 0.9);
+  --wird-text: #f6f0e3;
+  --wird-muted: #a2bfb3;
+  --wird-primary: #124b3b;
+  --wird-primary-strong: #19624e;
+  --wird-primary-hover: #1b6853;
+  --wird-primary-ink: #f6f0e3;
+  --wird-secondary: #0d3b2e;
+  --wird-accent: #e9c176;
+  --wird-accent-hover: #f5d492;
+  --wird-accent-ink: #041610;
+  --wird-accent-soft: rgba(233, 193, 118, 0.15);
+  --wird-ring: rgba(233, 193, 118, 0.5);
+  --wird-border: rgba(233, 193, 118, 0.16);
+  --wird-border-strong: rgba(233, 193, 118, 0.3);
+  --wird-border-gold: rgba(233, 193, 118, 0.38);
+  --wird-hero-gradient: linear-gradient(135deg, #0d3b2e 0%, #07241c 56%, #041610 100%);
+  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.36), 0 12px 28px -12px rgba(0, 0, 0, 0.62);
+  --wird-shadow-lg: 0 22px 42px -14px rgba(0, 0, 0, 0.78);
 }
 
-/* Preset 2: Mushaf Parchment (Warm Reading Comfort) */
-:root[data-wird-theme='mushaf-parchment'] {
+/* --------------------------------------------------------------------------
+   3. DESIGN B — LIGHT (نهاري عصري ناصع)
+   -------------------------------------------------------------------------- */
+:root[data-wird-design='design-b'] {
   color-scheme: light;
-  --wird-bg: #f4ede0;
-  --wird-surface: #fbf8f1;
-  --wird-surface-muted: #eae0ce;
-  --wird-surface-elevated: #fffdf8;
-  --wird-header-glass: rgba(244, 237, 224, 0.92);
-  --wird-text: #261e16;
-  --wird-muted: #685b4c;
-  --wird-primary: #2d4a3e;
-  --wird-primary-strong: #20372e;
-  --wird-primary-hover: #385c4d;
-  --wird-primary-ink: #ffffff;
-  --wird-secondary: #385c4d;
-  --wird-accent: #9e7432;
-  --wird-accent-hover: #835f25;
-  --wird-accent-ink: #ffffff;
-  --wird-accent-soft: rgba(158, 116, 50, 0.13);
-  --wird-ring: rgba(158, 116, 50, 0.45);
-  --wird-border: rgba(38, 30, 22, 0.12);
-  --wird-border-strong: rgba(38, 30, 22, 0.22);
-  --wird-border-gold: rgba(158, 116, 50, 0.36);
-  --wird-hero-gradient: linear-gradient(135deg, #2d4a3e 0%, #243c32 58%, #1c2f27 100%);
-}
 
-.dark[data-wird-theme='mushaf-parchment'] {
-  color-scheme: dark;
-  --wird-bg: #141210;
-  --wird-surface: #1d1a17;
-  --wird-surface-muted: #181512;
-  --wird-surface-elevated: #26221e;
-  --wird-header-glass: rgba(20, 18, 16, 0.92);
-  --wird-text: #f1eae0;
-  --wird-muted: #a99d8f;
-  --wird-primary: #386353;
-  --wird-primary-strong: #437663;
-  --wird-primary-hover: #49816c;
-  --wird-primary-ink: #fbf8f1;
-  --wird-secondary: #223b32;
-  --wird-accent: #cfa56a;
-  --wird-accent-hover: #dfb982;
-  --wird-accent-ink: #141210;
-  --wird-accent-soft: rgba(207, 165, 106, 0.15);
-  --wird-ring: rgba(207, 165, 106, 0.48);
-  --wird-border: rgba(207, 165, 106, 0.15);
-  --wird-border-strong: rgba(207, 165, 106, 0.28);
-  --wird-border-gold: rgba(207, 165, 106, 0.34);
-  --wird-hero-gradient: linear-gradient(135deg, #221e1a 0%, #1a1714 55%, #141210 100%);
-}
-
-/* Preset 3: Classic WIRD Midnight (Preserved Original Palette) */
-:root[data-wird-theme='classic-midnight'] {
-  color-scheme: light;
-  --wird-bg: #f9f6ee;
+  --wird-bg: #f9fbfa;
   --wird-surface: #ffffff;
-  --wird-surface-muted: #f2ede2;
+  --wird-surface-muted: #ebf3f0;
   --wird-surface-elevated: #ffffff;
-  --wird-header-glass: rgba(249, 246, 238, 0.92);
-  --wird-text: #142421;
-  --wird-muted: #5b6f6b;
-  --wird-primary: #1c4e46;
-  --wird-primary-strong: #123731;
-  --wird-primary-hover: #28665b;
+  --wird-sidebar-bg: #ffffff;
+  --wird-mushaf-paper: #ffffff;
+  --wird-header-glass: rgba(249, 251, 250, 0.92);
+  --wird-text: #0f1a17;
+  --wird-muted: #4b6960;
+  --wird-primary: #0d3b2e;
+  --wird-primary-strong: #082920;
+  --wird-primary-hover: #145240;
   --wird-primary-ink: #ffffff;
-  --wird-secondary: #28665b;
-  --wird-accent: #c59b27;
-  --wird-accent-hover: #af851a;
-  --wird-accent-ink: #0b132b;
-  --wird-accent-soft: rgba(197, 155, 39, 0.14);
-  --wird-ring: rgba(197, 155, 39, 0.45);
-  --wird-border: rgba(28, 78, 70, 0.12);
-  --wird-border-strong: rgba(28, 78, 70, 0.22);
-  --wird-border-gold: rgba(197, 155, 39, 0.4);
-  --wird-hero-gradient: linear-gradient(135deg, #1c4e46 0%, #153c36 55%, #0f2c27 100%);
+  --wird-secondary: #1e5f4d;
+  --wird-accent: #9a7228;
+  --wird-accent-hover: #7c5a1c;
+  --wird-accent-ink: #ffffff;
+  --wird-accent-soft: rgba(154, 114, 40, 0.11);
+  --wird-ring: rgba(13, 59, 46, 0.4);
+  --wird-border: #d5e4de;
+  --wird-border-strong: #b4cfc5;
+  --wird-border-gold: rgba(154, 114, 40, 0.32);
+  --wird-hero-gradient: linear-gradient(135deg, #0d3b2e 0%, #134d3d 60%, #0a2e24 100%);
+  --wird-shadow: 0 1px 2px rgba(15, 26, 23, 0.03), 0 6px 18px -10px rgba(13, 59, 46, 0.08);
+  --wird-shadow-lg: 0 16px 32px -14px rgba(13, 59, 46, 0.14);
+
+  /* Modern Crisp Geometry */
+  --wird-radius-card: 1rem;
+  --wird-radius-control: 0.7rem;
 }
 
-.dark[data-wird-theme='classic-midnight'] {
+/* --------------------------------------------------------------------------
+   4. DESIGN B — DARK (ليلي الأسحار الكحلي الملكي)
+   -------------------------------------------------------------------------- */
+:root.dark[data-wird-design='design-b'],
+.dark[data-wird-design='design-b'] {
   color-scheme: dark;
-  --wird-bg: #0b132b;
-  --wird-surface: #111f36;
-  --wird-surface-muted: #0e1a2f;
-  --wird-surface-elevated: #162744;
-  --wird-header-glass: rgba(11, 19, 43, 0.92);
-  --wird-text: #f5f1e8;
-  --wird-muted: #98adaa;
-  --wird-primary: #1e4a47;
-  --wird-primary-strong: #235d59;
-  --wird-primary-hover: #2c6e69;
-  --wird-primary-ink: #f5f1e8;
-  --wird-secondary: #142e2c;
-  --wird-accent: #e0a96d;
-  --wird-accent-hover: #f3b77b;
-  --wird-accent-ink: #0b132b;
-  --wird-accent-soft: rgba(224, 169, 109, 0.16);
-  --wird-ring: rgba(224, 169, 109, 0.48);
-  --wird-border: rgba(224, 169, 109, 0.16);
-  --wird-border-strong: rgba(224, 169, 109, 0.3);
-  --wird-border-gold: rgba(224, 169, 109, 0.35);
-  --wird-hero-gradient: linear-gradient(135deg, #111f36 0%, #0d192d 55%, #0b132b 100%);
+
+  --wird-bg: #08121e;
+  --wird-surface: #0d1c2e;
+  --wird-surface-muted: #0a1625;
+  --wird-surface-elevated: #13263e;
+  --wird-sidebar-bg: #091524;
+  --wird-mushaf-paper: #0b1827;
+  --wird-header-glass: rgba(8, 18, 30, 0.92);
+  --wird-text: #f1f5f9;
+  --wird-muted: #94a3b8;
+  --wird-primary: #183b5e;
+  --wird-primary-strong: #204c78;
+  --wird-primary-hover: #245585;
+  --wird-primary-ink: #f8fafc;
+  --wird-secondary: #122c47;
+  --wird-accent: #e2b15b;
+  --wird-accent-hover: #efc476;
+  --wird-accent-ink: #08121e;
+  --wird-accent-soft: rgba(226, 177, 91, 0.14);
+  --wird-ring: rgba(226, 177, 91, 0.48);
+  --wird-border: rgba(148, 163, 184, 0.16);
+  --wird-border-strong: rgba(226, 177, 91, 0.3);
+  --wird-border-gold: rgba(226, 177, 91, 0.36);
+  --wird-hero-gradient: linear-gradient(135deg, #10253d 0%, #0b1929 58%, #08121e 100%);
+  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.38), 0 12px 30px -12px rgba(0, 0, 0, 0.65);
+  --wird-shadow-lg: 0 22px 44px -14px rgba(0, 0, 0, 0.8);
+
+  --wird-radius-card: 1rem;
+  --wird-radius-control: 0.7rem;
 }
 
 /* Density & Corner Modifiers */
 :root[data-wird-density='compact'] {
-  --wird-card-pad: 0.95rem;
-  --wird-section-gap: 1rem;
+  --wird-card-pad: 0.92rem;
+  --wird-section-gap: 0.95rem;
 }
 
 :root[data-wird-corners='soft'] {
@@ -220,6 +204,36 @@ body {
   background: var(--wird-bg);
   color: var(--wird-text);
   transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Subtle atmospheric distinction between Design A (Sanctuary Warmth) and Design B (Modern Precision) */
+:root[data-wird-design='design-a'] .wird-app-shell {
+  background-image: radial-gradient(
+    900px 360px at 85% 0%,
+    rgba(181, 137, 50, 0.06),
+    transparent 70%
+  );
+}
+
+.dark[data-wird-design='design-a'] .wird-app-shell {
+  background-image: radial-gradient(
+    900px 420px at 85% 0%,
+    rgba(233, 193, 118, 0.06),
+    transparent 72%
+  );
+}
+
+.dark[data-wird-design='design-b'] .wird-app-shell {
+  background-image: radial-gradient(
+    960px 420px at 80% 0%,
+    rgba(45, 212, 191, 0.045),
+    transparent 68%
+  );
+}
+
+/* Sidebar Surface Token */
+.wird-sidebar-surface {
+  background-color: var(--wird-sidebar-bg);
 }
 
 /* Single-Elevation Editorial Surface Card */
@@ -254,7 +268,7 @@ body {
   border: 1px solid var(--wird-border-gold);
   box-shadow: var(--wird-shadow-lg);
   border-radius: var(--wird-radius-card);
-  color: #f5f1e8;
+  color: #f6f0e3;
 }
 
 /* Semantic Quiet Text Metadata Row (Zero-Pill discipline) */
@@ -268,7 +282,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Preserved Legacy Section Badge Token (refined, restrained) */
+/* Restrained Section Badge Token */
 .wird-section-badge {
   display: inline-flex;
   align-items: center;
@@ -335,7 +349,7 @@ body {
 /* Primary Button */
 .wird-btn-primary {
   background-color: var(--wird-primary);
-  color: #ffffff;
+  color: var(--wird-primary-ink);
   border-radius: var(--wird-radius-control);
   font-weight: 700;
   transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -357,7 +371,7 @@ body {
 /* Accent Button */
 .wird-btn-accent {
   background-color: var(--wird-accent);
-  color: #0c1412;
+  color: var(--wird-accent-ink);
   border-radius: var(--wird-radius-control);
   font-weight: 700;
   transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -393,7 +407,7 @@ body {
 
 .wird-btn-secondary:hover {
   border-color: var(--wird-border-strong);
-  background-color: color-mix(in srgb, var(--wird-surface-muted) 86%, var(--wird-primary));
+  background-color: color-mix(in srgb, var(--wird-surface-muted) 88%, var(--wird-primary));
 }
 
 .wird-focus-ring:focus-visible {
@@ -460,7 +474,7 @@ body {
   align-items: center;
   justify-content: center;
   background: var(--wird-accent);
-  color: #0c1412;
+  color: var(--wird-accent-ink);
   font-size: 9px;
   font-weight: 800;
   line-height: 1;

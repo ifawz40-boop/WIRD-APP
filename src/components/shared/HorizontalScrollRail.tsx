@@ -87,7 +87,7 @@ export const HorizontalScrollRail: React.FC<HorizontalScrollRailProps> = ({
           type="button"
           onClick={() => scrollStep('prev')}
           aria-label={`التمرير للخلف في ${ariaLabel}`}
-          className="hidden sm:inline-flex shrink-0 min-h-10 min-w-10 items-center justify-center rounded-xl bg-white/90 dark:bg-[#111F36]/90 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+          className="hidden sm:inline-flex shrink-0 min-h-10 min-w-10 items-center justify-center rounded-xl bg-[var(--wird-surface)]/95 border border-[var(--wird-border)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-muted)] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -109,7 +109,7 @@ export const HorizontalScrollRail: React.FC<HorizontalScrollRailProps> = ({
           type="button"
           onClick={() => scrollStep('next')}
           aria-label={`التمرير للأمام في ${ariaLabel}`}
-          className="hidden sm:inline-flex shrink-0 min-h-10 min-w-10 items-center justify-center rounded-xl bg-white/90 dark:bg-[#111F36]/90 border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 text-[#1C4E46] dark:text-[#E0A96D] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C59B27]"
+          className="hidden sm:inline-flex shrink-0 min-h-10 min-w-10 items-center justify-center rounded-xl bg-[var(--wird-surface)]/95 border border-[var(--wird-border)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-surface-muted)] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>

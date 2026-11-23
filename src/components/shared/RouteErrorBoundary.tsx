@@ -44,16 +44,16 @@ export class RouteErrorBoundary extends React.Component<
       <div
         dir="rtl"
         role="alert"
-        className="wird-card max-w-lg mx-auto my-12 p-6 sm:p-8 text-center space-y-5 border border-[#C59B27]/35 dark:border-[#E0A96D]/30"
+        className="wird-card max-w-lg mx-auto my-12 p-6 sm:p-8 text-center space-y-5 border border-[var(--wird-border-gold)]"
       >
-        <div className="w-12 h-12 rounded-2xl bg-[#C59B27]/15 dark:bg-[#E0A96D]/15 text-[#C59B27] dark:text-[#E0A96D] flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] flex items-center justify-center mx-auto">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-lg font-bold text-[#142421] dark:text-[#F5F1E8] font-quran">
+          <h2 className="text-lg font-bold text-[var(--wird-text)] font-quran">
             تعذر عرض هذا القسم مؤقتاً
           </h2>
-          <p className="text-xs text-[#5B6F6B] dark:text-[#8B9E9B] leading-relaxed">
+          <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
             بياناتك ومحفوظاتك محفوظة بأمان. يمكنك إعادة محاولة فتح القسم أو العودة إلى الشاشة الرئيسية.
           </p>
         </div>
@@ -72,9 +72,9 @@ export class RouteErrorBoundary extends React.Component<
               this.setState({ hasError: false });
               this.props.onGoHome();
             }}
-            className="min-h-11 px-4 py-2.5 text-xs font-bold rounded-xl border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 text-[#142421] dark:text-[#F5F1E8] hover:bg-[#F2EDE2] dark:hover:bg-[#162744] inline-flex items-center gap-2 transition-colors"
+            className="min-h-11 px-4 py-2.5 text-xs font-bold rounded-xl border border-[var(--wird-border)] text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)] inline-flex items-center gap-2 transition-colors"
           >
-            <Home className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+            <Home className="w-4 h-4 text-[var(--wird-accent)]" />
             <span>العودة للرئيسية</span>
           </button>
         </div>

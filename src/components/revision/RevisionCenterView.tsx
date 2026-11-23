@@ -1256,7 +1256,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                       <td className="py-3 px-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${
                           entry.rating === 'successful' 
-                            ? 'bg-[var(--wird-primary-soft)] text-[var(--wird-primary)] dark:bg-[var(--wird-primary-soft)] dark:text-emerald-300'
+                            ? 'bg-[var(--wird-primary-soft)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:bg-[var(--wird-primary-soft)] dark:text-emerald-300'
                             : entry.rating === 'difficult'
                             ? 'bg-[var(--wird-accent-soft)] text-[var(--wird-accent)] dark:bg-[var(--wird-accent-soft)] dark:text-[var(--wird-accent)]'
                             : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'

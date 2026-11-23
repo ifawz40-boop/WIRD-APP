@@ -53,7 +53,7 @@ const DATE_PRECISION_LABELS: Record<SeerahDatePrecision, { label: string; style:
   },
   approximate: {
     label: 'تاريخ تقريبي في السير',
-    style: 'bg-[#C59B27]/15 text-[#9A7415] dark:text-[#E0A96D] border-[#C59B27]/35'
+    style: 'bg-[#C59B27]/15 text-[#9A7415] dark:text-[var(--wird-accent)] border-[#C59B27]/35'
   },
   range: {
     label: 'نطاق زمني مرحلي',
@@ -245,11 +245,11 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               onClick={() => setActiveWorkspaceTab('reader')}
               className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
                 activeWorkspaceTab === 'reader'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
               }`}
             >
-              <BookOpen className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              <BookOpen className="w-4 h-4 text-[var(--wird-accent)]" />
               <span>القارئ السردي المتصل</span>
             </button>
 
@@ -259,11 +259,11 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               onClick={() => setActiveWorkspaceTab('timeline')}
               className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
                 activeWorkspaceTab === 'timeline'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
               }`}
             >
-              <Layers className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              <Layers className="w-4 h-4 text-[var(--wird-accent)]" />
               <span>فهرس الأجزاء والخط الزمني ({SEERAH_CHAPTERS.length})</span>
             </button>
 
@@ -273,11 +273,11 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               onClick={() => setActiveWorkspaceTab('figures')}
               className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
                 activeWorkspaceTab === 'figures'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
               }`}
             >
-              <Users className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              <Users className="w-4 h-4 text-[var(--wird-accent)]" />
               <span>الأعلام والأماكن والمصادر</span>
             </button>
 
@@ -287,11 +287,11 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               onClick={() => setActiveWorkspaceTab('bookmarks')}
               className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
                 activeWorkspaceTab === 'bookmarks'
-                  ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
               }`}
             >
-              <Bookmark className="w-4 h-4 text-[#C59B27] dark:text-[#E0A96D]" />
+              <Bookmark className="w-4 h-4 text-[var(--wird-accent)]" />
               <span>العلامات المرجعية ({store.bookmarks.length})</span>
             </button>
           </div>
@@ -304,8 +304,8 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                 onClick={() => setStore(setSeerahReadingMode('continuous'))}
                 className={`min-h-10 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                   store.readingMode === 'continuous'
-                    ? 'bg-[#1C4E46] text-white'
-                    : 'text-[#5B6F6B] dark:text-[#98ADAA]'
+                    ? 'bg-[var(--wird-primary)] text-white'
+                    : 'text-[var(--wird-muted)]'
                 }`}
               >
                 قراءة متصلة صافية
@@ -316,8 +316,8 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                 onClick={() => setStore(setSeerahReadingMode('study'))}
                 className={`min-h-10 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                   store.readingMode === 'study'
-                    ? 'bg-[#1C4E46] text-white'
-                    : 'text-[#5B6F6B] dark:text-[#98ADAA]'
+                    ? 'bg-[var(--wird-primary)] text-white'
+                    : 'text-[var(--wird-muted)]'
                 }`}
               >
                 قراءة وتعلّم وتوثيق
@@ -340,10 +340,10 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                   onClick={() => openChapter(ch.id)}
                   className={`min-h-11 shrink-0 snap-start px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all ${
                     isCurrent
-                      ? 'bg-[#1C4E46] dark:bg-[#1E4A47] text-white border-[#C59B27]'
+                      ? 'bg-[var(--wird-primary)] text-white border-[#C59B27]'
                       : isDone
                       ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 border-emerald-500/30'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
                   }`}
                 >
                   {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
@@ -359,16 +359,16 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
       {activeWorkspaceTab === 'reader' && (
         <article className="space-y-6">
           {/* Part Context Header */}
-          <div className="wird-card p-5 md:p-6 bg-[#F2EDE2]/75 dark:bg-[#111F36] border border-[#C59B27]/35 space-y-2">
+          <div className="wird-card p-5 md:p-6 bg-[var(--wird-surface-muted)] dark:bg-[var(--wird-surface)] border border-[#C59B27]/35 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+              <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                 {activePart.title}
               </span>
-              <span className="font-mono text-[#5B6F6B] dark:text-[#98ADAA]">
+              <span className="font-mono text-[var(--wird-muted)]">
                 {activePart.periodLabel}
               </span>
             </div>
-            <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] leading-relaxed">
+            <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
               {activePart.summary}
             </p>
           </div>
@@ -376,13 +376,13 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
           {/* Chapter Main Book Sheet */}
           <div className="wird-card p-6 md:p-10 space-y-8">
             {/* Chapter Title & Metadata Header */}
-            <header className="space-y-4 pb-6 border-b border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+            <header className="space-y-4 pb-6 border-b border-[var(--wird-border)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-[#1C4E46]/10 dark:bg-[#1E4A47]/60 text-[#1C4E46] dark:text-[#E0A96D] text-xs font-bold">
+                  <span className="px-3 py-1 rounded-full bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/40 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] text-xs font-bold">
                     الفصل {activeChapter.order} من {SEERAH_CHAPTERS.length}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/25 text-xs font-semibold text-[#142421] dark:text-[#F5F1E8]">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-semibold text-[var(--wird-text)]">
                     <Clock className="w-3.5 h-3.5 text-[#C59B27]" />
                     <span>{activeChapter.periodLabel}</span>
                   </span>
@@ -402,7 +402,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                   className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
                     isActiveChapterCompleted
                       ? 'bg-emerald-700 text-white'
-                      : 'bg-[#F9F6EE] dark:bg-[#0B132B] text-[#142421] dark:text-[#F5F1E8] border border-[#1C4E46]/20 dark:border-[#E0A96D]/25 hover:border-[#C59B27]'
+                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
@@ -411,21 +411,21 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-2xl md:text-3xl font-black font-quran text-[#1C4E46] dark:text-[#F5F1E8] leading-snug">
+                <h3 className="text-2xl md:text-3xl font-black font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)] leading-snug">
                   {activeChapter.title}
                 </h3>
-                <p className="text-sm md:text-base font-semibold text-[#C59B27] dark:text-[#E0A96D]">
+                <p className="text-sm md:text-base font-semibold text-[var(--wird-accent)]">
                   {activeChapter.subtitle}
                 </p>
               </div>
 
               {/* Narrative Introduction & Historical Context */}
-              <div className="p-4 md:p-5 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-2">
-                <p className="text-sm md:text-base text-[#142421] dark:text-[#F5F1E8] leading-relaxed">
-                  <strong className="text-[#1C4E46] dark:text-[#E0A96D]">مدخل الفصل: </strong>
+              <div className="p-4 md:p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2">
+                <p className="text-sm md:text-base text-[var(--wird-text)] leading-relaxed">
+                  <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">مدخل الفصل: </strong>
                   {activeChapter.intro}
                 </p>
-                <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] leading-relaxed">
+                <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
                   <strong>تمهيد السياق: </strong>
                   {activeChapter.contextNote}
                 </p>
@@ -445,7 +445,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <h4 className="text-lg md:text-xl font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+                      <h4 className="text-lg md:text-xl font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                         {scene.title}
                       </h4>
                       <button
@@ -455,8 +455,8 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                         onClick={() => handleToggleSceneBookmark(activeChapter.id, scene.id)}
                         className={`min-h-11 px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
                           isBookmarked
-                            ? 'bg-[#C59B27]/15 border-[#C59B27] text-[#9A7415] dark:text-[#E0A96D]'
-                            : 'bg-[#F9F6EE] dark:bg-[#0B132B] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-[#5B6F6B] dark:text-[#98ADAA]'
+                            ? 'bg-[#C59B27]/15 border-[#C59B27] text-[#9A7415] dark:text-[var(--wird-accent)]'
+                            : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)]'
                         }`}
                       >
                         {isBookmarked ? (
@@ -479,13 +479,13 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                           return (
                             <blockquote
                               key={block.id}
-                              className="p-5 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/90 border-r-4 border-[#C59B27] dark:border-[#E0A96D] space-y-2"
+                              className="p-5 rounded-2xl bg-[var(--wird-surface-muted)] border-r-4 border-[var(--wird-border-gold)] space-y-2"
                             >
-                              <p className="hadith-matn text-[#142421] dark:text-[#F5F1E8]">
+                              <p className="hadith-matn text-[var(--wird-text)]">
                                 {block.text}
                               </p>
                               {store.readingMode === 'study' && (
-                                <div className="text-[11px] font-semibold text-[#5B6F6B] dark:text-[#98ADAA]">
+                                <div className="text-[11px] font-semibold text-[var(--wird-muted)]">
                                   التوثيق: {block.sourceIds.map(sid => SEERAH_SOURCES[sid]?.workTitle).filter(Boolean).join(' · ')}
                                 </div>
                               )}
@@ -497,7 +497,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                           return (
                             <div
                               key={block.id}
-                              className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/35 text-xs md:text-sm text-[#142421] dark:text-[#F5F1E8] leading-relaxed"
+                              className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/35 text-xs md:text-sm text-[var(--wird-text)] leading-relaxed"
                             >
                               <strong className="text-amber-800 dark:text-amber-300 block mb-1">
                                 منهج التحقيق وضبط اختلاف الروايات:
@@ -509,18 +509,18 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
 
                         return (
                           <div key={block.id} className="space-y-1.5">
-                            <p className="hadith-matn text-[#142421] dark:text-[#F5F1E8]">
+                            <p className="hadith-matn text-[var(--wird-text)]">
                               {block.text}
                             </p>
                             {store.readingMode === 'study' && (
-                              <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">
+                              <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--wird-muted)]">
                                 {block.claimIds.map(cid => {
                                   const clm = SEERAH_CLAIMS[cid];
                                   if (!clm) return null;
                                   return (
                                     <span
                                       key={cid}
-                                      className="px-2 py-0.5 rounded-md bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 font-semibold"
+                                      className="px-2 py-0.5 rounded-md bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] font-semibold"
                                     >
                                       {clm.evidenceGrade}
                                     </span>
@@ -541,25 +541,25 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
             </div>
 
             {/* Closing Narrative Bridge */}
-            <div className="p-5 rounded-2xl bg-gradient-to-l from-[#1C4E46]/10 to-[#C59B27]/10 dark:from-[#1E4A47]/35 dark:to-[#E0A96D]/10 border border-[#C59B27]/30 space-y-2">
-              <span className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D]">
+            <div className="p-5 rounded-2xl bg-gradient-to-l bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-2">
+              <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                 خاتمة الفصل والجسر التاريخي لما بعده:
               </span>
-              <p className="text-sm md:text-base text-[#142421] dark:text-[#F5F1E8] leading-relaxed">
+              <p className="text-sm md:text-base text-[var(--wird-text)] leading-relaxed">
                 {activeChapter.closingNarrative}
               </p>
             </div>
 
             {/* Study Mode Sections: Lessons, Linked Figures/Places, Verified Claims & Sources, Optional Quiz */}
             {store.readingMode === 'study' && (
-              <div className="space-y-6 pt-4 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+              <div className="space-y-6 pt-4 border-t border-[var(--wird-border)]">
                 {/* Pedagogical Lessons */}
                 <div className="space-y-2.5">
-                  <h4 className="text-sm font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
                     <Compass className="w-4 h-4" />
                     <span>فوائد ودروس منهجية من هذا الفصل</span>
                   </h4>
-                  <ul className="space-y-2 text-xs md:text-sm text-[#142421] dark:text-[#F5F1E8]">
+                  <ul className="space-y-2 text-xs md:text-sm text-[var(--wird-text)]">
                     {activeChapter.lessons.map((lesson, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="text-[#C59B27] font-bold">•</span>
@@ -571,8 +571,8 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
 
                 {/* Linked Figures & Places in this Chapter */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-2.5">
-                    <h5 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
+                  <div className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2.5">
+                    <h5 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
                       <span>الأعلام والشخصيات في هذا الفصل</span>
                     </h5>
@@ -582,18 +582,18 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                         if (!person) return null;
                         return (
                           <div key={pid} className="text-xs space-y-0.5">
-                            <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">
-                              {person.name} <span className="text-[#C59B27] dark:text-[#E0A96D]">({person.epithet})</span>
+                            <div className="font-bold text-[var(--wird-text)]">
+                              {person.name} <span className="text-[var(--wird-accent)]">({person.epithet})</span>
                             </div>
-                            <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">{person.summary}</p>
+                            <p className="text-[11px] text-[var(--wird-muted)]">{person.summary}</p>
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-2.5">
-                    <h5 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
+                  <div className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2.5">
+                    <h5 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
                       <MapPin className="w-4 h-4" />
                       <span>المعالم والأماكن المرتبطة</span>
                     </h5>
@@ -603,10 +603,10 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                         if (!place) return null;
                         return (
                           <div key={plId} className="text-xs space-y-0.5">
-                            <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">
-                              {place.name} <span className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">({place.region} · {place.precisionNote})</span>
+                            <div className="font-bold text-[var(--wird-text)]">
+                              {place.name} <span className="text-[11px] text-[var(--wird-muted)]">({place.region} · {place.precisionNote})</span>
                             </div>
-                            <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">{place.summary}</p>
+                            <p className="text-[11px] text-[var(--wird-muted)]">{place.summary}</p>
                           </div>
                         );
                       })}
@@ -615,17 +615,17 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                 </div>
 
                 {/* Claim-Level Sources Drawer */}
-                <div className="p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/70 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-3">
-                  <h5 className="text-xs font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-3">
+                  <h5 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
                     <FileText className="w-4 h-4" />
                     <span>سجل التوثيق والمصادر الكلاسيكية المعتمدة في هذا الفصل</span>
                   </h5>
                   <div className="space-y-2 text-xs">
                     {chapterClaims.map(clm => (
-                      <div key={clm.id} className="p-2.5 rounded-xl bg-white dark:bg-[#111F36] border border-[#1C4E46]/10 dark:border-[#E0A96D]/15 space-y-1">
+                      <div key={clm.id} className="p-2.5 rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] space-y-1">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-bold text-[#142421] dark:text-[#F5F1E8]">{clm.statement}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-[#1C4E46]/10 dark:bg-[#1E4A47] text-[#1C4E46] dark:text-[#E0A96D] text-[10px] font-bold">
+                          <span className="font-bold text-[var(--wird-text)]">{clm.statement}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/40 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] text-[10px] font-bold">
                             {clm.evidenceGrade}
                           </span>
                         </div>
@@ -636,9 +636,9 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                         )}
                       </div>
                     ))}
-                    <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">
+                    <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-[var(--wird-muted)]">
                       {chapterSources.map(src => (
-                        <span key={src.id} className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#111F36] border border-[#1C4E46]/12 dark:border-[#E0A96D]/20">
+                        <span key={src.id} className="px-2.5 py-1 rounded-lg bg-[var(--wird-surface)] border border-[var(--wird-border)]">
                           <strong>{src.workTitle}</strong> — {src.author} ({src.referenceLocator})
                         </span>
                       ))}
@@ -648,13 +648,13 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
 
                 {/* Optional End-of-Chapter Comprehension Quiz */}
                 {activeChapter.quizQuestions.length > 0 && (
-                  <div className="p-5 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/80 border border-[#C59B27]/35 space-y-4">
+                  <div className="p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[#C59B27]/35 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <h5 className="text-sm font-bold text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-2">
+                      <h5 className="text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
                         <HelpCircle className="w-4 h-4 text-[#C59B27]" />
                         <span>وقفة فهم واسترجاع اختيارية (لا تقطع القراءة)</span>
                       </h5>
-                      <span className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">مشتقة من الوقائع الثابتة في الفصل</span>
+                      <span className="text-[11px] text-[var(--wird-muted)]">مشتقة من الوقائع الثابتة في الفصل</span>
                     </div>
 
                     {activeChapter.quizQuestions.map(q => {
@@ -664,7 +664,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
 
                       return (
                         <div key={q.id} className="space-y-3 text-xs">
-                          <p className="font-bold text-sm text-[#142421] dark:text-[#F5F1E8]">{q.prompt}</p>
+                          <p className="font-bold text-sm text-[var(--wird-text)]">{q.prompt}</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {q.choices.map((choice, idx) => {
                               const isSelected = chosenIdx === idx;
@@ -676,12 +676,12 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                                   onClick={() => setSelectedQuizAnswers(prev => ({ ...prev, [q.id]: idx }))}
                                   className={`min-h-11 p-3 rounded-xl border text-right font-semibold transition-all ${
                                     !hasAnswered
-                                      ? 'bg-white dark:bg-[#111F36] text-[#142421] dark:text-[#F5F1E8] border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27]'
+                                      ? 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
                                       : isRightOption
                                       ? 'bg-emerald-600/15 border-emerald-600 text-emerald-900 dark:text-emerald-200'
                                       : isSelected
                                       ? 'bg-rose-600/15 border-rose-600 text-rose-900 dark:text-rose-200'
-                                      : 'bg-white/60 dark:bg-[#111F36]/50 text-[#5B6F6B] dark:text-[#98ADAA] border-transparent'
+                                      : 'bg-white/60 dark:bg-[var(--wird-surface)] text-[var(--wird-muted)] border-transparent'
                                   }`}
                                 >
                                   {choice}
@@ -710,17 +710,17 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
             )}
 
             {/* Bottom Previous / Next Chapter Navigation Bar */}
-            <footer className="pt-6 border-t border-[#1C4E46]/12 dark:border-[#E0A96D]/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <footer className="pt-6 border-t border-[var(--wird-border)] grid grid-cols-1 sm:grid-cols-2 gap-4">
               {previousChapter ? (
                 <button
                   type="button"
                   onClick={() => openChapter(previousChapter.id)}
-                  className="min-h-14 p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 hover:border-[#C59B27] text-right flex items-center justify-between gap-3 transition-all"
+                  className="min-h-14 p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] text-right flex items-center justify-between gap-3 transition-all"
                 >
                   <ChevronRight className="w-5 h-5 text-[#C59B27] shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">الفصل السابق</div>
-                    <div className="text-xs md:text-sm font-bold text-[#142421] dark:text-[#F5F1E8] truncate">
+                    <div className="text-[11px] text-[var(--wird-muted)]">الفصل السابق</div>
+                    <div className="text-xs md:text-sm font-bold text-[var(--wird-text)] truncate">
                       {previousChapter.title}
                     </div>
                   </div>
@@ -733,7 +733,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                 <button
                   type="button"
                   onClick={() => openChapter(nextChapter.id)}
-                  className="min-h-14 p-4 rounded-2xl bg-[#1C4E46] hover:bg-[#28665B] dark:bg-[#1E4A47] text-white border border-[#C59B27]/40 text-right flex items-center justify-between gap-3 transition-all shadow-sm"
+                  className="min-h-14 p-4 rounded-2xl bg-[var(--wird-primary)] hover:bg-[#28665B] dark:bg-[var(--wird-primary)] text-white border border-[#C59B27]/40 text-right flex items-center justify-between gap-3 transition-all shadow-sm"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-[11px] text-[#F2EDE2]/80">الفصل التالي في الحكاية</div>
@@ -758,14 +758,14 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
         <div className="space-y-6">
           <div className="wird-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#5B6F6B] dark:text-[#98ADAA] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 aria-label="البحث في فصول ومشاهد السيرة النبوية"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="ابحث عن حدث، غزوة، شخصية، أو مرحلة زمنية..."
-                className="w-full min-h-11 pr-10 pl-3 py-2 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-xs text-[#142421] dark:text-[#F5F1E8]"
+                className="w-full min-h-11 pr-10 pl-3 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs text-[var(--wird-text)]"
               />
             </div>
 
@@ -773,7 +773,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               aria-label="تصفية حسب جزء السيرة"
               value={selectedPartFilter}
               onChange={e => setSelectedPartFilter(e.target.value)}
-              className="min-h-11 px-3.5 py-2 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B] border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 text-xs font-bold text-[#142421] dark:text-[#F5F1E8]"
+              className="min-h-11 px-3.5 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)]"
             >
               <option value="all">جميع أجزاء السيرة (5 أجزاء · 16 فصلاً)</option>
               {SEERAH_PARTS.map(part => (
@@ -790,16 +790,16 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
 
             return (
               <section key={part.id} className="wird-card p-6 space-y-4">
-                <div className="border-b border-[#1C4E46]/10 dark:border-[#E0A96D]/15 pb-3">
+                <div className="border-b border-[var(--wird-border)] pb-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D]">
+                    <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                       {part.title}
                     </h3>
-                    <span className="text-xs font-mono text-[#5B6F6B] dark:text-[#98ADAA]">
+                    <span className="text-xs font-mono text-[var(--wird-muted)]">
                       {part.periodLabel}
                     </span>
                   </div>
-                  <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] mt-1">{part.summary}</p>
+                  <p className="text-xs text-[var(--wird-muted)] mt-1">{part.summary}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -808,11 +808,11 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                     return (
                       <div
                         key={ch.id}
-                        className="p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 flex flex-col justify-between gap-3"
+                        className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex flex-col justify-between gap-3"
                       >
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[11px] font-mono font-bold text-[#C59B27] dark:text-[#E0A96D]">
+                            <span className="text-[11px] font-mono font-bold text-[var(--wird-accent)]">
                               {ch.periodLabel}
                             </span>
                             {isDone && (
@@ -822,10 +822,10 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                               </span>
                             )}
                           </div>
-                          <h4 className="text-base font-bold font-quran text-[#142421] dark:text-[#F5F1E8]">
+                          <h4 className="text-base font-bold font-quran text-[var(--wird-text)]">
                             {ch.title}
                           </h4>
-                          <p className="text-xs text-[#5B6F6B] dark:text-[#98ADAA] leading-relaxed">
+                          <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
                             {ch.subtitle}
                           </p>
                         </div>
@@ -833,7 +833,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                         <button
                           type="button"
                           onClick={() => openChapter(ch.id)}
-                          className="min-h-11 w-full px-4 py-2 rounded-xl bg-[#1C4E46] hover:bg-[#28665B] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+                          className="min-h-11 w-full px-4 py-2 rounded-xl bg-[var(--wird-primary)] hover:bg-[#28665B] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
                           <span>قراءة هذا الفصل</span>
@@ -852,48 +852,48 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
       {activeWorkspaceTab === 'figures' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <section className="wird-card p-6 space-y-4">
-            <h3 className="text-base font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-2">
+            <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
               <Users className="w-4 h-4" />
               <span>الأعلام والصحابة الكرام</span>
             </h3>
             <div className="space-y-3">
               {Object.values(SEERAH_PEOPLE).map(person => (
-                <div key={person.id} className="p-3.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-1.5 text-xs">
-                  <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">{person.name}</div>
-                  <div className="text-[11px] font-semibold text-[#C59B27] dark:text-[#E0A96D]">{person.epithet}</div>
-                  <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA] leading-relaxed">{person.summary}</p>
+                <div key={person.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1.5 text-xs">
+                  <div className="font-bold text-[var(--wird-text)]">{person.name}</div>
+                  <div className="text-[11px] font-semibold text-[var(--wird-accent)]">{person.epithet}</div>
+                  <p className="text-[11px] text-[var(--wird-muted)] leading-relaxed">{person.summary}</p>
                 </div>
               ))}
             </div>
           </section>
 
           <section className="wird-card p-6 space-y-4">
-            <h3 className="text-base font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-2">
+            <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               <span>الأماكن والمعالم الجغرافية الموثقة</span>
             </h3>
             <div className="space-y-3">
               {Object.values(SEERAH_PLACES).map(place => (
-                <div key={place.id} className="p-3.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-1 text-xs">
-                  <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">{place.name}</div>
-                  <div className="text-[11px] text-[#C59B27] dark:text-[#E0A96D]">{place.region} · {place.precisionNote}</div>
-                  <p className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA] leading-relaxed">{place.summary}</p>
+                <div key={place.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1 text-xs">
+                  <div className="font-bold text-[var(--wird-text)]">{place.name}</div>
+                  <div className="text-[11px] text-[var(--wird-accent)]">{place.region} · {place.precisionNote}</div>
+                  <p className="text-[11px] text-[var(--wird-muted)] leading-relaxed">{place.summary}</p>
                 </div>
               ))}
             </div>
           </section>
 
           <section className="wird-card p-6 space-y-4">
-            <h3 className="text-base font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-2">
+            <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
               <FileText className="w-4 h-4" />
               <span>سجل المصادر الكلاسيكية المعتمدة</span>
             </h3>
             <div className="space-y-3">
               {Object.values(SEERAH_SOURCES).map(src => (
-                <div key={src.id} className="p-3.5 rounded-xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/12 dark:border-[#E0A96D]/20 space-y-1 text-xs">
-                  <div className="font-bold text-[#142421] dark:text-[#F5F1E8]">{src.workTitle}</div>
-                  <div className="text-[11px] text-[#C59B27] dark:text-[#E0A96D]">{src.author}</div>
-                  <div className="text-[11px] text-[#5B6F6B] dark:text-[#98ADAA]">{src.referenceLocator}</div>
+                <div key={src.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1 text-xs">
+                  <div className="font-bold text-[var(--wird-text)]">{src.workTitle}</div>
+                  <div className="text-[11px] text-[var(--wird-accent)]">{src.author}</div>
+                  <div className="text-[11px] text-[var(--wird-muted)]">{src.referenceLocator}</div>
                 </div>
               ))}
             </div>
@@ -904,13 +904,13 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
       {/* 3D. SAVED BOOKMARKS VIEW */}
       {activeWorkspaceTab === 'bookmarks' && (
         <section className="wird-card p-6 space-y-4">
-          <h3 className="text-lg font-bold font-quran text-[#1C4E46] dark:text-[#E0A96D] flex items-center gap-2">
+          <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
             <Bookmark className="w-5 h-5" />
             <span>العلامات المرجعية المحفوظة في كتاب السيرة ({store.bookmarks.length})</span>
           </h3>
 
           {store.bookmarks.length === 0 ? (
-            <div className="p-10 text-center space-y-2 text-xs text-[#5B6F6B] dark:text-[#98ADAA]">
+            <div className="p-10 text-center space-y-2 text-xs text-[var(--wird-muted)]">
               <Bookmark className="w-8 h-8 text-[#C59B27] mx-auto" />
               <p>لم تحفظ أي علامة مرجعية بعد. اضغط «حفظ علامة» بجانب أي مشهد أثناء القراءة للرجوع إليه لاحقاً.</p>
             </div>
@@ -919,13 +919,13 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               {store.bookmarks.map(bm => (
                 <div
                   key={bm.id}
-                  className="p-4 rounded-2xl bg-[#F9F6EE] dark:bg-[#0B132B]/75 border border-[#1C4E46]/15 dark:border-[#E0A96D]/20 flex items-center justify-between gap-3"
+                  className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0 flex-1 space-y-1">
-                    <div className="text-xs font-bold text-[#142421] dark:text-[#F5F1E8] truncate">
+                    <div className="text-xs font-bold text-[var(--wird-text)] truncate">
                       {bm.title}
                     </div>
-                    <div className="text-[10px] font-mono text-[#5B6F6B] dark:text-[#98ADAA]">
+                    <div className="text-[10px] font-mono text-[var(--wird-muted)]">
                       الإصدار {bm.bookVersion}
                     </div>
                   </div>
@@ -933,14 +933,14 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                     <button
                       type="button"
                       onClick={() => openChapter(bm.chapterId, bm.sceneId)}
-                      className="min-h-11 px-3.5 py-1.5 rounded-xl bg-[#1C4E46] text-white text-xs font-bold"
+                      className="min-h-11 px-3.5 py-1.5 rounded-xl bg-[var(--wird-primary)] text-white text-xs font-bold"
                     >
                       انتقال
                     </button>
                     <button
                       type="button"
                       onClick={() => handleToggleSceneBookmark(bm.chapterId, bm.sceneId)}
-                      className="min-h-11 px-3 py-1.5 rounded-xl bg-[#F2EDE2] dark:bg-[#162744] text-xs font-bold text-rose-700 dark:text-rose-300"
+                      className="min-h-11 px-3 py-1.5 rounded-xl bg-[var(--wird-surface-muted)] text-xs font-bold text-rose-700 dark:text-rose-300"
                     >
                       إزالة
                     </button>

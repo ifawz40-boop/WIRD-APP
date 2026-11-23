@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "primary-fixed": "#beedd9",
+          "on-primary-container": "#79a694",
+          "on-primary-fixed-variant": "#234e40",
+          "inverse-surface": "#333028",
+          "surface-container-lowest": "#ffffff",
+          "surface-tint": "#3c6658",
+          "error-container": "#ffdad6",
+          "on-primary": "#ffffff",
+          "outline-variant": "#c0c8c3",
+          "primary-fixed-dim": "#a3d0be",
+          "surface-container-high": "#eee8db",
+          "surface-container-low": "#f9f3e6",
+          "secondary-container": "#fed488",
+          "surface-dim": "#dfdacd",
+          "on-error-container": "#93000a",
+          "on-tertiary": "#ffffff",
+          "on-secondary-fixed": "#261900",
+          "tertiary-container": "#003c2f",
+          "tertiary-fixed-dim": "#99d2be",
+          "primary-container": "#0d3b2e",
+          "on-secondary-fixed-variant": "#5d4201",
+          "on-error": "#ffffff",
+          "secondary": "#775a19",
+          "surface": "#fff9ec",
+          "inverse-on-surface": "#f6f0e3",
+          "on-tertiary-container": "#70a895",
+          "on-surface": "#1d1c14",
+          "on-secondary": "#ffffff",
+          "outline": "#717974",
+          "on-background": "#1d1c14",
+          "on-surface-variant": "#414845",
+          "secondary-fixed": "#ffdea5",
+          "surface-bright": "#fff9ec",
+          "surface-container": "#f3ede0",
+          "on-tertiary-fixed-variant": "#155041",
+          "secondary-fixed-dim": "#e9c176",
+          "on-tertiary-fixed": "#002018",
+          "error": "#ba1a1a",
+          "on-secondary-container": "#785a1a",
+          "inverse-primary": "#a3d0be",
+          "primary": "#00241a",
+          "tertiary": "#00241b",
+          "surface-container-highest": "#e8e2d5",
+          "tertiary-fixed": "#b5efda",
+          "on-primary-fixed": "#002117",
+          "surface-variant": "#e8e2d5",
+          "background": "#fff9ec"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-xs": "0.25rem",
+          "space-xl": "2.5rem",
+          "gutter": "1.25rem",
+          "gutter-lg": "2rem",
+          "margin-md": "2rem",
+          "space-lg": "1.5rem",
+          "space-sm": "0.5rem",
+          "margin": "1.25rem",
+          "margin-lg": "3.5rem",
+          "space-md": "1rem"
+        },
+        "fontFamily": {
+          "headline-lg": [
+            "Newsreader"
+          ],
+          "label-md": [
+            "Plus Jakarta Sans"
+          ],
+          "body-lg": [
+            "Plus Jakarta Sans"
+          ],
+          "body-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "scripture-xl": [
+            "Newsreader"
+          ],
+          "body-md": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "scripture-xl-mobile": [
+            "Newsreader"
+          ],
+          "label-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-md": [
+            "Newsreader"
+          ],
+          "scripture-lg": [
+            "Newsreader"
+          ],
+          "headline-lg-mobile": [
+            "Newsreader"
+          ],
+          "display-lg-mobile": [
+            "Newsreader"
+          ],
+          "display-lg": [
+            "Newsreader"
+          ]
+        },
+        "fontSize": {
+          "headline-lg": [
+            "2rem",
+            {
+              "lineHeight": "2.6rem",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "1.125rem",
+            {
+              "lineHeight": "1.85rem",
+              "fontWeight": "400"
+            }
+          ],
+          "body-sm": [
+            "0.875rem",
+            {
+              "lineHeight": "1.45rem",
+              "fontWeight": "400"
+            }
+          ],
+          "scripture-xl": [
+            "2.5rem",
+            {
+              "lineHeight": "4.25rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-md": [
+            "1rem",
+            {
+              "lineHeight": "1.65rem",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "1.25rem",
+            {
+              "lineHeight": "1.75rem",
+              "fontWeight": "600"
+            }
+          ],
+          "scripture-xl-mobile": [
+            "1.875rem",
+            {
+              "lineHeight": "3.25rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "label-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.04em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "fontWeight": "500"
+            }
+          ],
+          "scripture-lg": [
+            "2rem",
+            {
+              "lineHeight": "3.5rem",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-lg-mobile": [
+            "1.625rem",
+            {
+              "lineHeight": "2.125rem",
+              "fontWeight": "600"
+            }
+          ],
+          "display-lg-mobile": [
+            "2.25rem",
+            {
+              "lineHeight": "2.75rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "display-lg": [
+            "3.5rem",
+            {
+              "lineHeight": "4.25rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed right-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between py-space-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-lg px-gutter"><div class="flex items-center gap-space-sm pt-space-xs"><div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-primary-fixed">auto_stories</span></div><div class="flex flex-col"><span class="font-headline-md text-headline-md text-primary font-bold tracking-tight leading-none">وِرد</span><span class="font-label-sm text-label-sm text-secondary font-semibold tracking-wider">WIRD QURAN</span></div></div><div class="h-px w-full bg-surface-container-highest"></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-semibold"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="mushaf-reader" href="#"><span class="material-symbols-outlined text-on-surface-variant">menu_book</span><span class="font-body-md text-body-md">المصحف الشريف</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="wird-plan" href="#"><span class="material-symbols-outlined text-on-surface-variant">fact_check</span><span class="font-body-md text-body-md">خطة الورد اليومي</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="memorization-tracker" href="#"><span class="material-symbols-outlined text-on-surface-variant">workspace_premium</span><span class="font-body-md text-body-md">سجل الحفظ والمراجعة</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="audio-recitations" href="#"><span class="material-symbols-outlined text-on-surface-variant">graphic_eq</span><span class="font-body-md text-body-md">التلاوات والمقرئين</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-all bg-primary-container text-on-primary font-semibold" data-path="settings-preferences" href="#"><span class="material-symbols-outlined text-on-surface-variant">settings</span><span class="font-body-md text-body-md">الإعدادات والتفضيلات</span></a></nav></div><div class="px-gutter flex flex-col gap-space-sm"><div class="p-space-sm rounded-lg bg-surface-container flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-surface-tint"></span><span class="font-label-sm text-label-sm text-on-surface-variant">المزامنة السحابية</span></div><span class="font-label-sm text-label-sm text-primary font-semibold">نشطة</span></div><div class="text-center font-label-sm text-label-sm text-outline">منصة وِرد © ١٤٤٦ هـ</div></div></aside><div class="pr-72"><header class="fixed top-0 right-72 left-0 h-16 bg-surface/85 backdrop-blur-xl z-40 flex items-center justify-between px-gutter-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-high"><span class="material-symbols-outlined text-surface-tint text-[18px]">cloud_done</span><span class="font-label-sm text-label-sm text-on-surface-variant">متصل / يعمل دون اتصال</span></div><span class="hidden md:inline font-label-sm text-label-sm text-outline">|</span><span class="hidden md:inline font-label-md text-label-md text-on-surface-variant">نظام إدارة التلاوة والحفظ الموزون</span></div><div class="flex items-center gap-space-md"><button class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span></button><button class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">palette</span></button><div class="flex items-center gap-space-sm pr-space-xs"><div class="text-left hidden sm:flex flex-col"><span class="font-label-md text-label-md text-on-surface font-semibold">طالب العلم</span><span class="font-label-sm text-label-sm text-outline">قارئ وحافظ</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Dynamic Atmospheric Glow Base -->
+<div class="relative w-full overflow-hidden px-gutter lg:px-margin-lg py-space-xl">
+<!-- Ambient Heritage Glow Orbs -->
+<div class="absolute top-10 right-1/4 w-96 h-96 rounded-full bg-primary-container/20 blur-[120px] pointer-events-none"></div>
+<div class="absolute top-80 left-10 w-80 h-80 rounded-full bg-secondary/10 blur-[100px] pointer-events-none"></div>
+<div class="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-surface-tint/15 blur-[140px] pointer-events-none"></div>
+<div class="max-w-7xl mx-auto flex flex-col gap-space-xl relative z-10">
+<!-- SECTION 1: HEADER & SOVEREIGN STATUS -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-space-lg pb-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm text-secondary font-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-sm tracking-widest uppercase">الأندلس المظلم • النسخة الموثقة v4.8</span>
+<span class="text-outline">/</span>
+<span class="font-label-sm text-surface-tint">خزانة البيانات الموزونة</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary font-semibold tracking-tight">
+            منظومة الإعدادات والحفظ التراكمي
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+            تخصيص المعايير الصوتية دون خوادم، خوارزميات التكرار المتباعد، وإدارة أصول التلاوة المخزنة محلياً بخصوصية محكمة.
+          </p>
+</div>
+<!-- Privacy Badge -->
+<div class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl bg-primary-container text-on-primary shadow-sm self-start md:self-auto">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary-fixed font-semibold">تشفير سيادي P2P محلي</span>
+<span class="font-label-sm text-label-sm text-on-primary-container">البيانات محمية 100% دون خوادم وسيطة</span>
+</div>
+</div>
+</section>
+<!-- SECTION 2: BENTO GRID UPPER DECK (ROYAL PASSPORT + SM-2 ALGORITHM PREVIEW) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Royal Andalusian Arch Membership Card (7 Cols) -->
+<div class="lg:col-span-7 rounded-xl bg-primary-container text-on-primary p-space-lg lg:p-space-xl relative overflow-hidden shadow-xl flex flex-col justify-between min-h-[380px]">
+<!-- Geometric Arabesque Background Motif SVG -->
+<svg class="absolute -left-16 -top-16 w-80 h-80 text-primary-fixed/5 pointer-events-none" fill="currentColor" viewbox="0 0 100 100">
+<polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35"></polygon>
+<circle cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-width="1"></circle>
+<circle cx="50" cy="50" fill="none" r="30" stroke="currentColor" stroke-width="0.5"></circle>
+</svg>
+<div class="absolute inset-0 bg-gradient-to-tr from-primary via-transparent to-surface-tint/20 pointer-events-none"></div>
+<!-- Top Row of the Card -->
+<div class="flex items-start justify-between relative z-10">
+<div class="flex items-center gap-space-md">
+<div class="relative">
+<div class="w-16 h-16 rounded-xl bg-primary-fixed-dim/20 flex items-center justify-center border-none">
+<span class="material-symbols-outlined text-primary-fixed text-[36px]" style="font-variation-settings: 'FILL' 1;">mosque</span>
+</div>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-secondary-fixed flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary-fixed tracking-wider uppercase">بطاقة الحافظ الأندلسية المُوثقة</span>
+<span class="font-headline-md text-headline-md text-on-primary font-bold">الشيخ أحمد بن منصور القرطبي</span>
+<span class="font-label-sm text-label-sm text-on-primary-container font-mono">QURAN-ID: WIRD-8842-HFS</span>
+</div>
+</div>
+<!-- Certified Seal -->
+<div class="hidden sm:flex flex-col items-center justify-center w-16 h-16 rounded-full bg-secondary/20 text-secondary-fixed text-center p-1">
+<span class="material-symbols-outlined text-[20px]">stars</span>
+<span class="font-label-sm text-[10px] leading-tight font-semibold">إتقان تام</span>
+</div>
+</div>
+<!-- Mid Statistics Pillars -->
+<div class="grid grid-cols-3 gap-space-sm my-space-lg relative z-10 bg-primary/40 p-space-md rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-primary-container">مستوى الدقة التجويدية</span>
+<div class="flex items-baseline gap-space-xs pt-1">
+<span class="font-headline-md text-headline-md text-secondary-fixed font-bold">98.4%</span>
+<span class="font-label-sm text-label-sm text-primary-fixed">+0.6%</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-primary-container">المحفوظ التراكمي</span>
+<div class="flex items-baseline gap-space-xs pt-1">
+<span class="font-headline-md text-headline-md text-on-primary font-bold">٢٤</span>
+<span class="font-body-sm text-body-sm text-primary-fixed-dim">جزءاً</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-primary-container">فواصل المراجعة النشطة</span>
+<div class="flex items-baseline gap-space-xs pt-1">
+<span class="font-headline-md text-headline-md text-on-primary font-bold">١٨٠</span>
+<span class="font-body-sm text-body-sm text-primary-fixed-dim">وجهاً</span>
+</div>
+</div>
+</div>
+<!-- Bottom Ribbon Action -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs relative z-10">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed animate-ping"></span>
+<span class="font-label-sm text-label-sm text-primary-fixed">المزامنة المشفرة: نظير لنظير (P2P Local Mesh) متصل</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-space-xs rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary-fixed hover:text-on-secondary-fixed transition-colors">
+                تجديد شهادة الإتقان
+              </button>
+<button class="p-space-xs rounded-lg bg-surface-container/20 text-on-primary hover:bg-surface-container/40 transition-colors" title="إظهار باركود التحقق">
+<span class="material-symbols-outlined text-[20px]">qr_code_2</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Visual Art Inspiration Card / Sanctuary Presence (5 Cols) -->
+<div class="lg:col-span-5 rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-sm relative overflow-hidden">
+<div class="relative w-full h-44 rounded-lg overflow-hidden shadow-inner mb-space-md">
+<img class="w-full h-full object-cover filter brightness-90 hover:scale-105 transition-transform duration-700" data-alt="Close up shot of dark emerald fine leather Quran cover with deep gold foiled Andalusian calligraphy and intricate geometric Islamic patterns illuminated by soft warm golden light in a sacred tranquil mosque setting at night." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDO-LAAhLP8H44uz2qUCAinHE9epFRDoQTNep495gP7KJLdK0HEj2X_B6-ETXp2UrbC5oOOmlQCpUqbGjD6HmzZcxGPH1lCWt7YjIQBet8ORkcK9mfzbGhY5H3KsD8LuZREr5D2EEyTrMhqUL1q6QwE-69WpedOGeTB9RKUtZupPnAaH2bTicaTN-rix5xt0lMl739bLKUVJoWiPvdPefr_FaxdsqpBOb4MiQRvZUXE"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-space-sm right-space-sm left-space-sm flex items-center justify-between text-on-primary">
+<span class="font-label-sm text-label-sm text-secondary-fixed">مخطوطة المدينة المنورة — العهد الأندلسي</span>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim">خط الثلث الرقمي</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">سمت القراءة الليلي الفاخر</span>
+<span class="px-space-sm py-0.5 rounded-full bg-secondary/15 text-secondary font-label-sm font-semibold">مُفعّل</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              وضع مخصص لصلوات قيام الليل والتهجد، يقلل انبعاثات الإشعاع الأزرق ويزيد من تباين النقاط التجويدية الذهبية على خلفية الخضرة الداكنة.
+            </p>
+</div>
+<div class="pt-space-md flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">درجة إعتام الورق: ٩٢٪</span>
+<div class="flex items-center gap-space-xs">
+<span class="w-4 h-4 rounded-full bg-primary inline-block"></span>
+<span class="w-4 h-4 rounded-full bg-primary-container inline-block"></span>
+<span class="w-4 h-4 rounded-full bg-secondary inline-block"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 3: OFFLINE VAULT & AUDIO ENGINE -->
+<section class="rounded-xl bg-surface-container p-space-lg lg:p-space-xl flex flex-col gap-space-lg shadow-sm">
+<!-- Header row with storage dial -->
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg pb-space-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center text-primary-fixed">
+<span class="material-symbols-outlined text-[28px]">offline_pin</span>
+</div>
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">خزانة التخزين الذكي بدون إنترنت</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Offline Vault &amp; Local Acoustic Recitation Engine</span>
+</div>
+</div>
+<!-- Storage Meter Inline Badge -->
+<div class="flex items-center gap-space-lg bg-surface-container-high px-space-lg py-space-sm rounded-xl w-full lg:w-auto justify-between">
+<!-- Inline Mini Donut SVG Chart -->
+<div class="flex items-center gap-space-md">
+<svg class="w-12 h-12 transform -rotate-90 text-primary-container" viewbox="0 0 36 36">
+<!-- Background track -->
+<path class="text-surface-container-highest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<!-- Filled stroke (80%) -->
+<path class="text-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="80, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">المساحة المستهلكة</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">٢.٤ جيجابايت <span class="text-outline font-normal text-body-sm">/ ٣.٠ جيجابايت</span></span>
+</div>
+</div>
+<button class="px-space-sm py-space-xs rounded-lg bg-surface-container-lowest text-on-surface hover:bg-error-container hover:text-on-error-container font-label-sm text-label-sm transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px]">cleaning_services</span>
+<span>تفريغ المستمع</span>
+</button>
+</div>
+</div>
+<!-- Offline Assets Matrix -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+<!-- Asset Item 1: AI Whisper Engine -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md hover:bg-surface-container-lowest transition-colors shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">graphic_eq</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">محرك التسميع الصوتي المحلي</span>
+<span class="font-label-sm text-label-sm text-outline">Whisper Local / Vosk Engine</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-[11px]">مكتمل 100%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              معالجة صوتية مدمجة بالكامل على معالج الجهاز لكشف عثرات التسميع وتصويب أخطاء الأحكام دون رفع أي تسجيل.
+            </p>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-mono">٤٢٠ ميجابايت • v2.4</span>
+<button class="text-surface-tint font-label-sm text-label-sm font-semibold hover:underline flex items-center gap-1">
+<span>إعادة تدريب النبر</span>
+<span class="material-symbols-outlined text-[16px]">tune</span>
+</button>
+</div>
+</div>
+<!-- Asset Item 2: Vector Qurans -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md hover:bg-surface-container-lowest transition-colors shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">طبعة الملك فهد والشمرلي SVG</span>
+<span class="font-label-sm text-label-sm text-outline">رسوم متجهات بالغة الدقة</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-[11px]">مكتمل</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              تكبير لانهائي بدون أي ضياع في الحدة، مع علامات الآيات والأرباع بالرسم العثماني الأصيل.
+            </p>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-mono">١٨٠ ميجابايت • ٦٠٤ صفحات</span>
+<button class="text-surface-tint font-label-sm text-label-sm font-semibold hover:underline flex items-center gap-1">
+<span>إدارة الطبقات</span>
+<span class="material-symbols-outlined text-[16px]">layers</span>
+</button>
+</div>
+</div>
+<!-- Asset Item 3: 4 Complete Audio Recitations -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md hover:bg-surface-container-lowest transition-colors shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">surround_sound</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">٤ مصاحف صوتية كاملة</span>
+<span class="font-label-sm text-label-sm text-outline">الحصري، المنشاوي، علي جابر، البنا</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-[11px]">قيد التحديث 85%</span>
+</div>
+<!-- Progress bar -->
+<div class="w-full flex flex-col gap-1">
+<div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 85%;"></div>
+</div>
+<div class="flex justify-between font-label-sm text-[11px] text-outline">
+<span>تم تحميل ٥٢ جزءاً من ٦٠</span>
+<span>١.٨ جيجابايت</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="px-space-sm py-space-xs rounded bg-primary text-on-primary font-label-sm text-label-sm hover:bg-primary-container transition-colors">
+                استئناف التحميل
+              </button>
+<button class="text-outline font-label-sm text-label-sm hover:text-on-surface">إعدادات الجودة</button>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 4: SM-2 QURANIC INTERVAL ENGINE (ALGORITHM TUNING) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<div class="lg:col-span-8 rounded-xl bg-surface-container p-space-lg lg:p-space-xl flex flex-col gap-space-lg shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[28px]">timeline</span>
+</div>
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">محرك الحفظ التراكمي وفواصل النسيان</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">SM-2 Spaced Repetition Adapted for Quranic Precision</span>
+</div>
+</div>
+<span class="hidden sm:inline-block px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface font-label-sm">النموذج القرآني السادس</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            يعتمد نظام وِرد على تكييف معادلة النسيان الطبيعية، حيث يُعاد تكرار الحزب والصفحة على فترات متباعدة تضمن رسوخ الحفظ في الذاكرة الدائمة دون إجهاد ذهني مفرط.
+          </p>
+<!-- Intervals Pills / Sliders Visualizer -->
+<div class="flex flex-col gap-space-md pt-space-sm">
+<span class="font-label-md text-label-md text-on-surface font-semibold">فواصل المراجعة الدورية (أيام الفاصل الزمني):</span>
+<div class="grid grid-cols-2 sm:grid-cols-6 gap-space-sm">
+<div class="p-space-sm rounded-lg bg-surface-container-high flex flex-col items-center justify-center gap-1 border-none hover:bg-surface-container-highest transition-colors">
+<span class="font-label-sm text-label-sm text-outline">المرحلة ١</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">اليوم ١</span>
+<span class="font-label-sm text-[11px] text-surface-tint">تثبيت جديد</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-high flex flex-col items-center justify-center gap-1 hover:bg-surface-container-highest transition-colors">
+<span class="font-label-sm text-label-sm text-outline">المرحلة ٢</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">اليوم ٣</span>
+<span class="font-label-sm text-[11px] text-surface-tint">فحص أول</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-high flex flex-col items-center justify-center gap-1 hover:bg-surface-container-highest transition-colors">
+<span class="font-label-sm text-label-sm text-outline">المرحلة ٣</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">اليوم ٧</span>
+<span class="font-label-sm text-[11px] text-secondary font-semibold">الربط الأسبوعي</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-high flex flex-col items-center justify-center gap-1 hover:bg-surface-container-highest transition-colors">
+<span class="font-label-sm text-label-sm text-outline">المرحلة ٤</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">اليوم ١٤</span>
+<span class="font-label-sm text-[11px] text-surface-tint">المراجعة الصغرى</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-high flex flex-col items-center justify-center gap-1 hover:bg-surface-container-highest transition-colors">
+<span class="font-label-sm text-label-sm text-outline">المرحلة ٥</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">اليوم ٣٠</span>
+<span class="font-label-sm text-[11px] text-surface-tint">رسوخ شهري</span>
+</div>
+<div class="p-space-sm rounded-lg bg-primary-container text-on-primary flex flex-col items-center justify-center gap-1 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary-fixed">المرحلة ٦</span>
+<span class="font-headline-sm text-headline-sm text-secondary-fixed font-bold">اليوم ٦٠</span>
+<span class="font-label-sm text-[11px] text-primary-fixed-dim font-bold">إتقان دائم</span>
+</div>
+</div>
+</div>
+<!-- Precision Sensitivity Controls -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-sm">
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">وزن أخطاء المتشابهات اللفظية</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">مرتفع جداً (x2.5)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                عند الالتباس بين خواتيم الآيات المتشابهة يتم إعادة الآية تلقائياً لدورة الـ 3 أيام مباشرة.
+              </p>
+<div class="w-full h-2 rounded-full bg-surface-container-highest mt-2 relative">
+<div class="h-full bg-secondary rounded-full" style="width: 80%;"></div>
+<div class="absolute top-1/2 -mt-2 w-4 h-4 rounded-full bg-secondary shadow -mr-2" style="right: 80%;"></div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">حساسية إعراب الحركات والغُنن</span>
+<span class="font-label-sm text-label-sm text-surface-tint font-bold">تدقيق صارم (٩٥٪)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                يعتبر إسقاط المد العارض أو التراخي في القلقلة كعثرة تستوجب إعادة تكرار الربع مرتين.
+              </p>
+<div class="w-full h-2 rounded-full bg-surface-container-highest mt-2 relative">
+<div class="h-full bg-primary-container rounded-full" style="width: 95%;"></div>
+<div class="absolute top-1/2 -mt-2 w-4 h-4 rounded-full bg-primary-fixed shadow -mr-2" style="right: 95%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Geographic & Prayer Timings Sync (4 Cols) -->
+<div class="lg:col-span-4 rounded-xl bg-surface-container p-space-lg flex flex-col justify-between gap-space-md shadow-sm">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center gap-space-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">schedule</span>
+<h3 class="font-headline-sm text-headline-sm font-bold">مواقيت التهجد والورد</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">تقويم أم القرى بدقة الثواني الجغرافية</span>
+</div>
+<!-- Prayer Times List -->
+<div class="flex flex-col gap-space-xs my-space-sm">
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[18px]">bedtime</span>
+<span class="font-label-md text-label-md text-on-surface">ثلث الليل الأخير (التهجد)</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-mono font-bold">٠٢:٤٥ ص</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-primary-container text-on-primary">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-fixed text-[18px]">light_mode</span>
+<span class="font-label-md text-label-md font-semibold">أذان الفجر الأول</span>
+</div>
+<span class="font-label-md text-label-md text-secondary-fixed font-mono font-bold">٠٤:١٢ ص</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">wb_twilight</span>
+<span class="font-label-md text-label-md text-on-surface">الشروق (جلسة الإشراق)</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-mono font-bold">٠٥:٣٨ ص</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">nights_stay</span>
+<span class="font-label-md text-label-md text-on-surface">العشاء والوتر</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-mono font-bold">٠٧:٤٥ م</span>
+</div>
+</div>
+<!-- Tactile Haptic Toggle -->
+<div class="p-space-sm rounded-lg bg-surface-container-high flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-surface-tint text-[20px]">vibration</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">تنبيه لمسي هادئ (سبحة)</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<button class="w-full py-space-sm rounded-lg bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-space-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]">my_location</span>
+<span>تحديث الإحداثيات الجغرافية (مكة المكرمة)</span>
+</button>
+</div>
+</section>
+<!-- SECTION 5: SOVEREIGN PRIVACY & DISK OPERATIONS -->
+<section class="rounded-xl bg-primary-container text-on-primary p-space-lg lg:p-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg shadow-xl relative overflow-hidden">
+<div class="absolute right-0 bottom-0 translate-y-1/3 translate-x-1/4 w-80 h-80 rounded-full bg-secondary/10 blur-[80px] pointer-events-none"></div>
+<div class="flex items-start gap-space-md relative z-10">
+<div class="w-14 h-14 rounded-xl bg-primary-fixed-dim/20 flex items-center justify-center text-primary-fixed shrink-0">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<h3 class="font-headline-md text-headline-md font-bold text-on-primary">السيادة التامة على سجلات التلاوة</h3>
+<p class="font-body-sm text-body-sm text-on-primary-container max-w-xl">
+              لا توجد معرفات إعلانية، ولا تحليلات طرف ثالث. جميع تسجيلات التسميع والتقارير اليومية مخزنة بمفتاح تشفير 256-bit AES مشتق محلياً من رمز مرورك.
+            </p>
+</div>
+</div>
+<!-- Export & Backup Action Buttons -->
+<div class="flex flex-wrap sm:flex-nowrap items-center gap-space-sm relative z-10 w-full md:w-auto">
+<button class="w-full sm:w-auto px-space-lg py-space-sm rounded-lg bg-secondary text-on-secondary hover:bg-secondary-fixed hover:text-on-secondary-fixed font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-space-xs shadow-md">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span>تصدير أرشيف الحفظ (.wirdenc)</span>
+</button>
+<button class="w-full sm:w-auto px-space-md py-space-sm rounded-lg bg-surface-container/20 text-on-primary hover:bg-surface-container/30 font-label-md text-label-md transition-colors flex items-center justify-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+<span>استيراد نسخة سابقة</span>
+</button>
+</div>
+</section>
+<!-- SECTION 6: FOOTER METADATA / DEDICATION -->
+<footer class="pt-space-md pb-space-lg flex flex-col sm:flex-row items-center justify-between text-outline font-label-sm text-label-sm gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span>نظام وِرد القرآني — وقف لله تعالى لوجهه الكريم</span>
+<span>•</span>
+<span>طبعة ليلية خاصة بالمعتكفين وحفاظ الوحي</span>
+</div>
+<div class="flex items-center gap-space-md">
+<a class="hover:text-primary transition-colors" href="#">مفاتيح الاختصار السريع</a>
+<span>•</span>
+<a class="hover:text-primary transition-colors" href="#">سجل التغييرات v4.8.2</a>
+<span>•</span>
+<span class="text-secondary font-mono">HASH: 9a7f...d014</span>
+</div>
+</footer>
+</div>
+</div>
+</div></main></div></body></html>

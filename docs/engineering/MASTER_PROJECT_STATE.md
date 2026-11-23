@@ -1,6 +1,29 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-20 (Draft PR `#404` on `feat/platform-transformation-20261120` — Release Readiness Fixes Applied & Verified Locally; Pending Exact-Head CI Run)  
+**Current snapshot reconciled:** 2026-11-22 (Google AI Studio Workspace — Four-Variant Design Integration: Design A & Design B × Light / Dark, Reference-Backed Appearance Selector, Semantic Token & Dark-Contrast Harmonization)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (AI Studio sandbox has no `.git` metadata)
+
+- **Local Workspace State & Verification (2026-11-22 — AI Studio Workspace, NOT committed/pushed to GitHub and NOT deployed to Vercel):**
+  - **Four-Variant Preference & Token Engine (`src/services/themePreferences.ts`, `src/wird-identity.css`, `src/main.tsx`):**
+    - Replaced 3 legacy UI presets with two orthogonal axes: `design` (`'design-a'` Andalusian Heritage `#FFF9EC`/`#041610` default, `'design-b'` Modern Calm Slate `#F9FBFA`/`#08121E`) and `appearanceMode` (`'light'` default, `'dark'`). Switching one axis never resets the other; `resetThemePreferences()` restores `design-a` + `light`; legacy stored presets migrate deterministically via `mapLegacyPresetToDesign`.
+    - Resolved CSS specificity ordering in `src/wird-identity.css` using explicit `:root[data-wird-design='design-a'|'design-b']` and `:root.dark[data-wird-design='design-a'|'design-b']` blocks plus `--wird-sidebar-bg`, `--wird-mushaf-paper`, `--wird-primary-ink`, and `--wird-accent-ink`.
+    - Referenced real local PNG previews & emblems from `/public/assets/aistudio/` for all 4 variants.
+  - **Appearance Selector, Unified Navigation & App-Wide Token Harmonization:**
+    - Built `src/components/ui/AppearanceSelectorPanel.tsx` (`layout="sheet" | "settings"`) and wired it into both `ThemeCustomizerSheet.tsx` (header trigger with active `A`/`B` indicator) and `SettingsView.tsx` (`#settings-appearance-section`), alongside a compact A/B + Light/Dark toggle bar in `AuthScreen.tsx`, unified collapsible right sidebar (`Sidebar.tsx`), and updated `BrandDesignShowcase.tsx`.
+    - Removed hardcoded legacy hex colors across 18 feature/shared components and paired `text-[var(--wird-primary)]` with `dark:text-[var(--wird-accent)]` across 15 components (81 occurrences) to ensure crisp dark-mode contrast; tightened `DashboardView.tsx` hero spacing.
+    - Updated `src/tests/designSystemV2.test.ts` to validate all 4 variants, asset presence, legacy migration, CSS cascades, selector wiring, and token hygiene.
+  - **Local Verification Executed (2026-11-22):**
+    - `npm test` (73 suites incl. Tanzil validation + 114 Surah chunk build): **PASS** (`806 PASSED | 0 FAILED`)
+    - `npm run smoke:api-imports`: **PASS**
+    - Legacy hex scan across `src/components` (excluding intentional `brand/`, `QuranMushafFacsimilePage.tsx`, `QuranTypographyLab.tsx`): **PASS** (`0` matches)
+    - Headless Chromium visual verification (desktop `1440x900` & mobile `390x844`): **PASS** (exact RGB backgrounds verified across all 4 variants + Restore Defaults, `0` console/page errors, `overflowX: false`, dark-mode contrast visually verified on final screenshots)
+    - `compile_applet` & `lint_applet`: executed on final workspace pass.
+    - `npm run test:firestore-rules`: **BLOCKED** locally (`java` absent in container).
+    - GitHub Actions CI, Vercel Preview, Vercel Production, Production Sync Flags, `firestore.rules`, and Quran corpus: **UNTOUCHED / NOT EXECUTED** from AI Studio.
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Platform Transformation Snapshot — 2026-11-20 (Draft PR `#404` on `feat/platform-transformation-20261120`)
 **Refreshed GitHub `origin/main` baseline (fetched 2026-11-20):** `61554d60da5a5bbb644f6698d7b6193068a4d70a` (`feat(ai): add chat history context and update styles`); previous CI-passing PR `#404` head: `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
 **Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` · **Active PR branch:** `feat/platform-transformation-20261120` (Draft PR `#404`)
 
@@ -51,7 +74,7 @@
     - `bun@1.4.4 audit --audit-level=high`: **PASS** (`No vulnerabilities found (checked 360 packages)`)
     - GitHub Actions `WIRD Quality Gate` (Firestore Rules Emulator + Desktop & Mobile Playwright E2E + server smoke): previous head `bcbf26fe` passed 100% (Run `44672654181`); new Release Readiness Fixes commit queued for exact-head CI verification on PR `#404`. Production settings, sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`), `firestore.rules`, `authService.ts`, Quran corpus, Vercel, and `main` remain completely untouched.
 
-> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+> Historical evidence below predates both the 2026-11-22 workspace update and the 2026-11-20 snapshot.
 
 ## Historical AI Studio workspace verification — 2026-11-17
   - **Firebase configuration verified (`firebase-applet-config.json`):** `projectId="wird-quran-app"`, `firestoreDatabaseId=""` (`(default)`), `authDomain="wird-quran-app.firebaseapp.com"`, `appId="1:741238306826:web:3db91a75a7b7dc5dae07f3"`.
