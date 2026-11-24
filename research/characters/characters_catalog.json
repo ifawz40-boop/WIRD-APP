@@ -1,0 +1,723 @@
+{
+  "schemaVersion": 1,
+  "totalCharacters": 32,
+  "characters": [
+    {
+      "id": "khadijah-bint-khuwaylid",
+      "name": "خديجة بنت خويلد رضي الله عنها",
+      "epithet": "أم المؤمنين الطاهرة وأول من آمن",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "زوجة النبي ﷺ الأولى ووزيرة صدقه في بدء الوحي والدعوة المكية",
+      "aliases": [
+        "خديجة بنت خويلد",
+        "خديجة"
+      ],
+      "totalMentions": 170,
+      "pagesCount": 63,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 262
+      },
+      "volumeBreakdown": {
+        "1": 37,
+        "2": 18,
+        "3": 1,
+        "4": 7
+      }
+    },
+    {
+      "id": "abu-bakr-al-siddiq",
+      "name": "أبو بكر الصديق عبد الله بن أبي قحافة رضي الله عنه",
+      "epithet": "الصديق وصاحب الغار وخليفة رسول الله ﷺ",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "أحب الرجال إلى النبي ﷺ ورفيقه في الهجرة والمشاهد كلها",
+      "aliases": [
+        "أبو بكر الصديق",
+        "أبي بكر الصديق",
+        "الصديق"
+      ],
+      "totalMentions": 241,
+      "pagesCount": 125,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 14
+      },
+      "volumeBreakdown": {
+        "1": 14,
+        "2": 34,
+        "3": 19,
+        "4": 58
+      }
+    },
+    {
+      "id": "umar-ibn-al-khattab",
+      "name": "عمر بن الخطاب رضي الله عنه",
+      "epithet": "الفاروق أمير المؤمنين",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "أعز الله بإسلامه الدين وشهد المشاهد كلها مع النبي ﷺ",
+      "aliases": [
+        "عمر بن الخطاب"
+      ],
+      "totalMentions": 202,
+      "pagesCount": 164,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 17
+      },
+      "volumeBreakdown": {
+        "1": 18,
+        "2": 31,
+        "3": 52,
+        "4": 63
+      }
+    },
+    {
+      "id": "uthman-ibn-affan",
+      "name": "عثمان بن عفان رضي الله عنه",
+      "epithet": "ذو النورين وصاحب الهجرتين",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "صهر النبي ﷺ ومجهز جيش العسرة وسفيره يوم الحديبية",
+      "aliases": [
+        "عثمان بن عفان"
+      ],
+      "totalMentions": 62,
+      "pagesCount": 51,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 352
+      },
+      "volumeBreakdown": {
+        "1": 4,
+        "2": 14,
+        "3": 16,
+        "4": 17
+      }
+    },
+    {
+      "id": "ali-ibn-abi-talib",
+      "name": "علي بن أبي طالب رضي الله عنه",
+      "epithet": "أبو السبطين وفارس الإسلام",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "ابن عم النبي ﷺ وزوج فاطمة الزهراء وأول الغلمان إسلاماً وحامل الراية في خيبر",
+      "aliases": [
+        "علي بن أبي طالب"
+      ],
+      "totalMentions": 168,
+      "pagesCount": 140,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 49
+      },
+      "volumeBreakdown": {
+        "1": 23,
+        "2": 25,
+        "3": 33,
+        "4": 59
+      }
+    },
+    {
+      "id": "aishah-bint-abi-bakr",
+      "name": "عائشة بنت أبي بكر الصديق رضي الله عنها",
+      "epithet": "أم المؤمنين الصديقة بنت الصديق",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "أفقه نساء الأمة والتي نزلت براءتها من فوق سبع سموات ومرض ﷺ في بيتها",
+      "aliases": [
+        "عائشة بنت الصديق",
+        "عائشة أم المؤمنين",
+        "عائشة رضي الله عنها"
+      ],
+      "totalMentions": 46,
+      "pagesCount": 44,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 194
+      },
+      "volumeBreakdown": {
+        "1": 9,
+        "2": 15,
+        "3": 7,
+        "4": 13
+      }
+    },
+    {
+      "id": "fatimah-al-zahra",
+      "name": "فاطمة الزهراء بنت رسول الله ﷺ رضي الله عنها",
+      "epithet": "سيدة نساء أهل الجنة وبضعة النبي ﷺ",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "أصغر بنات النبي ﷺ وأحبهن إليه وأول أهله لحوقاً به بعد وفاته",
+      "aliases": [
+        "فاطمة بنت رسول الله",
+        "فاطمة رضي الله عنها"
+      ],
+      "totalMentions": 21,
+      "pagesCount": 17,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 238
+      },
+      "volumeBreakdown": {
+        "1": 1,
+        "2": 2,
+        "3": 7,
+        "4": 7
+      }
+    },
+    {
+      "id": "hamzah-ibn-abd-al-muttalib",
+      "name": "حمزة بن عبد المطلب رضي الله عنه",
+      "epithet": "أسد الله وأسد رسوله وسيد الشهداء",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "عم النبي ﷺ وأخوه من الرضاعة وناصره في مكة وشهيد أحد",
+      "aliases": [
+        "حمزة بن عبد المطلب"
+      ],
+      "totalMentions": 31,
+      "pagesCount": 29,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 441
+      },
+      "volumeBreakdown": {
+        "1": 3,
+        "2": 13,
+        "3": 12,
+        "4": 1
+      }
+    },
+    {
+      "id": "jafar-ibn-abi-talib",
+      "name": "جعفر بن أبي طالب رضي الله عنه",
+      "epithet": "جعفر الطيار ذو الجناحين وأبو المساكين",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "خطيب المهاجرين أمام النجاشي وأمير الجيش الثاني في مؤتة",
+      "aliases": [
+        "جعفر بن أبي طالب"
+      ],
+      "totalMentions": 42,
+      "pagesCount": 33,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 225
+      },
+      "volumeBreakdown": {
+        "1": 2,
+        "2": 11,
+        "3": 18,
+        "4": 2
+      }
+    },
+    {
+      "id": "zayd-ibn-harithah",
+      "name": "زيد بن حارثة رضي الله عنه",
+      "epithet": "حِبّ رسول الله ﷺ",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "الصحابي الوحيد المذكور باسمه في القرآن وأمير مؤتة الأول",
+      "aliases": [
+        "زيد بن حارثة"
+      ],
+      "totalMentions": 91,
+      "pagesCount": 67,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 154
+      },
+      "volumeBreakdown": {
+        "1": 9,
+        "2": 20,
+        "3": 26,
+        "4": 12
+      }
+    },
+    {
+      "id": "musab-ibn-umayr",
+      "name": "مصعب بن عمير رضي الله عنه",
+      "epithet": "أول سفير في الإسلام ومقرئ المدينة",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "سفير النبي ﷺ إلى يثرب بعد العقبة الأولى وحامل اللواء يوم بدر وأحد",
+      "aliases": [
+        "مصعب بن عمير"
+      ],
+      "totalMentions": 34,
+      "pagesCount": 27,
+      "firstAppearance": {
+        "volume": 2,
+        "page": 3
+      },
+      "volumeBreakdown": {
+        "1": 0,
+        "2": 17,
+        "3": 9,
+        "4": 1
+      }
+    },
+    {
+      "id": "bilal-ibn-rabah",
+      "name": "بلال بن رباح رضي الله عنه",
+      "epithet": "مؤذن رسول الله ﷺ وسيد الصابرين",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "ثبت تحت رمضاء مكة بـ«أحد أحد» ورفع الأذان فوق الكعبة يوم الفتح",
+      "aliases": [
+        "بلال بن رباح",
+        "بلال مؤذن"
+      ],
+      "totalMentions": 3,
+      "pagesCount": 3,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 492
+      },
+      "volumeBreakdown": {
+        "1": 1,
+        "2": 0,
+        "3": 0,
+        "4": 2
+      }
+    },
+    {
+      "id": "ammar-ibn-yasir",
+      "name": "عمار بن ياسر رضي الله عنهما",
+      "epithet": "الطيب المطيب ابن الشهيدين",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "من السابقين المعذبين في الله وبشّر النبي ﷺ آل ياسر بالجنة",
+      "aliases": [
+        "عمار بن ياسر"
+      ],
+      "totalMentions": 21,
+      "pagesCount": 20,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 266
+      },
+      "volumeBreakdown": {
+        "1": 4,
+        "2": 9,
+        "3": 6,
+        "4": 1
+      }
+    },
+    {
+      "id": "abdullah-ibn-masud",
+      "name": "عبد الله بن مسعود رضي الله عنه",
+      "epithet": "إمام القراء وصاحب سواد النبي ﷺ ونعليه",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "أول من جهر بالقرآن في مكة ومن كبار علماء الصحابة",
+      "aliases": [
+        "عبد الله بن مسعود",
+        "ابن مسعود"
+      ],
+      "totalMentions": 110,
+      "pagesCount": 85,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 75
+      },
+      "volumeBreakdown": {
+        "1": 8,
+        "2": 38,
+        "3": 13,
+        "4": 26
+      }
+    },
+    {
+      "id": "zubayr-ibn-al-awwam",
+      "name": "الزبير بن العوام رضي الله عنه",
+      "epithet": "حواري رسول الله ﷺ",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "ابن عمة النبي ﷺ صفية وأول من سل سيفاً في سبيل الله",
+      "aliases": [
+        "الزبير بن العوام"
+      ],
+      "totalMentions": 35,
+      "pagesCount": 34,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 437
+      },
+      "volumeBreakdown": {
+        "1": 2,
+        "2": 10,
+        "3": 16,
+        "4": 6
+      }
+    },
+    {
+      "id": "talhah-ibn-ubaydillah",
+      "name": "طلحة بن عبيد الله رضي الله عنه",
+      "epithet": "طلحة الخير والفياض والشهيد الحي",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "وقى النبي ﷺ بيده ونفسه يوم أحد حتى شُلّت يده الكريمة",
+      "aliases": [
+        "طلحة بن عبيد الله"
+      ],
+      "totalMentions": 22,
+      "pagesCount": 21,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 22
+      },
+      "volumeBreakdown": {
+        "1": 4,
+        "2": 3,
+        "3": 8,
+        "4": 6
+      }
+    },
+    {
+      "id": "abd-al-rahman-ibn-awf",
+      "name": "عبد الرحمن بن عوف رضي الله عنه",
+      "epithet": "التاجر الأمين من العشرة المبشرين",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "هاجر الهجرتين وبذل ماله العظيم في تجهيز جيوش الإسلام",
+      "aliases": [
+        "عبد الرحمن بن عوف"
+      ],
+      "totalMentions": 54,
+      "pagesCount": 43,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 207
+      },
+      "volumeBreakdown": {
+        "1": 5,
+        "2": 16,
+        "3": 6,
+        "4": 16
+      }
+    },
+    {
+      "id": "sad-ibn-abi-waqqas",
+      "name": "سعد بن أبي وقاص رضي الله عنه",
+      "epithet": "أول من رمى بسهم في سبيل الله",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "فداه النبي ﷺ بأبيه وأمه يوم أحد وكان مجاب الدعوة",
+      "aliases": [
+        "سعد بن أبي وقاص"
+      ],
+      "totalMentions": 44,
+      "pagesCount": 36,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 153
+      },
+      "volumeBreakdown": {
+        "1": 4,
+        "2": 16,
+        "3": 8,
+        "4": 8
+      }
+    },
+    {
+      "id": "abu-ubaydah-ibn-al-jarrah",
+      "name": "أبو عبيدة عامر بن الجراح رضي الله عنه",
+      "epithet": "أمين هذه الأمة",
+      "category": "العشرة المبشرون وكبار السابقين",
+      "summary": "شهد بدراً والمشاهد كلها وأرسله النبي ﷺ معلماً وقاضياً لأهل نجران",
+      "aliases": [
+        "أبو عبيدة بن الجراح",
+        "أبي عبيدة بن الجراح"
+      ],
+      "totalMentions": 14,
+      "pagesCount": 14,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 439
+      },
+      "volumeBreakdown": {
+        "1": 1,
+        "2": 4,
+        "3": 3,
+        "4": 6
+      }
+    },
+    {
+      "id": "sad-ibn-muadh",
+      "name": "سعد بن معاذ رضي الله عنه",
+      "epithet": "سيد الأوس الذي اهتز لموته عرش الرحمن",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "أسلم فأسلم بإسلامه بنو عبد الأشهل كلهم ونطق بموقف الأنصار الخالد يوم بدر",
+      "aliases": [
+        "سعد بن معاذ"
+      ],
+      "totalMentions": 79,
+      "pagesCount": 54,
+      "firstAppearance": {
+        "volume": 2,
+        "page": 174
+      },
+      "volumeBreakdown": {
+        "1": 0,
+        "2": 22,
+        "3": 25,
+        "4": 7
+      }
+    },
+    {
+      "id": "sad-ibn-ubadah",
+      "name": "سعد بن عبادة رضي الله عنه",
+      "epithet": "سيد الخزرج وحامل راية الأنصار",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "أحد النقباء الاثني عشر في العقبة وأهل الجود والوفاء للنبي ﷺ",
+      "aliases": [
+        "سعد بن عبادة"
+      ],
+      "totalMentions": 53,
+      "pagesCount": 40,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 371
+      },
+      "volumeBreakdown": {
+        "1": 2,
+        "2": 14,
+        "3": 15,
+        "4": 9
+      }
+    },
+    {
+      "id": "asad-ibn-zurarah",
+      "name": "أسعد بن زرارة رضي الله عنه",
+      "epithet": "أبو أمامة نقيب بني النجار",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "من أوائل من أسلم من الأنصار وأقام الجمعة في يثرب قبل الهجرة",
+      "aliases": [
+        "أسعد بن زرارة"
+      ],
+      "totalMentions": 34,
+      "pagesCount": 23,
+      "firstAppearance": {
+        "volume": 2,
+        "page": 177
+      },
+      "volumeBreakdown": {
+        "1": 0,
+        "2": 21,
+        "3": 0,
+        "4": 2
+      }
+    },
+    {
+      "id": "abu-ayyub-al-ansari",
+      "name": "أبو أيوب الأنصاري خالد بن زيد رضي الله عنه",
+      "epithet": "مضيف رسول الله ﷺ في المدينة",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "نزل النبي ﷺ في داره حين قدم المدينة وشهد بدراً والمشاهد كلها",
+      "aliases": [
+        "أبو أيوب الأنصاري",
+        "أبي أيوب"
+      ],
+      "totalMentions": 22,
+      "pagesCount": 14,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 24
+      },
+      "volumeBreakdown": {
+        "1": 2,
+        "2": 11,
+        "3": 1,
+        "4": 0
+      }
+    },
+    {
+      "id": "nusaybah-bint-kab",
+      "name": "نسيبة بنت كعب المازنية (أم عمارة) رضي الله عنها",
+      "epithet": "درع رسول الله ﷺ يوم أحد",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "بايعت في العقبة الثانية وذادت عن النبي ﷺ بالسيف والقوس يوم أحد",
+      "aliases": [
+        "أم عمارة",
+        "نسيبة بنت كعب"
+      ],
+      "totalMentions": 9,
+      "pagesCount": 4,
+      "firstAppearance": {
+        "volume": 2,
+        "page": 197
+      },
+      "volumeBreakdown": {
+        "1": 0,
+        "2": 2,
+        "3": 2,
+        "4": 0
+      }
+    },
+    {
+      "id": "umm-salamah",
+      "name": "أم سلمة هند بنت أبي أمية رضي الله عنها",
+      "epithet": "أم المؤمنين صاحبة الرأي السديد يوم الحديبية",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "مهاجرة الحبشة والمدينة وأشارت على النبي ﷺ بالمشورة المباركة يوم الحديبية",
+      "aliases": [
+        "أم سلمة"
+      ],
+      "totalMentions": 82,
+      "pagesCount": 53,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 74
+      },
+      "volumeBreakdown": {
+        "1": 2,
+        "2": 12,
+        "3": 18,
+        "4": 21
+      }
+    },
+    {
+      "id": "salman-al-farisi",
+      "name": "سلمان الفارسي رضي الله عنه",
+      "epithet": "الباحث عن الحقيقة وصاحب مشورة الخندق",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "طاف البلدان بحثاً عن دين الحق وقال عنه ﷺ: سلمان منا أهل البيت",
+      "aliases": [
+        "سلمان الفارسي"
+      ],
+      "totalMentions": 11,
+      "pagesCount": 10,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 296
+      },
+      "volumeBreakdown": {
+        "1": 3,
+        "2": 2,
+        "3": 3,
+        "4": 2
+      }
+    },
+    {
+      "id": "khalid-ibn-al-walid",
+      "name": "خالد بن الوليد رضي الله عنه",
+      "epithet": "سيف الله المسلول",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "أسلم قبل الفتح وحفظ جيش المسلمين يوم مؤتة فسماه النبي ﷺ سيفاً من سيوف الله",
+      "aliases": [
+        "خالد بن الوليد"
+      ],
+      "totalMentions": 82,
+      "pagesCount": 60,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 14
+      },
+      "volumeBreakdown": {
+        "1": 4,
+        "2": 2,
+        "3": 37,
+        "4": 17
+      }
+    },
+    {
+      "id": "muadh-ibn-jabal",
+      "name": "معاذ بن جبل رضي الله عنه",
+      "epithet": "أعلم الأمة بالحلال والحرام",
+      "category": "نقباء وقادة الأنصار والمهاجرين",
+      "summary": "شهد العقبة وبدراً وبعثه النبي ﷺ قاضياً ومعلماً إلى اليمن",
+      "aliases": [
+        "معاذ بن جبل"
+      ],
+      "totalMentions": 28,
+      "pagesCount": 23,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 14
+      },
+      "volumeBreakdown": {
+        "1": 2,
+        "2": 6,
+        "3": 2,
+        "4": 13
+      }
+    },
+    {
+      "id": "al-abbas-ibn-abd-al-muttalib",
+      "name": "العباس بن عبد المطلب رضي الله عنه",
+      "epithet": "عم النبي ﷺ وساقي الحرمين",
+      "category": "أمهات المؤمنين وآل البيت",
+      "summary": "حضر بيعة العقبة الثانية توثيقاً للنبي ﷺ وثبت معه يوم حنين",
+      "aliases": [
+        "العباس بن عبد المطلب"
+      ],
+      "totalMentions": 35,
+      "pagesCount": 33,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 173
+      },
+      "volumeBreakdown": {
+        "1": 6,
+        "2": 11,
+        "3": 8,
+        "4": 8
+      }
+    },
+    {
+      "id": "abd-al-muttalib",
+      "name": "عبد المطلب بن هاشم",
+      "epithet": "جد النبي ﷺ وحافر زمزم وسيد قريش",
+      "category": "شخصيات السياق التاريخي والعهد المكي",
+      "summary": "كفل النبي ﷺ في طفولته بعد وفاة أمه وحفر زمزم وواجه أبرهة عام الفيل",
+      "aliases": [
+        "عبد المطلب"
+      ],
+      "totalMentions": 341,
+      "pagesCount": 203,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 32
+      },
+      "volumeBreakdown": {
+        "1": 79,
+        "2": 51,
+        "3": 39,
+        "4": 34
+      }
+    },
+    {
+      "id": "abu-talib",
+      "name": "أبو طالب بن عبد المطلب",
+      "epithet": "عم النبي ﷺ وكافله وحاميه في مكة",
+      "category": "شخصيات السياق التاريخي والعهد المكي",
+      "summary": "ربّى النبي ﷺ بعد جده وحماه في مكة وشعب بني هاشم أربعين سنة ولم يسلم",
+      "aliases": [
+        "أبو طالب",
+        "أبي طالب"
+      ],
+      "totalMentions": 384,
+      "pagesCount": 269,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 49
+      },
+      "volumeBreakdown": {
+        "1": 67,
+        "2": 72,
+        "3": 64,
+        "4": 66
+      }
+    },
+    {
+      "id": "ashamah-al-najashi",
+      "name": "أصحمة النجاشي ملك الحبشة رحمه الله",
+      "epithet": "الملك العادل الذي لا يُظلم عنده أحد",
+      "category": "شخصيات السياق التاريخي والعهد المكي",
+      "summary": "آوى المهاجرين وحماهم وآمن بالنبي ﷺ وصلى عليه النبي ﷺ صلاة الغائب",
+      "aliases": [
+        "النجاشي",
+        "أصحمة"
+      ],
+      "totalMentions": 148,
+      "pagesCount": 67,
+      "firstAppearance": {
+        "volume": 1,
+        "page": 9
+      },
+      "volumeBreakdown": {
+        "1": 10,
+        "2": 33,
+        "3": 20,
+        "4": 4
+      }
+    }
+  ]
+}

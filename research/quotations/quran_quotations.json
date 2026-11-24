@@ -1,0 +1,936 @@
+{
+  "schemaVersion": 1,
+  "sourceAuthority": "src/data/completeQuranData.json (Verified Local Uthmani Corpus)",
+  "totalQuotations": 50,
+  "quotations": [
+    {
+      "quoteId": "q-ibrahim-valley",
+      "type": "quran",
+      "surahNumber": 14,
+      "surahName": "إبراهيم",
+      "startAyah": 37,
+      "endAyah": 37,
+      "referenceLabel": "إبراهيم: 37",
+      "verbatimText": "رَّبَّنَآ إِنِّىٓ أَسْكَنتُ مِن ذُرِّيَّتِى بِوَادٍ غَيْرِ ذِى زَرْعٍ عِندَ بَيْتِكَ ٱلْمُحَرَّمِ رَبَّنَا لِيُقِيمُوا۟ ٱلصَّلَوٰةَ فَٱجْعَلْ أَفْـِٔدَةًۭ مِّنَ ٱلنَّاسِ تَهْوِىٓ إِلَيْهِمْ وَٱرْزُقْهُم مِّنَ ٱلثَّمَرَٰتِ لَعَلَّهُمْ يَشْكُرُونَ",
+      "historicalContext": "دعاء إبراهيم عليه السلام عند إسكان ذريته بوادٍ غير ذي زرع",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ibrahim-kaaba",
+      "type": "quran",
+      "surahNumber": 2,
+      "surahName": "البقرة",
+      "startAyah": 127,
+      "endAyah": 129,
+      "referenceLabel": "البقرة: 127–129",
+      "verbatimText": "وَإِذْ يَرْفَعُ إِبْرَٰهِۦمُ ٱلْقَوَاعِدَ مِنَ ٱلْبَيْتِ وَإِسْمَٰعِيلُ رَبَّنَا تَقَبَّلْ مِنَّآ ۖ إِنَّكَ أَنتَ ٱلسَّمِيعُ ٱلْعَلِيمُ ﴿127﴾ رَبَّنَا وَٱجْعَلْنَا مُسْلِمَيْنِ لَكَ وَمِن ذُرِّيَّتِنَآ أُمَّةًۭ مُّسْلِمَةًۭ لَّكَ وَأَرِنَا مَنَاسِكَنَا وَتُبْ عَلَيْنَآ ۖ إِنَّكَ أَنتَ ٱلتَّوَّابُ ٱلرَّحِيمُ ﴿128﴾ رَبَّنَا وَٱبْعَثْ فِيهِمْ رَسُولًۭا مِّنْهُمْ يَتْلُوا۟ عَلَيْهِمْ ءَايَٰتِكَ وَيُعَلِّمُهُمُ ٱلْكِتَٰبَ وَٱلْحِكْمَةَ وَيُزَكِّيهِمْ ۚ إِنَّكَ أَنتَ ٱلْعَزِيزُ ٱلْحَكِيمُ ﴿129﴾",
+      "historicalContext": "رفع إبراهيم وإسماعيل قواعد البيت ودعاؤهما ببعثة النبي ﷺ",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-saba-flood",
+      "type": "quran",
+      "surahNumber": 34,
+      "surahName": "سبأ",
+      "startAyah": 15,
+      "endAyah": 16,
+      "referenceLabel": "سبأ: 15–16",
+      "verbatimText": "لَقَدْ كَانَ لِسَبَإٍۢ فِى مَسْكَنِهِمْ ءَايَةٌۭ ۖ جَنَّتَانِ عَن يَمِينٍۢ وَشِمَالٍۢ ۖ كُلُوا۟ مِن رِّزْقِ رَبِّكُمْ وَٱشْكُرُوا۟ لَهُۥ ۚ بَلْدَةٌۭ طَيِّبَةٌۭ وَرَبٌّ غَفُورٌۭ ﴿15﴾ فَأَعْرَضُوا۟ فَأَرْسَلْنَا عَلَيْهِمْ سَيْلَ ٱلْعَرِمِ وَبَدَّلْنَٰهُم بِجَنَّتَيْهِمْ جَنَّتَيْنِ ذَوَاتَىْ أُكُلٍ خَمْطٍۢ وَأَثْلٍۢ وَشَىْءٍۢ مِّن سِدْرٍۢ قَلِيلٍۢ ﴿16﴾",
+      "historicalContext": "قصة سبأ وجنتي مأرب وسيل العرم",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 8
+        },
+        {
+          "volume": 1,
+          "page": 10
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ashab-ukhdud",
+      "type": "quran",
+      "surahNumber": 85,
+      "surahName": "البروج",
+      "startAyah": 4,
+      "endAyah": 8,
+      "referenceLabel": "البروج: 4–8",
+      "verbatimText": "قُتِلَ أَصْحَٰبُ ٱلْأُخْدُودِ ﴿4﴾ ٱلنَّارِ ذَاتِ ٱلْوَقُودِ ﴿5﴾ إِذْ هُمْ عَلَيْهَا قُعُودٌۭ ﴿6﴾ وَهُمْ عَلَىٰ مَا يَفْعَلُونَ بِٱلْمُؤْمِنِينَ شُهُودٌۭ ﴿7﴾ وَمَا نَقَمُوا۟ مِنْهُمْ إِلَّآ أَن يُؤْمِنُوا۟ بِٱللَّهِ ٱلْعَزِيزِ ٱلْحَمِيدِ ﴿8﴾",
+      "historicalContext": "قصة أصحاب الأخدود في نجران",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-surah-fil",
+      "type": "quran",
+      "surahNumber": 105,
+      "surahName": "الفيل",
+      "startAyah": 1,
+      "endAyah": 5,
+      "referenceLabel": "الفيل: 1–5",
+      "verbatimText": "أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَٰبِ ٱلْفِيلِ ﴿1﴾ أَلَمْ يَجْعَلْ كَيْدَهُمْ فِى تَضْلِيلٍۢ ﴿2﴾ وَأَرْسَلَ عَلَيْهِمْ طَيْرًا أَبَابِيلَ ﴿3﴾ تَرْمِيهِم بِحِجَارَةٍۢ مِّن سِجِّيلٍۢ ﴿4﴾ فَجَعَلَهُمْ كَعَصْفٍۢ مَّأْكُولٍۭ ﴿5﴾",
+      "historicalContext": "إهلاك الله لأصحاب الفيل وحماية الكعبة المشرفة",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 29
+        },
+        {
+          "volume": 1,
+          "page": 37
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-quraysh-ilaf",
+      "type": "quran",
+      "surahNumber": 106,
+      "surahName": "قريش",
+      "startAyah": 1,
+      "endAyah": 4,
+      "referenceLabel": "قريش: 1–4",
+      "verbatimText": "لِإِيلَٰفِ قُرَيْشٍ ﴿1﴾ إِۦلَٰفِهِمْ رِحْلَةَ ٱلشِّتَآءِ وَٱلصَّيْفِ ﴿2﴾ فَلْيَعْبُدُوا۟ رَبَّ هَٰذَا ٱلْبَيْتِ ﴿3﴾ ٱلَّذِىٓ أَطْعَمَهُم مِّن جُوعٍۢ وَءَامَنَهُم مِّنْ خَوْفٍۭ ﴿4﴾",
+      "historicalContext": "إيلاف قريش ومنّة الله عليهم بالأمن والرزق عند البيت",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-duha-orphan",
+      "type": "quran",
+      "surahNumber": 93,
+      "surahName": "الضحى",
+      "startAyah": 6,
+      "endAyah": 8,
+      "referenceLabel": "الضحى: 6–8",
+      "verbatimText": "أَلَمْ يَجِدْكَ يَتِيمًۭا فَـَٔاوَىٰ ﴿6﴾ وَوَجَدَكَ ضَآلًّۭا فَهَدَىٰ ﴿7﴾ وَوَجَدَكَ عَآئِلًۭا فَأَغْنَىٰ ﴿8﴾",
+      "historicalContext": "رعاية الله لنبيه ﷺ يتيماً وإيواؤه وإغناؤه",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-sharh-chest",
+      "type": "quran",
+      "surahNumber": 94,
+      "surahName": "الشرح",
+      "startAyah": 1,
+      "endAyah": 4,
+      "referenceLabel": "الشرح: 1–4",
+      "verbatimText": "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ ﴿1﴾ وَوَضَعْنَا عَنكَ وِزْرَكَ ﴿2﴾ ٱلَّذِىٓ أَنقَضَ ظَهْرَكَ ﴿3﴾ وَرَفَعْنَا لَكَ ذِكْرَكَ ﴿4﴾",
+      "historicalContext": "شرح الصدر الشريف ورفع ذكر النبي ﷺ",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-alaq-iqra",
+      "type": "quran",
+      "surahNumber": 96,
+      "surahName": "العلق",
+      "startAyah": 1,
+      "endAyah": 5,
+      "referenceLabel": "العلق: 1–5",
+      "verbatimText": "ٱقْرَأْ بِٱسْمِ رَبِّكَ ٱلَّذِى خَلَقَ ﴿1﴾ خَلَقَ ٱلْإِنسَٰنَ مِنْ عَلَقٍ ﴿2﴾ ٱقْرَأْ وَرَبُّكَ ٱلْأَكْرَمُ ﴿3﴾ ٱلَّذِى عَلَّمَ بِٱلْقَلَمِ ﴿4﴾ عَلَّمَ ٱلْإِنسَٰنَ مَا لَمْ يَعْلَمْ ﴿5﴾",
+      "historicalContext": "أول ما نزل من الوحي في غار حراء",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 385
+        },
+        {
+          "volume": 1,
+          "page": 392
+        },
+        {
+          "volume": 1,
+          "page": 403
+        },
+        {
+          "volume": 1,
+          "page": 405
+        },
+        {
+          "volume": 1,
+          "page": 407
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-muddaththir-arise",
+      "type": "quran",
+      "surahNumber": 74,
+      "surahName": "المدثر",
+      "startAyah": 1,
+      "endAyah": 5,
+      "referenceLabel": "المدثر: 1–5",
+      "verbatimText": "يَٰٓأَيُّهَا ٱلْمُدَّثِّرُ ﴿1﴾ قُمْ فَأَنذِرْ ﴿2﴾ وَرَبَّكَ فَكَبِّرْ ﴿3﴾ وَثِيَابَكَ فَطَهِّرْ ﴿4﴾ وَٱلرُّجْزَ فَٱهْجُرْ ﴿5﴾",
+      "historicalContext": "الأمر بالقيام والإنذار بعد فترة الوحي",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-shuara-clan",
+      "type": "quran",
+      "surahNumber": 26,
+      "surahName": "الشعراء",
+      "startAyah": 214,
+      "endAyah": 215,
+      "referenceLabel": "الشعراء: 214–215",
+      "verbatimText": "وَأَنذِرْ عَشِيرَتَكَ ٱلْأَقْرَبِينَ ﴿214﴾ وَٱخْفِضْ جَنَاحَكَ لِمَنِ ٱتَّبَعَكَ مِنَ ٱلْمُؤْمِنِينَ ﴿215﴾",
+      "historicalContext": "الأمر بإنذار العشيرة الأقربين وخفض الجناح للمؤمنين",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 455
+        },
+        {
+          "volume": 1,
+          "page": 456
+        },
+        {
+          "volume": 1,
+          "page": 457
+        },
+        {
+          "volume": 1,
+          "page": 459
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-hijr-proclaim",
+      "type": "quran",
+      "surahNumber": 15,
+      "surahName": "الحجر",
+      "startAyah": 94,
+      "endAyah": 95,
+      "referenceLabel": "الحجر: 94–95",
+      "verbatimText": "فَٱصْدَعْ بِمَا تُؤْمَرُ وَأَعْرِضْ عَنِ ٱلْمُشْرِكِينَ ﴿94﴾ إِنَّا كَفَيْنَٰكَ ٱلْمُسْتَهْزِءِينَ ﴿95﴾",
+      "historicalContext": "الأمر بالصدع بالحق وكفاية الله رسوله المستهزئين",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 87
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-masad-abu-lahab",
+      "type": "quran",
+      "surahNumber": 111,
+      "surahName": "المسد",
+      "startAyah": 1,
+      "endAyah": 5,
+      "referenceLabel": "المسد: 1–5",
+      "verbatimText": "تَبَّتْ يَدَآ أَبِى لَهَبٍۢ وَتَبَّ ﴿1﴾ مَآ أَغْنَىٰ عَنْهُ مَالُهُۥ وَمَا كَسَبَ ﴿2﴾ سَيَصْلَىٰ نَارًۭا ذَاتَ لَهَبٍۢ ﴿3﴾ وَٱمْرَأَتُهُۥ حَمَّالَةَ ٱلْحَطَبِ ﴿4﴾ فِى جِيدِهَا حَبْلٌۭ مِّن مَّسَدٍۭ ﴿5﴾",
+      "historicalContext": "رد القرآن على أبي لهب وامرأته",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 456
+        },
+        {
+          "volume": 2,
+          "page": 49
+        },
+        {
+          "volume": 4,
+          "page": 610
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-maryam-jaafar",
+      "type": "quran",
+      "surahNumber": 19,
+      "surahName": "مريم",
+      "startAyah": 16,
+      "endAyah": 21,
+      "referenceLabel": "مريم: 16–21",
+      "verbatimText": "وَٱذْكُرْ فِى ٱلْكِتَٰبِ مَرْيَمَ إِذِ ٱنتَبَذَتْ مِنْ أَهْلِهَا مَكَانًۭا شَرْقِيًّۭا ﴿16﴾ فَٱتَّخَذَتْ مِن دُونِهِمْ حِجَابًۭا فَأَرْسَلْنَآ إِلَيْهَا رُوحَنَا فَتَمَثَّلَ لَهَا بَشَرًۭا سَوِيًّۭا ﴿17﴾ قَالَتْ إِنِّىٓ أَعُوذُ بِٱلرَّحْمَٰنِ مِنكَ إِن كُنتَ تَقِيًّۭا ﴿18﴾ قَالَ إِنَّمَآ أَنَا۠ رَسُولُ رَبِّكِ لِأَهَبَ لَكِ غُلَٰمًۭا زَكِيًّۭا ﴿19﴾ قَالَتْ أَنَّىٰ يَكُونُ لِى غُلَٰمٌۭ وَلَمْ يَمْسَسْنِى بَشَرٌۭ وَلَمْ أَكُ بَغِيًّۭا ﴿20﴾ قَالَ كَذَٰلِكِ قَالَ رَبُّكِ هُوَ عَلَىَّ هَيِّنٌۭ ۖ وَلِنَجْعَلَهُۥٓ ءَايَةًۭ لِّلنَّاسِ وَرَحْمَةًۭ مِّنَّا ۚ وَكَانَ أَمْرًۭا مَّقْضِيًّۭا ﴿21﴾",
+      "historicalContext": "من مطلع سورة مريم التي تلاها جعفر بن أبي طالب في حضرة النجاشي",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-najm-prostration",
+      "type": "quran",
+      "surahNumber": 53,
+      "surahName": "النجم",
+      "startAyah": 1,
+      "endAyah": 18,
+      "referenceLabel": "النجم: 1–18",
+      "verbatimText": "وَٱلنَّجْمِ إِذَا هَوَىٰ ﴿1﴾ مَا ضَلَّ صَاحِبُكُمْ وَمَا غَوَىٰ ﴿2﴾ وَمَا يَنطِقُ عَنِ ٱلْهَوَىٰٓ ﴿3﴾ إِنْ هُوَ إِلَّا وَحْىٌۭ يُوحَىٰ ﴿4﴾ عَلَّمَهُۥ شَدِيدُ ٱلْقُوَىٰ ﴿5﴾ ذُو مِرَّةٍۢ فَٱسْتَوَىٰ ﴿6﴾ وَهُوَ بِٱلْأُفُقِ ٱلْأَعْلَىٰ ﴿7﴾ ثُمَّ دَنَا فَتَدَلَّىٰ ﴿8﴾ فَكَانَ قَابَ قَوْسَيْنِ أَوْ أَدْنَىٰ ﴿9﴾ فَأَوْحَىٰٓ إِلَىٰ عَبْدِهِۦ مَآ أَوْحَىٰ ﴿10﴾ مَا كَذَبَ ٱلْفُؤَادُ مَا رَأَىٰٓ ﴿11﴾ أَفَتُمَٰرُونَهُۥ عَلَىٰ مَا يَرَىٰ ﴿12﴾ وَلَقَدْ رَءَاهُ نَزْلَةً أُخْرَىٰ ﴿13﴾ عِندَ سِدْرَةِ ٱلْمُنتَهَىٰ ﴿14﴾ عِندَهَا جَنَّةُ ٱلْمَأْوَىٰٓ ﴿15﴾ إِذْ يَغْشَى ٱلسِّدْرَةَ مَا يَغْشَىٰ ﴿16﴾ مَا زَاغَ ٱلْبَصَرُ وَمَا طَغَىٰ ﴿17﴾ لَقَدْ رَأَىٰ مِنْ ءَايَٰتِ رَبِّهِ ٱلْكُبْرَىٰٓ ﴿18﴾",
+      "historicalContext": "مطلع سورة النجم وآيات المعراج الكبرى",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 56
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-isra-opening",
+      "type": "quran",
+      "surahNumber": 17,
+      "surahName": "الإسراء",
+      "startAyah": 1,
+      "endAyah": 1,
+      "referenceLabel": "الإسراء: 1",
+      "verbatimText": "سُبْحَٰنَ ٱلَّذِىٓ أَسْرَىٰ بِعَبْدِهِۦ لَيْلًۭا مِّنَ ٱلْمَسْجِدِ ٱلْحَرَامِ إِلَى ٱلْمَسْجِدِ ٱلْأَقْصَا ٱلَّذِى بَٰرَكْنَا حَوْلَهُۥ لِنُرِيَهُۥ مِنْ ءَايَٰتِنَآ ۚ إِنَّهُۥ هُوَ ٱلسَّمِيعُ ٱلْبَصِيرُ",
+      "historicalContext": "آية الإسراء من المسجد الحرام إلى المسجد الأقصى",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ahqaf-jinn",
+      "type": "quran",
+      "surahNumber": 46,
+      "surahName": "الأحقاف",
+      "startAyah": 29,
+      "endAyah": 31,
+      "referenceLabel": "الأحقاف: 29–31",
+      "verbatimText": "وَإِذْ صَرَفْنَآ إِلَيْكَ نَفَرًۭا مِّنَ ٱلْجِنِّ يَسْتَمِعُونَ ٱلْقُرْءَانَ فَلَمَّا حَضَرُوهُ قَالُوٓا۟ أَنصِتُوا۟ ۖ فَلَمَّا قُضِىَ وَلَّوْا۟ إِلَىٰ قَوْمِهِم مُّنذِرِينَ ﴿29﴾ قَالُوا۟ يَٰقَوْمَنَآ إِنَّا سَمِعْنَا كِتَٰبًا أُنزِلَ مِنۢ بَعْدِ مُوسَىٰ مُصَدِّقًۭا لِّمَا بَيْنَ يَدَيْهِ يَهْدِىٓ إِلَى ٱلْحَقِّ وَإِلَىٰ طَرِيقٍۢ مُّسْتَقِيمٍۢ ﴿30﴾ يَٰقَوْمَنَآ أَجِيبُوا۟ دَاعِىَ ٱللَّهِ وَءَامِنُوا۟ بِهِۦ يَغْفِرْ لَكُم مِّن ذُنُوبِكُمْ وَيُجِرْكُم مِّنْ عَذَابٍ أَلِيمٍۢ ﴿31﴾",
+      "historicalContext": "استماع نفر من الجن للقرآن منصرف النبي ﷺ من الطائف",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 289
+        },
+        {
+          "volume": 2,
+          "page": 153
+        },
+        {
+          "volume": 4,
+          "page": 184
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-anfal-plot",
+      "type": "quran",
+      "surahNumber": 8,
+      "surahName": "الأنفال",
+      "startAyah": 30,
+      "endAyah": 30,
+      "referenceLabel": "الأنفال: 30",
+      "verbatimText": "وَإِذْ يَمْكُرُ بِكَ ٱلَّذِينَ كَفَرُوا۟ لِيُثْبِتُوكَ أَوْ يَقْتُلُوكَ أَوْ يُخْرِجُوكَ ۚ وَيَمْكُرُونَ وَيَمْكُرُ ٱللَّهُ ۖ وَٱللَّهُ خَيْرُ ٱلْمَٰكِرِينَ",
+      "historicalContext": "مكر قريش في دار الندوة وحفظ الله لنبيه ﷺ",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 231
+        },
+        {
+          "volume": 2,
+          "page": 239
+        },
+        {
+          "volume": 2,
+          "page": 244
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-tawbah-cave",
+      "type": "quran",
+      "surahNumber": 9,
+      "surahName": "التوبة",
+      "startAyah": 40,
+      "endAyah": 40,
+      "referenceLabel": "التوبة: 40",
+      "verbatimText": "إِلَّا تَنصُرُوهُ فَقَدْ نَصَرَهُ ٱللَّهُ إِذْ أَخْرَجَهُ ٱلَّذِينَ كَفَرُوا۟ ثَانِىَ ٱثْنَيْنِ إِذْ هُمَا فِى ٱلْغَارِ إِذْ يَقُولُ لِصَٰحِبِهِۦ لَا تَحْزَنْ إِنَّ ٱللَّهَ مَعَنَا ۖ فَأَنزَلَ ٱللَّهُ سَكِينَتَهُۥ عَلَيْهِ وَأَيَّدَهُۥ بِجُنُودٍۢ لَّمْ تَرَوْهَا وَجَعَلَ كَلِمَةَ ٱلَّذِينَ كَفَرُوا۟ ٱلسُّفْلَىٰ ۗ وَكَلِمَةُ ٱللَّهِ هِىَ ٱلْعُلْيَا ۗ وَٱللَّهُ عَزِيزٌ حَكِيمٌ",
+      "historicalContext": "معية الله للنبي ﷺ وصاحبه الصديق في غار ثور",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 242
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-tawbah-quba",
+      "type": "quran",
+      "surahNumber": 9,
+      "surahName": "التوبة",
+      "startAyah": 108,
+      "endAyah": 108,
+      "referenceLabel": "التوبة: 108",
+      "verbatimText": "لَا تَقُمْ فِيهِ أَبَدًۭا ۚ لَّمَسْجِدٌ أُسِّسَ عَلَى ٱلتَّقْوَىٰ مِنْ أَوَّلِ يَوْمٍ أَحَقُّ أَن تَقُومَ فِيهِ ۚ فِيهِ رِجَالٌۭ يُحِبُّونَ أَن يَتَطَهَّرُوا۟ ۚ وَٱللَّهُ يُحِبُّ ٱلْمُطَّهِّرِينَ",
+      "historicalContext": "الثناء على المسجد المؤسس على التقوى وأهله",
+      "encyclopediaLocations": [
+        {
+          "volume": 4,
+          "page": 38
+        },
+        {
+          "volume": 4,
+          "page": 39
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-hashr-ansar",
+      "type": "quran",
+      "surahNumber": 59,
+      "surahName": "الحشر",
+      "startAyah": 8,
+      "endAyah": 9,
+      "referenceLabel": "الحشر: 8–9",
+      "verbatimText": "لِلْفُقَرَآءِ ٱلْمُهَٰجِرِينَ ٱلَّذِينَ أُخْرِجُوا۟ مِن دِيَٰرِهِمْ وَأَمْوَٰلِهِمْ يَبْتَغُونَ فَضْلًۭا مِّنَ ٱللَّهِ وَرِضْوَٰنًۭا وَيَنصُرُونَ ٱللَّهَ وَرَسُولَهُۥٓ ۚ أُو۟لَٰٓئِكَ هُمُ ٱلصَّٰدِقُونَ ﴿8﴾ وَٱلَّذِينَ تَبَوَّءُو ٱلدَّارَ وَٱلْإِيمَٰنَ مِن قَبْلِهِمْ يُحِبُّونَ مَنْ هَاجَرَ إِلَيْهِمْ وَلَا يَجِدُونَ فِى صُدُورِهِمْ حَاجَةًۭ مِّمَّآ أُوتُوا۟ وَيُؤْثِرُونَ عَلَىٰٓ أَنفُسِهِمْ وَلَوْ كَانَ بِهِمْ خَصَاصَةٌۭ ۚ وَمَن يُوقَ شُحَّ نَفْسِهِۦ فَأُو۟لَٰٓئِكَ هُمُ ٱلْمُفْلِحُونَ ﴿9﴾",
+      "historicalContext": "صدق المهاجرين وإيثار الأنصار وحبهم لمن هاجر إليهم",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-baqarah-qiblah",
+      "type": "quran",
+      "surahNumber": 2,
+      "surahName": "البقرة",
+      "startAyah": 144,
+      "endAyah": 144,
+      "referenceLabel": "البقرة: 144",
+      "verbatimText": "قَدْ نَرَىٰ تَقَلُّبَ وَجْهِكَ فِى ٱلسَّمَآءِ ۖ فَلَنُوَلِّيَنَّكَ قِبْلَةًۭ تَرْضَىٰهَا ۚ فَوَلِّ وَجْهَكَ شَطْرَ ٱلْمَسْجِدِ ٱلْحَرَامِ ۚ وَحَيْثُ مَا كُنتُمْ فَوَلُّوا۟ وُجُوهَكُمْ شَطْرَهُۥ ۗ وَإِنَّ ٱلَّذِينَ أُوتُوا۟ ٱلْكِتَٰبَ لَيَعْلَمُونَ أَنَّهُ ٱلْحَقُّ مِن رَّبِّهِمْ ۗ وَمَا ٱللَّهُ بِغَٰفِلٍ عَمَّا يَعْمَلُونَ",
+      "historicalContext": "تحويل القبلة إلى المسجد الحرام تحقيقاً لرجاء النبي ﷺ",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 373
+        },
+        {
+          "volume": 2,
+          "page": 374
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-baqarah-fasting",
+      "type": "quran",
+      "surahNumber": 2,
+      "surahName": "البقرة",
+      "startAyah": 183,
+      "endAyah": 183,
+      "referenceLabel": "البقرة: 183",
+      "verbatimText": "يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ كُتِبَ عَلَيْكُمُ ٱلصِّيَامُ كَمَا كُتِبَ عَلَى ٱلَّذِينَ مِن قَبْلِكُمْ لَعَلَّكُمْ تَتَّقُونَ",
+      "historicalContext": "فرض صيام شهر رمضان في السنة الثانية للهجرة",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-hajj-permission",
+      "type": "quran",
+      "surahNumber": 22,
+      "surahName": "الحج",
+      "startAyah": 39,
+      "endAyah": 40,
+      "referenceLabel": "الحج: 39–40",
+      "verbatimText": "أُذِنَ لِلَّذِينَ يُقَٰتَلُونَ بِأَنَّهُمْ ظُلِمُوا۟ ۚ وَإِنَّ ٱللَّهَ عَلَىٰ نَصْرِهِمْ لَقَدِيرٌ ﴿39﴾ ٱلَّذِينَ أُخْرِجُوا۟ مِن دِيَٰرِهِم بِغَيْرِ حَقٍّ إِلَّآ أَن يَقُولُوا۟ رَبُّنَا ٱللَّهُ ۗ وَلَوْلَا دَفْعُ ٱللَّهِ ٱلنَّاسَ بَعْضَهُم بِبَعْضٍۢ لَّهُدِّمَتْ صَوَٰمِعُ وَبِيَعٌۭ وَصَلَوَٰتٌۭ وَمَسَٰجِدُ يُذْكَرُ فِيهَا ٱسْمُ ٱللَّهِ كَثِيرًۭا ۗ وَلَيَنصُرَنَّ ٱللَّهُ مَن يَنصُرُهُۥٓ ۗ إِنَّ ٱللَّهَ لَقَوِىٌّ عَزِيزٌ ﴿40﴾",
+      "historicalContext": "الإذن للمؤمنين بالقتال دفعاً للظلم بعد إخراجهم من ديارهم",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-anfal-badr-dua",
+      "type": "quran",
+      "surahNumber": 8,
+      "surahName": "الأنفال",
+      "startAyah": 9,
+      "endAyah": 10,
+      "referenceLabel": "الأنفال: 9–10",
+      "verbatimText": "إِذْ تَسْتَغِيثُونَ رَبَّكُمْ فَٱسْتَجَابَ لَكُمْ أَنِّى مُمِدُّكُم بِأَلْفٍۢ مِّنَ ٱلْمَلَٰٓئِكَةِ مُرْدِفِينَ ﴿9﴾ وَمَا جَعَلَهُ ٱللَّهُ إِلَّا بُشْرَىٰ وَلِتَطْمَئِنَّ بِهِۦ قُلُوبُكُمْ ۚ وَمَا ٱلنَّصْرُ إِلَّا مِنْ عِندِ ٱللَّهِ ۚ إِنَّ ٱللَّهَ عَزِيزٌ حَكِيمٌ ﴿10﴾",
+      "historicalContext": "استغاثة النبي ﷺ والمسلمين يوم بدر وإمدادهم بالملائكة",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 417
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-badr-victory",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 123,
+      "endAyah": 123,
+      "referenceLabel": "آل عمران: 123",
+      "verbatimText": "وَلَقَدْ نَصَرَكُمُ ٱللَّهُ بِبَدْرٍۢ وَأَنتُمْ أَذِلَّةٌۭ ۖ فَٱتَّقُوا۟ ٱللَّهَ لَعَلَّكُمْ تَشْكُرُونَ",
+      "historicalContext": "نصر الله للمؤمنين ببدر وهم أذلة",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 380
+        },
+        {
+          "volume": 3,
+          "page": 18
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-anfal-furqan",
+      "type": "quran",
+      "surahNumber": 8,
+      "surahName": "الأنفال",
+      "startAyah": 41,
+      "endAyah": 41,
+      "referenceLabel": "الأنفال: 41",
+      "verbatimText": "۞ وَٱعْلَمُوٓا۟ أَنَّمَا غَنِمْتُم مِّن شَىْءٍۢ فَأَنَّ لِلَّهِ خُمُسَهُۥ وَلِلرَّسُولِ وَلِذِى ٱلْقُرْبَىٰ وَٱلْيَتَٰمَىٰ وَٱلْمَسَٰكِينِ وَٱبْنِ ٱلسَّبِيلِ إِن كُنتُمْ ءَامَنتُم بِٱللَّهِ وَمَآ أَنزَلْنَا عَلَىٰ عَبْدِنَا يَوْمَ ٱلْفُرْقَانِ يَوْمَ ٱلْتَقَى ٱلْجَمْعَانِ ۗ وَٱللَّهُ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرٌ",
+      "historicalContext": "تسمية يوم بدر بيوم الفرقان يوم التقى الجمعان",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-uhud-test",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 152,
+      "endAyah": 152,
+      "referenceLabel": "آل عمران: 152",
+      "verbatimText": "وَلَقَدْ صَدَقَكُمُ ٱللَّهُ وَعْدَهُۥٓ إِذْ تَحُسُّونَهُم بِإِذْنِهِۦ ۖ حَتَّىٰٓ إِذَا فَشِلْتُمْ وَتَنَٰزَعْتُمْ فِى ٱلْأَمْرِ وَعَصَيْتُم مِّنۢ بَعْدِ مَآ أَرَىٰكُم مَّا تُحِبُّونَ ۚ مِنكُم مَّن يُرِيدُ ٱلدُّنْيَا وَمِنكُم مَّن يُرِيدُ ٱلْءَاخِرَةَ ۚ ثُمَّ صَرَفَكُمْ عَنْهُمْ لِيَبْتَلِيَكُمْ ۖ وَلَقَدْ عَفَا عَنكُمْ ۗ وَٱللَّهُ ذُو فَضْلٍ عَلَى ٱلْمُؤْمِنِينَ",
+      "historicalContext": "بيان سنة الابتلاء يوم أحد بعد مخالفة أمر الرماة",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 46
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-prophet-mercy",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 159,
+      "endAyah": 159,
+      "referenceLabel": "آل عمران: 159",
+      "verbatimText": "فَبِمَا رَحْمَةٍۢ مِّنَ ٱللَّهِ لِنتَ لَهُمْ ۖ وَلَوْ كُنتَ فَظًّا غَلِيظَ ٱلْقَلْبِ لَٱنفَضُّوا۟ مِنْ حَوْلِكَ ۖ فَٱعْفُ عَنْهُمْ وَٱسْتَغْفِرْ لَهُمْ وَشَاوِرْهُمْ فِى ٱلْأَمْرِ ۖ فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى ٱللَّهِ ۚ إِنَّ ٱللَّهَ يُحِبُّ ٱلْمُتَوَكِّلِينَ",
+      "historicalContext": "رحمة النبي ﷺ بأصحابه والعفو عنهم ومشاورتهم بعد أحد",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-martyrs",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 169,
+      "endAyah": 170,
+      "referenceLabel": "آل عمران: 169–170",
+      "verbatimText": "وَلَا تَحْسَبَنَّ ٱلَّذِينَ قُتِلُوا۟ فِى سَبِيلِ ٱللَّهِ أَمْوَٰتًۢا ۚ بَلْ أَحْيَآءٌ عِندَ رَبِّهِمْ يُرْزَقُونَ ﴿169﴾ فَرِحِينَ بِمَآ ءَاتَىٰهُمُ ٱللَّهُ مِن فَضْلِهِۦ وَيَسْتَبْشِرُونَ بِٱلَّذِينَ لَمْ يَلْحَقُوا۟ بِهِم مِّنْ خَلْفِهِمْ أَلَّا خَوْفٌ عَلَيْهِمْ وَلَا هُمْ يَحْزَنُونَ ﴿170﴾",
+      "historicalContext": "حياة الشهداء عند ربهم في شهداء أحد وبئر معونة",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 88
+        },
+        {
+          "volume": 3,
+          "page": 90
+        },
+        {
+          "volume": 3,
+          "page": 91
+        },
+        {
+          "volume": 3,
+          "page": 167
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-hamra-asad",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 172,
+      "endAyah": 173,
+      "referenceLabel": "آل عمران: 172–173",
+      "verbatimText": "ٱلَّذِينَ ٱسْتَجَابُوا۟ لِلَّهِ وَٱلرَّسُولِ مِنۢ بَعْدِ مَآ أَصَابَهُمُ ٱلْقَرْحُ ۚ لِلَّذِينَ أَحْسَنُوا۟ مِنْهُمْ وَٱتَّقَوْا۟ أَجْرٌ عَظِيمٌ ﴿172﴾ ٱلَّذِينَ قَالَ لَهُمُ ٱلنَّاسُ إِنَّ ٱلنَّاسَ قَدْ جَمَعُوا۟ لَكُمْ فَٱخْشَوْهُمْ فَزَادَهُمْ إِيمَٰنًۭا وَقَالُوا۟ حَسْبُنَا ٱللَّهُ وَنِعْمَ ٱلْوَكِيلُ ﴿173﴾",
+      "historicalContext": "الذين استجابوا لله والرسول من بعد ما أصابهم القرح في حمراء الأسد",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 97
+        },
+        {
+          "volume": 3,
+          "page": 100
+        },
+        {
+          "volume": 3,
+          "page": 102
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-hashr-banu-nadir",
+      "type": "quran",
+      "surahNumber": 59,
+      "surahName": "الحشر",
+      "startAyah": 2,
+      "endAyah": 3,
+      "referenceLabel": "الحشر: 2–3",
+      "verbatimText": "هُوَ ٱلَّذِىٓ أَخْرَجَ ٱلَّذِينَ كَفَرُوا۟ مِنْ أَهْلِ ٱلْكِتَٰبِ مِن دِيَٰرِهِمْ لِأَوَّلِ ٱلْحَشْرِ ۚ مَا ظَنَنتُمْ أَن يَخْرُجُوا۟ ۖ وَظَنُّوٓا۟ أَنَّهُم مَّانِعَتُهُمْ حُصُونُهُم مِّنَ ٱللَّهِ فَأَتَىٰهُمُ ٱللَّهُ مِنْ حَيْثُ لَمْ يَحْتَسِبُوا۟ ۖ وَقَذَفَ فِى قُلُوبِهِمُ ٱلرُّعْبَ ۚ يُخْرِبُونَ بُيُوتَهُم بِأَيْدِيهِمْ وَأَيْدِى ٱلْمُؤْمِنِينَ فَٱعْتَبِرُوا۟ يَٰٓأُو۟لِى ٱلْأَبْصَٰرِ ﴿2﴾ وَلَوْلَآ أَن كَتَبَ ٱللَّهُ عَلَيْهِمُ ٱلْجَلَآءَ لَعَذَّبَهُمْ فِى ٱلدُّنْيَا ۖ وَلَهُمْ فِى ٱلْءَاخِرَةِ عَذَابُ ٱلنَّارِ ﴿3﴾",
+      "historicalContext": "إجلاء بني النضير في مطلع سورة الحشر",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 148
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ahzab-trench",
+      "type": "quran",
+      "surahNumber": 33,
+      "surahName": "الأحزاب",
+      "startAyah": 9,
+      "endAyah": 11,
+      "referenceLabel": "الأحزاب: 9–11",
+      "verbatimText": "يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱذْكُرُوا۟ نِعْمَةَ ٱللَّهِ عَلَيْكُمْ إِذْ جَآءَتْكُمْ جُنُودٌۭ فَأَرْسَلْنَا عَلَيْهِمْ رِيحًۭا وَجُنُودًۭا لَّمْ تَرَوْهَا ۚ وَكَانَ ٱللَّهُ بِمَا تَعْمَلُونَ بَصِيرًا ﴿9﴾ إِذْ جَآءُوكُم مِّن فَوْقِكُمْ وَمِنْ أَسْفَلَ مِنكُمْ وَإِذْ زَاغَتِ ٱلْأَبْصَٰرُ وَبَلَغَتِ ٱلْقُلُوبُ ٱلْحَنَاجِرَ وَتَظُنُّونَ بِٱللَّهِ ٱلظُّنُونَا۠ ﴿10﴾ هُنَالِكَ ٱبْتُلِىَ ٱلْمُؤْمِنُونَ وَزُلْزِلُوا۟ زِلْزَالًۭا شَدِيدًۭا ﴿11﴾",
+      "historicalContext": "تصوير القرآن لشدة حصار الخندق ونعمة الريح والجنود التي لم تروها",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ahzab-uswah",
+      "type": "quran",
+      "surahNumber": 33,
+      "surahName": "الأحزاب",
+      "startAyah": 21,
+      "endAyah": 22,
+      "referenceLabel": "الأحزاب: 21–22",
+      "verbatimText": "لَّقَدْ كَانَ لَكُمْ فِى رَسُولِ ٱللَّهِ أُسْوَةٌ حَسَنَةٌۭ لِّمَن كَانَ يَرْجُوا۟ ٱللَّهَ وَٱلْيَوْمَ ٱلْءَاخِرَ وَذَكَرَ ٱللَّهَ كَثِيرًۭا ﴿21﴾ وَلَمَّا رَءَا ٱلْمُؤْمِنُونَ ٱلْأَحْزَابَ قَالُوا۟ هَٰذَا مَا وَعَدَنَا ٱللَّهُ وَرَسُولُهُۥ وَصَدَقَ ٱللَّهُ وَرَسُولُهُۥ ۚ وَمَا زَادَهُمْ إِلَّآ إِيمَٰنًۭا وَتَسْلِيمًۭا ﴿22﴾",
+      "historicalContext": "الأسوة الحسنة في رسول الله ﷺ وثبات المؤمنين أمام الأحزاب",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 179
+        },
+        {
+          "volume": 4,
+          "page": 245
+        },
+        {
+          "volume": 4,
+          "page": 307
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ahzab-qurayzah",
+      "type": "quran",
+      "surahNumber": 33,
+      "surahName": "الأحزاب",
+      "startAyah": 26,
+      "endAyah": 27,
+      "referenceLabel": "الأحزاب: 26–27",
+      "verbatimText": "وَأَنزَلَ ٱلَّذِينَ ظَٰهَرُوهُم مِّنْ أَهْلِ ٱلْكِتَٰبِ مِن صَيَاصِيهِمْ وَقَذَفَ فِى قُلُوبِهِمُ ٱلرُّعْبَ فَرِيقًۭا تَقْتُلُونَ وَتَأْسِرُونَ فَرِيقًۭا ﴿26﴾ وَأَوْرَثَكُمْ أَرْضَهُمْ وَدِيَٰرَهُمْ وَأَمْوَٰلَهُمْ وَأَرْضًۭا لَّمْ تَطَـُٔوهَا ۚ وَكَانَ ٱللَّهُ عَلَىٰ كُلِّ شَىْءٍۢ قَدِيرًۭا ﴿27﴾",
+      "historicalContext": "إنزال بني قريظة من صياصيهم بعد غدرهم في الأحزاب",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-nur-ifk",
+      "type": "quran",
+      "surahNumber": 24,
+      "surahName": "النور",
+      "startAyah": 11,
+      "endAyah": 12,
+      "referenceLabel": "النور: 11–12",
+      "verbatimText": "إِنَّ ٱلَّذِينَ جَآءُو بِٱلْإِفْكِ عُصْبَةٌۭ مِّنكُمْ ۚ لَا تَحْسَبُوهُ شَرًّۭا لَّكُم ۖ بَلْ هُوَ خَيْرٌۭ لَّكُمْ ۚ لِكُلِّ ٱمْرِئٍۢ مِّنْهُم مَّا ٱكْتَسَبَ مِنَ ٱلْإِثْمِ ۚ وَٱلَّذِى تَوَلَّىٰ كِبْرَهُۥ مِنْهُمْ لَهُۥ عَذَابٌ عَظِيمٌۭ ﴿11﴾ لَّوْلَآ إِذْ سَمِعْتُمُوهُ ظَنَّ ٱلْمُؤْمِنُونَ وَٱلْمُؤْمِنَٰتُ بِأَنفُسِهِمْ خَيْرًۭا وَقَالُوا۟ هَٰذَآ إِفْكٌۭ مُّبِينٌۭ ﴿12﴾",
+      "historicalContext": "براءة أم المؤمنين عائشة رضي الله عنها في حادثة الإفك",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-fath-opening",
+      "type": "quran",
+      "surahNumber": 48,
+      "surahName": "الفتح",
+      "startAyah": 1,
+      "endAyah": 3,
+      "referenceLabel": "الفتح: 1–3",
+      "verbatimText": "إِنَّا فَتَحْنَا لَكَ فَتْحًۭا مُّبِينًۭا ﴿1﴾ لِّيَغْفِرَ لَكَ ٱللَّهُ مَا تَقَدَّمَ مِن ذَنۢبِكَ وَمَا تَأَخَّرَ وَيُتِمَّ نِعْمَتَهُۥ عَلَيْكَ وَيَهْدِيَكَ صِرَٰطًۭا مُّسْتَقِيمًۭا ﴿2﴾ وَيَنصُرَكَ ٱللَّهُ نَصْرًا عَزِيزًا ﴿3﴾",
+      "historicalContext": "تسمية صلح الحديبية بالفتح المبين",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 337
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-fath-ridwan",
+      "type": "quran",
+      "surahNumber": 48,
+      "surahName": "الفتح",
+      "startAyah": 18,
+      "endAyah": 18,
+      "referenceLabel": "الفتح: 18",
+      "verbatimText": "۞ لَّقَدْ رَضِىَ ٱللَّهُ عَنِ ٱلْمُؤْمِنِينَ إِذْ يُبَايِعُونَكَ تَحْتَ ٱلشَّجَرَةِ فَعَلِمَ مَا فِى قُلُوبِهِمْ فَأَنزَلَ ٱلسَّكِينَةَ عَلَيْهِمْ وَأَثَٰبَهُمْ فَتْحًۭا قَرِيبًۭا",
+      "historicalContext": "رضا الله عن المؤمنين إذ بايعوا النبي ﷺ تحت الشجرة في الحديبية",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-letters",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 64,
+      "endAyah": 64,
+      "referenceLabel": "آل عمران: 64",
+      "verbatimText": "قُلْ يَٰٓأَهْلَ ٱلْكِتَٰبِ تَعَالَوْا۟ إِلَىٰ كَلِمَةٍۢ سَوَآءٍۭ بَيْنَنَا وَبَيْنَكُمْ أَلَّا نَعْبُدَ إِلَّا ٱللَّهَ وَلَا نُشْرِكَ بِهِۦ شَيْـًۭٔا وَلَا يَتَّخِذَ بَعْضُنَا بَعْضًا أَرْبَابًۭا مِّن دُونِ ٱللَّهِ ۚ فَإِن تَوَلَّوْا۟ فَقُولُوا۟ ٱشْهَدُوا۟ بِأَنَّا مُسْلِمُونَ",
+      "historicalContext": "الآية التي ختم بها النبي ﷺ كتابه إلى هرقل عظيم الروم",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-isra-truth-came",
+      "type": "quran",
+      "surahNumber": 17,
+      "surahName": "الإسراء",
+      "startAyah": 81,
+      "endAyah": 81,
+      "referenceLabel": "الإسراء: 81",
+      "verbatimText": "وَقُلْ جَآءَ ٱلْحَقُّ وَزَهَقَ ٱلْبَٰطِلُ ۚ إِنَّ ٱلْبَٰطِلَ كَانَ زَهُوقًۭا",
+      "historicalContext": "الآية التي تلاها النبي ﷺ وهو يطعن الأصنام حول الكعبة يوم الفتح",
+      "encyclopediaLocations": [
+        {
+          "volume": 2,
+          "page": 386
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-nasr-surah",
+      "type": "quran",
+      "surahNumber": 110,
+      "surahName": "النصر",
+      "startAyah": 1,
+      "endAyah": 3,
+      "referenceLabel": "النصر: 1–3",
+      "verbatimText": "إِذَا جَآءَ نَصْرُ ٱللَّهِ وَٱلْفَتْحُ ﴿1﴾ وَرَأَيْتَ ٱلنَّاسَ يَدْخُلُونَ فِى دِينِ ٱللَّهِ أَفْوَاجًۭا ﴿2﴾ فَسَبِّحْ بِحَمْدِ رَبِّكَ وَٱسْتَغْفِرْهُ ۚ إِنَّهُۥ كَانَ تَوَّابًۢا ﴿3﴾",
+      "historicalContext": "سورة النصر وبشارة الفتح ودخول الناس في دين الله أفواجاً",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 526
+        },
+        {
+          "volume": 3,
+          "page": 607
+        },
+        {
+          "volume": 3,
+          "page": 608
+        },
+        {
+          "volume": 3,
+          "page": 609
+        },
+        {
+          "volume": 4,
+          "page": 76
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-tawbah-hunayn",
+      "type": "quran",
+      "surahNumber": 9,
+      "surahName": "التوبة",
+      "startAyah": 25,
+      "endAyah": 26,
+      "referenceLabel": "التوبة: 25–26",
+      "verbatimText": "لَقَدْ نَصَرَكُمُ ٱللَّهُ فِى مَوَاطِنَ كَثِيرَةٍۢ ۙ وَيَوْمَ حُنَيْنٍ ۙ إِذْ أَعْجَبَتْكُمْ كَثْرَتُكُمْ فَلَمْ تُغْنِ عَنكُمْ شَيْـًۭٔا وَضَاقَتْ عَلَيْكُمُ ٱلْأَرْضُ بِمَا رَحُبَتْ ثُمَّ وَلَّيْتُم مُّدْبِرِينَ ﴿25﴾ ثُمَّ أَنزَلَ ٱللَّهُ سَكِينَتَهُۥ عَلَىٰ رَسُولِهِۦ وَعَلَى ٱلْمُؤْمِنِينَ وَأَنزَلَ جُنُودًۭا لَّمْ تَرَوْهَا وَعَذَّبَ ٱلَّذِينَ كَفَرُوا۟ ۚ وَذَٰلِكَ جَزَآءُ ٱلْكَٰفِرِينَ ﴿26﴾",
+      "historicalContext": "درس يوم حنين حين أعجبت الكثرة ثم أنزل الله سكينته ونصره",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 610
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-tawbah-tabuk",
+      "type": "quran",
+      "surahNumber": 9,
+      "surahName": "التوبة",
+      "startAyah": 117,
+      "endAyah": 118,
+      "referenceLabel": "التوبة: 117–118",
+      "verbatimText": "لَّقَد تَّابَ ٱللَّهُ عَلَى ٱلنَّبِىِّ وَٱلْمُهَٰجِرِينَ وَٱلْأَنصَارِ ٱلَّذِينَ ٱتَّبَعُوهُ فِى سَاعَةِ ٱلْعُسْرَةِ مِنۢ بَعْدِ مَا كَادَ يَزِيغُ قُلُوبُ فَرِيقٍۢ مِّنْهُمْ ثُمَّ تَابَ عَلَيْهِمْ ۚ إِنَّهُۥ بِهِمْ رَءُوفٌۭ رَّحِيمٌۭ ﴿117﴾ وَعَلَى ٱلثَّلَٰثَةِ ٱلَّذِينَ خُلِّفُوا۟ حَتَّىٰٓ إِذَا ضَاقَتْ عَلَيْهِمُ ٱلْأَرْضُ بِمَا رَحُبَتْ وَضَاقَتْ عَلَيْهِمْ أَنفُسُهُمْ وَظَنُّوٓا۟ أَن لَّا مَلْجَأَ مِنَ ٱللَّهِ إِلَّآ إِلَيْهِ ثُمَّ تَابَ عَلَيْهِمْ لِيَتُوبُوٓا۟ ۚ إِنَّ ٱللَّهَ هُوَ ٱلتَّوَّابُ ٱلرَّحِيمُ ﴿118﴾",
+      "historicalContext": "توبة الله على النبي والمهاجرين والأنصار في ساعة العسرة وعلى الثلاثة الذين خُلّفوا",
+      "encyclopediaLocations": [
+        {
+          "volume": 4,
+          "page": 47
+        },
+        {
+          "volume": 4,
+          "page": 49
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-maidah-perfection",
+      "type": "quran",
+      "surahNumber": 5,
+      "surahName": "المائدة",
+      "startAyah": 3,
+      "endAyah": 3,
+      "referenceLabel": "المائدة: 3",
+      "verbatimText": "حُرِّمَتْ عَلَيْكُمُ ٱلْمَيْتَةُ وَٱلدَّمُ وَلَحْمُ ٱلْخِنزِيرِ وَمَآ أُهِلَّ لِغَيْرِ ٱللَّهِ بِهِۦ وَٱلْمُنْخَنِقَةُ وَٱلْمَوْقُوذَةُ وَٱلْمُتَرَدِّيَةُ وَٱلنَّطِيحَةُ وَمَآ أَكَلَ ٱلسَّبُعُ إِلَّا مَا ذَكَّيْتُمْ وَمَا ذُبِحَ عَلَى ٱلنُّصُبِ وَأَن تَسْتَقْسِمُوا۟ بِٱلْأَزْلَٰمِ ۚ ذَٰلِكُمْ فِسْقٌ ۗ ٱلْيَوْمَ يَئِسَ ٱلَّذِينَ كَفَرُوا۟ مِن دِينِكُمْ فَلَا تَخْشَوْهُمْ وَٱخْشَوْنِ ۚ ٱلْيَوْمَ أَكْمَلْتُ لَكُمْ دِينَكُمْ وَأَتْمَمْتُ عَلَيْكُمْ نِعْمَتِى وَرَضِيتُ لَكُمُ ٱلْإِسْلَٰمَ دِينًۭا ۚ فَمَنِ ٱضْطُرَّ فِى مَخْمَصَةٍ غَيْرَ مُتَجَانِفٍۢ لِّإِثْمٍۢ ۙ فَإِنَّ ٱللَّهَ غَفُورٌۭ رَّحِيمٌۭ",
+      "historicalContext": "آية إكمال الدين وإتمام النعمة عشية عرفة في حجة الوداع",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-zumar-mortality",
+      "type": "quran",
+      "surahNumber": 39,
+      "surahName": "الزمر",
+      "startAyah": 30,
+      "endAyah": 30,
+      "referenceLabel": "الزمر: 30",
+      "verbatimText": "إِنَّكَ مَيِّتٌۭ وَإِنَّهُم مَّيِّتُونَ",
+      "historicalContext": "بيان بشرية النبي ﷺ وانتقاله إلى ربه",
+      "encyclopediaLocations": [
+        {
+          "volume": 4,
+          "page": 442
+        },
+        {
+          "volume": 4,
+          "page": 480
+        },
+        {
+          "volume": 4,
+          "page": 482
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-imran-muhammad-messenger",
+      "type": "quran",
+      "surahNumber": 3,
+      "surahName": "آل عمران",
+      "startAyah": 144,
+      "endAyah": 144,
+      "referenceLabel": "آل عمران: 144",
+      "verbatimText": "وَمَا مُحَمَّدٌ إِلَّا رَسُولٌۭ قَدْ خَلَتْ مِن قَبْلِهِ ٱلرُّسُلُ ۚ أَفَإِي۟ن مَّاتَ أَوْ قُتِلَ ٱنقَلَبْتُمْ عَلَىٰٓ أَعْقَٰبِكُمْ ۚ وَمَن يَنقَلِبْ عَلَىٰ عَقِبَيْهِ فَلَن يَضُرَّ ٱللَّهَ شَيْـًۭٔا ۗ وَسَيَجْزِى ٱللَّهُ ٱلشَّٰكِرِينَ",
+      "historicalContext": "الآية التي تلاها أبو بكر الصديق رضي الله عنه فثبّت بها الأمة يوم وفاة النبي ﷺ",
+      "encyclopediaLocations": [
+        {
+          "volume": 3,
+          "page": 45
+        },
+        {
+          "volume": 3,
+          "page": 60
+        },
+        {
+          "volume": 3,
+          "page": 61
+        },
+        {
+          "volume": 4,
+          "page": 480
+        },
+        {
+          "volume": 4,
+          "page": 481
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-qalam-character",
+      "type": "quran",
+      "surahNumber": 68,
+      "surahName": "القلم",
+      "startAyah": 4,
+      "endAyah": 4,
+      "referenceLabel": "القلم: 4",
+      "verbatimText": "وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍۢ",
+      "historicalContext": "شهادة الله لنبيه ﷺ بالخلق العظيم",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-anbiya-mercy",
+      "type": "quran",
+      "surahNumber": 21,
+      "surahName": "الأنبياء",
+      "startAyah": 107,
+      "endAyah": 107,
+      "referenceLabel": "الأنبياء: 107",
+      "verbatimText": "وَمَآ أَرْسَلْنَٰكَ إِلَّا رَحْمَةًۭ لِّلْعَٰلَمِينَ",
+      "historicalContext": "بعثة النبي ﷺ رحمة للعالمين",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-tawbah-compassion",
+      "type": "quran",
+      "surahNumber": 9,
+      "surahName": "التوبة",
+      "startAyah": 128,
+      "endAyah": 128,
+      "referenceLabel": "التوبة: 128",
+      "verbatimText": "لَقَدْ جَآءَكُمْ رَسُولٌۭ مِّنْ أَنفُسِكُمْ عَزِيزٌ عَلَيْهِ مَا عَنِتُّمْ حَرِيصٌ عَلَيْكُم بِٱلْمُؤْمِنِينَ رَءُوفٌۭ رَّحِيمٌۭ",
+      "historicalContext": "رأفة النبي ﷺ ورحمته بالمؤمنين وحرصه على هدايتهم",
+      "encyclopediaLocations": [
+        {
+          "volume": 1,
+          "page": 190
+        }
+      ],
+      "verifiedAgainstLocalQuranCorpus": true
+    },
+    {
+      "quoteId": "q-ahzab-salawat",
+      "type": "quran",
+      "surahNumber": 33,
+      "surahName": "الأحزاب",
+      "startAyah": 56,
+      "endAyah": 56,
+      "referenceLabel": "الأحزاب: 56",
+      "verbatimText": "إِنَّ ٱللَّهَ وَمَلَٰٓئِكَتَهُۥ يُصَلُّونَ عَلَى ٱلنَّبِىِّ ۚ يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ صَلُّوا۟ عَلَيْهِ وَسَلِّمُوا۟ تَسْلِيمًا",
+      "historicalContext": "الأمر بالصلاة والتسليم على النبي ﷺ",
+      "encyclopediaLocations": [],
+      "verifiedAgainstLocalQuranCorpus": true
+    }
+  ]
+}

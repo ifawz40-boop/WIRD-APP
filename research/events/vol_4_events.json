@@ -1,0 +1,1054 @@
+{
+  "volume": 4,
+  "eventCount": 21,
+  "events": [
+    {
+      "eventId": "ev-v4-sec-001",
+      "sectionId": "v4-sec-001",
+      "volume": 4,
+      "orderInVolume": 1,
+      "globalOrder": 70,
+      "title": "السنة التاسعة للهجرة: غزوة تبوك (جيش العسرة)",
+      "eraTag": "غزوة تبوك 9 هـ",
+      "startPage": 3,
+      "endPage": 25,
+      "pageCount": 23,
+      "wordCount": 5589,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "abdullah-ibn-masud",
+        "talhah-ibn-ubaydillah",
+        "sad-ibn-abi-waqqas",
+        "muadh-ibn-jabal",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 3,
+          "heading": "سنة تسع من الهجرة"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-002",
+      "sectionId": "v4-sec-002",
+      "volume": 4,
+      "orderInVolume": 2,
+      "globalOrder": 71,
+      "title": "المتخلفون وقصة الثلاثة الذين خُلّفوا وحوادث ما بعد تبوك",
+      "eraTag": "غزوة تبوك 9 هـ",
+      "startPage": 26,
+      "endPage": 63,
+      "pageCount": 38,
+      "wordCount": 9084,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "ammar-ibn-yasir",
+        "abdullah-ibn-masud",
+        "talhah-ibn-ubaydillah",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-muadh",
+        "khalid-ibn-al-walid",
+        "muadh-ibn-jabal",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 26,
+          "heading": "ذكر الصلاة على معاوية بن أبى معاوية إن صح الخبر في ذلك"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-003",
+      "sectionId": "v4-sec-003",
+      "volume": 4,
+      "orderInVolume": 3,
+      "globalOrder": 72,
+      "title": "موت عبد الله بن أبي وحج أبي بكر الصديق ونزول سورة براءة",
+      "eraTag": "السنة 9 هـ",
+      "startPage": 64,
+      "endPage": 75,
+      "pageCount": 12,
+      "wordCount": 2586,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "abd-al-rahman-ibn-awf",
+        "asad-ibn-zurarah",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-waqidi",
+        "src-tabari",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 64,
+          "heading": "ذكر موت عبد الله بن أبي قبحه الله"
+        },
+        {
+          "page": 68,
+          "heading": "ذكر بعث رسول الله صلى الله عليه وسلم أبا بكر الصديق أميرا على الحج سنة تسع ونزول سورة براءة"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-004",
+      "sectionId": "v4-sec-004",
+      "volume": 4,
+      "orderInVolume": 4,
+      "globalOrder": 73,
+      "title": "كتاب الوفود الواردين إلى رسول الله ﷺ (بني تميم ونجران)",
+      "eraTag": "عام الوفود 9–10 هـ",
+      "startPage": 76,
+      "endPage": 120,
+      "pageCount": 45,
+      "wordCount": 10226,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "abdullah-ibn-masud",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-muadh",
+        "umm-salamah",
+        "khalid-ibn-al-walid",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-nasai",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-tabari",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 76,
+          "heading": "كتاب الوفود الواردين إلى رسول الله صلى الله عليه وسلم"
+        },
+        {
+          "page": 87,
+          "heading": "فصل في فضل بني تميم"
+        },
+        {
+          "page": 100,
+          "heading": "وفد أهل نجران"
+        },
+        {
+          "page": 109,
+          "heading": "وفد بني عامر وقصة عامر بن الطفيل وأربد بن قيس لعنهم الله"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-005",
+      "sectionId": "v4-sec-005",
+      "volume": 4,
+      "orderInVolume": 5,
+      "globalOrder": 74,
+      "title": "وفود القبائل العربية: طيئ وعبد القيس ودوس وبني حنيفة وغيرها",
+      "eraTag": "عام الوفود 9–10 هـ",
+      "startPage": 121,
+      "endPage": 169,
+      "pageCount": 49,
+      "wordCount": 10945,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abdullah-ibn-masud",
+        "sad-ibn-ubadah",
+        "khalid-ibn-al-walid",
+        "muadh-ibn-jabal",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 121,
+          "heading": "وفد طيئ مع زيد الخيل رضي الله عنه [وهو زيد بن مهلهل بن زيد بن منهب، أبو مكنف الطائي، وكان من أحسن العرب وأطوله رجلا"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-006",
+      "sectionId": "v4-sec-006",
+      "volume": 4,
+      "orderInVolume": 6,
+      "globalOrder": 75,
+      "title": "تتمة وفود العرب: أسد وعبس وفزارة وكنانة وسليم وخولان",
+      "eraTag": "عام الوفود 9–10 هـ",
+      "startPage": 170,
+      "endPage": 187,
+      "pageCount": 18,
+      "wordCount": 3567,
+      "characterIds": [
+        "uthman-ibn-affan",
+        "talhah-ibn-ubaydillah"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-tirmidhi",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 170,
+          "heading": "وفد بني عبس ذكر الواقدي: أنهم كانوا تسعة نفر وسماهم الواقدي"
+        },
+        {
+          "page": 172,
+          "heading": "وفد بني مرة ذكر الواقدي أنهم قدموا سنة تسع مرجعه من تبوك"
+        },
+        {
+          "page": 172,
+          "heading": "وفد بني ثعلبة قال الواقدي: حدثني موسى بن محمد بن إبراهيم، عن رجل من بني ثعلبة، عن أبيه"
+        },
+        {
+          "page": 176,
+          "heading": "وفد كنانة"
+        },
+        {
+          "page": 176,
+          "heading": "وفد أشجع ذكر الواقدي: أنهم قدموا عام الخندق وهم مائة رجل، ورئيسهم مسعود بن رخيلة، فنزلوا شعب سلع"
+        },
+        {
+          "page": 176,
+          "heading": "وفد باهلة قدم رئيسهم مطرف بن الكاهن بعد الفتح فأسلم، وأخذ لقومه أمانا وكتب له كتابا فيه الفرائض وشرائع الإسلام"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-007",
+      "sectionId": "v4-sec-007",
+      "volume": 4,
+      "orderInVolume": 7,
+      "globalOrder": 76,
+      "title": "السنة العاشرة للهجرة: بعث خالد وعلي رضي الله عنهما إلى اليمن",
+      "eraTag": "السنة 10 هـ",
+      "startPage": 188,
+      "endPage": 210,
+      "pageCount": 23,
+      "wordCount": 5219,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "ali-ibn-abi-talib",
+        "khalid-ibn-al-walid",
+        "muadh-ibn-jabal",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 188,
+          "heading": "سنة عشر من الهجرة"
+        },
+        {
+          "page": 188,
+          "heading": "باب بعث رسول الله صلى الله عليه وسلم خالد بن الوليد"
+        },
+        {
+          "page": 201,
+          "heading": "باب بعث رسول الله صلى الله عليه وسلم علي بن أبي طالب وخالد بن الوليد إلى اليمن قبل حجة الوداع"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-008",
+      "sectionId": "v4-sec-008",
+      "volume": 4,
+      "orderInVolume": 8,
+      "globalOrder": 77,
+      "title": "كتاب حجة الوداع: خروجه ﷺ وإهلاله وتفصيل النسك",
+      "eraTag": "حجة الوداع 10 هـ",
+      "startPage": 211,
+      "endPage": 282,
+      "pageCount": 72,
+      "wordCount": 16535,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-abi-waqqas",
+        "umm-salamah",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-waqidi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 212,
+          "heading": "باب بيان أنه عليه السلام لم يحج من المدينة إلا حجة واحدة"
+        },
+        {
+          "page": 215,
+          "heading": "باب تاريخ خروجه عليه السلام من المدينة لحجة الوداع"
+        },
+        {
+          "page": 218,
+          "heading": "باب صفة خروجه عليه السلام من المدينة إلى مكة للحج"
+        },
+        {
+          "page": 229,
+          "heading": "باب بيان الموضع الذي أهل منه عليه السلام واختلاف الناقلين لذلك"
+        },
+        {
+          "page": 236,
+          "heading": "باب بسط البيان لما أحرم به عليه السلام في حجته هذه من الإفراد أو التمتع أو القران"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-009",
+      "sectionId": "v4-sec-009",
+      "volume": 4,
+      "orderInVolume": 9,
+      "globalOrder": 78,
+      "title": "تلبية النبي ﷺ وحديث جابر الكامل في صفة حجته",
+      "eraTag": "حجة الوداع 10 هـ",
+      "startPage": 283,
+      "endPage": 299,
+      "pageCount": 17,
+      "wordCount": 3751,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-bayhaqi",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v4-sec-010",
+      "sectionId": "v4-sec-010",
+      "volume": 4,
+      "orderInVolume": 10,
+      "globalOrder": 79,
+      "title": "دخوله ﷺ مكة والطواف والسعي والوقوف بعرفة",
+      "eraTag": "حجة الوداع 10 هـ",
+      "startPage": 300,
+      "endPage": 352,
+      "pageCount": 53,
+      "wordCount": 12622,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "fatimah-al-zahra",
+        "abdullah-ibn-masud",
+        "zubayr-ibn-al-awwam",
+        "talhah-ibn-ubaydillah",
+        "khalid-ibn-al-walid",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-tabari",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 300,
+          "heading": "باب دخول النبي صلى الله عليه وسلم إلى مكة شرفها الله عز وجل"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-011",
+      "sectionId": "v4-sec-011",
+      "volume": 4,
+      "orderInVolume": 11,
+      "globalOrder": 80,
+      "title": "ما نزل بعرفة والإفاضة إلى المزدلفة ورمي الجمار وخطبة منى",
+      "eraTag": "حجة الوداع 10 هـ",
+      "startPage": 353,
+      "endPage": 413,
+      "pageCount": 61,
+      "wordCount": 14661,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abdullah-ibn-masud",
+        "umm-salamah",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v4-sec-012",
+      "sectionId": "v4-sec-012",
+      "volume": 4,
+      "orderInVolume": 12,
+      "globalOrder": 81,
+      "title": "خطبة غدير خم والرجوع إلى المدينة المنورة",
+      "eraTag": "حجة الوداع 10 هـ",
+      "startPage": 414,
+      "endPage": 426,
+      "pageCount": 13,
+      "wordCount": 3221,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "abd-al-rahman-ibn-awf",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-abu-nuaym",
+        "src-tabari",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 414,
+          "heading": "فصل في إيراد الحديث الدال على أنه عليه السلام خطب بمكان بين مكة والمدينة،"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-013",
+      "sectionId": "v4-sec-013",
+      "volume": 4,
+      "orderInVolume": 13,
+      "globalOrder": 82,
+      "title": "السنة الحادية عشرة للهجرة وبدايات مرض رسول الله ﷺ",
+      "eraTag": "السنة 11 هـ",
+      "startPage": 427,
+      "endPage": 458,
+      "pageCount": 32,
+      "wordCount": 7958,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "hamzah-ibn-abd-al-muttalib",
+        "zayd-ibn-harithah",
+        "abdullah-ibn-masud",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-abi-waqqas",
+        "abu-ubaydah-ibn-al-jarrah",
+        "umm-salamah",
+        "muadh-ibn-jabal",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-waqidi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 431,
+          "heading": "غزوة خيبر، ثم عمرة القضاء، ثم غزوة الفتح، ثم غزوة حنين، ثم غزوة الطائف، ثم غزوة تبوك"
+        },
+        {
+          "page": 443,
+          "heading": "سنة مرة، وإنه عارضنى به العام مرتين، وما أرى ذلك إلا اقتراب أجلي \""
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-014",
+      "sectionId": "v4-sec-014",
+      "volume": 4,
+      "orderInVolume": 14,
+      "globalOrder": 83,
+      "title": "أمره ﷺ أبا بكر بالصلاة بالناس ووفاته إلى الرفيق الأعلى",
+      "eraTag": "وفاة النبي ﷺ",
+      "startPage": 459,
+      "endPage": 483,
+      "pageCount": 25,
+      "wordCount": 6010,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abdullah-ibn-masud",
+        "umm-salamah",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-waqidi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v4-sec-015",
+      "sectionId": "v4-sec-015",
+      "volume": 4,
+      "orderInVolume": 15,
+      "globalOrder": 84,
+      "title": "اجتماع السقيفة وبيعة أبي بكر الصديق رضي الله عنه",
+      "eraTag": "وفاة النبي ﷺ",
+      "startPage": 484,
+      "endPage": 504,
+      "pageCount": 21,
+      "wordCount": 4760,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "fatimah-al-zahra",
+        "abdullah-ibn-masud",
+        "abd-al-rahman-ibn-awf",
+        "abu-ubaydah-ibn-al-jarrah",
+        "sad-ibn-ubadah",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-nasai",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v4-sec-016",
+      "sectionId": "v4-sec-016",
+      "volume": 4,
+      "orderInVolume": 16,
+      "globalOrder": 85,
+      "title": "وقت وفاته ﷺ وغسله وتكفينه والصلاة عليه ودفنه وصفته",
+      "eraTag": "وفاة النبي ﷺ",
+      "startPage": 505,
+      "endPage": 542,
+      "pageCount": 38,
+      "wordCount": 8988,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "ali-ibn-abi-talib",
+        "zayd-ibn-harithah",
+        "bilal-ibn-rabah",
+        "abdullah-ibn-masud",
+        "abd-al-rahman-ibn-awf",
+        "abu-ubaydah-ibn-al-jarrah",
+        "umm-salamah",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v4-sec-017",
+      "sectionId": "v4-sec-017",
+      "volume": 4,
+      "orderInVolume": 17,
+      "globalOrder": 86,
+      "title": "مصيبة المسلمين بوفاته ﷺ والتعزية وبيان «لا نورث»",
+      "eraTag": "وفاة النبي ﷺ",
+      "startPage": 543,
+      "endPage": 578,
+      "pageCount": 36,
+      "wordCount": 8156,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "fatimah-al-zahra",
+        "abdullah-ibn-masud",
+        "zubayr-ibn-al-awwam",
+        "talhah-ibn-ubaydillah",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-abi-waqqas",
+        "umm-salamah",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-suhayli",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 560,
+          "heading": "باب بيان أن النبي صلى الله عليه وسلم لم يترك دينارا ولا درهما"
+        },
+        {
+          "page": 566,
+          "heading": "باب بيان أنه عليه السلام قال: لا نورث"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-018",
+      "sectionId": "v4-sec-018",
+      "volume": 4,
+      "orderInVolume": 18,
+      "globalOrder": 87,
+      "title": "باب ذكر زوجاته أمهات المؤمنين وأولاده ﷺ",
+      "eraTag": "آل البيت والشمائل",
+      "startPage": 579,
+      "endPage": 615,
+      "pageCount": 37,
+      "wordCount": 8885,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "jafar-ibn-abi-talib",
+        "zayd-ibn-harithah",
+        "zubayr-ibn-al-awwam",
+        "umm-salamah",
+        "khalid-ibn-al-walid",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-tirmidhi",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-tabari",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 579,
+          "heading": "باب ذكر زوجاته صلوات الله وسلامه عليه ورضى عنهن وأولاده صلى الله عليه وسلم"
+        },
+        {
+          "page": 600,
+          "heading": "فصل في ذكر سراريه عليه السلام"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-019",
+      "sectionId": "v4-sec-019",
+      "volume": 4,
+      "orderInVolume": 19,
+      "globalOrder": 88,
+      "title": "باب ذكر خدمه ومواليه وكتابه وأمنائه ﷺ",
+      "eraTag": "آل البيت والشمائل",
+      "startPage": 616,
+      "endPage": 669,
+      "pageCount": 54,
+      "wordCount": 12979,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "fatimah-al-zahra",
+        "jafar-ibn-abi-talib",
+        "zayd-ibn-harithah",
+        "bilal-ibn-rabah",
+        "abdullah-ibn-masud",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-muadh",
+        "sad-ibn-ubadah",
+        "umm-salamah",
+        "salman-al-farisi",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 616,
+          "heading": "باب ذكر عبيده عليه السلام وإمائه وذكر خدمه وكتابه وأمنائه،"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-020",
+      "sectionId": "v4-sec-020",
+      "volume": 4,
+      "orderInVolume": 20,
+      "globalOrder": 89,
+      "title": "تتمة ذكر خدمه ورسله وأمرائه ﷺ",
+      "eraTag": "آل البيت والشمائل",
+      "startPage": 670,
+      "endPage": 700,
+      "pageCount": 31,
+      "wordCount": 7252,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "musab-ibn-umayr",
+        "zubayr-ibn-al-awwam",
+        "talhah-ibn-ubaydillah",
+        "abd-al-rahman-ibn-awf",
+        "abu-ubaydah-ibn-al-jarrah",
+        "sad-ibn-muadh",
+        "khalid-ibn-al-walid",
+        "muadh-ibn-jabal",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-tabari",
+        "src-ibn-abd-al-barr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 670,
+          "heading": "سنة خمس عشرة"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v4-sec-021",
+      "sectionId": "v4-sec-021",
+      "volume": 4,
+      "orderInVolume": 21,
+      "globalOrder": 90,
+      "title": "باب ما يذكر من آثار النبي ﷺ وسلاحه ومراكبه الشريفة",
+      "eraTag": "آثار النبي ﷺ",
+      "startPage": 701,
+      "endPage": 717,
+      "pageCount": 17,
+      "wordCount": 4024,
+      "characterIds": [
+        "ali-ibn-abi-talib",
+        "abdullah-ibn-masud",
+        "sad-ibn-ubadah",
+        "muadh-ibn-jabal",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 701,
+          "heading": "باب ما يذكر من آثار النبي صلى الله عليه وسلم التي كان يختص بها في حياته"
+        },
+        {
+          "page": 707,
+          "heading": "ذكر سيفه عليه السلام"
+        }
+      ]
+    }
+  ]
+}

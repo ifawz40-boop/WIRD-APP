@@ -22,6 +22,9 @@ export interface RouteState {
   mode?: 'memorize' | 'review';
   seriesId?: string;
   videoId?: string;
+  seerahChapterId?: string;
+  seerahCharacterId?: string;
+  seerahView?: 'characters';
 }
 
 export const VALID_NAV_TABS: NavTabId[] = [
@@ -95,6 +98,21 @@ export function parseRoute(hashString?: string): RouteState {
   const seriesId = rawSeriesParam && /^[A-Za-z0-9:_-]{2,80}$/.test(rawSeriesParam) ? rawSeriesParam : undefined;
   const videoId = rawVideoParam && /^[A-Za-z0-9_-]{11}$/.test(rawVideoParam) ? rawVideoParam : undefined;
 
+  const rawSeerahChapter = searchParams.get('chapter')?.trim();
+  const rawSeerahCharacter = searchParams.get('character')?.trim();
+  const rawSeerahView = searchParams.get('view')?.trim();
+
+  const seerahChapterId =
+    tab === 'seerah' && rawSeerahChapter && /^ch-\d{2}$/.test(rawSeerahChapter)
+      ? rawSeerahChapter
+      : undefined;
+  const seerahCharacterId =
+    tab === 'seerah' && rawSeerahCharacter && /^[a-z0-9-]{2,64}$/.test(rawSeerahCharacter)
+      ? rawSeerahCharacter
+      : undefined;
+  const seerahView =
+    tab === 'seerah' && rawSeerahView === 'characters' ? 'characters' : undefined;
+
   return {
     tab,
     surahNumber,
@@ -102,7 +120,10 @@ export function parseRoute(hashString?: string): RouteState {
     endAyah,
     mode,
     seriesId,
-    videoId
+    videoId,
+    seerahChapterId,
+    seerahCharacterId,
+    seerahView
   };
 }
 
@@ -110,7 +131,18 @@ export function parseRoute(hashString?: string): RouteState {
  * Build URL hash string from RouteState
  */
 export function buildRouteHash(state: RouteState): string {
-  const { tab, surahNumber, startAyah, endAyah, mode, seriesId, videoId } = state;
+  const {
+    tab,
+    surahNumber,
+    startAyah,
+    endAyah,
+    mode,
+    seriesId,
+    videoId,
+    seerahChapterId,
+    seerahCharacterId,
+    seerahView
+  } = state;
   const params = new URLSearchParams();
 
   if (surahNumber !== undefined) params.set('surah', String(surahNumber));
@@ -119,6 +151,11 @@ export function buildRouteHash(state: RouteState): string {
   if (mode && tab === 'session') params.set('mode', mode);
   if (seriesId && tab === 'series') params.set('series', seriesId);
   if (videoId && tab === 'series') params.set('video', videoId);
+  if (tab === 'seerah') {
+    if (seerahChapterId) params.set('chapter', seerahChapterId);
+    else if (seerahCharacterId) params.set('character', seerahCharacterId);
+    else if (seerahView === 'characters') params.set('view', 'characters');
+  }
 
   const query = params.toString();
   return `#/${tab}${query ? `?${query}` : ''}`;

@@ -1,0 +1,928 @@
+{
+  "volume": 1,
+  "eventCount": 23,
+  "events": [
+    {
+      "eventId": "ev-v1-sec-001",
+      "sectionId": "v1-sec-001",
+      "volume": 1,
+      "orderInVolume": 1,
+      "globalOrder": 1,
+      "title": "ذكر أخبار العرب وأنسابهم",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 1,
+      "endPage": 26,
+      "pageCount": 25,
+      "wordCount": 5322,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "talhah-ibn-ubaydillah",
+        "abu-ayyub-al-ansari",
+        "khalid-ibn-al-walid",
+        "muadh-ibn-jabal",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-suhayli",
+        "src-ibn-abd-al-barr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v1-sec-002",
+      "sectionId": "v1-sec-002",
+      "volume": 1,
+      "orderInVolume": 2,
+      "globalOrder": 2,
+      "title": "خروج الملك باليمن من حمير إلى الحبشة",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 27,
+      "endPage": 28,
+      "pageCount": 2,
+      "wordCount": 429,
+      "characterIds": [
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-ibn-ishaq",
+        "src-ibn-hisham"
+      ],
+      "subEvents": [
+        {
+          "page": 27,
+          "heading": "ذكر خروج الملك باليمن من حمير وصيرورته إلى الحبشة السودان كما أخبر بذلك شق وسطيح الكاهنان"
+        },
+        {
+          "page": 28,
+          "heading": "ذكر خروج أبرهة الأشرم على أرياط واختلافهما واقتتالهما وصيرورة ملك اليمن إلى أبرهة بعد قتله أرياط"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-003",
+      "sectionId": "v1-sec-003",
+      "volume": 1,
+      "orderInVolume": 3,
+      "globalOrder": 3,
+      "title": "قصة أبرهة الأشرم وحادثة الفيل",
+      "eraTag": "عام الفيل",
+      "startPage": 29,
+      "endPage": 41,
+      "pageCount": 13,
+      "wordCount": 2854,
+      "characterIds": [
+        "abd-al-muttalib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-ibn-sad",
+        "src-tabari",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v1-sec-004",
+      "sectionId": "v1-sec-004",
+      "volume": 1,
+      "orderInVolume": 4,
+      "globalOrder": 4,
+      "title": "خروج الملك عن الحبشة ورجوعه إلى سيف بن ذي يزن",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 42,
+      "endPage": 55,
+      "pageCount": 14,
+      "wordCount": 2800,
+      "characterIds": [
+        "ali-ibn-abi-talib",
+        "khalid-ibn-al-walid",
+        "muadh-ibn-jabal",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-suhayli",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 42,
+          "heading": "ذكر خروج الملك عن الحبشة ورجوعه إلى سيف بن ذى يزن الحميرى"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-005",
+      "sectionId": "v1-sec-005",
+      "volume": 1,
+      "orderInVolume": 5,
+      "globalOrder": 5,
+      "title": "باب ذكر بني إسماعيل وهم عرب الحجاز",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 56,
+      "endPage": 81,
+      "pageCount": 26,
+      "wordCount": 5467,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "abdullah-ibn-masud",
+        "umm-salamah",
+        "khalid-ibn-al-walid",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-waqidi",
+        "src-tabari",
+        "src-suhayli",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 56,
+          "heading": "باب ذكر بنى إسماعيل وهم عرب الحجاز"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-006",
+      "sectionId": "v1-sec-006",
+      "volume": 1,
+      "orderInVolume": 6,
+      "globalOrder": 6,
+      "title": "أصول أنساب قبائل عرب الحجاز إلى عدنان",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 82,
+      "endPage": 103,
+      "pageCount": 22,
+      "wordCount": 4766,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-bayhaqi",
+        "src-waqidi",
+        "src-tabari",
+        "src-suhayli",
+        "src-ibn-abd-al-barr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 100,
+          "heading": "فصل: ثم لما كبر قصي فوض أمر هذه الوظائف التي كانت إليه، من رئاسات قريش"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-007",
+      "sectionId": "v1-sec-007",
+      "volume": 1,
+      "orderInVolume": 7,
+      "globalOrder": 7,
+      "title": "أحداث الجاهلية ومشاهير العرب قبل الإسلام",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 104,
+      "endPage": 152,
+      "pageCount": 49,
+      "wordCount": 10874,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "ali-ibn-abi-talib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-ibn-ishaq",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-suhayli",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 104,
+          "heading": "باب ذكر جماعة مشهورين كانوا في الجاهلية"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-008",
+      "sectionId": "v1-sec-008",
+      "volume": 1,
+      "orderInVolume": 8,
+      "globalOrder": 8,
+      "title": "ذكر زيد بن عمرو بن نفيل وأخبار الحنفاء",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 153,
+      "endPage": 165,
+      "pageCount": 13,
+      "wordCount": 2940,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "zayd-ibn-harithah",
+        "abdullah-ibn-masud",
+        "sad-ibn-abi-waqqas",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-abu-dawud",
+        "src-nasai",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v1-sec-009",
+      "sectionId": "v1-sec-009",
+      "volume": 1,
+      "orderInVolume": 9,
+      "globalOrder": 9,
+      "title": "حفر زمزم ونذر عبد المطلب وتزويج عبد الله",
+      "eraTag": "ما قبل البعثة",
+      "startPage": 166,
+      "endPage": 180,
+      "pageCount": 15,
+      "wordCount": 3258,
+      "characterIds": [
+        "ali-ibn-abi-talib",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-muslim",
+        "src-ahmad",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-tabari",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 167,
+          "heading": "ذكر تجديد حفر زمزم"
+        },
+        {
+          "page": 176,
+          "heading": "ذكر تزويج عبد المطلب ابنه عبد الله"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-010",
+      "sectionId": "v1-sec-010",
+      "volume": 1,
+      "orderInVolume": 10,
+      "globalOrder": 10,
+      "title": "كتاب سيرة رسول الله ﷺ ونسبه الشريف",
+      "eraTag": "النسب الشريف",
+      "startPage": 181,
+      "endPage": 197,
+      "pageCount": 16,
+      "wordCount": 3441,
+      "characterIds": [
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-tirmidhi",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-tabari",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 181,
+          "heading": "كتاب سيرة رسول الله صلى الله عليه وسلم وذكر أيامه وغزواته وسراياه والوفود إليه وشمائله وفضائله ودلائله الدالة عليه"
+        },
+        {
+          "page": 183,
+          "heading": "باب ذكر نسبه الشريف وطيب أصله المنيف"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-011",
+      "sectionId": "v1-sec-011",
+      "volume": 1,
+      "orderInVolume": 11,
+      "globalOrder": 11,
+      "title": "باب مولد رسول الله ﷺ والآيات ليلة مولده",
+      "eraTag": "المولد النبوي",
+      "startPage": 198,
+      "endPage": 222,
+      "pageCount": 25,
+      "wordCount": 5654,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "abd-al-rahman-ibn-awf",
+        "khalid-ibn-al-walid",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-muslim",
+        "src-ahmad",
+        "src-tirmidhi",
+        "src-ibn-ishaq",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-suhayli",
+        "src-ibn-abd-al-barr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 198,
+          "heading": "باب مولد رسول الله صلى الله عليه وسلم"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-012",
+      "sectionId": "v1-sec-012",
+      "volume": 1,
+      "orderInVolume": 12,
+      "globalOrder": 12,
+      "title": "حواضنه ومراضعه ﷺ ورضاعه من حليمة السعدية",
+      "eraTag": "الطفولة والرضاعة",
+      "startPage": 223,
+      "endPage": 249,
+      "pageCount": 27,
+      "wordCount": 6532,
+      "characterIds": [
+        "umar-ibn-al-khattab",
+        "aishah-bint-abi-bakr",
+        "fatimah-al-zahra",
+        "jafar-ibn-abi-talib",
+        "zayd-ibn-harithah",
+        "abdullah-ibn-masud",
+        "abu-ayyub-al-ansari",
+        "umm-salamah",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 225,
+          "heading": "ذكر رضاعه عليه الصلاة والسلام من حليمة بنت أبي ذؤيب السعدية"
+        },
+        {
+          "page": 243,
+          "heading": "فصل في خروجه عليه الصلاة والسلام مع عمه أبي طالب إلى الشام وقصته مع بحيرى الراهب"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-013",
+      "sectionId": "v1-sec-013",
+      "volume": 1,
+      "orderInVolume": 13,
+      "globalOrder": 13,
+      "title": "منشؤه ﷺ وحرب الفجار وحلف الفضول",
+      "eraTag": "الشباب",
+      "startPage": 250,
+      "endPage": 261,
+      "pageCount": 12,
+      "wordCount": 2809,
+      "characterIds": [
+        "ali-ibn-abi-talib",
+        "zayd-ibn-harithah",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v1-sec-014",
+      "sectionId": "v1-sec-014",
+      "volume": 1,
+      "orderInVolume": 14,
+      "globalOrder": 14,
+      "title": "تزويجه ﷺ خديجة بنت خويلد رضي الله عنها",
+      "eraTag": "الشباب",
+      "startPage": 262,
+      "endPage": 269,
+      "pageCount": 8,
+      "wordCount": 1728,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "ammar-ibn-yasir"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-suhayli",
+        "src-yunus-bukayr"
+      ],
+      "subEvents": [
+        {
+          "page": 262,
+          "heading": "فصل في تزويجه عليه الصلاة والسلام خديجة بنت خويلد بن أسد بن عبد العزى بن قصبى"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-015",
+      "sectionId": "v1-sec-015",
+      "volume": 1,
+      "orderInVolume": 15,
+      "globalOrder": 15,
+      "title": "تجديد قريش بناء الكعبة قبل المبعث بخمس سنين",
+      "eraTag": "الشباب",
+      "startPage": 270,
+      "endPage": 285,
+      "pageCount": 16,
+      "wordCount": 3426,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 270,
+          "heading": "فصل في تجديد قريش بناء الكعبة قبل المبعث بخمس سنين ذكر البيهقى بناء الكعبة قبل تزويجه عليه الصلاة والسلام خديجة"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-016",
+      "sectionId": "v1-sec-016",
+      "volume": 1,
+      "orderInVolume": 16,
+      "globalOrder": 16,
+      "title": "كتاب مبعث رسول الله ﷺ والبشارات بنبوته",
+      "eraTag": "البشارات والبعثة",
+      "startPage": 286,
+      "endPage": 340,
+      "pageCount": 55,
+      "wordCount": 12352,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abd-al-rahman-ibn-awf",
+        "salman-al-farisi",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-tirmidhi",
+        "src-ibn-ishaq",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-tabari",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v1-sec-017",
+      "sectionId": "v1-sec-017",
+      "volume": 1,
+      "orderInVolume": 17,
+      "globalOrder": 17,
+      "title": "باب هواتف الجان وإرهاصات النبوة",
+      "eraTag": "البشارات والبعثة",
+      "startPage": 341,
+      "endPage": 384,
+      "pageCount": 44,
+      "wordCount": 9799,
+      "characterIds": [
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "sad-ibn-ubadah",
+        "abd-al-muttalib",
+        "abu-talib",
+        "ashamah-al-najashi"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 341,
+          "heading": "باب في هواتف الجان"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-018",
+      "sectionId": "v1-sec-018",
+      "volume": 1,
+      "orderInVolume": 18,
+      "globalOrder": 18,
+      "title": "باب كيفية بدء الوحي وعمره ﷺ وقت بعثته",
+      "eraTag": "بدء الوحي",
+      "startPage": 385,
+      "endPage": 414,
+      "pageCount": 30,
+      "wordCount": 6852,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "abu-bakr-al-siddiq",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-abu-dawud",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-tabari",
+        "src-suhayli",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 385,
+          "heading": "باب كيفية بدء الوحي"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-019",
+      "sectionId": "v1-sec-019",
+      "volume": 1,
+      "orderInVolume": 19,
+      "globalOrder": 19,
+      "title": "منع الشياطين من استراق السمع وكيفية إتيان الوحي",
+      "eraTag": "بدء الوحي",
+      "startPage": 415,
+      "endPage": 444,
+      "pageCount": 30,
+      "wordCount": 6979,
+      "characterIds": [
+        "khadijah-bint-khuwaylid",
+        "abu-bakr-al-siddiq",
+        "umar-ibn-al-khattab",
+        "uthman-ibn-affan",
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "hamzah-ibn-abd-al-muttalib",
+        "zayd-ibn-harithah",
+        "ammar-ibn-yasir",
+        "abdullah-ibn-masud",
+        "zubayr-ibn-al-awwam",
+        "talhah-ibn-ubaydillah",
+        "abd-al-rahman-ibn-awf",
+        "sad-ibn-abi-waqqas",
+        "abu-ubaydah-ibn-al-jarrah",
+        "al-abbas-ibn-abd-al-muttalib",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-malik",
+        "src-abu-dawud",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-musa-uqbah",
+        "src-urwah-zuhri",
+        "src-ibn-sad",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-waqidi",
+        "src-tabari",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 421,
+          "heading": "فصل في كيفية إتيان الوحي إلى رسول الله صلى الله عليه وسلم قد تقدم كيفية ما جاءه جبريل في أول مرة، وثاني مرة أيضا"
+        },
+        {
+          "page": 428,
+          "heading": "فصل في ذكر أول من أسلم، ثم ذكر متقدمي الاسلام من الصحابة وغيرهم"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-020",
+      "sectionId": "v1-sec-020",
+      "volume": 1,
+      "orderInVolume": 20,
+      "globalOrder": 20,
+      "title": "إسلام السابقين: حمزة وأبي ذر وضماد رضي الله عنهم",
+      "eraTag": "الدعوة السرية",
+      "startPage": 445,
+      "endPage": 454,
+      "pageCount": 10,
+      "wordCount": 2248,
+      "characterIds": [
+        "hamzah-ibn-abd-al-muttalib",
+        "jafar-ibn-abi-talib",
+        "ammar-ibn-yasir",
+        "abdullah-ibn-masud",
+        "sad-ibn-abi-waqqas",
+        "salman-al-farisi",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-ibn-ishaq",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-abu-nuaym",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 445,
+          "heading": "ذكر إسلام حمزة بن عبد المطلب رضي الله عنه"
+        },
+        {
+          "page": 447,
+          "heading": "ذكر إسلام أبي ذر رضي الله عنه"
+        },
+        {
+          "page": 452,
+          "heading": "ذكر إسلام ضماد"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-021",
+      "sectionId": "v1-sec-021",
+      "volume": 1,
+      "orderInVolume": 21,
+      "globalOrder": 21,
+      "title": "أمر الله رسوله ﷺ بإبلاغ الرسالة والجهر بالدعوة",
+      "eraTag": "الجهر بالدعوة",
+      "startPage": 455,
+      "endPage": 471,
+      "pageCount": 17,
+      "wordCount": 4113,
+      "characterIds": [
+        "ali-ibn-abi-talib",
+        "aishah-bint-abi-bakr",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-tabari",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 455,
+          "heading": "باب أمر الله رسوله عليه الصلاة والسلام بإبلاغ الرسالة إلى الخاص والعام،"
+        }
+      ]
+    },
+    {
+      "eventId": "ev-v1-sec-022",
+      "sectionId": "v1-sec-022",
+      "volume": 1,
+      "orderInVolume": 22,
+      "globalOrder": 22,
+      "title": "تأليب الملأ من قريش وموقف أبي طالب",
+      "eraTag": "الجهر بالدعوة",
+      "startPage": 472,
+      "endPage": 497,
+      "pageCount": 26,
+      "wordCount": 5341,
+      "characterIds": [
+        "bilal-ibn-rabah",
+        "ammar-ibn-yasir",
+        "abdullah-ibn-masud",
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-bukhari",
+        "src-muslim",
+        "src-ahmad",
+        "src-tirmidhi",
+        "src-nasai",
+        "src-ibn-majah",
+        "src-ibn-ishaq",
+        "src-ibn-hisham",
+        "src-bayhaqi",
+        "src-ibn-kathir"
+      ],
+      "subEvents": []
+    },
+    {
+      "eventId": "ev-v1-sec-023",
+      "sectionId": "v1-sec-023",
+      "volume": 1,
+      "orderInVolume": 23,
+      "globalOrder": 23,
+      "title": "باب مجادلة المشركين رسول الله ﷺ",
+      "eraTag": "الدعوة بمكة",
+      "startPage": 498,
+      "endPage": 508,
+      "pageCount": 11,
+      "wordCount": 2643,
+      "characterIds": [
+        "abd-al-muttalib",
+        "abu-talib"
+      ],
+      "sourceIds": [
+        "src-quran",
+        "src-ahmad",
+        "src-ibn-ishaq",
+        "src-urwah-zuhri",
+        "src-bayhaqi",
+        "src-yunus-bukayr",
+        "src-ibn-kathir"
+      ],
+      "subEvents": [
+        {
+          "page": 498,
+          "heading": "باب مجادلة المشركين رسول الله صلى الله عليه وسلم،"
+        },
+        {
+          "page": 502,
+          "heading": "كتاب فصلت آياته قرآنا عربيا لقوم يعلمون \" إلى أن بلغ \" فإن أعرضوا فقل أنذرتكم صاعقة مثل صاعقة عاد وثمود \""
+        }
+      ]
+    }
+  ]
+}

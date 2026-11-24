@@ -1,43 +1,40 @@
-# سجل التنفيذ الحي — موسوعة السيرة النبوية في وِرد (Execution Status)
+# WIRD Seerah Transformation — Durable Execution Journal (`EXECUTION_STATUS.md`)
 
-**آخر تحديث:** 2026-11-24  
-**الفرع:** `feat/seerah-encyclopedia-ibn-kathir` (أساس `main` @ `45f3edc611be08482d53570afd49f6e9471f44c7`)  
-**الحالة العامة:** **مكتمل محلياً ومُتحقق منه بالكامل (COMPLETED & VERIFIED LOCALLY)**  
-**التوجيه المرجعي:** [`docs/seerah/MASTER_DIRECTIVE.md`](./MASTER_DIRECTIVE.md)
+**Overall project status:** IN PROGRESS — Phase 1 & Phase 2 COMPLETE; Phase 3 (Complete Narrative Authoring) IN PROGRESS  
+**Active branch:** `feat/seerah-encyclopedia-ibn-kathir`  
+**Governing directive:** `docs/seerah/MASTER_DIRECTIVE.md` (unmodified, SHA-256 `7a1e25cf667fa62d6dccd268237ddaf32a128d3cc53d7704e2776af68a8d1472`)  
+**Last updated:** 2026-11-24 23:59 +02:00
 
 ---
 
-## ملخص المراحل
+## 1. Phase Progress Summary
 
-| المرحلة | الوصف | الحالة | الملاحظات والأدلة |
+| Phase | Scope | Status | Verified Deliverable |
 |---|---|---|---|
-| **Phase 0** | فحص الكود والـ 4 ملفات PDF وأدوات الاستخراج المحلية | **DONE** | فحص `seerah-sources/` (2,566 صفحة مصورة بـ 0 نص مدمج) + اختبار Windows `ar-SA` OCR (مرفوض بسبب التشويه) + التحقق من تطابق OpenITI `Shamela0000930` صفحةً بصفحة مع الـ 4 PDFs |
-| **Phase 1** | اعتماد التوجيه المعماري وخطة التنفيذ (`MASTER_DIRECTIVE.md`) | **DONE** | إنشاء فرع `feat/seerah-encyclopedia-ibn-kathir` وتوثيق المعمارية ومعايير القبول والعزو والترخيص |
-| **Phase 2** | بناء سكريبت استخراج وتجزئة وفهرسة الموسوعة + التحقق الآلي | **DONE** | تشغيل `scripts/build-seerah-encyclopedia.py` واجتياز `scripts/validate-seerah-encyclopedia.mjs` (`PASS`): 4 مجلدات، 2,475 صفحة مطبوعة، 90 باباً زمنياً، 101 شريحة قراءة (`5.02 MB`، أكبر شريحة `57.5 KB`)، 4 فهارس بحث نصي (`5.94 MB`)، 567,856 كلمة، و16 رابطاً عميقاً للفصول السردية |
-| **Phase 3** | بناء خدمة البيانات والبحث وحفظ التقدم المعزول لكل UID | **DONE** | إنشاء `src/services/seerahEncyclopediaService.ts` + تسجيل `wird.seerah.encyclopedia.v1` في `AUXILIARY_SCOPED_KEYS` بملف `storageService.ts` + إضافة معالج Cache-First في `public/sw.js` داخل `wird-app-content-v1` |
-| **Phase 4** | تطوير واجهة قارئ الموسوعة والبحث الشامل والربط مع الفصول الـ 16 | **DONE** | إنشاء `src/components/seerah/SeerahEncyclopediaReader.tsx` وتحديث `src/components/seerah/SeerahView.tsx` (شريط المجلدات الأربعة، البحث الشامل في 2,475 صفحة، الانتقال المباشر برقم الصفحة، تحكم الخط ووضع التركيز، حفظ المجلد بدون إنترنت، العلامات المرجعية والملاحظات الشخصية، والربط المباشر من كل فصل من الفصول الـ 16) |
-| **Phase 5** | الاختبارات الشاملة وبناء الإنتاج والتحقق البصري (Playwright) | **DONE** | اجتياز `validate-seerah-encyclopedia.mjs` (`PASS`)، `npm run lint` (`0` أخطاء)، `npm test` (75 حزمة: **`822 PASSED | 0 FAILED`**)، `smoke:api-imports` (`PASS`)، `vite build` (`2.82s`، `SeerahView` `162.65 kB` / `38.21 kB` gzip)، `smoke:server` (إنتاج وتطوير `PASS`)، وPlaywright E2E (`e2e/seerah-encyclopedia.spec.ts` على Desktop `1440×900` وMobile `390×844` عبر Edge Chromium: **`4 passed / 0 failed`**) |
-| **Phase 6** | إغلاق التوثيق القياسي والمراجعة النهائية والحفظ في Git | **DONE** | تحديث `MASTER_DIRECTIVE.md`, `EXECUTION_STATUS.md`, `CONTINUE_HERE.md`, `MASTER_PROJECT_STATE.md`, `DEVELOPMENT_ROADMAP.md`, `WORK_LOG.md`, `OPEN_SOURCE_RESEARCH.md`, `OWNER_ACTIONS.md`, `docs/README.md` وعمل Commit نظيف على `feat/seerah-encyclopedia-ibn-kathir` |
+| **Phase 1** | Complete 4-Volume Encyclopedia Analysis (`research/`) | **COMPLETED** | `source_manifest.json`, `processing_checkpoints.json` (2,566/2,566 PDF pages tracked: 2,475 verified matn pages + 91 classified non-matn pages in `exception_register`), 90 major events + 120 sub-events, 32 characters, 26 places, 22 classical sources, 50 verbatim Quranic passages, 43/43 verbatim Hadiths, 18 historical disputes, `phase1_complete_analysis_report.md` |
+| **Phase 2** | Reconstruct Complete Chronological Seerah Hierarchy | **COMPLETED** | `research/chronology/seerah_book_blueprint.json` (**6 Historical Eras → 12 Main Sections → 40 Chronological Chapters → 120 Narrative Scenes**) + `research/characters/character_journeys_blueprint.json` (**32 Personalities** with 100% bidirectional chapter bindings) |
+| **Phase 3** | Write Complete Third-Person Arabic Historical Narrative | **IN PROGRESS** | Authoring all 40 chapters in durable batches (`research/authored_chapters/ch-01.json` .. `ch-40.json`) with verbatim `quoteId` locks |
+| **Phase 4** | Character Storytelling (32 Independent Continuous Stories) | **PENDING** | Authoring all 32 continuous character narratives (`research/authored_characters/`) |
+| **Phase 5** | 3-Pass Content Editing & Verification (Historical, Language, Quotation) | **PENDING** | Lifecycle progression `Draft → Historical review → Language review → Quotation verification → Approved → Published` |
+| **Phase 6** | Replace Existing WIRD Seerah Section | **PENDING** | Full digital book landing, sections/chapters, long-form reader, character directory & profiles |
+| **Phase 7** | Reading Progress & Data Architecture (Guest + UID-Scoped) | **PENDING** | `wird.seerah.v2` local-first Guest & Authenticated progress, read/unread, last position |
+| **Phase 8** | Calm Premium UI/UX Quality & Responsive Typography | **PENDING** | Desktop/tablet/mobile calm book typography, semantic `--wird-*` tokens |
+| **Phase 9** | Comprehensive Content, Application, E2E & Regression Testing | **PENDING** | `verify_seerah_content.mjs`, `npm test`, `npm run lint`, `vite build`, Playwright E2E |
+| **Phase 10** | Final Integration, Legacy Removal & Delivery Checkpoint | **PENDING** | Clean removal of obsolete Seerah prototype/raw dump UI, final review & verified commit |
 
 ---
 
-## مصفوفة التحقق والأدلة النهائية (2026-11-24)
+## 2. Detailed Operational Tracking (Section 13 Mandatory Fields)
 
-| البوابة / الفحص | النتيجة | التفصيل |
-|---|---|---|
-| `node scripts/validate-seerah-encyclopedia.mjs` | **PASS** | 4 مجلدات · 2,475 صفحة مطبوعة · 90 باباً · 101 شريحة · 4 فهارس بحث · 16 رابطاً عميقاً · استبعاد مقدمة 1964م |
-| `npm run lint` (`tsc --noEmit`) | **PASS** | `0` أخطاء TypeScript |
-| `npm test` (75 حزمة اختبار) | **PASS** | **`822 PASSED | 0 FAILED`** (تشمل 10 اختبارات جديدة في `seerahEncyclopedia.test.ts` + جميع اختبارات `seerahSystem.test.ts` و`designSystemV2.test.ts`) |
-| `npm run smoke:api-imports` | **PASS** | جميع مسارات API سليمة |
-| `NODE_ENV=production vite build` | **PASS** | `2.82s` · `index`: `245.92 kB` · `SeerahView`: `162.65 kB` (`38.21 kB` gzip) · صفر حزم > 500 kB |
-| `node scripts/smoke-server.mjs` | **PASS** | خادم الإنتاج (`4179`) وخادم التطوير (`4180`) استجابا بـ JSON سليم |
-| Playwright E2E (`e2e/seerah-encyclopedia.spec.ts`) | **PASS** | **`4 passed | 0 failed`** (`35.6s`, Edge Chromium Desktop `1440×900` & Mobile `390×844`, صفر `pageerror`, صفر `overflowX`) |
-| فحص ألوان Hex القديمة في `src/components/seerah/*.tsx` | **PASS** | `0` مطابقات — التزام كامل بمتغيرات `--wird-*` |
-| `npm run test:firestore-rules` | **NOT RUN (local)** | لم تُعدَّل `firestore.rules`؛ يُنفّذ في GitHub Actions CI عند رفع الـ PR |
-| GitHub CI / Vercel Preview / Production | **NOT EXECUTED** | العمل محفوظ على فرع الميزة المحلي فقط وفق صلاحيات المشروع (لا Push/Merge/Deploy تلقائي دون إذن المالك) |
-
----
-
-## الخطوة التالية الموصى بها للمالك
-1. مراجعة الفرع `feat/seerah-encyclopedia-ibn-kathir` ورفعه كـ Pull Request لتشغيل GitHub Actions `WIRD Quality Gate` (بما فيها Firestore Emulator وPlaywright CI) ومعاينة Vercel Preview.
-2. مراجعة ملاحظة الترخيص (`CC BY-NC-SA 4.0` للنسخة الرقمية من OpenITI للاستخدام التعليمي غير التجاري) المسجلة في [`docs/OWNER_ACTIONS.md`](../OWNER_ACTIONS.md).
+- **Completed phases:** Phase 1, Phase 2
+- **Remaining phases:** Phases 3, 4, 5, 6, 7, 8, 9, 10
+- **Source processing progress:** **100%** — All 4 volumes (`01_10169_compressed.pdf` 536p, `02_10170_compressed.pdf` 564p, `03_10171_compressed.pdf` 732p, `04_10172_compressed.pdf` 734p = **2,566 PDF pages** / **2,475 classical matn pages**, 567,856 words) inventoried, extracted, and cross-indexed.
+- **Last verified page and document:** Volume 4 (`04_10172_compressed.pdf`), PDF page `734` / Classical matn page `717`.
+- **Completed chapters:** `0 / 40` (starting Batch 1: `ch-01` .. `ch-10`)
+- **Remaining chapters:** `40 / 40` (`ch-01` .. `ch-40`)
+- **Character stories completed:** `0 / 32`
+- **Pending reviews:** 40 chapters + 32 character stories awaiting Passes A (Historical), B (Arabic Literary), and C (Sacred Quotation Verbatim Verification).
+- **Known problems:** None. (Previously identified monochrome scan OCR garbling was resolved via verified page-aligned OpenITI transcription + verbatim `completeQuranData.json` quotation bank.)
+- **Test results:** Phase 1 & Phase 2 builders passed 100% (`50/50` Quranic quotes verified against `completeQuranData.json`; `43/43` Hadith quotes verified verbatim in encyclopedia pages; `32/32` characters bidirectionally bound).
+- **Last successful checkpoint:** Phase 2 blueprint generation (`research/chronology/seerah_book_blueprint.json` & `research/characters/character_journeys_blueprint.json`, 2026-11-24 23:58 +02:00).
+- **Exact next action:** Execute Phase 3 narrative authoring workflow in durable checkpointed batches (`ch-01`..`ch-40`) into `research/authored_chapters/`, updating this journal after every batch.

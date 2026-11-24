@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "workTitle": "السيرة النبوية (من البداية والنهاية)",
+  "author": "الإمام الحافظ عماد الدين أبو الفداء إسماعيل بن عمر بن كثير القرشي الدمشقي (ت 774 هـ)",
+  "totalVolumes": 4,
+  "totalPdfPages": 2566,
+  "totalExtractedMatnPages": 2475,
+  "totalNonMatnApparatusPages": 91,
+  "modernEditorPrefaceExcluded": true,
+  "volumes": [
+    {
+      "volume": 1,
+      "fileName": "01_10169_compressed.pdf",
+      "byteSize": 2878274,
+      "sha256": "39b493455767bac726b804da471a2eafefcb0dcf8d66f14d4fe2b6fc629146ac",
+      "pdfTotalPages": 536,
+      "pdfMetadataTitle": "السيرة النبوية - ج 1: أخبار العرب - ولا تجهر بصلاتك ولا تخافت بها",
+      "pdfEmbeddedToc": [
+        [
+          1,
+          "السيرة النبوية",
+          -1
+        ],
+        [
+          2,
+          "الجزء الأول",
+          1
+        ],
+        [
+          3,
+          "مقدمة",
+          -1
+        ],
+        [
+          3,
+          "فهرس الموضوعات",
+          509
+        ],
+        [
+          3,
+          "فهرس القوافي",
+          526
+        ],
+        [
+          3,
+          "تصويبات",
+          535
+        ],
+        [
+          3,
+          "تعليقات",
+          536
+        ]
+      ],
+      "extractedMatnPageCount": 506,
+      "firstMatnPage": 1,
+      "lastMatnPage": 508,
+      "formatClassification": "image_only_monochrome_scan_aligned_with_openiti_shamela0000930"
+    },
+    {
+      "volume": 2,
+      "fileName": "02_10170_compressed.pdf",
+      "byteSize": 2970665,
+      "sha256": "45c9f1b631837f66c0c891a50cbc746312463b9623082f8a05fd361715eeacf2",
+      "pdfTotalPages": 564,
+      "pdfMetadataTitle": "السيرة النبوية - ج 2: الهجرة إلى الحبشة - 2 هـ",
+      "pdfEmbeddedToc": [
+        [
+          1,
+          "السيرة النبوية",
+          -1
+        ],
+        [
+          2,
+          "الجزء الثاني",
+          1
+        ],
+        [
+          3,
+          "فهرس الموضوعات",
+          547
+        ],
+        [
+          3,
+          "فهرس القوافي",
+          559
+        ],
+        [
+          3,
+          "تصويبات",
+          564
+        ],
+        [
+          3,
+          "استدراكات",
+          564
+        ]
+      ],
+      "extractedMatnPageCount": 544,
+      "firstMatnPage": 3,
+      "lastMatnPage": 546,
+      "formatClassification": "image_only_monochrome_scan_aligned_with_openiti_shamela0000930"
+    },
+    {
+      "volume": 3,
+      "fileName": "03_10171_compressed.pdf",
+      "byteSize": 4114040,
+      "sha256": "385aaa03ae0131578918f4e50ac6e10fca1fd1f1a69f9da6dabf023c5c63e5f3",
+      "pdfTotalPages": 732,
+      "pdfMetadataTitle": "السيرة النبوية - ج 3: 3 هـ - 8 هـ",
+      "pdfEmbeddedToc": [
+        [
+          1,
+          "السيرة النبوية",
+          -1
+        ],
+        [
+          2,
+          "الجزء الثالث",
+          1
+        ],
+        [
+          3,
+          "فهرس الموضوعات",
+          713
+        ],
+        [
+          3,
+          "فهرس القوافي",
+          722
+        ],
+        [
+          3,
+          "تصويبات",
+          731
+        ]
+      ],
+      "extractedMatnPageCount": 710,
+      "firstMatnPage": 3,
+      "lastMatnPage": 712,
+      "formatClassification": "image_only_monochrome_scan_aligned_with_openiti_shamela0000930"
+    },
+    {
+      "volume": 4,
+      "fileName": "04_10172_compressed.pdf",
+      "byteSize": 4005340,
+      "sha256": "9601ea5d6af32b3159efcdbdf5f3ca54b5ba460809fabe73363351325deae46a",
+      "pdfTotalPages": 734,
+      "pdfMetadataTitle": "السيرة النبوية - ج 4: 9 هـ - ما يذكر من أثار النبي",
+      "pdfEmbeddedToc": [
+        [
+          1,
+          "السيرة النبوية",
+          -1
+        ],
+        [
+          2,
+          "الجزء الرابع",
+          1
+        ],
+        [
+          3,
+          "فهرس الموضوعات",
+          718
+        ],
+        [
+          3,
+          "فهرس القوافي",
+          727
+        ],
+        [
+          3,
+          "مراجع التحقيق",
+          730
+        ],
+        [
+          3,
+          "تصويبات",
+          732
+        ],
+        [
+          3,
+          "خاتمة",
+          733
+        ]
+      ],
+      "extractedMatnPageCount": 715,
+      "firstMatnPage": 3,
+      "lastMatnPage": 717,
+      "formatClassification": "image_only_monochrome_scan_aligned_with_openiti_shamela0000930"
+    }
+  ]
+}

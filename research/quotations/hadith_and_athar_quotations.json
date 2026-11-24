@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "totalQuotations": 43,
+  "quotations": [
+    {
+      "quoteId": "h-arab-ismail-ramy",
+      "type": "hadith",
+      "verbatimText": "ارموا بني إسماعيل فإن أباكم كان راميا",
+      "primaryReference": "صحيح البخاري",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 4
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "نسبة عرب الحجاز والأنصار إلى إسماعيل عليه السلام"
+    },
+    {
+      "quoteId": "h-lineage-selection",
+      "type": "hadith",
+      "verbatimText": "إن الله اصطفى كنانة من ولد إسماعيل، واصطفى قريشا من كنانة، واصطفى من قريش بني هاشم، واصطفاني من بني هاشم",
+      "primaryReference": "صحيح مسلم (2276)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 89
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "شرف نسب النبي ﷺ واصطفاؤه"
+    },
+    {
+      "quoteId": "h-birth-monday",
+      "type": "hadith",
+      "verbatimText": "ذاك يوم ولدت فيه ويوم بعثت أو أنزل علي فيه",
+      "primaryReference": "صحيح مسلم (1162)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 392
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "مولده وبعثته ﷺ يوم الاثنين"
+    },
+    {
+      "quoteId": "h-halimah-chest",
+      "type": "hadith",
+      "verbatimText": "أتاه جبريل عليه السلام وهو يلعب مع الغلمان، فأخذه فصرعه فشق عن قلبه، فاستخرج القلب واستخرج منه علقة سوداء، فقال: هذا حظ الشيطان، ثم غسله في طست من ذهب بماء زمزم، ثم لأمه، ثم أعاده في مكانه",
+      "primaryReference": "صحيح مسلم (162)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 231
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "حادثة شق الصدر الشريف في بني سعد"
+    },
+    {
+      "quoteId": "h-hilf-fudul",
+      "type": "hadith",
+      "verbatimText": "لقد شهدت في دار عبد الله بن جدعان حلفا ما أحب أن لي به حمر النعم، ولو دعيت به في الإسلام لأجبت",
+      "primaryReference": "مسند أحمد والبيهقي",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 258
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "شهوده ﷺ حلف الفضول لنصرة المظلوم"
+    },
+    {
+      "quoteId": "h-stone-salutation",
+      "type": "hadith",
+      "verbatimText": "إني لأعرف حجرا بمكة كان يسلم علي قبل أن أبعث، إني لأعرفه الآن",
+      "primaryReference": "صحيح مسلم (2277)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 389
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "إرهاصات النبوة بمكة قبل البعثة"
+    },
+    {
+      "quoteId": "h-hira-gabriel",
+      "type": "hadith",
+      "verbatimText": "اقرأ باسم ربك الذي خلق. خلق الإنسان من علق، اقرأ وربك الأكرم. الذي علم بالقلم. علم الإنسان ما لم يعلم",
+      "primaryReference": "صحيح البخاري (3) ومسلم (160)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 385
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "بدء الوحي ونزول جبريل في غار حراء"
+    },
+    {
+      "quoteId": "h-khadijah-comfort",
+      "type": "hadith",
+      "verbatimText": "كلا، والله لا يخزيك الله أبدا. إنك لتصل الرحم وتقري الضيف، وتحمل الكل، وتكسب المعدوم، وتعين على نوائب الحق",
+      "primaryReference": "صحيح البخاري (3) ومسلم (160)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 386
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "تثبيت أم المؤمنين خديجة رضي الله عنها للنبي ﷺ"
+    },
+    {
+      "quoteId": "h-waraqah-namus",
+      "type": "hadith",
+      "verbatimText": "هذا الناموس الذي أنزل على موسى، يا ليتني فيها جذعا، ليتني أكون حيا إذ يخرجك قومك",
+      "primaryReference": "صحيح البخاري (3)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 396
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "بشارة ورقة بن نوفل للنبي ﷺ وإنبائه بإخراج قومه له"
+    },
+    {
+      "quoteId": "h-safa-call",
+      "type": "hadith",
+      "verbatimText": "أرأيتم لو أخبرتكم أن خيلا بالوادي تريد أن تغير عليكم أكنتم مصدقي؟ قالوا: نعم، ما جربنا عليك إلا صدقا. قال: فإني نذير لكم بين يدي عذاب شديد",
+      "primaryReference": "صحيح البخاري (4770) ومسلم (208)",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 456
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "نداء الصفا والصدع بالدعوة"
+    },
+    {
+      "quoteId": "h-fatimah-rescue-self",
+      "type": "hadith",
+      "verbatimText": "يا معشر بني عبد المطلب أنقذوا أنفسكم من النار، يا فاطمة بنت محمد أنقذي نفسك من النار، فإني والله لا أملك لكم من الله شيئا إلا أن لكم رحما سأبلها ببلالها",
+      "primaryReference": "صحيح مسلم (204) والبخاري بمعناه",
+      "encyclopediaLocation": {
+        "volume": 1,
+        "page": 456
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "دعوة الأقربين وتجريد التوحيد"
+    },
+    {
+      "quoteId": "h-jaafar-najashi",
+      "type": "hadith",
+      "verbatimText": "جاءنا به رجل من أنفسنا، قد عرفنا وجهه ونسبه، بعثه الله إلينا كما بعث الرسل إلى من قبلنا، فأمرنا بالبر والصدقة والوفا وأداء الأمانة، ونهانا أن نعبد الأوثان، وأمرنا بعبادة الله وحده لا شريك له",
+      "primaryReference": "مسند أحمد ودلائل البيهقي وسيرة ابن كثير",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 19
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "بيان المهاجرين لدين الإسلام بين يدي النجاشي"
+    },
+    {
+      "quoteId": "h-isra-buraq",
+      "type": "hadith",
+      "verbatimText": "وهي الدابة التي كانت تحمل عليها الانبياء قبله، تضع حافرها في موضع منتهى طرفها",
+      "primaryReference": "صحيح مسلم وسيرة ابن كثير",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 95
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "رحلة الإسراء والمعراج على البراق"
+    },
+    {
+      "quoteId": "h-taif-mountains-angel",
+      "type": "hadith",
+      "verbatimText": "يا محمد إن الله قد سمع قول قومك لك وأنا ملك الجبال وقد بعثني ربك إليك لتأمرني بأمرك، فما شئت، إن شئت أن أطبق عليهم الأخشبين؟ فقال له رسول الله صلى الله عليه وسلم: بل أرجو أن يخرج الله من أصلابهم من يعبد الله وحده لا يشرك به شيئا",
+      "primaryReference": "صحيح البخاري (3231) ومسلم (1795)",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 550
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "رحمة النبي ﷺ بأهل الطائف بعد أذاهم الشديد"
+    },
+    {
+      "quoteId": "h-aqabah-first",
+      "type": "hadith",
+      "verbatimText": "إنما هن أربع، لا تشركوا بالله شيئا، ولا تقتلوا النفس التي حرم الله إلا بالحق، ولا تزنوا ولا تسرقوا",
+      "primaryReference": "صحيح البخاري ومسلم ومسند أحمد",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 392
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "أركان البيعة النبوية الجامعة على التوحيد والأخلاق"
+    },
+    {
+      "quoteId": "h-hijrah-two-companions",
+      "type": "hadith",
+      "verbatimText": "يا أبا بكر ما ظنك باثنين الله ثالثهما",
+      "primaryReference": "صحيح البخاري (3653) ومسلم (2381)",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 243
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "سكينة النبي ﷺ في غار ثور"
+    },
+    {
+      "quoteId": "h-madinah-salam",
+      "type": "hadith",
+      "verbatimText": "أفشوا السلام، وأطعموا الطعام، وصلوا بالليل والناس نيام، تدخلوا الجنة بسلام",
+      "primaryReference": "جامع الترمذي (2485) وابن ماجه",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 294
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "أول موعظة نبوية سمعها أهل المدينة عند قدومه ﷺ"
+    },
+    {
+      "quoteId": "h-badr-consultation",
+      "type": "hadith",
+      "verbatimText": "أشيروا علي أيها الناس",
+      "primaryReference": "صحيح مسلم (1779) وسيرة ابن هشام",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 392
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "مشاورة النبي ﷺ للمهاجرين والأنصار قبل بدر"
+    },
+    {
+      "quoteId": "h-badr-miqdad",
+      "type": "hadith",
+      "verbatimText": "لا نقول لك كما قال قوم موسى لموسى: اذهب أنت وربك فقاتلا إنا هاهنا قاعدون، ولكنا نقاتل عن يمينك وعن شمالك ومن بين يديك ومن خلفك",
+      "primaryReference": "صحيح البخاري (3952)",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 392
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "موقف المقداد بن الأسود رضي الله عنه في مشورة بدر"
+    },
+    {
+      "quoteId": "h-badr-sad-muadh",
+      "type": "hadith",
+      "verbatimText": "فامض يا رسول الله لما أردت فنحن معك، فو الذى بعثك بالحق لو استعرضت بنا البحر فخضته لخضناه معك ما تخلف منا رجل واحد",
+      "primaryReference": "سيرة ابن هشام وسيرة ابن كثير",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 392
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "كلمة سعد بن معاذ والأنصار الخالدة يوم بدر"
+    },
+    {
+      "quoteId": "h-badr-munajat",
+      "type": "hadith",
+      "verbatimText": "اللهم أنجز لي ما وعدتني، اللهم نصرك",
+      "primaryReference": "صحيح مسلم وسيرة ابن كثير",
+      "encyclopediaLocation": {
+        "volume": 2,
+        "page": 411
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "مناجاة النبي ﷺ واستغاثته يوم بدر"
+    },
+    {
+      "quoteId": "h-uhud-archers-order",
+      "type": "hadith",
+      "verbatimText": "إن رأيتمونا تخطفنا الطير فلا تبرحوا مكانكم هذا حتى أرسل إليكم، وإن رأيتمونا هزمنا القوم وأوطأناهم فلا تبرحوا حتى أرسل إليكم",
+      "primaryReference": "صحيح البخاري (3039)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 49
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "وصية النبي ﷺ الحاسمة للرماة على جبل عينين يوم أحد"
+    },
+    {
+      "quoteId": "h-uhud-allahu-ala",
+      "type": "hadith",
+      "verbatimText": "الله أعلى وأجل",
+      "primaryReference": "صحيح البخاري (3039)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 47
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "رد المسلمين بأمر النبي ﷺ على أبي سفيان يوم أحد"
+    },
+    {
+      "quoteId": "h-uhud-musab-shroud",
+      "type": "hadith",
+      "verbatimText": "قتل يوم أحد لم يترك إلا نمرة، كنا إذا غطينا بها رأسه خرجت رجلاه، وإذا غطي بها رجلاه خرج رأسه، فقال لنا النبي صلى الله عليه وسلم: غطوا بها رأسه واجعلوا على رجله الإذخر",
+      "primaryReference": "صحيح البخاري (1276) ومسلم (940)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 65
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "زهد مصعب بن عمير وشهداء أحد رضي الله عنهم"
+    },
+    {
+      "quoteId": "h-bir-maunah-haram",
+      "type": "hadith",
+      "verbatimText": "فزت ورب الكعبة",
+      "primaryReference": "صحيح البخاري (4091) ومسلم (1902)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 140
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "كلمة حرام بن ملحان رضي الله عنه حين طُعن يوم بئر معونة"
+    },
+    {
+      "quoteId": "h-khandaq-chant",
+      "type": "hadith",
+      "verbatimText": "والله لولا الله ما اهتدينا * ولا تصدقنا ولا صلينا",
+      "primaryReference": "صحيح البخاري (2837) ومسلم (1803)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 185
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "ارتجاز النبي ﷺ مع الصحابة أثناء حفر الخندق"
+    },
+    {
+      "quoteId": "h-khandaq-dua-ahzab",
+      "type": "hadith",
+      "verbatimText": "اللهم منزل الكتاب سريع الحساب اهزم الأحزاب",
+      "primaryReference": "صحيح البخاري (2933) ومسلم (1742)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 214
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "دعاء النبي ﷺ على الأحزاب يوم الخندق"
+    },
+    {
+      "quoteId": "h-qurayzah-hukm",
+      "type": "hadith",
+      "verbatimText": "لقد حكمت فيهم بحكم الله من فوق سبعة أرقعة",
+      "primaryReference": "صحيح البخاري (3043) ومسلم (1768)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 208
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "شهادة النبي ﷺ لحكم سعد بن معاذ في بني قريظة"
+    },
+    {
+      "quoteId": "h-hudaybiyyah-camel",
+      "type": "hadith",
+      "verbatimText": "ما خلأت وما هو لها بخلق، ولكن حبسها حابس الفيل عن مكة، لا تدعوني قريش اليوم إلى خطة يسألوني فيها صلة الرحم إلا أعطيتهم إياها",
+      "primaryReference": "صحيح البخاري (2731)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 314
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "بروك القصواء وحكمة النبي ﷺ في صلح الحديبية"
+    },
+    {
+      "quoteId": "h-khaybar-ali-banner",
+      "type": "hadith",
+      "verbatimText": "لأعطين الراية غدا، أو ليأخذن الراية غذا رجل يحبه الله ورسوله يفتح عليه",
+      "primaryReference": "صحيح البخاري (3009) ومسلم (2406)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 351
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "إعطاء الراية لعلي بن أبي طالب رضي الله عنه يوم خيبر"
+    },
+    {
+      "quoteId": "h-mutah-khalid",
+      "type": "hadith",
+      "verbatimText": "أخذ الراية زيد فأصيب، ثم أخذ جعفر فأصيب، ثم أخذ ابن رواحة فأصيب - وعيناه تذرفان - حتى أخذ الراية سيف من سيوف الله حتى فتح الله عليهم",
+      "primaryReference": "صحيح البخاري (4262)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 463
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "نعْي النبي ﷺ لأمراء مؤتة وتسميته خالداً سيف الله"
+    },
+    {
+      "quoteId": "h-fath-tulaqa",
+      "type": "hadith",
+      "verbatimText": "اذهبوا فأنتم الطلقاء",
+      "primaryReference": "سيرة ابن هشام وسيرة ابن كثير",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 570
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "العفو النبوي العام عن أهل مكة يوم الفتح الأعظم"
+    },
+    {
+      "quoteId": "h-hunayn-prophecy",
+      "type": "hadith",
+      "verbatimText": "أنا النبي لا كذب * أنا ابن عبد المطلب",
+      "primaryReference": "صحيح البخاري (2864) ومسلم (1776)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 622
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "ثبات النبي ﷺ وحده في وطيس معركة حنين"
+    },
+    {
+      "quoteId": "h-hunayn-ansar",
+      "type": "hadith",
+      "verbatimText": "لو سلك الناس واديا وسلكت الأنصار شعبا لسلكت شعب الأنصار",
+      "primaryReference": "صحيح البخاري (4330) ومسلم (1059)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 675
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "خطاب الوفاء النبوي للأنصار بالجعرانة وبكاؤهم"
+    },
+    {
+      "quoteId": "h-tabuk-ali-harun",
+      "type": "hadith",
+      "verbatimText": "أما ترضى أن تكون مني بمنزلة هارون من موسى إلا أنه ليس بعدي نبي",
+      "primaryReference": "صحيح البخاري (4416) ومسلم (2404)",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 13
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "استخلاف علي بن أبي طالب رضي الله عنه على المدينة في غزوة تبوك"
+    },
+    {
+      "quoteId": "h-farewell-sanctity",
+      "type": "hadith",
+      "verbatimText": "إن دماءكم وأموالكم حرام عليكم كحرمة يومكم هذا في شهركم هذا في بلدكم هذا",
+      "primaryReference": "صحيح مسلم (1218) من حديث جابر",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 293
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "خطبة يوم عرفة الجامعة في حجة الوداع"
+    },
+    {
+      "quoteId": "h-farewell-book-allah",
+      "type": "hadith",
+      "verbatimText": "وقد تركت فيكم ما لن تضلوا بعده إن اعتصمتم به: كتاب الله",
+      "primaryReference": "صحيح مسلم (1218) من حديث جابر",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 341
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "وصية النبي ﷺ بالاعتصام بكتاب الله في عرفة"
+    },
+    {
+      "quoteId": "h-farewell-women-trust",
+      "type": "hadith",
+      "verbatimText": "ألا لا ترجعوا بعدي كفارا يضرب بعضكم رقاب بعض، ألا إن الشيطان قد يئس أن يعبده المصلون ولكنه في التحريش بينكم. واتقوا الله في النساء فإنهن عندكم عوان",
+      "primaryReference": "مسند أحمد وسنن أبي داود وسيرة ابن كثير",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 402
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "وصية النبي ﷺ بحرمة الدماء وحقوق النساء بمنى"
+    },
+    {
+      "quoteId": "h-illness-abu-bakr-imam",
+      "type": "hadith",
+      "verbatimText": "مروا أبا بكر فليصل بالناس",
+      "primaryReference": "صحيح البخاري (687) ومسلم (418)",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 460
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "تقديم أبي بكر الصديق لإمامة المسلمين في مرض النبي ﷺ"
+    },
+    {
+      "quoteId": "h-rafiq-al-ala",
+      "type": "hadith",
+      "verbatimText": "اللهم اغفر لي وارحمني وألحقني بالرفيق الأعلى",
+      "primaryReference": "صحيح البخاري (4440) ومسلم (2444)",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 477
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "آخر دعوات النبي ﷺ عند الاحتضار واختياره الرفيق الأعلى"
+    },
+    {
+      "quoteId": "h-siddiq-steadfast",
+      "type": "hadith",
+      "verbatimText": "فمن كان يعبد الله فإن الله حي لا يموت ومن كان يعبد محمدا فإن محمدا قد مات",
+      "primaryReference": "صحيح البخاري (3667)",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 480
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "موقف أبي بكر الصديق الخالد يوم وفاة النبي ﷺ"
+    },
+    {
+      "quoteId": "h-prophets-inheritance",
+      "type": "hadith",
+      "verbatimText": "لا نورث، ما تركناه صدقة",
+      "primaryReference": "صحيح البخاري (3093) ومسلم (1758)",
+      "encyclopediaLocation": {
+        "volume": 4,
+        "page": 577
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "تنزيه ميراث النبوة عن حطام الدنيا"
+    },
+    {
+      "quoteId": "h-ashamah-prayer",
+      "type": "hadith",
+      "verbatimText": "مات اليوم رجل صالح فصلوا على أصحمة",
+      "primaryReference": "صحيح البخاري (3877) ومسلم (952)",
+      "encyclopediaLocation": {
+        "volume": 3,
+        "page": 524
+      },
+      "verifiedInEncyclopedia": true,
+      "historicalContext": "نعْي النبي ﷺ للنجاشي أصحمة وصلاته عليه"
+    }
+  ]
+}

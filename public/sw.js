@@ -299,9 +299,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Seerah Encyclopedia JSON chunks & search indexes: cache-first in CONTENT_CACHE_NAME so they survive shell upgrades.
+  // Seerah Book JSON assets: cache-first in CONTENT_CACHE_NAME so chapters & character stories work offline across shell upgrades.
   if (url.origin === self.location.origin &&
-      url.pathname.startsWith('/data/seerah-encyclopedia/') &&
+      url.pathname.startsWith('/data/seerah/') &&
       url.pathname.endsWith('.json')) {
     event.respondWith((async () => {
       const contentCache = await caches.open(CONTENT_CACHE_NAME);
