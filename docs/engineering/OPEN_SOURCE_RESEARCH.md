@@ -67,3 +67,16 @@ Therefore:
 ## 4. Research conclusion
 
 Adopt the architecture patterns (ports, stable element identity, immutable events, incremental cursors, dirty bounded push, atomic merge) but implement them natively for Firebase and WIRD's existing local-storage model. The implementation plan is in `FIRESTORE_SYNC_DESIGN.md`.
+
+---
+
+## 5. Prophetic Seerah Encyclopedia Digital Corpus Research (2026-11-24)
+
+- **Owner-supplied source files (`seerah-sources/`, gitignored):** Four 1-bit scanned monochrome PDFs of *Al-Sīra al-Nabawiyya* by Imam al-Hafiz Ibn Kathir (d. 774 AH / 1373 CE, extracted from *al-Bidāya wa-l-Nihāya*): `01_10169_compressed.pdf` (536 pp), `02_10170_compressed.pdf` (564 pp), `03_10171_compressed.pdf` (732 pp), `04_10172_compressed.pdf` (734 pp). Local PyMuPDF (`fitz`) inspection confirmed `0` embedded text characters across all 4 PDFs, and Windows `ar-SA` OCR benchmarking produced severe garbling unacceptable for religious/historical text.
+- **Evaluated open-source solution:** **OpenITI (Open Islamicate Texts Initiative)** — repository `OpenITI/0775AH`, file `data/0774IbnKathir/0774IbnKathir.Bidaya/0774IbnKathir.Bidaya.Shamela0000930-ara6` (WorldCat `oclc/235980396`).
+- **Verification & alignment:** Verified exact volume-for-volume and page-for-page alignment against the 4 local PDFs (`Vol 1: pp. 1–508`, `Vol 2: pp. 3–546`, `Vol 3: pp. 3–712`, `Vol 4: pp. 3–717`; 2,475 printed text pages, 567,856 Arabic words). Modern 1964 editor preface (`تقديم مصطفى عبد الواحد`) was explicitly excluded at extraction time so only Ibn Kathir's authentic classical public-domain text (starting at `ذكر أخبار العرب`, Vol 1 p. 1) is published.
+- **License, privacy & exit strategy:**
+  - Classical author's original text (Ibn Kathir, d. 774 AH): **Public Domain**.
+  - OpenITI corpus transcription/markup: **CC BY-NC-SA 4.0** (Attribution-NonCommercial-ShareAlike 4.0 International). Explicit attribution and license notice are displayed in `manifest.json` and the UI provenance footer; non-commercial scope & future commercial-exit review are recorded in `docs/OWNER_ACTIONS.md`.
+  - **Architecture fit & performance:** Static chunked JSON under `public/data/seerah-encyclopedia/` (101 reading chunks <= 57.5 KB each, 4 lazy-loaded volume search indexes, zero external runtime API dependency, zero user PII transmission, Cache-First offline storage via `public/sw.js`).
+  - **Exit strategy:** Builder pipeline (`scripts/build-seerah-encyclopedia.py`) and schema (`manifest.json`, `toc.json`, `chunks/`, `search/`) are fully decoupled from OpenITI so any alternative public-domain/CC-BY classical transcription can replace the input file without changing UI or reader code.

@@ -19,7 +19,7 @@
 - بوابات الإصدار: `docs/engineering/RELEASE_CHECKLIST.md`.
 - التاريخ: `docs/engineering/WORK_LOG.md`.
 - قواعد العمل: `AGENTS.md` ثم `GEMINI.md`.
-- التصميم التخصصي: `docs/sync/`, `docs/offline/`, `docs/ruqyah/`.
+- التصميم التخصصي: `docs/sync/`, `docs/offline/`, `docs/ruqyah/`, `docs/seerah/` ([MASTER_DIRECTIVE.md](./seerah/MASTER_DIRECTIVE.md) · [EXECUTION_STATUS.md](./seerah/EXECUTION_STATUS.md)).
 
 ## قبل كل جلسة
 اقرأ `AGENTS.md` ثم الحالة المثبتة وبوابات الإصدار. أعد جلب main SHA وPRs وCI وVercel. لا تعتمد على أرقام أو حالات تاريخية دون إعادة التحقق. لا تحذف التاريخ؛ أضف تصحيحًا مؤرخًا أو تحديثًا جديدًا.

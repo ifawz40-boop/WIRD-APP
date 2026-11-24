@@ -1,13 +1,45 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-23 (Extensible Video Series Platform & Daily Dashboard Suggestion — «سلسلة بناء النفس المطمئنة» 13 Verified Episodes, UID-Scoped Watch Tracking & Notes, Multi-Series YouTube Playlist Importer)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (AI Studio container has no `.git` directory; live GitHub diff vs `origin/main` is `UNKNOWN` locally)  
-**Prior merged baseline (owner prompt context):** Merge commit `419b8713078a72b7ef300a6531506d1a89b1e0f9` (2026-11-20, PR `#404`); previous CI-passing head `bcbf26fecaa293da257473d780c9459b5b119ebf` (Run `44672654181`: 100% PASS)  
+**Last reconciled:** 2026-11-24 (Full 4-Volume Prophetic Seerah Encyclopedia — الحافظ ابن كثير: 2,475 Printed Pages, 90 Chronological Sections, Full-Text Arabic Search, Offline-First Chunking & UID-Scoped Progress on `feat/seerah-encyclopedia-ibn-kathir`)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (`45f3edc611be08482d53570afd49f6e9471f44c7`) · **Active feature branch:** `feat/seerah-encyclopedia-ibn-kathir` (local verified commit; NOT pushed/merged to `main` and NOT deployed to Vercel)  
+**Prior merged baseline:** `45f3edc611be08482d53570afd49f6e9471f44c7` (2026-11-23, `feat: add SSRF-safe YouTube playlist metadata resolver`)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Checkpoint — Extensible Video Series Platform & Daily Suggestion (2026-11-23)
+## Active Checkpoint — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia (2026-11-24)
+
+1. **Authoritative Directive & Live Execution Record (`docs/seerah/MASTER_DIRECTIVE.md`, `docs/seerah/EXECUTION_STATUS.md`):**
+   - Inspected all 4 owner-supplied PDFs in gitignored `seerah-sources/` (`01_10169_compressed.pdf`..`04_10172_compressed.pdf`, 2,566 scanned pages with `0` embedded text characters) and benchmarked local Windows `ar-SA` OCR (rejected due to garbled religious text).
+   - Applied `AGENTS.md` Open-Source-First policy: verified page-for-page alignment against **OpenITI** (`0774IbnKathir.Bidaya.Shamela0000930-ara6`, WorldCat `oclc/235980396`), strictly excluding the modern 1964 editor preface (`تقديم مصطفى عبد الواحد`) and retaining only Imam Ibn Kathir's authentic public-domain classical matn starting at `ذكر أخبار العرب` (Vol 1 p. 1), with explicit attribution and CC BY-NC-SA 4.0 non-commercial notice recorded in `docs/OWNER_ACTIONS.md` and `docs/engineering/OPEN_SOURCE_RESEARCH.md`.
+2. **Offline-First Chunked Encyclopedia Corpus & Validator (`scripts/build-seerah-encyclopedia.py`, `scripts/validate-seerah-encyclopedia.mjs`, `public/data/seerah-encyclopedia/`):**
+   - Generated 4 volumes (`2,475` printed pages, `567,856` words), `90` chronological sections (`toc.json`), `101` lazy reading chunks (`chunks/vol-*-chunk-*.json`, total `5.02 MB`, max `57.5 KB`/chunk), `4` Arabic-normalized full-text search indexes (`search/vol-*-search.json`, total `5.94 MB`), and `manifest.json` with `16` verified deep-links from WIRD's curated 16-chapter narrative (`src/data/seerahData.ts`).
+   - Added pure-Node CI validator `scripts/validate-seerah-encyclopedia.mjs` verifying all 4 volumes, 2,475 pages, 90 sections, 101 chunks, 4 search indexes, 16 curated chapter links, and exclusion of the 1964 modern preface.
+3. **Encyclopedia Service, UID Isolation & Service Worker Caching (`src/services/seerahEncyclopediaService.ts`, `src/services/storageService.ts`, `public/sw.js`):**
+   - Registered `'wird.seerah.encyclopedia.v1'` in `AUXILIARY_SCOPED_KEYS` for per-UID isolation, guest-to-account migration, and clean reset.
+   - Built lazy chunk/search loaders, diacritic-insensitive Arabic search (`normalizeArabicSearchQuery`, `searchSeerahEncyclopedia`), direct printed-page jumper (`findChunkIdForVolumePage`, `findSectionForVolumePage`), optional per-volume Cache API offline download (`cacheSeerahVolumeOffline`), and UID-scoped reading position, read sections, bookmarks with personal notes, font size, and focus mode.
+   - Wired Cache-First caching for `/data/seerah-encyclopedia/*.json` under `wird-app-content-v1` in `public/sw.js` without bloating `wird-precache-manifest.json`.
+4. **Upgraded Seerah Reader & Unified Bookmarks UI (`src/components/seerah/SeerahEncyclopediaReader.tsx`, `src/components/seerah/SeerahView.tsx`):**
+   - Added 4-volume selector ribbon with per-volume progress, collapsible volume TOC with instant title filter, full-text search across all 2,475 pages, direct printed-page jump (`ج X · ص Y`), 4 font sizes + focus mode, poetry/Basmalah editorial formatting, per-page bookmarks + personal study notes, 1-click offline volume caching, deep-links from all 16 curated chapters into Ibn Kathir's Encyclopedia, and unified Bookmarks tab using pure `--wird-*` semantic CSS tokens (zero legacy hex leaks).
+5. **Preserved Integrity & Local Verification Executed (2026-11-24):**
+   - **Untouched:** Quran corpus (`completeQuranData.json`, `src/data/sources/`), `firestore.rules`, `bun.lock`, Vercel env vars, and experimental sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`).
+   - `node scripts/validate-seerah-encyclopedia.mjs`: **PASS** (`4` volumes, `2,475` pages, `90` sections, `101` chunks, `4` search indexes, `16` curated links)
+   - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+   - `npm.cmd test` (75 suites incl. new `src/tests/seerahEncyclopedia.test.ts` + `seerahSystem.test.ts` + `designSystemV2.test.ts`): **PASS** (`822 PASSED | 0 FAILED`)
+   - `npm.cmd run smoke:api-imports`: **PASS**
+   - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.82s`, `index` `245.92 kB`, `SeerahView` `162.65 kB` / `38.21 kB` gzip, 0 chunks > 500 kB)
+   - `node scripts/smoke-server.mjs`: **PASS** (production + dev Express servers)
+   - Playwright E2E (`e2e/seerah-encyclopedia.spec.ts` on Edge Chromium Desktop `1440×900` + Mobile `390×844`): **PASS** (`4 passed | 0 failed`, `35.6s`, zero `pageerror`, zero `overflowX`)
+   - Legacy hex scan across `src/components/seerah/*.tsx`: **PASS** (`0` matches)
+   - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; runs in GitHub Actions CI).
+   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** (branch stays local pending explicit owner push/PR authorization).
+
+### Next Step
+- Push `feat/seerah-encyclopedia-ibn-kathir` to a GitHub Pull Request upon owner authorization, inspect exact-head GitHub Actions `WIRD Quality Gate` (including Java Firestore Rules Emulator and full Playwright suite) and Vercel Preview, and confirm CC BY-NC-SA 4.0 non-commercial terms (`docs/OWNER_ACTIONS.md`) before any merge to `main`.
+
+---
+
+## Prior Checkpoint — Extensible Video Series Platform & Daily Suggestion (2026-11-23 — Historical)
 
 1. **Extensible Multi-Series Catalog (`src/data/videoSeriesCatalog.ts`):**
    - Built a modular multi-series schema (`VideoSeriesDefinition`, `VideoLessonItem`, `VideoSeriesCategory`) seeded with the owner-requested YouTube playlist **`سلسلة بناء النفس المطمئنة` — م. علاء حامد** (`PLlciBs22ptiSJpZBg91Udlue8avJ7RtB5`), containing all **13 verified episodes** in exact playlist order with validated YouTube IDs, Arabic titles, topics, descriptions, and real durations (`16 ساعة و 15 دقيقة` total).

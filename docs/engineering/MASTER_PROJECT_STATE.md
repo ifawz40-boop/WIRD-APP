@@ -1,7 +1,31 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-23 (Google AI Studio Workspace — Extensible Video Series Platform & Daily Dashboard Suggestion: «سلسلة بناء النفس المطمئنة» 13 Episodes, UID-Scoped Watch Tracking, Multi-Series YouTube Playlist Importer)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (AI Studio sandbox has no `.git` metadata)
+**Current snapshot reconciled:** 2026-11-24 (Local Feature Branch `feat/seerah-encyclopedia-ibn-kathir` on `main` @ `45f3edc611be08482d53570afd49f6e9471f44c7` — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia: 2,475 Printed Pages, 90 Sections, Full-Text Arabic Search, Offline-First Chunking & UID-Scoped Progress)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (`45f3edc611be08482d53570afd49f6e9471f44c7`) · **Active branch:** `feat/seerah-encyclopedia-ibn-kathir`
+
+- **Local Feature Branch State & Verification (2026-11-24 — NOT pushed/merged to `main` and NOT deployed to Vercel):**
+  - **Directives & Corpus Build Pipeline (`docs/seerah/MASTER_DIRECTIVE.md`, `docs/seerah/EXECUTION_STATUS.md`, `scripts/build-seerah-encyclopedia.py`, `scripts/validate-seerah-encyclopedia.mjs`, `public/data/seerah-encyclopedia/`):**
+    - Verified all 4 owner-supplied PDFs in gitignored `seerah-sources/` are 1-bit scanned images (`0` text chars) and benchmarked local Windows `ar-SA` OCR (rejected due to severe garbling).
+    - Extracted the exact matching 4-volume public-domain matn of *Al-Sīra al-Nabawiyya* by Imam Ibn Kathir (d. 774 AH) from OpenITI (`0774IbnKathir.Bidaya.Shamela0000930-ara6`, CC BY-NC-SA 4.0 attribution recorded), strictly excluding the modern 1964 editor preface: **4 volumes, 2,475 printed pages, 90 chronological sections, 101 reading chunks (<= 57.5 KB each, `5.02 MB` total), 4 full-text normalized Arabic search indexes (`5.94 MB` total), 567,856 words, and 16 curated chapter cross-links**.
+  - **Encyclopedia Service, UID Isolation & Offline SW Caching (`src/services/seerahEncyclopediaService.ts`, `src/services/storageService.ts`, `public/sw.js`):**
+    - Registered `'wird.seerah.encyclopedia.v1'` in `AUXILIARY_SCOPED_KEYS`; added lazy chunk/search loaders, normalized Arabic full-text search, direct volume+page navigation, Cache API per-volume offline download, and Cache-First `/data/seerah-encyclopedia/*.json` routing in `public/sw.js` (`wird-app-content-v1`).
+  - **Upgraded Seerah Reader & E2E/Unit Coverage (`src/components/seerah/SeerahEncyclopediaReader.tsx`, `src/components/seerah/SeerahView.tsx`, `src/tests/seerahEncyclopedia.test.ts`, `src/tests/runAllTests.ts`, `e2e/seerah-encyclopedia.spec.ts`):**
+    - Preserved all 16 curated Seerah chapters (`seerahData.ts`) and `seerahSystem.test.ts` intact, added deep-links from all 16 curated chapters into Ibn Kathir's Encyclopedia, added 4-volume selector, full-text search, page jumper, font/focus controls, personal bookmark notes, and unified bookmarks view using pure `--wird-*` semantic CSS tokens.
+  - **Local Verification Executed (2026-11-24):**
+    - `node scripts/validate-seerah-encyclopedia.mjs`: **PASS** (`4` volumes, `2,475` pages, `90` sections, `101` chunks, `4` search indexes, `16` curated links)
+    - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+    - `npm.cmd test` (75 suites incl. `seerahEncyclopedia.test.ts` + Tanzil validation & 114 Surah chunk split): **PASS** (`822 PASSED | 0 FAILED`)
+    - `npm.cmd run smoke:api-imports`: **PASS**
+    - `NODE_ENV=production` + `vite build`: **PASS** (`2.82s`, `SeerahView` `162.65 kB` / `38.21 kB` gzip, `index` `245.92 kB`, 0 chunks > 500 kB)
+    - `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+    - Playwright E2E (`e2e/seerah-encyclopedia.spec.ts` on Edge Chromium Desktop `1440×900` & Mobile `390×844`): **PASS** (`4 passed | 0 failed`, `35.6s`, `0` page errors, `0` horizontal overflow)
+    - Legacy hex scan across `src/components/seerah/*.tsx`: **PASS** (`0` matches)
+    - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub CI).
+    - GitHub Actions CI, Vercel Preview, Vercel Production, Production Sync Flags, `firestore.rules`, `bun.lock`, and Quran corpus: **UNTOUCHED / NOT EXECUTED**.
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Workspace Snapshot — 2026-11-23 (Extensible Video Series Platform)
 
 - **Local Workspace State & Verification (2026-11-23 — AI Studio Workspace, NOT committed/pushed to GitHub and NOT deployed to Vercel):**
   - **Extensible Multi-Series Catalog & Safe YouTube Helpers (`src/data/videoSeriesCatalog.ts`):**

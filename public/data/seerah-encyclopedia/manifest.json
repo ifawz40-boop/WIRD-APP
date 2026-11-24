@@ -1,0 +1,707 @@
+{
+  "schemaVersion": 1,
+  "encyclopediaVersion": "2.0.0",
+  "title": "السيرة النبوية لابن كثير — الموسوعة الكاملة (4 مجلدات)",
+  "classicalWork": "السيرة النبوية (من البداية والنهاية)",
+  "author": "الإمام الحافظ عماد الدين أبو الفداء إسماعيل بن عمر بن كثير القرشي الدمشقي (ت 774 هـ)",
+  "editionAlignment": "مطابقة لترقيم طبعة المجلدات الأربعة (ملفات seerah-sources/) — مستبعد منها مقدمة المحقق المعاصر وحصرياً متن الحافظ ابن كثير التراثي",
+  "licenseNotice": "المتن الأصلي للحافظ ابن كثير (ت 774 هـ) في الملكية العامة (Public Domain). النص الرقمي مأخوذ من مبادرة OpenITI (0774IbnKathir.Bidaya.Shamela0000930-ara6) بترخيص CC BY-NC-SA 4.0 للاستخدام التعليمي غير التجاري مع العزو.",
+  "totalVolumes": 4,
+  "totalPages": 2475,
+  "totalSections": 90,
+  "totalWords": 567856,
+  "totalChunks": 101,
+  "volumes": [
+    {
+      "volume": 1,
+      "title": "المجلد الأول: أخبار العرب والمولد والبعثة والدعوة بمكة",
+      "shortTitle": "المجلد الأول",
+      "periodLabel": "ما قبل البعثة — السنة الخامسة للبعثة",
+      "summary": "أخبار العرب العاربة والمستعربة، قصة الفيل، نسب النبي ﷺ الشريف، مولده ورضاعه ونشأته، تجديد بناء الكعبة، بدء الوحي في حراء، والجهر بالدعوة ومجادلة قريش.",
+      "sourcePdfName": "01_10169_compressed.pdf",
+      "sourcePdfTotalPages": 536,
+      "firstPage": 1,
+      "lastPage": 508,
+      "pageCount": 506,
+      "sectionCount": 23,
+      "wordCount": 112627,
+      "chunkCount": 21,
+      "chunks": [
+        {
+          "chunkId": "vol-1-chunk-01",
+          "startPage": 1,
+          "endPage": 26
+        },
+        {
+          "chunkId": "vol-1-chunk-02",
+          "startPage": 27,
+          "endPage": 51
+        },
+        {
+          "chunkId": "vol-1-chunk-03",
+          "startPage": 52,
+          "endPage": 76
+        },
+        {
+          "chunkId": "vol-1-chunk-04",
+          "startPage": 77,
+          "endPage": 101
+        },
+        {
+          "chunkId": "vol-1-chunk-05",
+          "startPage": 102,
+          "endPage": 126
+        },
+        {
+          "chunkId": "vol-1-chunk-06",
+          "startPage": 127,
+          "endPage": 151
+        },
+        {
+          "chunkId": "vol-1-chunk-07",
+          "startPage": 152,
+          "endPage": 176
+        },
+        {
+          "chunkId": "vol-1-chunk-08",
+          "startPage": 177,
+          "endPage": 202
+        },
+        {
+          "chunkId": "vol-1-chunk-09",
+          "startPage": 203,
+          "endPage": 227
+        },
+        {
+          "chunkId": "vol-1-chunk-10",
+          "startPage": 228,
+          "endPage": 252
+        },
+        {
+          "chunkId": "vol-1-chunk-11",
+          "startPage": 253,
+          "endPage": 277
+        },
+        {
+          "chunkId": "vol-1-chunk-12",
+          "startPage": 278,
+          "endPage": 302
+        },
+        {
+          "chunkId": "vol-1-chunk-13",
+          "startPage": 303,
+          "endPage": 327
+        },
+        {
+          "chunkId": "vol-1-chunk-14",
+          "startPage": 328,
+          "endPage": 352
+        },
+        {
+          "chunkId": "vol-1-chunk-15",
+          "startPage": 353,
+          "endPage": 377
+        },
+        {
+          "chunkId": "vol-1-chunk-16",
+          "startPage": 378,
+          "endPage": 402
+        },
+        {
+          "chunkId": "vol-1-chunk-17",
+          "startPage": 403,
+          "endPage": 427
+        },
+        {
+          "chunkId": "vol-1-chunk-18",
+          "startPage": 428,
+          "endPage": 452
+        },
+        {
+          "chunkId": "vol-1-chunk-19",
+          "startPage": 453,
+          "endPage": 477
+        },
+        {
+          "chunkId": "vol-1-chunk-20",
+          "startPage": 478,
+          "endPage": 502
+        },
+        {
+          "chunkId": "vol-1-chunk-21",
+          "startPage": 503,
+          "endPage": 508
+        }
+      ],
+      "searchIndexPath": "/data/seerah-encyclopedia/search/vol-1-search.json"
+    },
+    {
+      "volume": 2,
+      "title": "المجلد الثاني: الهجرة إلى الحبشة والإسراء والهجرة النبوية وغزوة بدر",
+      "shortTitle": "المجلد الثاني",
+      "periodLabel": "الهجرة إلى الحبشة — نهاية السنة الثانية للهجرة",
+      "summary": "الهجرة إلى الحبشة، حصار الشعب، الإسراء والمعراج، وفاة أبي طالب وخديجة، الرحلة إلى الطائف، إسلام الأنصار وبيعتا العقبة، الهجرة النبوية وبناء المدينة، وغزوة بدر الكبرى.",
+      "sourcePdfName": "02_10170_compressed.pdf",
+      "sourcePdfTotalPages": 564,
+      "firstPage": 3,
+      "lastPage": 546,
+      "pageCount": 544,
+      "sectionCount": 21,
+      "wordCount": 121312,
+      "chunkCount": 22,
+      "chunks": [
+        {
+          "chunkId": "vol-2-chunk-01",
+          "startPage": 3,
+          "endPage": 27
+        },
+        {
+          "chunkId": "vol-2-chunk-02",
+          "startPage": 28,
+          "endPage": 52
+        },
+        {
+          "chunkId": "vol-2-chunk-03",
+          "startPage": 53,
+          "endPage": 77
+        },
+        {
+          "chunkId": "vol-2-chunk-04",
+          "startPage": 78,
+          "endPage": 102
+        },
+        {
+          "chunkId": "vol-2-chunk-05",
+          "startPage": 103,
+          "endPage": 127
+        },
+        {
+          "chunkId": "vol-2-chunk-06",
+          "startPage": 128,
+          "endPage": 152
+        },
+        {
+          "chunkId": "vol-2-chunk-07",
+          "startPage": 153,
+          "endPage": 177
+        },
+        {
+          "chunkId": "vol-2-chunk-08",
+          "startPage": 178,
+          "endPage": 202
+        },
+        {
+          "chunkId": "vol-2-chunk-09",
+          "startPage": 203,
+          "endPage": 227
+        },
+        {
+          "chunkId": "vol-2-chunk-10",
+          "startPage": 228,
+          "endPage": 252
+        },
+        {
+          "chunkId": "vol-2-chunk-11",
+          "startPage": 253,
+          "endPage": 277
+        },
+        {
+          "chunkId": "vol-2-chunk-12",
+          "startPage": 278,
+          "endPage": 302
+        },
+        {
+          "chunkId": "vol-2-chunk-13",
+          "startPage": 303,
+          "endPage": 327
+        },
+        {
+          "chunkId": "vol-2-chunk-14",
+          "startPage": 328,
+          "endPage": 352
+        },
+        {
+          "chunkId": "vol-2-chunk-15",
+          "startPage": 353,
+          "endPage": 377
+        },
+        {
+          "chunkId": "vol-2-chunk-16",
+          "startPage": 378,
+          "endPage": 402
+        },
+        {
+          "chunkId": "vol-2-chunk-17",
+          "startPage": 403,
+          "endPage": 427
+        },
+        {
+          "chunkId": "vol-2-chunk-18",
+          "startPage": 428,
+          "endPage": 452
+        },
+        {
+          "chunkId": "vol-2-chunk-19",
+          "startPage": 453,
+          "endPage": 477
+        },
+        {
+          "chunkId": "vol-2-chunk-20",
+          "startPage": 478,
+          "endPage": 502
+        },
+        {
+          "chunkId": "vol-2-chunk-21",
+          "startPage": 503,
+          "endPage": 527
+        },
+        {
+          "chunkId": "vol-2-chunk-22",
+          "startPage": 528,
+          "endPage": 546
+        }
+      ],
+      "searchIndexPath": "/data/seerah-encyclopedia/search/vol-2-search.json"
+    },
+    {
+      "volume": 3,
+      "title": "المجلد الثالث: من غزوة أحد إلى الخندق والحديبية وخيبر وفتح مكة وحنين",
+      "shortTitle": "المجلد الثالث",
+      "periodLabel": "السنة الثالثة — نهاية السنة الثامنة للهجرة",
+      "summary": "أحداث السنوات 3 إلى 8 هـ: غزوة أحد، بئر معونة، بني النضير، الخندق وبني قريظة، صلح الحديبية، فتح خيبر، عمرة القضاء، غزوة مؤتة، كتب النبي ﷺ إلى الملوك، فتح مكة الأعظم، حنين والطائف.",
+      "sourcePdfName": "03_10171_compressed.pdf",
+      "sourcePdfTotalPages": 732,
+      "firstPage": 3,
+      "lastPage": 712,
+      "pageCount": 710,
+      "sectionCount": 25,
+      "wordCount": 166899,
+      "chunkCount": 29,
+      "chunks": [
+        {
+          "chunkId": "vol-3-chunk-01",
+          "startPage": 3,
+          "endPage": 27
+        },
+        {
+          "chunkId": "vol-3-chunk-02",
+          "startPage": 28,
+          "endPage": 52
+        },
+        {
+          "chunkId": "vol-3-chunk-03",
+          "startPage": 53,
+          "endPage": 77
+        },
+        {
+          "chunkId": "vol-3-chunk-04",
+          "startPage": 78,
+          "endPage": 102
+        },
+        {
+          "chunkId": "vol-3-chunk-05",
+          "startPage": 103,
+          "endPage": 127
+        },
+        {
+          "chunkId": "vol-3-chunk-06",
+          "startPage": 128,
+          "endPage": 152
+        },
+        {
+          "chunkId": "vol-3-chunk-07",
+          "startPage": 153,
+          "endPage": 177
+        },
+        {
+          "chunkId": "vol-3-chunk-08",
+          "startPage": 178,
+          "endPage": 202
+        },
+        {
+          "chunkId": "vol-3-chunk-09",
+          "startPage": 203,
+          "endPage": 227
+        },
+        {
+          "chunkId": "vol-3-chunk-10",
+          "startPage": 228,
+          "endPage": 252
+        },
+        {
+          "chunkId": "vol-3-chunk-11",
+          "startPage": 253,
+          "endPage": 277
+        },
+        {
+          "chunkId": "vol-3-chunk-12",
+          "startPage": 278,
+          "endPage": 302
+        },
+        {
+          "chunkId": "vol-3-chunk-13",
+          "startPage": 303,
+          "endPage": 327
+        },
+        {
+          "chunkId": "vol-3-chunk-14",
+          "startPage": 328,
+          "endPage": 352
+        },
+        {
+          "chunkId": "vol-3-chunk-15",
+          "startPage": 353,
+          "endPage": 377
+        },
+        {
+          "chunkId": "vol-3-chunk-16",
+          "startPage": 378,
+          "endPage": 402
+        },
+        {
+          "chunkId": "vol-3-chunk-17",
+          "startPage": 403,
+          "endPage": 427
+        },
+        {
+          "chunkId": "vol-3-chunk-18",
+          "startPage": 428,
+          "endPage": 452
+        },
+        {
+          "chunkId": "vol-3-chunk-19",
+          "startPage": 453,
+          "endPage": 477
+        },
+        {
+          "chunkId": "vol-3-chunk-20",
+          "startPage": 478,
+          "endPage": 502
+        },
+        {
+          "chunkId": "vol-3-chunk-21",
+          "startPage": 503,
+          "endPage": 527
+        },
+        {
+          "chunkId": "vol-3-chunk-22",
+          "startPage": 528,
+          "endPage": 552
+        },
+        {
+          "chunkId": "vol-3-chunk-23",
+          "startPage": 553,
+          "endPage": 577
+        },
+        {
+          "chunkId": "vol-3-chunk-24",
+          "startPage": 578,
+          "endPage": 602
+        },
+        {
+          "chunkId": "vol-3-chunk-25",
+          "startPage": 603,
+          "endPage": 627
+        },
+        {
+          "chunkId": "vol-3-chunk-26",
+          "startPage": 628,
+          "endPage": 652
+        },
+        {
+          "chunkId": "vol-3-chunk-27",
+          "startPage": 653,
+          "endPage": 677
+        },
+        {
+          "chunkId": "vol-3-chunk-28",
+          "startPage": 678,
+          "endPage": 702
+        },
+        {
+          "chunkId": "vol-3-chunk-29",
+          "startPage": 703,
+          "endPage": 712
+        }
+      ],
+      "searchIndexPath": "/data/seerah-encyclopedia/search/vol-3-search.json"
+    },
+    {
+      "volume": 4,
+      "title": "المجلد الرابع: غزوة تبوك والوفود وحجة الوداع ووفاته ﷺ وأزواجه وآثاره",
+      "shortTitle": "المجلد الرابع",
+      "periodLabel": "السنة التاسعة — السنة الحادية عشرة للهجرة والآثار الشريفة",
+      "summary": "غزوة تبوك، حج أبي بكر ونزول براءة، عام الوفود، بعث اليمن، كتاب حجة الوداع الكامل، مرض النبي ﷺ ووفاته إلى الرفيق الأعلى، أزواجه وأولاده وخدمه وكتابه وآثاره الشريفة.",
+      "sourcePdfName": "04_10172_compressed.pdf",
+      "sourcePdfTotalPages": 734,
+      "firstPage": 3,
+      "lastPage": 717,
+      "pageCount": 715,
+      "sectionCount": 21,
+      "wordCount": 167018,
+      "chunkCount": 29,
+      "chunks": [
+        {
+          "chunkId": "vol-4-chunk-01",
+          "startPage": 3,
+          "endPage": 27
+        },
+        {
+          "chunkId": "vol-4-chunk-02",
+          "startPage": 28,
+          "endPage": 52
+        },
+        {
+          "chunkId": "vol-4-chunk-03",
+          "startPage": 53,
+          "endPage": 77
+        },
+        {
+          "chunkId": "vol-4-chunk-04",
+          "startPage": 78,
+          "endPage": 102
+        },
+        {
+          "chunkId": "vol-4-chunk-05",
+          "startPage": 103,
+          "endPage": 127
+        },
+        {
+          "chunkId": "vol-4-chunk-06",
+          "startPage": 128,
+          "endPage": 152
+        },
+        {
+          "chunkId": "vol-4-chunk-07",
+          "startPage": 153,
+          "endPage": 177
+        },
+        {
+          "chunkId": "vol-4-chunk-08",
+          "startPage": 178,
+          "endPage": 202
+        },
+        {
+          "chunkId": "vol-4-chunk-09",
+          "startPage": 203,
+          "endPage": 227
+        },
+        {
+          "chunkId": "vol-4-chunk-10",
+          "startPage": 228,
+          "endPage": 252
+        },
+        {
+          "chunkId": "vol-4-chunk-11",
+          "startPage": 253,
+          "endPage": 277
+        },
+        {
+          "chunkId": "vol-4-chunk-12",
+          "startPage": 278,
+          "endPage": 302
+        },
+        {
+          "chunkId": "vol-4-chunk-13",
+          "startPage": 303,
+          "endPage": 327
+        },
+        {
+          "chunkId": "vol-4-chunk-14",
+          "startPage": 328,
+          "endPage": 352
+        },
+        {
+          "chunkId": "vol-4-chunk-15",
+          "startPage": 353,
+          "endPage": 377
+        },
+        {
+          "chunkId": "vol-4-chunk-16",
+          "startPage": 378,
+          "endPage": 402
+        },
+        {
+          "chunkId": "vol-4-chunk-17",
+          "startPage": 403,
+          "endPage": 427
+        },
+        {
+          "chunkId": "vol-4-chunk-18",
+          "startPage": 428,
+          "endPage": 452
+        },
+        {
+          "chunkId": "vol-4-chunk-19",
+          "startPage": 453,
+          "endPage": 477
+        },
+        {
+          "chunkId": "vol-4-chunk-20",
+          "startPage": 478,
+          "endPage": 502
+        },
+        {
+          "chunkId": "vol-4-chunk-21",
+          "startPage": 503,
+          "endPage": 527
+        },
+        {
+          "chunkId": "vol-4-chunk-22",
+          "startPage": 528,
+          "endPage": 552
+        },
+        {
+          "chunkId": "vol-4-chunk-23",
+          "startPage": 553,
+          "endPage": 577
+        },
+        {
+          "chunkId": "vol-4-chunk-24",
+          "startPage": 578,
+          "endPage": 602
+        },
+        {
+          "chunkId": "vol-4-chunk-25",
+          "startPage": 603,
+          "endPage": 627
+        },
+        {
+          "chunkId": "vol-4-chunk-26",
+          "startPage": 628,
+          "endPage": 652
+        },
+        {
+          "chunkId": "vol-4-chunk-27",
+          "startPage": 653,
+          "endPage": 677
+        },
+        {
+          "chunkId": "vol-4-chunk-28",
+          "startPage": 678,
+          "endPage": 702
+        },
+        {
+          "chunkId": "vol-4-chunk-29",
+          "startPage": 703,
+          "endPage": 717
+        }
+      ],
+      "searchIndexPath": "/data/seerah-encyclopedia/search/vol-4-search.json"
+    }
+  ],
+  "curatedChapterLinks": {
+    "ch-1-arabia-makkah": {
+      "volume": 1,
+      "page": 1,
+      "sectionId": "v1-sec-001",
+      "chunkId": "vol-1-chunk-01",
+      "label": "ج 1 · ص 1 — ذكر أخبار العرب وأنسابهم"
+    },
+    "ch-2-birth-upbringing": {
+      "volume": 1,
+      "page": 198,
+      "sectionId": "v1-sec-011",
+      "chunkId": "vol-1-chunk-08",
+      "label": "ج 1 · ص 198 — باب مولد رسول الله ﷺ"
+    },
+    "ch-3-youth-trustworthy": {
+      "volume": 1,
+      "page": 250,
+      "sectionId": "v1-sec-013",
+      "chunkId": "vol-1-chunk-10",
+      "label": "ج 1 · ص 250 — نشأته وحرب الفجار وزواجه وبناء الكعبة"
+    },
+    "ch-4-revelation-hira": {
+      "volume": 1,
+      "page": 385,
+      "sectionId": "v1-sec-018",
+      "chunkId": "vol-1-chunk-16",
+      "label": "ج 1 · ص 385 — باب كيفية بدء الوحي"
+    },
+    "ch-5-public-call-abyssinia": {
+      "volume": 2,
+      "page": 3,
+      "sectionId": "v2-sec-001",
+      "chunkId": "vol-2-chunk-01",
+      "label": "ج 2 · ص 3 — هجرة الصحابة إلى أرض الحبشة"
+    },
+    "ch-6-sorrow-taif-isra": {
+      "volume": 2,
+      "page": 93,
+      "sectionId": "v2-sec-005",
+      "chunkId": "vol-2-chunk-04",
+      "label": "ج 2 · ص 93 — الإسراء والمعراج وعام الحزن والطائف"
+    },
+    "ch-7-aqabah-pledges": {
+      "volume": 2,
+      "page": 176,
+      "sectionId": "v2-sec-010",
+      "chunkId": "vol-2-chunk-07",
+      "label": "ج 2 · ص 176 — بدء إسلام الأنصار وبيعتا العقبة"
+    },
+    "ch-8-hijrah-journey": {
+      "volume": 2,
+      "page": 232,
+      "sectionId": "v2-sec-012",
+      "chunkId": "vol-2-chunk-10",
+      "label": "ج 2 · ص 232 — هجرة رسول الله ﷺ إلى المدينة"
+    },
+    "ch-9-madinah-foundation": {
+      "volume": 2,
+      "page": 267,
+      "sectionId": "v2-sec-013",
+      "chunkId": "vol-2-chunk-11",
+      "label": "ج 2 · ص 267 — دخوله ﷺ المدينة وبناء المسجد والمؤاخاة"
+    },
+    "ch-10-badr": {
+      "volume": 2,
+      "page": 377,
+      "sectionId": "v2-sec-017",
+      "chunkId": "vol-2-chunk-15",
+      "label": "ج 2 · ص 377 — غزوة بدر العظمى يوم الفرقان"
+    },
+    "ch-11-uhud-khandaq": {
+      "volume": 3,
+      "page": 18,
+      "sectionId": "v3-sec-002",
+      "chunkId": "vol-3-chunk-01",
+      "label": "ج 3 · ص 18 — غزوة أحد ثم غزوة الخندق"
+    },
+    "ch-12-hudaybiyyah-letters": {
+      "volume": 3,
+      "page": 312,
+      "sectionId": "v3-sec-013",
+      "chunkId": "vol-3-chunk-13",
+      "label": "ج 3 · ص 312 — صلح الحديبية وكتبه ﷺ إلى الملوك"
+    },
+    "ch-13-fath-makkah": {
+      "volume": 3,
+      "page": 526,
+      "sectionId": "v3-sec-021",
+      "chunkId": "vol-3-chunk-21",
+      "label": "ج 3 · ص 526 — غزوة الفتح الأعظم (فتح مكة)"
+    },
+    "ch-14-farewell-pilgrimage": {
+      "volume": 4,
+      "page": 211,
+      "sectionId": "v4-sec-008",
+      "chunkId": "vol-4-chunk-09",
+      "label": "ج 4 · ص 211 — كتاب حجة الوداع"
+    },
+    "ch-15-passing-rafiq-ala": {
+      "volume": 4,
+      "page": 459,
+      "sectionId": "v4-sec-014",
+      "chunkId": "vol-4-chunk-19",
+      "label": "ج 4 · ص 459 — مرض النبي ﷺ ووفاته إلى الرفيق الأعلى"
+    },
+    "ch-16-shamail-legacy": {
+      "volume": 4,
+      "page": 579,
+      "sectionId": "v4-sec-018",
+      "chunkId": "vol-4-chunk-24",
+      "label": "ج 4 · ص 579 — أزواجه وأولاده وخدمه وآثاره الشريفة"
+    }
+  }
+}

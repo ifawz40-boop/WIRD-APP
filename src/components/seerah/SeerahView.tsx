@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  BookMarked,
   BookOpen,
   Bookmark,
   BookmarkCheck,
@@ -8,6 +9,7 @@ import {
   ChevronRight,
   Clock,
   Compass,
+  ExternalLink,
   FileText,
   HelpCircle,
   Layers,
@@ -39,6 +41,20 @@ import {
   toggleSeerahChapterCompleted,
   type SeerahProgressStore
 } from '../../services/seerahProgressService';
+import {
+  getEncyclopediaProgressSummary,
+  loadSeerahEncyclopediaManifest,
+  loadSeerahEncyclopediaToc,
+  readSeerahEncyclopediaStore,
+  toggleEncyclopediaBookmark,
+  type SeerahEncyclopediaManifest,
+  type SeerahEncyclopediaProgressStore,
+  type SeerahEncyclopediaToc
+} from '../../services/seerahEncyclopediaService';
+import {
+  SeerahEncyclopediaReader,
+  type SeerahEncyclopediaJumpTarget
+} from './SeerahEncyclopediaReader';
 import { WirdIslamicPattern, WirdMihrabArch } from '../brand/WirdPattern';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 
@@ -69,13 +85,56 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
   const [store, setStore] = useState<SeerahProgressStore>(() => readSeerahProgressStore());
   const overallProgress = useMemo(() => getSeerahOverallProgress(store), [store]);
 
+  const [encyStore, setEncyStore] = useState<SeerahEncyclopediaProgressStore>(() =>
+    readSeerahEncyclopediaStore()
+  );
+  const [encyManifest, setEncyManifest] = useState<SeerahEncyclopediaManifest | null>(null);
+  const [encyToc, setEncyToc] = useState<SeerahEncyclopediaToc | null>(null);
+  const [loadingEncyMeta, setLoadingEncyMeta] = useState(true);
+  const [encyMetaError, setEncyMetaError] = useState<string | null>(null);
+  const [encyJumpTarget, setEncyJumpTarget] = useState<SeerahEncyclopediaJumpTarget | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all([loadSeerahEncyclopediaManifest(), loadSeerahEncyclopediaToc()])
+      .then(([manifest, toc]) => {
+        if (!alive) return;
+        setEncyManifest(manifest);
+        setEncyToc(toc);
+        setLoadingEncyMeta(false);
+      })
+      .catch((err) => {
+        if (!alive) return;
+        setEncyMetaError(err instanceof Error ? err.message : 'تعذر تحميل فهرس موسوعة السيرة.');
+        setLoadingEncyMeta(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const encyProgress = useMemo(
+    () => getEncyclopediaProgressSummary(encyStore, encyToc),
+    [encyStore, encyToc]
+  );
+
   const [activeChapterId, setActiveChapterId] = useState<string>(
     () => store.lastPosition?.chapterId || SEERAH_CHAPTERS[0].id
   );
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'reader' | 'timeline' | 'figures' | 'bookmarks'>('reader');
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<
+    'encyclopedia' | 'reader' | 'timeline' | 'figures' | 'bookmarks'
+  >('encyclopedia');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPartFilter, setSelectedPartFilter] = useState<string>('all');
   const [selectedQuizAnswers, setSelectedQuizAnswers] = useState<Record<string, number>>({});
+
+  const openInEncyclopedia = (volume: number, page: number, sectionId?: string) => {
+    setActiveWorkspaceTab('encyclopedia');
+    setEncyJumpTarget({ volume, page, sectionId, nonce: Date.now() });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const totalBookmarksCount = store.bookmarks.length + encyStore.bookmarks.length;
 
   const activeChapter: SeerahChapter = useMemo(
     () => getSeerahChapterById(activeChapterId) || SEERAH_CHAPTERS[0],
@@ -179,22 +238,41 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="wird-section-badge">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>حكاية السيرة النبوية الشريفة · إصدار {SEERAH_BOOK_VERSION}</span>
+                <span>
+                  موسوعة السيرة النبوية الشريفة · 4 مجلدات ({encyManifest?.totalPages?.toLocaleString('ar-EG') || '2,475'} صفحة) + {SEERAH_CHAPTERS.length} فصلاً سردياً
+                </span>
               </span>
               <span className="text-xs font-semibold text-[#F2EDE2]/80">
-                · سرد تاريخي متصل بمصادر محققة ويعمل بالكامل دون إنترنت
+                · نص الحافظ ابن كثير المحقق مع البحث الشامل والعمل دون إنترنت
               </span>
             </div>
             <h2 id="seerah-hero-title" className="text-2xl md:text-3xl font-extrabold font-quran text-[#F5F1E8]">
-              السيرة النبوية الشريفة — من ما قبل البعثة إلى الرفيق الأعلى والشمائل
+              السيرة النبوية الشريفة — موسوعة الحافظ ابن كثير والكتاب السردي الموثق
             </h2>
             <p className="text-xs md:text-sm text-[#F2EDE2]/90 leading-relaxed">
-              ﴿ لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ ﴾ — كتاب سيرة عربي متصل بأجزاء وفصول ومشاهد مترابطة، يربط كل واقعة واقتباس بمصادره المعتمدة ويميّز الثابت بالصحيح عما فيه تفصيل واختلاف تاريخي.
+              ﴿ لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ ﴾ — اقرأ الموسوعة الكاملة للسيرة النبوية للحافظ ابن كثير (ت 774 هـ) بأجزائها الأربعة المطابقة للمطبوع وبحثها الشامل، أو طالع الخلاصة السردية الموثقة بـ 16 فصلاً مترابطاً ومصادرها الكلاسيكية.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
-            {store.lastPosition && (
+            {encyStore.lastPosition ? (
+              <button
+                type="button"
+                onClick={() =>
+                  openInEncyclopedia(
+                    encyStore.lastPosition!.volume,
+                    encyStore.lastPosition!.page,
+                    encyStore.lastPosition!.sectionId
+                  )
+                }
+                className="wird-btn-accent min-h-11 px-4 py-2.5 text-xs font-bold"
+              >
+                <BookMarked className="w-4 h-4" />
+                <span>
+                  استئناف الموسوعة: ج {encyStore.lastPosition.volume} · ص {encyStore.lastPosition.page}
+                </span>
+              </button>
+            ) : store.lastPosition ? (
               <button
                 type="button"
                 onClick={() => openChapter(store.lastPosition!.chapterId, store.lastPosition!.sceneId)}
@@ -205,31 +283,39 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                   استئناف القراءة: {getSeerahChapterById(store.lastPosition.chapterId)?.title || 'الفصل الحالي'}
                 </span>
               </button>
-            )}
+            ) : null}
             <WirdMihrabArch size={84} variant="gold" className="hidden sm:block shrink-0" />
           </div>
         </div>
 
         {/* Overall Progress Bar (Independent of Quran Memorization/Khatma Stats) */}
         <div className="relative z-10 mt-6 pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-[#F2EDE2]">
-            <ShieldCheck className="w-4 h-4 text-[#E0A96D]" />
-            <span>
-              تقدمك في كتاب السيرة (مستقل عن إحصاءات الحفظ والختمة):{' '}
-              <strong className="font-mono">{overallProgress.completedChapters} / {overallProgress.totalChapters} فصلاً ({overallProgress.percent}%)</strong>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#F2EDE2]">
+            <span className="inline-flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#E0A96D]" />
+              <span>
+                تقدم الموسوعة (ابن كثير):{' '}
+                <strong className="font-mono">
+                  {encyProgress.completedSections} / {encyProgress.totalSections || 90} باباً ({encyProgress.percent}%)
+                </strong>
+              </span>
+            </span>
+            <span className="text-[#F2EDE2]/75">
+              · الخلاصة السردية:{' '}
+              <strong className="font-mono">{overallProgress.completedChapters} / {overallProgress.totalChapters} فصلاً</strong>
             </span>
           </div>
           <div
             role="progressbar"
-            aria-label="تقدم قراءة كتاب السيرة النبوية"
+            aria-label="تقدم قراءة موسوعة السيرة النبوية"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={overallProgress.percent}
+            aria-valuenow={activeWorkspaceTab === 'encyclopedia' ? encyProgress.percent : overallProgress.percent}
             className="w-full sm:w-64 h-2 rounded-full bg-white/15 overflow-hidden"
           >
             <div
               className="h-full rounded-full bg-gradient-to-l from-[#F6D78B] to-[#C59B27] transition-all duration-300"
-              style={{ width: `${overallProgress.percent}%` }}
+              style={{ width: `${activeWorkspaceTab === 'encyclopedia' ? encyProgress.percent : overallProgress.percent}%` }}
             />
           </div>
         </div>
@@ -241,6 +327,20 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              aria-pressed={activeWorkspaceTab === 'encyclopedia'}
+              onClick={() => setActiveWorkspaceTab('encyclopedia')}
+              className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
+                activeWorkspaceTab === 'encyclopedia'
+                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
+                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
+              }`}
+            >
+              <BookMarked className="w-4 h-4 text-[var(--wird-accent)]" />
+              <span>موسوعة ابن كثير (4 مجلدات)</span>
+            </button>
+
+            <button
+              type="button"
               aria-pressed={activeWorkspaceTab === 'reader'}
               onClick={() => setActiveWorkspaceTab('reader')}
               className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
@@ -250,7 +350,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               }`}
             >
               <BookOpen className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>القارئ السردي المتصل</span>
+              <span>الخلاصة السردية ({SEERAH_CHAPTERS.length})</span>
             </button>
 
             <button
@@ -264,7 +364,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               }`}
             >
               <Layers className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>فهرس الأجزاء والخط الزمني ({SEERAH_CHAPTERS.length})</span>
+              <span>الخط الزمني ({SEERAH_CHAPTERS.length})</span>
             </button>
 
             <button
@@ -292,7 +392,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               }`}
             >
               <Bookmark className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>العلامات المرجعية ({store.bookmarks.length})</span>
+              <span>العلامات المرجعية ({totalBookmarksCount})</span>
             </button>
           </div>
 
@@ -354,6 +454,20 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
           </HorizontalScrollRail>
         )}
       </div>
+
+      {/* 3. FULL 4-VOLUME IBN KATHIR ENCYCLOPEDIA VIEW */}
+      {activeWorkspaceTab === 'encyclopedia' && (
+        <SeerahEncyclopediaReader
+          manifest={encyManifest}
+          toc={encyToc}
+          loadingMeta={loadingEncyMeta}
+          metaError={encyMetaError}
+          store={encyStore}
+          onStoreChange={setEncyStore}
+          jumpTarget={encyJumpTarget}
+          onToast={onToast}
+        />
+      )}
 
       {/* 3A. CONTINUOUS NARRATIVE READER VIEW */}
       {activeWorkspaceTab === 'reader' && (
@@ -420,7 +534,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               </div>
 
               {/* Narrative Introduction & Historical Context */}
-              <div className="p-4 md:p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2">
+              <div className="p-4 md:p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2.5">
                 <p className="text-sm md:text-base text-[var(--wird-text)] leading-relaxed">
                   <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">مدخل الفصل: </strong>
                   {activeChapter.intro}
@@ -429,6 +543,24 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
                   <strong>تمهيد السياق: </strong>
                   {activeChapter.contextNote}
                 </p>
+                {encyManifest?.curatedChapterLinks?.[activeChapter.id] && (
+                  <div className="pt-2 border-t border-[var(--wird-border)] flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] text-[var(--wird-muted)]">
+                      التوسّع من المصدر التراثي الأم (السيرة النبوية لابن كثير):
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = encyManifest.curatedChapterLinks[activeChapter.id];
+                        openInEncyclopedia(link.volume, link.page, link.sectionId);
+                      }}
+                      className="min-h-10 px-3.5 py-1.5 rounded-xl bg-[var(--wird-primary)] text-white text-xs font-bold inline-flex items-center gap-1.5 hover:opacity-95 transition-opacity"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+                      <span>{encyManifest.curatedChapterLinks[activeChapter.id].label}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </header>
 
@@ -889,6 +1021,22 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
               <span>سجل المصادر الكلاسيكية المعتمدة</span>
             </h3>
             <div className="space-y-3">
+              {encyManifest && (
+                <div className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-1.5 text-xs">
+                  <div className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                    {encyManifest.title}
+                  </div>
+                  <div className="text-[11px] font-semibold text-[var(--wird-text)]">
+                    {encyManifest.author}
+                  </div>
+                  <div className="text-[11px] text-[var(--wird-muted)] leading-relaxed">
+                    {encyManifest.editionAlignment}
+                  </div>
+                  <div className="text-[10px] text-[var(--wird-muted)] leading-relaxed">
+                    {encyManifest.licenseNotice}
+                  </div>
+                </div>
+              )}
               {Object.values(SEERAH_SOURCES).map(src => (
                 <div key={src.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1 text-xs">
                   <div className="font-bold text-[var(--wird-text)]">{src.workTitle}</div>
@@ -903,11 +1051,70 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
 
       {/* 3D. SAVED BOOKMARKS VIEW */}
       {activeWorkspaceTab === 'bookmarks' && (
-        <section className="wird-card p-6 space-y-4">
-          <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-            <Bookmark className="w-5 h-5" />
-            <span>العلامات المرجعية المحفوظة في كتاب السيرة ({store.bookmarks.length})</span>
-          </h3>
+        <div className="space-y-6">
+          <section className="wird-card p-6 space-y-4">
+            <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
+              <BookMarked className="w-5 h-5" />
+              <span>علامات موسوعة السيرة لابن كثير ({encyStore.bookmarks.length})</span>
+            </h3>
+
+            {encyStore.bookmarks.length === 0 ? (
+              <div className="p-8 text-center space-y-2 text-xs text-[var(--wird-muted)]">
+                <Bookmark className="w-7 h-7 text-[var(--wird-accent)] mx-auto" />
+                <p>لم تحفظ أي علامة في موسوعة ابن كثير بعد. اضغط «علامة» بجانب أي صفحة مطبوعة لحفظها مع ملاحظاتك.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {encyStore.bookmarks.map(bm => (
+                  <div
+                    key={bm.id}
+                    className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex flex-col justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-[var(--wird-text)]">
+                        {bm.title}
+                      </div>
+                      <div className="text-[10px] font-mono text-[var(--wird-muted)]">
+                        المجلد {bm.volume} · صفحة {bm.page}
+                      </div>
+                      {bm.note && (
+                        <p className="text-[11px] text-[var(--wird-text)] bg-[var(--wird-surface)] p-2 rounded-lg border border-[var(--wird-border)]">
+                          {bm.note}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => openInEncyclopedia(bm.volume, bm.page, bm.sectionId)}
+                        className="min-h-10 px-3.5 py-1.5 rounded-xl bg-[var(--wird-primary)] text-white text-xs font-bold"
+                      >
+                        فتح الصفحة
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEncyStore(
+                            toggleEncyclopediaBookmark(bm.volume, bm.page, bm.sectionId, bm.title)
+                          );
+                          onToast?.('تمت إزالة العلامة المرجعية من الموسوعة.', 'info');
+                        }}
+                        className="min-h-10 px-3.5 py-1.5 rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] text-xs font-bold text-rose-700 dark:text-rose-300"
+                      >
+                        إزالة
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="wird-card p-6 space-y-4">
+            <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
+              <Bookmark className="w-5 h-5" />
+              <span>علامات الخلاصة السردية ({store.bookmarks.length})</span>
+            </h3>
 
           {store.bookmarks.length === 0 ? (
             <div className="p-10 text-center space-y-2 text-xs text-[var(--wird-muted)]">
@@ -950,6 +1157,7 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
             </div>
           )}
         </section>
+        </div>
       )}
     </div>
   );

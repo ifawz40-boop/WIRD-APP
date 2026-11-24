@@ -299,6 +299,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Seerah Encyclopedia JSON chunks & search indexes: cache-first in CONTENT_CACHE_NAME so they survive shell upgrades.
+  if (url.origin === self.location.origin &&
+      url.pathname.startsWith('/data/seerah-encyclopedia/') &&
+      url.pathname.endsWith('.json')) {
+    event.respondWith((async () => {
+      const contentCache = await caches.open(CONTENT_CACHE_NAME);
+      const cached = await contentCache.match(req);
+      if (cached && isValidOfflineAssetResponse(url.pathname, cached)) return cached;
+      try {
+        const networkResponse = await fetchWithTimeout(req, {}, OFFLINE_ASSET_REQUEST_TIMEOUT_MS);
+        if (isValidOfflineAssetResponse(url.pathname, networkResponse)) {
+          await contentCache.put(req, networkResponse.clone());
+        }
+        return networkResponse;
+      } catch {
+        return cached || Response.error();
+      }
+    })());
+    return;
+  }
+
   // Same-origin assets are cache-first; first-visit JS/CSS is already precached at install.
   if (url.origin === self.location.origin) {
     event.respondWith(

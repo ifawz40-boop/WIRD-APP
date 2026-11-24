@@ -1007,3 +1007,33 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
 
 
+
+## 2026-11-24 — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia (`feat/seerah-encyclopedia-ibn-kathir`)
+
+- **Repository & Branch:** `ifawz40-boop/WIRD-APP`, feature branch `feat/seerah-encyclopedia-ibn-kathir` branched from `main` @ `45f3edc611be08482d53570afd49f6e9471f44c7`. Production settings, `firestore.rules`, Quran corpus (`completeQuranData.json`, `src/data/sources/`), `bun.lock`, Vercel env vars, and sync flags untouched.
+- **Source Analysis & Open-Source Decision:**
+  - Inspected owner-supplied PDFs in gitignored `seerah-sources/` (`01_10169_compressed.pdf` 536p, `02_10170_compressed.pdf` 564p, `03_10171_compressed.pdf` 732p, `04_10172_compressed.pdf` 734p = 2,566 scanned pages with `0` embedded text characters) and confirmed identity as *Al-Sīra al-Nabawiyya* by Imam Ibn Kathir (d. 774 AH).
+  - Benchmarked local Windows `ar-SA` OCR on sample pages and rejected it due to severe text corruption unsuitable for religious/historical text.
+  - Verified exact volume-for-volume and page-for-page alignment against OpenITI (`OpenITI/0775AH`: `0774IbnKathir.Bidaya.Shamela0000930-ara6`, WorldCat `oclc/235980396`), excluding the modern 1964 editor preface (`تقديم مصطفى عبد الواحد`) and keeping only Ibn Kathir's authentic public-domain matn starting at `ذكر أخبار العرب` (Vol 1 p. 1). Recorded OpenITI CC BY-NC-SA 4.0 attribution and non-commercial review note in `docs/OWNER_ACTIONS.md` and `docs/engineering/OPEN_SOURCE_RESEARCH.md`.
+- **Key Files Created / Changed:**
+  - `docs/seerah/MASTER_DIRECTIVE.md` & `docs/seerah/EXECUTION_STATUS.md`: complete Seerah Encyclopedia directive, architecture, acceptance criteria, and live phase tracker.
+  - `scripts/build-seerah-encyclopedia.py` & `scripts/validate-seerah-encyclopedia.mjs`: deterministic corpus generator and pure-Node CI validator.
+  - `public/data/seerah-encyclopedia/` (`manifest.json`, `toc.json`, `chunks/vol-*-chunk-*.json`, `search/vol-*-search.json`): 4 volumes, 2,475 printed pages, 90 chronological sections, 101 reading chunks (`5.02 MB`, max `57.5 KB`/chunk), 4 normalized Arabic full-text search indexes (`5.94 MB`), 567,856 words, and 16 curated chapter cross-links.
+  - `src/services/seerahEncyclopediaService.ts`, `src/services/storageService.ts` (`wird.seerah.encyclopedia.v1` in `AUXILIARY_SCOPED_KEYS`), `public/sw.js` (Cache-First `/data/seerah-encyclopedia/*.json` in `wird-app-content-v1`).
+  - `src/components/seerah/SeerahEncyclopediaReader.tsx` & `src/components/seerah/SeerahView.tsx`: 4-volume reader, full-text Arabic search across 2,475 pages, direct printed-page jump (`ج X · ص Y`), typography & focus controls, optional per-volume offline caching, page bookmarks + personal notes, deep-links from all 16 curated chapters, and unified Bookmarks tab using pure `--wird-*` semantic CSS tokens.
+  - `src/tests/seerahEncyclopedia.test.ts`, `src/tests/runAllTests.ts`, `e2e/seerah-encyclopedia.spec.ts`: unit, integration, UID isolation, token hygiene, and desktop/mobile Playwright E2E coverage.
+  - Canonical docs reconciled: `docs/CONTINUE_HERE.md`, `docs/engineering/MASTER_PROJECT_STATE.md`, `docs/DEVELOPMENT_ROADMAP.md`, `docs/engineering/OPEN_SOURCE_RESEARCH.md`, `docs/OWNER_ACTIONS.md`, `docs/README.md`.
+- **Verification Executed (2026-11-24):**
+  - `node scripts/validate-seerah-encyclopedia.mjs`: **PASS**
+  - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+  - `npm.cmd test` (75 suites): **PASS** (`822 PASSED | 0 FAILED`)
+  - `npm.cmd run smoke:api-imports`: **PASS**
+  - `NODE_ENV=production` + `vite build`: **PASS** (`2.82s`, `SeerahView` `162.65 kB` / `38.21 kB` gzip, `index` `245.92 kB`, 0 chunks > 500 kB)
+  - `node scripts/smoke-server.mjs`: **PASS** (production `4179` + dev `4180`)
+  - Playwright E2E (`e2e/seerah-encyclopedia.spec.ts`, Edge Chromium Desktop `1440×900` & Mobile `390×844`): **PASS** (`4 passed | 0 failed`, `35.6s`, zero `pageerror`, zero `overflowX`)
+  - Legacy hex scan on `src/components/seerah/*.tsx`: **PASS** (`0` matches)
+  - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched).
+  - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** (local feature branch only pending owner authorization).
+- **Unresolved Risks & Next Action:**
+  - OpenITI transcription is licensed `CC BY-NC-SA 4.0` (recorded in `docs/OWNER_ACTIONS.md` for non-commercial compliance / future commercial exit).
+  - Next action: Owner-authorized PR push for `feat/seerah-encyclopedia-ibn-kathir` to run exact-head GitHub Actions Quality Gate (including Java Firestore Emulator) and Vercel Preview review before merge.
