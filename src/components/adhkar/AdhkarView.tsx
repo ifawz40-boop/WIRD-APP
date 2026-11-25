@@ -5,30 +5,44 @@ import {
   Sparkles,
   BookOpen,
   Heart,
-  Volume2,
-  Play,
-  Pause,
   RotateCcw,
-  CheckCircle2,
   Star,
-  Copy,
-  Check,
   Search,
   ShieldCheck,
-  Flame
+  ArrowRight,
+  Clock,
+  BedDouble,
+  Sunrise,
+  Droplets,
+  Landmark,
+  Home,
+  Utensils,
+  Compass,
+  CloudRain,
+  Stethoscope,
+  Users,
+  HandHeart,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
 import {
   ADHKAR_CATEGORIES,
   ADHKAR_ITEMS,
-  FREE_TASBIH_PRESETS,
+  getAdhkarCategoriesByGroup,
   getAdhkarItemsByCategory,
   getAdhkarRepeatTarget,
   getRecommendedAdhkarCategoryForHour,
   type AdhkarCategory,
+  type AdhkarCategoryMeta,
   type AdhkarItem
 } from '../../data/adhkarData';
 import {
   getAdhkarCategoryProgressSummary,
+  getAdhkarRemainingCount,
+  getOverallDailyAdhkarSummary,
   incrementAdhkarItemCount,
   incrementFreeTasbihCount,
   readAdhkarProgressStore,
@@ -36,7 +50,10 @@ import {
   resetAdhkarItemCount,
   resetFreeTasbihCount,
   selectFreeTasbihPreset,
+  setFreeTasbihTarget,
   toggleAdhkarFavorite,
+  updateAdhkarReadingPrefs,
+  type AdhkarFontScale,
   type AdhkarProgressStore
 } from '../../services/adhkarProgressService';
 import { loadSurahVerses } from '../../data/quranDataLoader';
@@ -59,14 +76,67 @@ import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
 import { getLocalDateString } from '../../services/unifiedPortionService';
 import type { Ayah, ReciterId } from '../../types/quran';
-import { QuranText } from '../shared/QuranText';
 import { WirdIslamicPattern, WirdMihrabArch } from '../brand/WirdPattern';
-import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+import { AdhkarCard } from './AdhkarCard';
+import { TasbihStudioPanel } from './TasbihStudioPanel';
+
+type AdhkarWorkspaceTab = 'adhkar' | 'duas' | 'tasbih' | 'favorites';
 
 interface AdhkarViewProps {
   preferredReciter?: ReciterId;
   onOpenRuqyah?: () => void;
   onToast?: (message: string, type?: 'success' | 'info' | 'warn' | 'error') => void;
+}
+
+const FONT_SCALE_ORDER: AdhkarFontScale[] = ['sm', 'md', 'lg', 'xl'];
+const FONT_SCALE_LABELS: Record<AdhkarFontScale, string> = {
+  sm: 'صغير',
+  md: 'متوسط',
+  lg: 'كبير',
+  xl: 'أكبر'
+};
+
+function renderCategoryIcon(categoryId: AdhkarCategory, className = 'w-5 h-5') {
+  switch (categoryId) {
+    case 'morning':
+      return <Sun className={className} />;
+    case 'evening':
+      return <Moon className={className} />;
+    case 'after_prayer':
+      return <Clock className={className} />;
+    case 'sleeping':
+      return <BedDouble className={className} />;
+    case 'waking_up':
+      return <Sunrise className={className} />;
+    case 'istighfar':
+      return <Sparkles className={className} />;
+    case 'wudu_adhan':
+      return <Droplets className={className} />;
+    case 'mosque_prayer':
+      return <Landmark className={className} />;
+    case 'home_entry':
+      return <Home className={className} />;
+    case 'food_clothing':
+      return <Utensils className={className} />;
+    case 'travel':
+      return <Compass className={className} />;
+    case 'distress_relief':
+      return <HandHeart className={className} />;
+    case 'weather_nature':
+      return <CloudRain className={className} />;
+    case 'illness_condolence':
+      return <Stethoscope className={className} />;
+    case 'gathering_etiquette':
+      return <Users className={className} />;
+    case 'quranic_duas':
+      return <BookOpen className={className} />;
+    case 'prophetic_duas':
+      return <Heart className={className} />;
+    case 'istikhara_rizq':
+      return <Sparkles className={className} />;
+    default:
+      return <Sparkles className={className} />;
+  }
 }
 
 export const AdhkarView: React.FC<AdhkarViewProps> = ({
@@ -79,10 +149,13 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
     () => getRecommendedAdhkarCategoryForHour(new Date().getHours()),
     []
   );
-  const [activeCategory, setActiveCategory] = useState<AdhkarCategory>(recommendedCategory);
-  const [filterMode, setFilterMode] = useState<'all' | 'favorites' | 'quran_audio'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [autoAdvance, setAutoAdvance] = useState(true);
+
+  // Separated top-level workspaces: Adhkar Directory | Duas Directory | Electronic Tasbih | Favorites
+  const [activeTab, setActiveTab] = useState<AdhkarWorkspaceTab>('adhkar');
+  // null => Directory Hub view; AdhkarCategory => Focused Reader screen for that category
+  const [selectedCategory, setSelectedCategory] = useState<AdhkarCategory | null>(null);
+  const [hubSearchQuery, setHubSearchQuery] = useState('');
+  const [readerSearchQuery, setReaderSearchQuery] = useState('');
   const [store, setStore] = useState<AdhkarProgressStore>(() => readAdhkarProgressStore());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [verifiedQuranAyahsById, setVerifiedQuranAyahsById] = useState<Record<string, Ayah[]>>({});
@@ -129,7 +202,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
     };
   }, []);
 
-  // Load verified local Quran chunks for Quranic Adhkar & Duas
+  // Load verified local Quran chunks for all Quranic Adhkar & Duas
   useEffect(() => {
     let active = true;
     const quranItems = ADHKAR_ITEMS.filter(
@@ -146,7 +219,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
             setVerifiedQuranAyahsById(prev => ({ ...prev, [item.id]: slice }));
           }
         } catch {
-          // Canonical text on item remains available if chunk load is interrupted
+          // Canonical vocalized text on item remains available if chunk load fails
         }
       })
     );
@@ -154,40 +227,106 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
   }, []);
 
   const countsForToday = store.countsByDate[todayStr] || {};
-  const categorySummary = useMemo(
-    () => getAdhkarCategoryProgressSummary(activeCategory, countsForToday),
-    [activeCategory, countsForToday]
+  const overallSummary = useMemo(
+    () => getOverallDailyAdhkarSummary(countsForToday),
+    [countsForToday]
   );
 
-  const visibleItems = useMemo(() => {
-    const base = filterMode === 'favorites'
-      ? ADHKAR_ITEMS.filter(item => store.favoriteIds.includes(item.id))
-      : getAdhkarItemsByCategory(activeCategory);
+  const dailyCategories = useMemo(() => getAdhkarCategoriesByGroup('daily_adhkar'), []);
+  const occasionCategories = useMemo(() => getAdhkarCategoriesByGroup('occasion_adhkar'), []);
+  const duaCategories = useMemo(() => getAdhkarCategoriesByGroup('duas'), []);
 
-    const byAudio = filterMode === 'quran_audio'
-      ? base.filter(item => item.kind === 'quran')
-      : base;
+  const recommendedMeta = useMemo(
+    () => ADHKAR_CATEGORIES.find(c => c.id === recommendedCategory) || ADHKAR_CATEGORIES[0],
+    [recommendedCategory]
+  );
+  const recommendedSummary = useMemo(
+    () => getAdhkarCategoryProgressSummary(recommendedCategory, countsForToday),
+    [recommendedCategory, countsForToday]
+  );
 
-    const query = searchQuery.trim();
-    if (!query) return byAudio;
-    return byAudio.filter(item =>
-      item.title.includes(query) ||
-      item.text.includes(query) ||
-      item.source.includes(query) ||
-      item.virtue.includes(query)
+  const selectedCategoryMeta = useMemo(
+    () => (selectedCategory ? ADHKAR_CATEGORIES.find(c => c.id === selectedCategory) || null : null),
+    [selectedCategory]
+  );
+
+  const selectedCategorySummary = useMemo(
+    () => (selectedCategory ? getAdhkarCategoryProgressSummary(selectedCategory, countsForToday) : null),
+    [selectedCategory, countsForToday]
+  );
+
+  const readerItems = useMemo(() => {
+    if (!selectedCategory) return [];
+    const items = getAdhkarItemsByCategory(selectedCategory);
+    const query = readerSearchQuery.trim();
+    if (!query) return items;
+    return items.filter(
+      item =>
+        item.title.includes(query) ||
+        item.text.includes(query) ||
+        item.virtue.includes(query) ||
+        item.source.includes(query)
     );
-  }, [activeCategory, filterMode, searchQuery, store.favoriteIds]);
+  }, [selectedCategory, readerSearchQuery]);
 
-  const effectiveCategory: AdhkarCategory | undefined = filterMode === 'favorites' ? undefined : activeCategory;
+  const readerHasQuranItems = useMemo(
+    () => readerItems.some(item => item.kind === 'quran'),
+    [readerItems]
+  );
 
-  const handleTapCount = (item: AdhkarItem) => {
-    const result = incrementAdhkarItemCount(item.id, todayStr, localStorage, effectiveCategory);
+  const favoriteItems = useMemo(
+    () => ADHKAR_ITEMS.filter(item => store.favoriteIds.includes(item.id)),
+    [store.favoriteIds]
+  );
+
+  const hubSearchResults = useMemo(() => {
+    const query = hubSearchQuery.trim();
+    if (!query) return null;
+    const matchingCategories = ADHKAR_CATEGORIES.filter(
+      cat => cat.label.includes(query) || cat.description.includes(query)
+    );
+    const matchingItems = ADHKAR_ITEMS.filter(
+      item =>
+        item.title.includes(query) ||
+        item.text.includes(query) ||
+        item.virtue.includes(query) ||
+        item.source.includes(query)
+    ).slice(0, 24);
+    return { matchingCategories, matchingItems };
+  }, [hubSearchQuery]);
+
+  const handleOpenCategory = (catId: AdhkarCategory) => {
+    stopAdhkarAudio();
+    const meta = ADHKAR_CATEGORIES.find(c => c.id === catId);
+    if (meta?.group === 'duas') {
+      setActiveTab('duas');
+    } else {
+      setActiveTab('adhkar');
+    }
+    setReaderSearchQuery('');
+    setSelectedCategory(catId);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSwitchTab = (tab: AdhkarWorkspaceTab) => {
+    stopAdhkarAudio();
+    setActiveTab(tab);
+    setSelectedCategory(null);
+    setReaderSearchQuery('');
+  };
+
+  const handleTapCount = (item: AdhkarItem, listContext: AdhkarItem[], category?: AdhkarCategory) => {
+    const result = incrementAdhkarItemCount(item.id, todayStr, localStorage, category);
     setStore(result.store);
 
-    if (result.justCompleted && autoAdvance) {
-      const currentIdx = visibleItems.findIndex(entry => entry.id === item.id);
-      const nextUnfinished = visibleItems.slice(currentIdx + 1).find(
-        entry => (result.store.countsByDate[todayStr]?.[entry.id] ?? 0) < getAdhkarRepeatTarget(entry, effectiveCategory)
+    if (result.justCompleted && store.readingPrefs.autoAdvance) {
+      const currentIdx = listContext.findIndex(entry => entry.id === item.id);
+      const nextUnfinished = listContext.slice(currentIdx + 1).find(
+        entry =>
+          (result.store.countsByDate[todayStr]?.[entry.id] ?? 0) <
+          getAdhkarRepeatTarget(entry, category)
       );
       if (nextUnfinished) {
         window.setTimeout(() => {
@@ -195,11 +334,28 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
             behavior: 'smooth',
             block: 'center'
           });
-        }, 220);
-      } else {
-        onToast?.(`أتممت جميع أذكار «${ADHKAR_CATEGORIES.find(c => c.id === activeCategory)?.label}» تقبل الله منك!`, 'success');
+        }, 200);
+      } else if (category) {
+        const label = ADHKAR_CATEGORIES.find(c => c.id === category)?.label;
+        onToast?.(`أتممت جميع أذكار «${label}» — تقبل الله منك!`, 'success');
       }
     }
+  };
+
+  const handleStepFontScale = (direction: -1 | 1) => {
+    const idx = FONT_SCALE_ORDER.indexOf(store.readingPrefs.fontScale);
+    const nextIdx = Math.max(0, Math.min(FONT_SCALE_ORDER.length - 1, idx + direction));
+    if (nextIdx !== idx) {
+      setStore(updateAdhkarReadingPrefs({ fontScale: FONT_SCALE_ORDER[nextIdx] }));
+    }
+  };
+
+  const handleToggleVirtueAndSource = () => {
+    setStore(
+      updateAdhkarReadingPrefs({
+        showVirtueAndSource: !store.readingPrefs.showVirtueAndSource
+      })
+    );
   };
 
   const handlePlayQuranicDhikr = async (item: AdhkarItem) => {
@@ -321,146 +477,134 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
     }
   };
 
-  const activeCategoryMeta = ADHKAR_CATEGORIES.find(c => c.id === activeCategory) || ADHKAR_CATEGORIES[0];
-  const activeTasbihPreset = FREE_TASBIH_PRESETS.find(p => p.id === store.freeTasbih.presetId) || FREE_TASBIH_PRESETS[0];
-
-  return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* 1. Architectural Hero Banner */}
-      <section
-        aria-labelledby="adhkar-hero-title"
-        className="wird-hero-surface relative p-6 md:p-8 overflow-hidden"
+  const renderCategoryCard = (cat: AdhkarCategoryMeta) => {
+    const summary = getAdhkarCategoryProgressSummary(cat.id, countsForToday);
+    const isRecommendedNow = cat.id === recommendedCategory;
+    return (
+      <button
+        key={cat.id}
+        type="button"
+        onClick={() => handleOpenCategory(cat.id)}
+        className={`wird-card text-right p-5 flex flex-col justify-between gap-4 transition-all duration-150 hover:border-[var(--wird-border-gold)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-accent)] ${
+          summary.isComplete
+            ? 'border-emerald-600/35 dark:border-emerald-400/35'
+            : ''
+        }`}
       >
-        <WirdIslamicPattern opacity={0.06} variant="gold" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="wird-section-badge">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>حصن المسلم والورد اليومي الموثق</span>
-              </span>
-              <span className="text-xs font-semibold text-[#F2EDE2]/80">
-                · مقترح الوقت الحالي: {ADHKAR_CATEGORIES.find(c => c.id === recommendedCategory)?.label}
-              </span>
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center justify-center shrink-0">
+              {renderCategoryIcon(cat.id, 'w-5 h-5')}
             </div>
-            <h2 id="adhkar-hero-title" className="text-2xl md:text-3xl font-extrabold font-quran text-[#F5F1E8]">
-              الأذكار والأدعية اليومية والباقيات الصالحات
-            </h2>
-            <p className="text-xs md:text-sm text-[#F2EDE2]/90 leading-relaxed">
-              ﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾ — أذكار الصباح والمساء وأدبار الصلوات والنوم والأدعية القرآنية والنبوية بتخريج موثق وعدّاد تفاعلي وتلاوة قرآنية متكاملة.
+
+            <div className="text-left text-xs font-mono tabular-nums text-[var(--wird-muted)]">
+              {summary.isComplete ? (
+                <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>مكتمل</span>
+                </span>
+              ) : (
+                <span>
+                  {summary.completedItems} / {summary.totalItems}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <h4 className="text-base font-bold font-quran text-[var(--wird-text)] leading-snug">
+              {cat.label}
+            </h4>
+            <p className="text-xs text-[var(--wird-muted)] leading-relaxed line-clamp-2">
+              {cat.description}
             </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-4 self-start md:self-center">
-            {onOpenRuqyah && (
-              <button
-                type="button"
-                onClick={onOpenRuqyah}
-                className="min-h-11 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F1E8] border border-[#E0A96D]/35 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <ShieldCheck className="w-4 h-4 text-[#E0A96D]" />
-                <span>الانتقال إلى الرقية الشرعية</span>
-              </button>
-            )}
-            <WirdMihrabArch size={84} variant="gold" className="hidden sm:block shrink-0" />
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center justify-between text-[11px] text-[var(--wird-muted)] tabular-nums">
+            <span>
+              {summary.totalItems} ذكراً
+              {isRecommendedNow ? ' · مقترح الآن' : ''}
+            </span>
+            <span className="font-mono font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+              {summary.percent}%
+            </span>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-[var(--wird-surface-muted)] overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                summary.isComplete
+                  ? 'bg-emerald-600 dark:bg-emerald-400'
+                  : 'bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)]'
+              }`}
+              style={{ width: `${summary.percent}%` }}
+            />
           </div>
         </div>
-      </section>
+      </button>
+    );
+  };
 
-      {/* 2. Category Selector Rail */}
-      <div className="wird-card p-4 sm:p-5 space-y-4">
-        <HorizontalScrollRail ariaLabel="أقسام الأذكار والأدعية اليومية">
-          {ADHKAR_CATEGORIES.map(cat => {
-            const summary = getAdhkarCategoryProgressSummary(cat.id, countsForToday);
-            const isActive = activeCategory === cat.id && filterMode !== 'favorites';
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => {
-                  stopAdhkarAudio();
-                  setFilterMode('all');
-                  setActiveCategory(cat.id);
-                }}
-                className={`min-h-12 shrink-0 snap-start px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all flex items-center gap-2.5 ${
-                  isActive
-                    ? 'bg-[var(--wird-primary)] text-white border-[var(--wird-border-gold)] shadow-sm'
-                    : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
-                }`}
-              >
-                {cat.id === 'morning' || cat.id === 'waking_up' ? (
-                  <Sun className={`w-4 h-4 ${isActive ? 'text-[#E0A96D]' : 'text-[#C59B27]'}`} />
-                ) : cat.id === 'evening' || cat.id === 'sleeping' ? (
-                  <Moon className={`w-4 h-4 ${isActive ? 'text-[#E0A96D]' : 'text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'}`} />
-                ) : cat.id === 'quranic_duas' ? (
-                  <BookOpen className="w-4 h-4 text-[#C59B27]" />
-                ) : (
-                  <Sparkles className="w-4 h-4 text-[#C59B27]" />
-                )}
-                <span>{cat.label}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums ${
-                    summary.isComplete
-                      ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-                      : isActive
-                      ? 'bg-white/15 text-white'
-                      : 'bg-[var(--wird-primary)]/10 dark:bg-white/10 text-[var(--wird-muted)]'
-                  }`}
-                >
-                  {summary.completedItems}/{summary.totalItems}
-                </span>
-              </button>
-            );
-          })}
-        </HorizontalScrollRail>
-
-        {/* Controls Bar: Search, Filter, Reciter Picker, Category Progress */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-[var(--wird-border)]">
-          <div className="flex flex-wrap items-center gap-2 flex-1">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="search"
-                aria-label="البحث في الأذكار والأدعية"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="ابحث في نص الذكر، العنوان، الفضل، أو المصدر..."
-                className="w-full min-h-11 pr-10 pl-3 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[#C59B27]"
-              />
-            </div>
-
+  const renderReadingToolbar = (showReciter: boolean, onResetAll?: () => void) => {
+    const scaleIdx = FONT_SCALE_ORDER.indexOf(store.readingPrefs.fontScale);
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-[var(--wird-border)]">
+        {/* Font Size Control + Virtue/Source Toggle */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            role="group"
+            aria-label="التحكم بحجم خط الذكر"
+            className="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)]"
+          >
             <button
               type="button"
-              aria-pressed={filterMode === 'favorites'}
-              onClick={() => setFilterMode(prev => (prev === 'favorites' ? 'all' : 'favorites'))}
-              className={`min-h-11 px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
-                filterMode === 'favorites'
-                  ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)] border-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
-              }`}
+              onClick={() => handleStepFontScale(-1)}
+              disabled={scaleIdx <= 0}
+              aria-label="تصغير حجم خط الذكر"
+              className="min-h-9 min-w-9 px-2 rounded-lg text-xs font-bold text-[var(--wird-text)] hover:bg-[var(--wird-surface)] disabled:opacity-35 transition-colors whitespace-nowrap"
             >
-              <Star className="w-3.5 h-3.5" />
-              <span>المفضلة ({store.favoriteIds.length})</span>
+              أ-
             </button>
-
+            <span className="px-2 text-xs font-semibold text-[var(--wird-muted)] whitespace-nowrap">
+              الخط: {FONT_SCALE_LABELS[store.readingPrefs.fontScale]}
+            </span>
             <button
               type="button"
-              aria-pressed={filterMode === 'quran_audio'}
-              onClick={() => setFilterMode(prev => (prev === 'quran_audio' ? 'all' : 'quran_audio'))}
-              className={`min-h-11 px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
-                filterMode === 'quran_audio'
-                  ? 'bg-[var(--wird-primary)] text-white border-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
-              }`}
+              onClick={() => handleStepFontScale(1)}
+              disabled={scaleIdx >= FONT_SCALE_ORDER.length - 1}
+              aria-label="تكبير حجم خط الذكر"
+              className="min-h-9 min-w-9 px-2 rounded-lg text-xs font-bold text-[var(--wird-text)] hover:bg-[var(--wird-surface)] disabled:opacity-35 transition-colors whitespace-nowrap"
             >
-              <Volume2 className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
-              <span>الأذكار القرآنية الصوتية</span>
+              أ+
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--wird-muted)]">
+          <button
+            type="button"
+            aria-pressed={store.readingPrefs.showVirtueAndSource}
+            onClick={handleToggleVirtueAndSource}
+            className={`min-h-11 px-3.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors whitespace-nowrap ${
+              store.readingPrefs.showVirtueAndSource
+                ? 'bg-[var(--wird-accent-soft)] border-[var(--wird-border-gold)] text-[var(--wird-text)]'
+                : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)]'
+            }`}
+          >
+            {store.readingPrefs.showVirtueAndSource ? (
+              <Eye className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+            ) : (
+              <EyeOff className="w-3.5 h-3.5" />
+            )}
+            <span>
+              {store.readingPrefs.showVirtueAndSource ? 'إخفاء الفضل والتخريج' : 'إظهار الفضل والتخريج'}
+            </span>
+          </button>
+        </div>
+
+        {/* Secondary Controls: Reciter + Reset */}
+        <div className="flex flex-wrap items-center gap-2">
+          {showReciter && (
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--wird-muted)] whitespace-nowrap">
               <span>القارئ:</span>
               <select
                 aria-label="اختيار قارئ الأذكار القرآنية"
@@ -471,326 +615,497 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
                   setActiveReciter(next);
                   savePreferredReciter(next);
                 }}
-                className="min-h-11 px-3 py-1.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)]"
+                className="min-h-11 px-3 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)]"
               >
                 {RECITERS.map(r => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </select>
             </label>
+          )}
 
+          {onResetAll && (
             <button
               type="button"
-              onClick={() => {
-                setStore(resetAdhkarCategoryCounts(activeCategory, todayStr));
-                onToast?.(`تمت إعادة ضبط عدّاد «${activeCategoryMeta.label}» لليوم.`, 'info');
-              }}
-              className="min-h-11 px-3 py-1.5 rounded-xl bg-[var(--wird-surface-muted)] text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-border-gold)] border border-transparent flex items-center gap-1.5"
+              onClick={onResetAll}
+              className="min-h-11 px-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] text-xs font-bold text-[var(--wird-text)] flex items-center gap-1.5 whitespace-nowrap transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>تصفير القسم</span>
             </button>
-          </div>
-        </div>
-
-        {/* Category Progress Summary Bar */}
-        <div className="p-3.5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div>
-              <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">{activeCategoryMeta.label}</span>
-              <span className="text-[var(--wird-muted)]"> · {activeCategoryMeta.recommendedTimeAr}</span>
-            </div>
-            <div className="font-mono font-bold text-[var(--wird-text)] tabular-nums">
-              {categorySummary.completedItems} / {categorySummary.totalItems} ذكر مكتمل ({categorySummary.percent}%)
-            </div>
-          </div>
-          <div
-            role="progressbar"
-            aria-label={`تقدم ${activeCategoryMeta.label}`}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={categorySummary.percent}
-            className="w-full h-2 rounded-full bg-[#E5DEC9] dark:bg-[var(--wird-surface-elevated)] overflow-hidden"
-          >
-            <div
-              className="h-full rounded-full bg-gradient-to-l from-[var(--wird-primary)] to-[var(--wird-accent)] transition-all duration-300"
-              style={{ width: `${categorySummary.percent}%` }}
-            />
-          </div>
+          )}
         </div>
       </div>
+    );
+  };
 
-      {/* 3. Adhkar & Duas Cards List */}
-      <div className="space-y-4">
-        {visibleItems.map(item => {
-          const targetCount = getAdhkarRepeatTarget(item, effectiveCategory);
-          const currentCount = countsForToday[item.id] ?? 0;
-          const displayCount = Math.min(currentCount, targetCount);
-          const isCompleted = currentCount >= targetCount;
-          const isFavorite = store.favoriteIds.includes(item.id);
-          const isThisPlaying = playingItemId === item.id && isAudioPlaying;
-          const isThisPaused = playingItemId === item.id && isAudioPaused;
-          const resolvedAyahs = verifiedQuranAyahsById[item.id];
-          const progressPercent = Math.min(100, Math.round((displayCount / targetCount) * 100));
+  const renderItemCard = (item: AdhkarItem, idx: number, listContext: AdhkarItem[], category?: AdhkarCategory) => {
+    const targetCount = getAdhkarRepeatTarget(item, category);
+    const currentCount = countsForToday[item.id] ?? 0;
+    const remainingCount = getAdhkarRemainingCount(currentCount, targetCount);
+    const isCompleted = remainingCount === 0;
 
-          return (
-            <article
-              key={item.id}
-              id={`adhkar-card-${item.id}`}
-              className={`wird-card p-5 md:p-6 space-y-4 transition-all ${
-                isCompleted
-                  ? 'border-emerald-600/35 dark:border-emerald-400/35 bg-emerald-50/40 dark:bg-emerald-950/15'
-                  : ''
-              }`}
-            >
-              {/* Card Header */}
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base md:text-lg font-bold font-quran text-[var(--wird-text)]">
-                      {item.title}
-                    </h3>
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                        item.kind === 'quran'
-                          ? 'bg-[var(--wird-primary)]/12 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:bg-[var(--wird-primary)] dark:text-[#6EE7B7] border-[var(--wird-border)]'
-                          : 'bg-[#C59B27]/12 text-[#9A7415] dark:bg-[#E0A96D]/15 dark:text-[var(--wird-accent)] border-[#C59B27]/30'
-                      }`}
-                    >
-                      {item.grade}
+    return (
+      <AdhkarCard
+        key={item.id}
+        item={item}
+        indexNumber={idx + 1}
+        currentCount={Math.min(currentCount, targetCount)}
+        targetCount={targetCount}
+        remainingCount={remainingCount}
+        isCompleted={isCompleted}
+        isFavorite={store.favoriteIds.includes(item.id)}
+        isCopied={copiedId === item.id}
+        isPlaying={playingItemId === item.id && isAudioPlaying}
+        isPaused={playingItemId === item.id && isAudioPaused}
+        resolvedAyahs={verifiedQuranAyahsById[item.id]}
+        fontScale={store.readingPrefs.fontScale}
+        showVirtueAndSource={store.readingPrefs.showVirtueAndSource}
+        onTapCount={() => handleTapCount(item, listContext, category)}
+        onPlayAudio={() => void handlePlayQuranicDhikr(item)}
+        onToggleFavorite={() => setStore(toggleAdhkarFavorite(item.id))}
+        onCopy={() => handleCopyDhikr(item)}
+        onResetItem={() => setStore(resetAdhkarItemCount(item.id, todayStr))}
+      />
+    );
+  };
+
+  const tabs: Array<{ id: AdhkarWorkspaceTab; label: string; countText: string }> = [
+    { id: 'adhkar', label: 'الأذكار اليومية والمناسبات', countText: `${dailyCategories.length + occasionCategories.length}` },
+    { id: 'duas', label: 'الأدعية المأثورة', countText: `${duaCategories.length}` },
+    { id: 'tasbih', label: 'المسبحة الإلكترونية', countText: `${store.freeTasbih.currentCount}` },
+    { id: 'favorites', label: 'المفضلة', countText: `${store.favoriteIds.length}` }
+  ];
+
+  return (
+    <div className="space-y-6 max-w-6xl mx-auto">
+      {/* 1. Compact Architectural Header (Shown in Directory / Tasbih / Favorites; hidden inside Focused Reader to save space) */}
+      {!selectedCategory && (
+        <section
+          aria-labelledby="adhkar-hero-title"
+          className="wird-hero-surface relative p-6 md:p-7 overflow-hidden"
+        >
+          <WirdIslamicPattern opacity={0.05} variant="gold" />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2.5 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs font-semibold text-[#F2EDE2]/85">
+                <span className="text-[#E9C176] font-bold">موسوعة حصن المسلم الموثّقة</span>
+                <span aria-hidden="true">·</span>
+                <span className="tabular-nums">{ADHKAR_CATEGORIES.length} قسماً</span>
+                <span aria-hidden="true">·</span>
+                <span className="tabular-nums">{ADHKAR_ITEMS.length} ذكراً ودعاءً</span>
+                {overallSummary.totalRepetitionsToday > 0 && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="tabular-nums text-[#E9C176]">
+                      تسبيحات اليوم: {overallSummary.totalRepetitionsToday}
                     </span>
-                    <span className="text-[11px] font-bold text-[var(--wird-muted)] font-mono tabular-nums">
-                      التكرار المسنون: {targetCount === 1 ? 'مرة واحدة' : `${targetCount} مرات`}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-[var(--wird-muted)]">
-                    المصدر: {item.source}
-                  </p>
-                </div>
-
-                {/* Action Tools: Audio (for Quranic items), Favorite, Copy, Reset */}
-                <div className="flex items-center gap-1.5">
-                  {item.kind === 'quran' && (
-                    <button
-                      type="button"
-                      onClick={() => void handlePlayQuranicDhikr(item)}
-                      className={`min-h-11 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${
-                        isThisPlaying
-                          ? 'bg-[var(--wird-accent)] text-[var(--wird-accent-ink)]'
-                          : 'bg-[var(--wird-primary)] hover:bg-[#28665B] text-white'
-                      }`}
-                    >
-                      {isThisPlaying ? (
-                        <>
-                          <Pause className="w-3.5 h-3.5" />
-                          <span>إيقاف مؤقت</span>
-                        </>
-                      ) : isThisPaused ? (
-                        <>
-                          <Play className="w-3.5 h-3.5" />
-                          <span>استئناف التلاوة</span>
-                        </>
-                      ) : (
-                        <>
-                          <Volume2 className="w-3.5 h-3.5" />
-                          <span>استماع للتلاوة</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    aria-label={isFavorite ? `إزالة ${item.title} من المفضلة` : `إضافة ${item.title} إلى المفضلة`}
-                    aria-pressed={isFavorite}
-                    onClick={() => setStore(toggleAdhkarFavorite(item.id))}
-                    className={`min-h-11 min-w-11 flex items-center justify-center rounded-xl border transition-colors ${
-                      isFavorite
-                        ? 'bg-[#C59B27]/15 border-[#C59B27] text-[var(--wird-accent)]'
-                        : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)]'
-                    }`}
-                  >
-                    <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                  </button>
-
-                  <button
-                    type="button"
-                    aria-label={`نسخ ${item.title}`}
-                    onClick={() => handleCopyDhikr(item)}
-                    className="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-primary)] dark:text-[var(--wird-accent)] dark:hover:text-[var(--wird-accent)]"
-                  >
-                    {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  </button>
-
-                  {currentCount > 0 && (
-                    <button
-                      type="button"
-                      aria-label={`تصفير عداد ${item.title}`}
-                      onClick={() => setStore(resetAdhkarItemCount(item.id, todayStr))}
-                      className="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-rose-600"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Vocalized Text Body */}
-              <div className="p-4 md:p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)]">
-                {item.kind === 'quran' ? (
-                  <p className="font-quran text-lg md:text-2xl leading-[2.35] text-[var(--wird-text)] text-right">
-                    {resolvedAyahs && resolvedAyahs.length > 0 ? (
-                      resolvedAyahs.map(ayah => (
-                        <React.Fragment key={ayah.number}>
-                          <QuranText>{ayah.text}</QuranText>
-                          <span className="ayah-number">{ayah.numberInSurah}</span>
-                        </React.Fragment>
-                      ))
-                    ) : (
-                      <QuranText>{item.text}</QuranText>
-                    )}
-                  </p>
-                ) : (
-                  <p className="hadith-matn text-[var(--wird-text)]">
-                    {item.text}
-                  </p>
+                  </>
                 )}
               </div>
 
-              {/* Virtue Note & Interactive Counter Button */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                <p className="text-xs text-[var(--wird-muted)] leading-relaxed flex-1">
-                  <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الفضل والبيان: </strong>
-                  {item.virtue}
-                </p>
+              <h2 id="adhkar-hero-title" className="text-2xl md:text-3xl font-extrabold font-quran text-[#F5F1E8] text-balance">
+                الأذكار والأدعية اليومية والمسبحة الإلكترونية
+              </h2>
+              <p className="text-xs md:text-sm text-[#F2EDE2]/90 leading-relaxed">
+                ﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾ — دليل شامل ومنظّم لأذكار اليوم والليلة والمناسبات والأدعية القرآنية والنبوية بتخريج صحيح وعدّاد تنازلي تفاعلي.
+              </p>
+            </div>
 
+            <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
+              <button
+                type="button"
+                onClick={() => handleOpenCategory(recommendedCategory)}
+                className="min-h-12 px-5 py-2.5 rounded-xl bg-[var(--wird-accent)] hover:bg-[var(--wird-accent-hover)] text-[var(--wird-accent-ink)] text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-colors whitespace-nowrap shadow-xs"
+              >
+                {renderCategoryIcon(recommendedCategory, 'w-4 h-4')}
+                <span>
+                  {recommendedMeta.label} الآن ({recommendedSummary.completedItems}/{recommendedSummary.totalItems})
+                </span>
+              </button>
+
+              {onOpenRuqyah && (
                 <button
                   type="button"
-                  onClick={() => handleTapCount(item)}
-                  aria-label={`تكرار ${item.title} (${displayCount} من ${targetCount})`}
-                  className={`min-h-12 px-6 py-3 rounded-2xl font-bold text-xs md:text-sm flex items-center justify-center gap-3 shrink-0 transition-all active:scale-95 ${
-                    isCompleted
-                      ? 'bg-emerald-700 text-white shadow-xs'
-                      : 'bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-white ring-1 ring-[#C59B27]/45 shadow-sm'
-                  }`}
+                  onClick={onOpenRuqyah}
+                  className="min-h-12 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F1E8] border border-[#E0A96D]/35 text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap"
                 >
-                  {isCompleted ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-[#F6D78B]" />
-                      <span>مكتمل ({displayCount} / {targetCount})</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>اضغط للعدّ</span>
-                      <span className="px-2.5 py-0.5 rounded-lg bg-black/20 font-mono text-sm tabular-nums">
-                        {displayCount} / {targetCount}
-                      </span>
-                    </>
-                  )}
+                  <ShieldCheck className="w-4 h-4 text-[#E0A96D]" />
+                  <span>الرقية الشرعية</span>
                 </button>
-              </div>
-
-              {/* Subtle Item Progress Line */}
-              {targetCount > 1 && (
-                <div className="w-full h-1 rounded-full bg-[#E5DEC9] dark:bg-[var(--wird-surface-elevated)] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[var(--wird-primary)] dark:bg-[#E0A96D] transition-all duration-200"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
               )}
-            </article>
-          );
-        })}
 
-        {visibleItems.length === 0 && (
-          <div className="wird-card p-10 text-center space-y-2">
-            <Heart className="w-8 h-8 text-[var(--wird-accent)] mx-auto" />
-            <h3 className="text-base font-bold text-[var(--wird-text)]">
-              لا توجد أذكار مطابقة للبحث أو التصفية الحالية
-            </h3>
-            <p className="text-xs text-[var(--wird-muted)]">
-              جرّب عرض جميع الأذكار أو تغيير كلمة البحث.
-            </p>
+              <WirdMihrabArch size={76} variant="gold" className="hidden xl:block shrink-0" />
+            </div>
           </div>
-        )}
-      </div>
+        </section>
+      )}
 
-      {/* 4. Interactive Free Tasbih Counter (المسبحة الإلكترونية والذكر المفتوح) */}
-      <section
-        aria-labelledby="free-tasbih-title"
-        className="wird-card p-6 md:p-8 space-y-5 border border-[var(--wird-border-gold)]"
+      {/* 2. Separated Top-Level Workspace Tabs */}
+      <nav
+        aria-label="الأقسام الرئيسية لصفحة الأذكار"
+        className="wird-card p-1.5 grid grid-cols-2 lg:flex items-center gap-1.5"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 id="free-tasbih-title" className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)] flex items-center gap-2">
-              <Flame className="w-5 h-5 text-[var(--wird-accent)]" />
-              <span>المسبحة الإلكترونية والذكر المفتوح</span>
-            </h3>
-            <p className="text-xs text-[var(--wird-muted)] mt-0.5">
-              عدّاد تسبيح واستغفار مفتوح يُحفظ تلقائياً في حسابك مع إجمالي تسبيحاتك التراكمية
-            </p>
-          </div>
-          <span className="wird-section-badge font-mono tabular-nums">
-            إجمالي التسبيحات: {store.freeTasbih.totalLifetimeCount}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {FREE_TASBIH_PRESETS.map(preset => {
-            const isSelected = store.freeTasbih.presetId === preset.id;
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                aria-pressed={isSelected}
-                onClick={() => setStore(selectFreeTasbihPreset(preset.id))}
-                className={`min-h-11 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
-                  isSelected
-                    ? 'bg-[var(--wird-primary)] text-white border-[#C59B27]'
-                    : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
+        {tabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              aria-pressed={isActive}
+              onClick={() => handleSwitchTab(tab.id)}
+              className={`min-h-11 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 text-center lg:flex-1 transition-colors ${
+                isActive
+                  ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] shadow-xs'
+                  : 'text-[var(--wird-text)] hover:bg-[var(--wird-surface-muted)]'
+              }`}
+            >
+              <span className="truncate">{tab.label}</span>
+              <span
+                className={`text-[11px] font-mono tabular-nums shrink-0 ${
+                  isActive ? 'opacity-85' : 'text-[var(--wird-muted)]'
                 }`}
               >
-                {preset.phrase}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="p-6 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-1.5 text-center md:text-right">
-            <div className="text-xl md:text-2xl font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-              {activeTasbihPreset.phrase}
-            </div>
-            <p className="text-xs text-[var(--wird-muted)]">
-              {activeTasbihPreset.virtue}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setStore(incrementFreeTasbihCount())}
-              aria-label="تسبيحة جديدة في المسبحة الإلكترونية"
-              className="min-h-16 px-8 py-4 rounded-2xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] hover:brightness-105 text-white font-bold text-base shadow-md ring-2 ring-[var(--wird-border-gold)] flex items-center gap-3 active:scale-95 transition-all"
-            >
-              <span>سبِّح</span>
-              <span className="px-3 py-1 rounded-xl bg-black/25 font-mono text-lg tabular-nums">
-                {store.freeTasbih.currentCount} / {store.freeTasbih.targetCount}
+                ({tab.countText})
               </span>
             </button>
+          );
+        })}
+      </nav>
 
-            <button
-              type="button"
-              aria-label="تصفير عداد المسبحة الحالي"
-              onClick={() => setStore(resetFreeTasbihCount())}
-              className="min-h-12 min-w-12 flex items-center justify-center rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-rose-600"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+      {/* 3A. DEDICATED ELECTRONIC TASBIH TAB */}
+      {activeTab === 'tasbih' && (
+        <TasbihStudioPanel
+          tasbih={store.freeTasbih}
+          onIncrement={() => setStore(incrementFreeTasbihCount())}
+          onResetCurrent={() => {
+            setStore(resetFreeTasbihCount());
+            onToast?.('تم تصفير عدّاد الدورة الحالية مع حفظ الإجمالي التراكمي.', 'info');
+          }}
+          onSelectPreset={presetId => setStore(selectFreeTasbihPreset(presetId))}
+          onSelectTarget={target => setStore(setFreeTasbihTarget(target))}
+        />
+      )}
+
+      {/* 3B. FAVORITES TAB */}
+      {activeTab === 'favorites' && (
+        <section aria-label="الأذكار والأدعية المفضلة" className="space-y-4">
+          <div className="wird-card p-5 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-bold font-quran text-[var(--wird-text)]">
+                  المفضلة المحفوظة
+                </h3>
+                <p className="text-xs text-[var(--wird-muted)]">
+                  الأذكار والأدعية التي اخترتها للوصول السريع اليومي مع عدّادها التنازلي.
+                </p>
+              </div>
+              <span className="text-xs font-bold tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                <span className="font-mono">{favoriteItems.length}</span> محفوظات
+              </span>
+            </div>
+            {favoriteItems.length > 0 && renderReadingToolbar(favoriteItems.some(i => i.kind === 'quran'))}
           </div>
+
+          {favoriteItems.length > 0 ? (
+            <div className="space-y-4">
+              {favoriteItems.map((item, idx) => renderItemCard(item, idx, favoriteItems))}
+            </div>
+          ) : (
+            <div className="wird-card p-10 text-center space-y-2.5">
+              <Star className="w-8 h-8 text-[var(--wird-accent)] mx-auto" />
+              <h4 className="text-base font-bold text-[var(--wird-text)]">
+                لا توجد أذكار في المفضلة بعد
+              </h4>
+              <p className="text-xs text-[var(--wird-muted)] max-w-md mx-auto">
+                اضغط على أيقونة النجمة بجانب أي ذكر أو دعاء ليظهر هنا في قائمتك الخاصة.
+              </p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 3C. FOCUSED CATEGORY READER (When a category is selected inside Adhkar or Duas) */}
+      {(activeTab === 'adhkar' || activeTab === 'duas') && selectedCategory && selectedCategoryMeta && selectedCategorySummary && (
+        <section aria-labelledby="focused-category-heading" className="space-y-5">
+          {/* Focused Reader Header & Reading Controls */}
+          <div className="wird-card p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="flex items-center justify-between sm:justify-start gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopAdhkarAudio();
+                    setSelectedCategory(null);
+                    setReaderSearchQuery('');
+                  }}
+                  className="min-h-11 px-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] text-xs font-bold text-[var(--wird-text)] flex items-center gap-1.5 shrink-0 transition-colors whitespace-nowrap"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                  <span>الفهرس</span>
+                </button>
+
+                <div className="sm:hidden text-xs font-bold tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0">
+                  <span className="font-mono">
+                    {selectedCategorySummary.completedItems} / {selectedCategorySummary.totalItems}
+                  </span>{' '}
+                  مكتمل (<span className="font-mono">{selectedCategorySummary.percent}%</span>)
+                </div>
+              </div>
+
+              <div className="space-y-1 min-w-0 flex-1">
+                <h3
+                  id="focused-category-heading"
+                  className="text-xl md:text-2xl font-extrabold font-quran text-[var(--wird-text)] leading-snug"
+                >
+                  {selectedCategoryMeta.label}
+                </h3>
+                <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
+                  {selectedCategoryMeta.recommendedTimeAr}
+                </p>
+              </div>
+
+              <div className="hidden sm:block text-left text-xs sm:text-sm font-bold tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0">
+                <span className="font-mono">
+                  {selectedCategorySummary.completedItems} / {selectedCategorySummary.totalItems}
+                </span>{' '}
+                مكتمل (<span className="font-mono">{selectedCategorySummary.percent}%</span>)
+              </div>
+            </div>
+
+            {/* Category Progress Bar */}
+            <div
+              role="progressbar"
+              aria-label={`تقدم ${selectedCategoryMeta.label}`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={selectedCategorySummary.percent}
+              className="w-full h-2 rounded-full bg-[var(--wird-surface-muted)] overflow-hidden"
+            >
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  selectedCategorySummary.isComplete
+                    ? 'bg-emerald-600 dark:bg-emerald-400'
+                    : 'bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)]'
+                }`}
+                style={{ width: `${selectedCategorySummary.percent}%` }}
+              />
+            </div>
+
+            {/* Search inside category (helpful for 25+ Morning/Evening adhkar) */}
+            {selectedCategorySummary.totalItems > 8 && (
+              <div className="relative">
+                <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="search"
+                  aria-label={`البحث داخل ${selectedCategoryMeta.label}`}
+                  value={readerSearchQuery}
+                  onChange={e => setReaderSearchQuery(e.target.value)}
+                  placeholder={`ابحث داخل ${selectedCategoryMeta.label}...`}
+                  className="w-full min-h-11 pr-10 pl-9 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs text-[var(--wird-text)] focus:outline-none focus:ring-2 focus:ring-[var(--wird-accent)]"
+                />
+                {readerSearchQuery && (
+                  <button
+                    type="button"
+                    aria-label="مسح البحث"
+                    onClick={() => setReaderSearchQuery('')}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 min-h-8 min-w-8 flex items-center justify-center text-[var(--wird-muted)] hover:text-[var(--wird-text)]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Font size, Virtue/Source visibility, Reciter & Category Reset */}
+            {renderReadingToolbar(readerHasQuranItems, () => {
+              setStore(resetAdhkarCategoryCounts(selectedCategory, todayStr));
+              onToast?.(`تمت إعادة ضبط عدّاد «${selectedCategoryMeta.label}» لليوم.`, 'info');
+            })}
+          </div>
+
+          {/* Interactive Countdown Cards List */}
+          <div className="space-y-4">
+            {readerItems.map((item, idx) => renderItemCard(item, idx, readerItems, selectedCategory))}
+
+            {readerItems.length === 0 && (
+              <div className="wird-card p-10 text-center space-y-2">
+                <SlidersHorizontal className="w-7 h-7 text-[var(--wird-accent)] mx-auto" />
+                <h4 className="text-base font-bold text-[var(--wird-text)]">
+                  لا توجد أذكار مطابقة للبحث داخل هذا القسم
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setReaderSearchQuery('')}
+                  className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:underline"
+                >
+                  عرض جميع أذكار القسم
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Completion Banner at bottom of Reader */}
+          {selectedCategorySummary.isComplete && (
+            <div className="wird-card p-6 text-center space-y-3 border-emerald-600/35 dark:border-emerald-400/35">
+              <CheckCircle2 className="w-9 h-9 text-emerald-600 dark:text-emerald-400 mx-auto" />
+              <h4 className="text-lg font-bold font-quran text-[var(--wird-text)]">
+                تقبّل الله منك — أتممت {selectedCategoryMeta.label} بالكامل
+              </h4>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopAdhkarAudio();
+                    setSelectedCategory(null);
+                  }}
+                  className="min-h-11 px-5 rounded-xl bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] text-xs font-bold whitespace-nowrap"
+                >
+                  العودة إلى فهرس الأقسام
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStore(resetAdhkarCategoryCounts(selectedCategory, todayStr))}
+                  className="min-h-11 px-4 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)] whitespace-nowrap"
+                >
+                  قراءة القسم مجدداً
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 3D. DIRECTORY HUB VIEW (Adhkar Tab or Duas Tab when no specific category is open) */}
+      {(activeTab === 'adhkar' || activeTab === 'duas') && !selectedCategory && (
+        <div className="space-y-6">
+          {/* Global Encyclopedia Search */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="search"
+              aria-label="البحث الشامل في موسوعة الأذكار والأدعية"
+              value={hubSearchQuery}
+              onChange={e => setHubSearchQuery(e.target.value)}
+              placeholder="ابحث في جميع الأذكار والأدعية والأقسام (مثل: السفر، المطر، الاستخارة، الكرب، آية الكرسي)..."
+              className="w-full min-h-12 pr-11 pl-10 py-2.5 rounded-2xl bg-[var(--wird-surface)] border border-[var(--wird-border)] text-sm text-[var(--wird-text)] shadow-2xs focus:outline-none focus:ring-2 focus:ring-[var(--wird-accent)]"
+            />
+            {hubSearchQuery && (
+              <button
+                type="button"
+                aria-label="مسح البحث الشامل"
+                onClick={() => setHubSearchQuery('')}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 min-h-9 min-w-9 flex items-center justify-center text-[var(--wird-muted)] hover:text-[var(--wird-text)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Search Results Mode */}
+          {hubSearchResults ? (
+            <div className="space-y-6">
+              {hubSearchResults.matchingCategories.length > 0 && (
+                <section className="space-y-3">
+                  <h3 className="text-sm font-bold text-[var(--wird-text)]">
+                    الأقسام المطابقة ({hubSearchResults.matchingCategories.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {hubSearchResults.matchingCategories.map(renderCategoryCard)}
+                  </div>
+                </section>
+              )}
+
+              <section className="space-y-3">
+                <h3 className="text-sm font-bold text-[var(--wird-text)]">
+                  الأذكار والأدعية المطابقة ({hubSearchResults.matchingItems.length})
+                </h3>
+                {hubSearchResults.matchingItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {hubSearchResults.matchingItems.map((item, idx) =>
+                      renderItemCard(item, idx, hubSearchResults.matchingItems)
+                    )}
+                  </div>
+                ) : (
+                  <div className="wird-card p-8 text-center text-xs text-[var(--wird-muted)]">
+                    لم يتم العثور على أذكار مطابقة لعبارة البحث «{hubSearchQuery}».
+                  </div>
+                )}
+              </section>
+            </div>
+          ) : activeTab === 'adhkar' ? (
+            /* Adhkar Directory: Daily Fixed Adhkar (6) + Hisn al-Muslim Occasions (9) */
+            <div className="space-y-8">
+              <section aria-labelledby="daily-adhkar-group-heading" className="space-y-3.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <div>
+                    <h3
+                      id="daily-adhkar-group-heading"
+                      className="text-lg font-bold font-quran text-[var(--wird-text)]"
+                    >
+                      الأذكار اليومية الثابتة
+                    </h3>
+                    <p className="text-xs text-[var(--wird-muted)]">
+                      أوراد اليوم والليلة الأساسية التي يلازمها المسلم كل يوم
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold tabular-nums text-[var(--wird-muted)]">
+                    <span className="font-mono">{dailyCategories.length}</span> أقسام
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {dailyCategories.map(renderCategoryCard)}
+                </div>
+              </section>
+
+              <section aria-labelledby="occasion-adhkar-group-heading" className="space-y-3.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <div>
+                    <h3
+                      id="occasion-adhkar-group-heading"
+                      className="text-lg font-bold font-quran text-[var(--wird-text)]"
+                    >
+                      أذكار المناسبات والأحوال (حصن المسلم)
+                    </h3>
+                    <p className="text-xs text-[var(--wird-muted)]">
+                      الأذكار المأثورة للوضوء والأذان والمسجد والمنزل والطعام والسفر والكرب والمطر والعيادة والمجالس
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold tabular-nums text-[var(--wird-muted)]">
+                    <span className="font-mono">{occasionCategories.length}</span> أقسام
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {occasionCategories.map(renderCategoryCard)}
+                </div>
+              </section>
+            </div>
+          ) : (
+            /* Duas Directory: Quranic, Prophetic & Istikhara/Rizq/Salawat (3) */
+            <section aria-labelledby="duas-group-heading" className="space-y-3.5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div>
+                  <h3
+                    id="duas-group-heading"
+                    className="text-lg font-bold font-quran text-[var(--wird-text)]"
+                  >
+                    مكتبة الأدعية القرآنية والنبوية المأثورة
+                  </h3>
+                  <p className="text-xs text-[var(--wird-muted)]">
+                    جوامع الدعاء من كتاب الله وسنة نبيه ﷺ مع التلاوة الصوتية للآيات القرآنية
+                  </p>
+                </div>
+                <span className="text-xs font-semibold tabular-nums text-[var(--wird-muted)]">
+                  <span className="font-mono">{duaCategories.length}</span> أقسام
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {duaCategories.map(renderCategoryCard)}
+              </div>
+            </section>
+          )}
         </div>
-      </section>
+      )}
     </div>
   );
 };

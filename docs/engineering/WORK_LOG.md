@@ -1006,6 +1006,47 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
   - `npm run test:firestore-rules`: **BLOCKED** locally (`java` runtime absent).
   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
 
+## 2026-11-25 — Comprehensive Hisn al-Muslim Adhkar & Duas Encyclopedia Redesign, Separated Workspace & Circular Countdown Counter (AI Studio Workspace)
+
+- **Environment:** Google AI Studio container workspace (no `.git` directory; production settings, Firebase Rules, Vercel env vars, Quran corpus, and sync feature flags untouched).
+- **Owner Request & Confirmed Design Scope:**
+  - Expanded and redesigned `#/adhkar` to match specialized Islamic Adhkar sites (referenced pattern: IslamBook) with full Hisn al-Muslim coverage (**18 categories, 156 verified, vocalized, primary-sourced items**), separated top-level workspace tabs (**Adhkar Directory**, **Authenticated Duas**, **Standalone Electronic Tasbih Studio**, **Favorites**), a prominent **SVG Circular Countdown Counter** triggered by tapping either the card body or ring, and persisted reader ergonomics (**4-level font-size stepper** + **show/hide virtue & primary source toggle**).
+- **Key Files Created / Changed:**
+  - `src/data/adhkarCorpusOccasions.ts` *(new)* & `src/data/adhkarCorpusDuas.ts` *(new)* & `src/data/adhkarData.ts`: expanded to 18 categories (`daily_adhkar` 6, `occasion_adhkar` 9, `duas` 3), 156 items, and 8 `FREE_TASBIH_PRESETS`; preserved all legacy `adhkar-*` IDs, `LEGACY_ADHKAR_ITEM_ID_ALIASES`, Quranic ayah coordinates, `adhkar-kalimat-tammat` placement (`evening` 3× & `travel` 1×, never `morning`), and category-specific Mu'awwidhat targets (`1×` after prayer vs `3×` morning/evening/sleep).
+  - `src/services/adhkarProgressService.ts`: preserved UID-scoped `'wird.adhkar.progress.v1'` (`schemaVersion: 1`), added persisted `readingPrefs` (`fontScale`: `sm|md|lg|xl`, `showVirtueAndSource`, `autoAdvance`), `getAdhkarRemainingCount()`, `updateAdhkarReadingPrefs()`, `setFreeTasbihTarget()` (incl. `0` unlimited mode), and `getOverallDailyAdhkarSummary()`.
+  - `src/components/adhkar/CircularCountdownRing.tsx` *(new)*, `src/components/adhkar/TasbihStudioPanel.tsx` *(new)*, `src/components/adhkar/AdhkarCard.tsx` *(new)*, `src/components/adhkar/AdhkarView.tsx`: modularized the Adhkar UI into 4 separated tabs (2×2 responsive grid on mobile), category card hub directory, global search, focused category reader (`← الفهرس`), interactive circular countdown ring (`target → ... → 1 → 0`), standalone Tasbih studio (`LargeTasbihRing` + cycle target selector), persisted reading toolbar, and preserved verified local Quran chunks (`loadSurahVerses`) + offline-first audio playback (`offlineQuranAudioLibrary` + `globalAudioCoordinator`).
+  - `src/tests/adhkarSystem.test.ts`: expanded automated verification across all 18 categories, 115+ corpus floor, Quranic ayah bounds vs `ALL_SURAHS`, primary-source placement & category targets, countdown math, reading prefs persistence, unlimited Tasbih target, UID isolation, legacy alias migration, and `AdhkarView`/`AdhkarCard` integration.
+- **Verification Executed (after final polish edits):**
+  - `npm test` (74 suites incl. `adhkarSystem.test.ts`, `designSystemV2.test.ts`, Tanzil validation & 114 Surah chunk split): **PASS** (`812 PASSED | 0 FAILED`)
+  - `npm run smoke:api-imports`: **PASS**
+  - Legacy hex grep across `src/components/adhkar`: **PASS** (`NO_LEGACY_HEX_FOUND`)
+  - Headless Chromium visual & interaction verification (`1440x900` Light/Dark & `390x844` mobile Dark on `http://127.0.0.1:3000/#/adhkar`): **PASS** (Hub directory, 4 separated tabs, Morning Adhkar focused reader `24` cards, circular countdown tap `3 → 2`, font stepper, virtue/source hide/restore toggle, Duas 3 categories, Tasbih `LargeTasbihRing` track & tap count, mobile 2×2 tabs & stacked reader header, `overflowX: false`, `0` page/console errors; temporary `.verify-shots` cleaned up)
+  - `compile_applet` & `lint_applet`: executed on final workspace pass.
+  - `npm run test:firestore-rules`: **BLOCKED** locally (`java` runtime absent).
+  - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
+
+## 2026-11-25 — Comprehensive Ruqyah Shar'iyyah Overhaul & Timed Audio Ruqyah Studio (AI Studio Workspace)
+
+- **Environment:** Google AI Studio container workspace (no `.git` directory; production settings, Firebase Rules, Vercel env vars, Quran corpus, `ruqyahProgressSchema.ts`, and sync feature flags untouched).
+- **Owner Request & Scope Implemented:**
+  - Overhauled `#/ruqyah` to match the redesigned `#/adhkar` architecture (separated tabs, category card hub, interactive circular SVG counter ring, reading controls) and added **«الرقية المسموعة» (`AudioRuqyahStudio`)** offering **5 curated timed audio Ruqyah sessions** (~3m, ~6m, ~12m, ~20m, ~30m) composed strictly from verified local Quranic Ruqyah verses played via WIRD's 7 approved reciters.
+- **Key Files Created / Changed:**
+  - `src/data/ruqyahData.ts`: expanded to 9 categories (`brief`, `medium`, `full`, `eye_envy`, `illness`, `magic_protection`, `children_home`, `anxiety_sleep`, `guidelines`) with `RUQYAH_CATEGORIES` metadata, **44 verified items** (28 canonical Quran passages + 16 authenticated Prophetic duas), **6 verified guidelines**, and **5 timed `AUDIO_RUQYAH_SESSIONS`**. Preserved `RUQYAH_PROGRAM_AUDIO` (`audioUrl: ''`) and strict Hadith count discipline (`repeatTarget: null` unless a fixed number is narrated).
+  - `src/services/ruqyahContentService.ts`: preserved exact `getRuqyahAudioQueueForItems()` output shape and strict lazy-loading runtime-import invariant (imports only `loadSurahVerses` and `ALL_SURAHS` at runtime, zero `new Map(` caches); added `estimateRuqyahSessionStats(session, items)` and `buildAudioRuqyahSessionQueue(session, items)` supporting explicit Mu'awwidhat 3× repetitions and `passageStartIndices`.
+  - `src/components/ruqyah/RuqyahCountdownRing.tsx` *(new)*: 80×80px interactive SVG circular ring supporting countdown (`target → 0`) for narrated fixed counts and upward counting for open counts (`repeatTarget === null`), preserving exact accessible `status`/`aria-label` contracts.
+  - `src/components/ruqyah/AudioRuqyahStudio.tsx` *(new)*: dedicated studio UI with 5 timed session cards, reciter selector (`FALLBACK_QURAN_RECITERS`), playback speed (`0.75×/1×/1.25×`), live synced canonical `QuranText` ayah display, prev/play-pause/next/stop controls, continuous loop toggle, Sleep Timer (`إيقاف / 15 / 30 / 45 / 60 د`) with live countdown, LTR time clock + seek/volume sliders, collapsible interactive tracklist, and honest provenance note.
+  - `src/components/ruqyah/RuqyahView.tsx`: re-architected into 4 separated tabs (`القراءة والعداد`, `الرقية المسموعة`, `آداب وإرشادات`, `المكتبة الموسعة`), context-aware Hero CTA, 8-card Category Hub Grid (`min-h-12`, `aria-pressed`), Reading Controls Toolbar (`أ-`/`أ+`, persisted `إخفاء/إظهار البيان والتخريج`, internal search, auto-advance, accessible reset confirmation), and single managed HTML `<audio>` instance shared across all playback modes (`ruqyahViewAudioLock.test.ts` preserved).
+  - `src/tests/ruqyahIntegrity.test.ts` & `src/services/ruqyahContentService.test.ts`: updated reviewed source registry (6 guidelines + 44 items), fixed-count verification, 9-category filters, 28 Quran coordinate regressions, and added unit tests covering all 5 `AUDIO_RUQYAH_SESSIONS`, `estimateRuqyahSessionStats`, and `buildAudioRuqyahSessionQueue`.
+- **Verification Executed (after final polish edits):**
+  - `npm test` (74 suites incl. `ruqyahIntegrity.test.ts`, `ruqyahContentService.test.ts`, `ruqyahViewAudioLock.test.ts`, `quranLazyLoading.test.ts`, `designSystemV2.test.ts`, Tanzil validation & 114 Surah chunk split): **PASS** (`814 PASSED | 0 FAILED`)
+  - `npm run smoke:api-imports`: **PASS**
+  - Legacy hex grep across `src/components/ruqyah`: **PASS** (`NO_LEGACY_HEX_FOUND`)
+  - Headless Chromium visual & interaction verification (`1440x900` Light/Dark & `390x844` mobile Dark on `http://127.0.0.1:3000/#/ruqyah`, 2 rounds incl. polish of trailing `۞`, LTR audio clock, and context-aware hero CTA): **PASS** (`overflowX: false` across desktop & mobile, `0` console/page errors; temporary `.verify-shots` cleaned up)
+  - `compile_applet` & `lint_applet`: executed on final workspace pass.
+  - `npm run test:firestore-rules`: **BLOCKED** locally (`java` runtime absent).
+  - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** from AI Studio.
+
+
 
 
 ## 2026-11-24 — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia (`feat/seerah-encyclopedia-ibn-kathir`)

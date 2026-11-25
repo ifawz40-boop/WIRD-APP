@@ -1,35 +1,27 @@
-name: Deploy Firestore Rules (Automatic + Manual Fallback)
+name: Deploy Firestore Rules (Manual)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - firestore.rules
-      - firebase.json
-      - .github/workflows/deploy-firestore-rules.yml
-      - scripts/firestoreRules.test.ts
   workflow_dispatch:
     inputs:
       project_id:
         description: "Must be exactly wird-quran-app, the canonical WIRD Firebase project."
-        required: false
+        required: true
         type: string
       confirmation:
-        description: "For manual fallback only: type DEPLOY_FIRESTORE_RULES."
-        required: false
+        description: "Type DEPLOY_FIRESTORE_RULES to authorize this production rules deployment."
+        required: true
         type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: firestore-rules-deploy-wird-quran-app
+  group: firestore-rules-deploy-${{ inputs.project_id }}
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Verify and deploy reviewed Firestore rules
+    name: Deploy reviewed Firestore rules
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -70,15 +62,9 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: |
           set -euo pipefail
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            if [[ "$CONFIRMATION" != "DEPLOY_FIRESTORE_RULES" ]]; then
-              echo "::error::Manual fallback requires exact confirmation DEPLOY_FIRESTORE_RULES."
-              exit 1
-            fi
-            if [[ "$CONFIRM_PROJECT_ID" != "$CANONICAL_FIREBASE_PROJECT_ID" ]]; then
-              echo "::error::Manual project_id must be exactly wird-quran-app."
-              exit 1
-            fi
+          if [[ "$CONFIRMATION" != "DEPLOY_FIRESTORE_RULES" ]]; then
+            echo "::error::Type DEPLOY_FIRESTORE_RULES exactly to authorize deployment."
+            exit 1
           fi
           if [[ "$CANONICAL_FIREBASE_PROJECT_ID" != "wird-quran-app" ]]; then
             echo "::error::Internal canonical Firebase project guard is misconfigured."
@@ -86,6 +72,10 @@ jobs:
           fi
           if [[ "$FIREBASE_PROJECT_ID" != "$CANONICAL_FIREBASE_PROJECT_ID" ]]; then
             echo "::error::FIREBASE_PROJECT_ID must be exactly wird-quran-app. The legacy project is not an allowed deployment target."
+            exit 1
+          fi
+          if [[ "$CONFIRM_PROJECT_ID" != "$CANONICAL_FIREBASE_PROJECT_ID" ]]; then
+            echo "::error::The workflow input project_id must be exactly wird-quran-app."
             exit 1
           fi
           if [[ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]]; then
@@ -153,8 +143,10 @@ jobs:
               print(f"Production Firestore rules match firestore.rules (SHA-256 {local_hash}).")
               raise SystemExit(0)
 
+          # A one-time bootstrap is safe only from this exact deny-all policy.
+          # Ignore whitespace and a UTF-8 BOM, but do not ignore comments or alter tokens.
           def compact(source):
-              return re.sub(r"\\s+", "", source.lstrip("\\ufeff"))
+              return re.sub(r"\s+", "", source.lstrip("\ufeff"))
 
           known_deny_all = (
               "rules_version='2';"

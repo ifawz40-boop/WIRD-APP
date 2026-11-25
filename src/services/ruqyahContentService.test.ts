@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { RUQYAH_ITEMS, getRuqyahItemsByCategory } from '../data/ruqyahData';
+import { AUDIO_RUQYAH_SESSIONS, RUQYAH_ITEMS, getRuqyahItemsByCategory } from '../data/ruqyahData';
 import { ALL_SURAHS } from '../data/quranMeta';
 import { setQuranSurahLoaderForTests } from '../data/quranDataLoader';
 
@@ -12,6 +12,8 @@ setQuranSurahLoaderForTests(async surahNumber => {
 });
 
 import {
+  buildAudioRuqyahSessionQueue,
+  estimateRuqyahSessionStats,
   getRuqyahAudioQueue,
   getRuqyahAudioQueueForItems,
   getRuqyahAyahs,
@@ -52,13 +54,29 @@ export async function runRuqyahContentServiceTests(): Promise<{ passed: number; 
     const expected: Record<string, { surahNumber: number; verseRange: string }> = {
       'q-fatihah': { surahNumber: 1, verseRange: '1-7' },
       'q-baqarah-1-5': { surahNumber: 2, verseRange: '1-5' },
+      'q-baqarah-102': { surahNumber: 2, verseRange: '102' },
       'q-kursi': { surahNumber: 2, verseRange: '255' },
       'q-baqarah-256-257': { surahNumber: 2, verseRange: '256-257' },
       'q-baqarah-last2': { surahNumber: 2, verseRange: '285-286' },
+      'q-ali-imran-18-19': { surahNumber: 3, verseRange: '18-19' },
+      'q-araf-54-56': { surahNumber: 7, verseRange: '54-56' },
       'q-araf-magic': { surahNumber: 7, verseRange: '117-122' },
+      'q-tawbah-14': { surahNumber: 9, verseRange: '14' },
+      'q-yunus-57': { surahNumber: 10, verseRange: '57' },
       'q-yunus-magic': { surahNumber: 10, verseRange: '81-82' },
-      'q-ta-ha-magic': { surahNumber: 20, verseRange: '69' },
+      'q-rad-28': { surahNumber: 13, verseRange: '28' },
+      'q-nahl-69': { surahNumber: 16, verseRange: '69' },
       'q-isra-healing': { surahNumber: 17, verseRange: '82' },
+      'q-ta-ha-magic': { surahNumber: 20, verseRange: '69' },
+      'q-muminun-115-118': { surahNumber: 23, verseRange: '115-118' },
+      'q-shuara-78-82': { surahNumber: 26, verseRange: '78-82' },
+      'q-saffat-1-10': { surahNumber: 37, verseRange: '1-10' },
+      'q-fussilat-44': { surahNumber: 41, verseRange: '44' },
+      'q-fath-4': { surahNumber: 48, verseRange: '4' },
+      'q-hashr-21-24': { surahNumber: 59, verseRange: '21-24' },
+      'q-qalam-51-52': { surahNumber: 68, verseRange: '51-52' },
+      'q-sharh': { surahNumber: 94, verseRange: '1-8' },
+      'q-kafirun': { surahNumber: 109, verseRange: '1-6' },
       'q-ikhlas': { surahNumber: 112, verseRange: '1-4' },
       'q-falaq': { surahNumber: 113, verseRange: '1-5' },
       'q-nas': { surahNumber: 114, verseRange: '1-6' }
@@ -106,8 +124,8 @@ export async function runRuqyahContentServiceTests(): Promise<{ passed: number; 
     }
   });
 
-  await test('All brief, medium, full, eye/envy, and illness Quran categories resolve completely', async () => {
-    for (const category of ['brief', 'medium', 'full', 'eye_envy', 'illness'] as const) {
+  await test('All recitation Quran categories resolve completely', async () => {
+    for (const category of ['brief', 'medium', 'full', 'eye_envy', 'illness', 'magic_protection', 'children_home', 'anxiety_sleep'] as const) {
       const items = getRuqyahItemsByCategory(category).filter(item => item.type === 'quran');
       assert(items.length > 0, category + ' must contain Quran items');
       for (const item of items) {
@@ -118,7 +136,7 @@ export async function runRuqyahContentServiceTests(): Promise<{ passed: number; 
   });
 
   await test('Combined category queues preserve item order and deduplicate repeated global ayahs', async () => {
-    for (const category of ['brief', 'medium', 'full', 'eye_envy', 'illness'] as const) {
+    for (const category of ['brief', 'medium', 'full', 'eye_envy', 'illness', 'magic_protection', 'children_home', 'anxiety_sleep'] as const) {
       const items = getRuqyahItemsByCategory(category).filter(item => item.type === 'quran');
       const rawQueues = await Promise.all(items.map(async item => ({
         item,
@@ -141,6 +159,31 @@ export async function runRuqyahContentServiceTests(): Promise<{ passed: number; 
       assert(JSON.stringify(repeatedItemQueue) === JSON.stringify(actual), category + ' queue failed to deduplicate repeated global ayahs from repeated item input');
       assert(new Set(actual.map(entry => entry.globalAyahNumber)).size === actual.length, category + ' queue contains duplicate global ayahs');
     }
+  });
+
+  await test('All timed Audio Ruqyah sessions build canonical verse queues with exact passage indices and explicit repetitions', async () => {
+    for (const session of AUDIO_RUQYAH_SESSIONS) {
+      const stats = estimateRuqyahSessionStats(session, RUQYAH_ITEMS);
+      const { queue, passageStartIndices } = await buildAudioRuqyahSessionQueue(session, RUQYAH_ITEMS);
+      assert(stats.passageCount === session.tracks.length, `${session.id} passageCount mismatch`);
+      assert(queue.length === stats.totalAyahCount, `${session.id} queue length (${queue.length}) did not match estimated totalAyahCount (${stats.totalAyahCount})`);
+      assert(passageStartIndices.length === session.tracks.length, `${session.id} passageStartIndices length mismatch`);
+      assert(passageStartIndices[0] === 0, `${session.id} first passage must start at index 0`);
+      for (let i = 1; i < passageStartIndices.length; i++) {
+        assert(passageStartIndices[i] > passageStartIndices[i - 1], `${session.id} passageStartIndices must strictly increase`);
+      }
+      for (const entry of queue) {
+        assert(entry.globalAyahNumber >= 1 && entry.globalAyahNumber <= 6236, `${session.id} invalid globalAyahNumber`);
+        assert(entry.ayahText.trim().length > 0, `${session.id} missing canonical ayahText`);
+        assert((entry.surahName ?? '').trim().length > 0, `${session.id} missing surahName`);
+      }
+    }
+
+    const eyeSession = AUDIO_RUQYAH_SESSIONS.find(s => s.id === 'audio-eye-envy-12m')!;
+    const { queue: eyeEntries } = await buildAudioRuqyahSessionQueue(eyeSession, RUQYAH_ITEMS);
+    const ikhlasEntries = eyeEntries.filter(e => e.itemId === 'q-ikhlas');
+    assert(ikhlasEntries.length === 12, `Expected Al-Ikhlas repeated 3x (12 ayahs), got ${ikhlasEntries.length}`);
+    assert(ikhlasEntries[0].repeatIndex === 1 && ikhlasEntries[4].repeatIndex === 2 && ikhlasEntries[8].repeatIndex === 3, 'Repeat index metadata for Al-Ikhlas 3x must increment 1..3');
   });
 
   await test('Non-Quran dua and guideline text remain synchronously available and unchanged', () => {

@@ -1,4 +1,5 @@
 import {
+  ADHKAR_CATEGORIES,
   ADHKAR_ITEMS,
   FREE_TASBIH_PRESETS,
   LEGACY_ADHKAR_ITEM_ID_ALIASES,
@@ -11,6 +12,14 @@ import { getLocalDateString } from './unifiedPortionService';
 
 export const ADHKAR_PROGRESS_KEY = 'wird.adhkar.progress.v1';
 
+export type AdhkarFontScale = 'sm' | 'md' | 'lg' | 'xl';
+
+export interface AdhkarReadingPrefs {
+  fontScale: AdhkarFontScale;
+  showVirtueAndSource: boolean;
+  autoAdvance: boolean;
+}
+
 export interface AdhkarProgressStore {
   schemaVersion: 1;
   countsByDate: Record<string, Record<string, number>>;
@@ -21,6 +30,7 @@ export interface AdhkarProgressStore {
     targetCount: number;
     totalLifetimeCount: number;
   };
+  readingPrefs: AdhkarReadingPrefs;
 }
 
 export interface AdhkarCategoryProgressSummary {
@@ -33,11 +43,45 @@ export interface AdhkarCategoryProgressSummary {
   isComplete: boolean;
 }
 
+export interface OverallDailyAdhkarSummary {
+  completedCategories: number;
+  totalCategories: number;
+  completedItemsToday: number;
+  totalRepetitionsToday: number;
+}
+
 const VALID_ITEM_IDS = new Set(ADHKAR_ITEMS.map(item => item.id));
 const VALID_PRESET_IDS = new Set(FREE_TASBIH_PRESETS.map(p => p.id));
+const VALID_FONT_SCALES = new Set<AdhkarFontScale>(['sm', 'md', 'lg', 'xl']);
+
+export const DEFAULT_ADHKAR_READING_PREFS: AdhkarReadingPrefs = {
+  fontScale: 'md',
+  showVirtueAndSource: true,
+  autoAdvance: true
+};
 
 function normalizeAdhkarItemId(itemId: string): string {
   return LEGACY_ADHKAR_ITEM_ID_ALIASES[itemId] ?? itemId;
+}
+
+function normalizeReadingPrefs(raw: Partial<AdhkarReadingPrefs> | undefined): AdhkarReadingPrefs {
+  if (!raw || typeof raw !== 'object') {
+    return { ...DEFAULT_ADHKAR_READING_PREFS };
+  }
+  return {
+    fontScale:
+      typeof raw.fontScale === 'string' && VALID_FONT_SCALES.has(raw.fontScale as AdhkarFontScale)
+        ? (raw.fontScale as AdhkarFontScale)
+        : DEFAULT_ADHKAR_READING_PREFS.fontScale,
+    showVirtueAndSource:
+      typeof raw.showVirtueAndSource === 'boolean'
+        ? raw.showVirtueAndSource
+        : DEFAULT_ADHKAR_READING_PREFS.showVirtueAndSource,
+    autoAdvance:
+      typeof raw.autoAdvance === 'boolean'
+        ? raw.autoAdvance
+        : DEFAULT_ADHKAR_READING_PREFS.autoAdvance
+  };
 }
 
 function createDefaultStore(): AdhkarProgressStore {
@@ -50,12 +94,19 @@ function createDefaultStore(): AdhkarProgressStore {
       currentCount: 0,
       targetCount: FREE_TASBIH_PRESETS[0].defaultTarget,
       totalLifetimeCount: 0
-    }
+    },
+    readingPrefs: { ...DEFAULT_ADHKAR_READING_PREFS }
   };
 }
 
 function getScopedKey(): string {
   return StorageService.resolveScopedKey(ADHKAR_PROGRESS_KEY);
+}
+
+export function getAdhkarRemainingCount(currentCount: number, targetCount: number): number {
+  const safeTarget = Math.max(1, Math.floor(targetCount));
+  const safeCurrent = Math.max(0, Math.floor(currentCount));
+  return Math.max(0, safeTarget - safeCurrent);
 }
 
 export function readAdhkarProgressStore(
@@ -105,7 +156,8 @@ export function readAdhkarProgressStore(
     const currentCount = rawTasbih && typeof rawTasbih.currentCount === 'number' && Number.isSafeInteger(rawTasbih.currentCount) && rawTasbih.currentCount >= 0
       ? Math.min(100000, rawTasbih.currentCount)
       : 0;
-    const targetCount = rawTasbih && typeof rawTasbih.targetCount === 'number' && Number.isSafeInteger(rawTasbih.targetCount) && rawTasbih.targetCount >= 1
+    // targetCount === 0 represents open/unlimited Tasbih mode
+    const targetCount = rawTasbih && typeof rawTasbih.targetCount === 'number' && Number.isSafeInteger(rawTasbih.targetCount) && rawTasbih.targetCount >= 0
       ? Math.min(10000, rawTasbih.targetCount)
       : defaultTarget;
     const totalLifetimeCount = rawTasbih && typeof rawTasbih.totalLifetimeCount === 'number' && Number.isSafeInteger(rawTasbih.totalLifetimeCount) && rawTasbih.totalLifetimeCount >= 0
@@ -121,7 +173,8 @@ export function readAdhkarProgressStore(
         currentCount,
         targetCount,
         totalLifetimeCount
-      }
+      },
+      readingPrefs: normalizeReadingPrefs(parsed.readingPrefs)
     };
   } catch {
     return createDefaultStore();
@@ -153,7 +206,7 @@ export function incrementAdhkarItemCount(
   dateKey: string = getLocalDateString(),
   storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage,
   category?: AdhkarCategory
-): { store: AdhkarProgressStore; currentCount: number; targetCount: number; justCompleted: boolean } {
+): { store: AdhkarProgressStore; currentCount: number; targetCount: number; remainingCount: number; justCompleted: boolean } {
   const canonicalId = normalizeAdhkarItemId(itemId);
   const item = ADHKAR_ITEMS.find(entry => entry.id === canonicalId);
   if (!item) {
@@ -179,6 +232,7 @@ export function incrementAdhkarItemCount(
     store: nextStore,
     currentCount: nextCount,
     targetCount,
+    remainingCount: getAdhkarRemainingCount(nextCount, targetCount),
     justCompleted: prevCount < targetCount && nextCount >= targetCount
   };
 }
@@ -236,6 +290,15 @@ export function toggleAdhkarFavorite(
   return persistAdhkarProgressStore({ ...store, favoriteIds }, storage);
 }
 
+export function updateAdhkarReadingPrefs(
+  patch: Partial<AdhkarReadingPrefs>,
+  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
+): AdhkarProgressStore {
+  const store = readAdhkarProgressStore(storage);
+  const readingPrefs = normalizeReadingPrefs({ ...store.readingPrefs, ...patch });
+  return persistAdhkarProgressStore({ ...store, readingPrefs }, storage);
+}
+
 export function incrementFreeTasbihCount(
   storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
 ): AdhkarProgressStore {
@@ -287,6 +350,27 @@ export function selectFreeTasbihPreset(
   );
 }
 
+export function setFreeTasbihTarget(
+  targetCount: number,
+  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
+): AdhkarProgressStore {
+  const safeTarget = Number.isSafeInteger(targetCount) && targetCount >= 0
+    ? Math.min(10000, targetCount)
+    : 33;
+  const store = readAdhkarProgressStore(storage);
+  return persistAdhkarProgressStore(
+    {
+      ...store,
+      freeTasbih: {
+        ...store.freeTasbih,
+        targetCount: safeTarget,
+        currentCount: 0
+      }
+    },
+    storage
+  );
+}
+
 export function getAdhkarCategoryProgressSummary(
   category: AdhkarCategory,
   countsForDate: Record<string, number>
@@ -318,5 +402,38 @@ export function getAdhkarCategoryProgressSummary(
     completedRepetitions,
     percent,
     isComplete: items.length > 0 && completedItems === items.length
+  };
+}
+
+export function getOverallDailyAdhkarSummary(
+  countsForDate: Record<string, number>
+): OverallDailyAdhkarSummary {
+  let completedCategories = 0;
+  for (const cat of ADHKAR_CATEGORIES) {
+    if (getAdhkarCategoryProgressSummary(cat.id, countsForDate).isComplete) {
+      completedCategories += 1;
+    }
+  }
+
+  let completedItemsToday = 0;
+  let totalRepetitionsToday = 0;
+  for (const item of ADHKAR_ITEMS) {
+    const rawCount = Math.max(0, countsForDate[item.id] ?? 0);
+    if (rawCount > 0) {
+      totalRepetitionsToday += rawCount;
+    }
+    const minTarget = item.repeatTargetByCategory
+      ? Math.min(item.repeatTarget, ...Object.values(item.repeatTargetByCategory).filter((v): v is number => typeof v === 'number'))
+      : item.repeatTarget;
+    if (rawCount >= minTarget) {
+      completedItemsToday += 1;
+    }
+  }
+
+  return {
+    completedCategories,
+    totalCategories: ADHKAR_CATEGORIES.length,
+    completedItemsToday,
+    totalRepetitionsToday
   };
 }

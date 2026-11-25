@@ -1,5 +1,5 @@
 import type { Ayah } from '../types/quran';
-import type { RuqyahItem } from '../data/ruqyahData';
+import type { RuqyahAudioSession, RuqyahItem } from '../data/ruqyahData';
 import { loadSurahVerses } from '../data/quranDataLoader';
 import { ALL_SURAHS } from '../data/quranMeta';
 
@@ -115,4 +115,85 @@ export async function getRuqyahAudioQueueForItems(items: RuqyahItem[]): Promise<
     seenAyahs.add(entry.globalAyahNumber);
     return true;
   });
+}
+
+export interface RuqyahSessionAudioEntry extends RuqyahAudioQueueEntry {
+  ayahText: string;
+  surahName?: string;
+  passageIndex: number;
+  repeatIndex: number;
+  repeatTotal: number;
+}
+
+export interface RuqyahSessionStats {
+  passageCount: number;
+  totalAyahCount: number;
+  estimatedMinutes: number;
+}
+
+/** Pure synchronous stats calculation for a timed Audio Ruqyah session. */
+export function estimateRuqyahSessionStats(
+  session: RuqyahAudioSession,
+  items: RuqyahItem[]
+): RuqyahSessionStats {
+  const byId: Record<string, RuqyahItem> = Object.create(null);
+  for (const item of items) byId[item.id] = item;
+  let totalAyahCount = 0;
+  for (const track of session.tracks) {
+    const item = byId[track.itemId];
+    if (!item || item.type !== 'quran' || !item.verseRange) continue;
+    const range = parseRuqyahVerseRange(item.verseRange);
+    const repeat = Math.max(1, track.repeatCount ?? 1);
+    totalAyahCount += (range.end - range.start + 1) * repeat;
+  }
+  return {
+    passageCount: session.tracks.length,
+    totalAyahCount,
+    estimatedMinutes: session.estimatedMinutes
+  };
+}
+
+/**
+ * Resolve a timed Audio Ruqyah session into a sequential canonical Quran ayah queue.
+ * Preserves explicit passage repetitions (e.g., Mu'awwidhat 3x) while resolving every
+ * verse exclusively from verified local Surah chunks.
+ */
+export async function buildAudioRuqyahSessionQueue(
+  session: RuqyahAudioSession,
+  items: RuqyahItem[]
+): Promise<{ queue: RuqyahSessionAudioEntry[]; passageStartIndices: number[] }> {
+  const byId: Record<string, RuqyahItem> = Object.create(null);
+  for (const item of items) byId[item.id] = item;
+  const queue: RuqyahSessionAudioEntry[] = [];
+  const passageStartIndices: number[] = [];
+
+  for (let passageIndex = 0; passageIndex < session.tracks.length; passageIndex++) {
+    const track = session.tracks[passageIndex];
+    const item = byId[track.itemId];
+    if (!item || item.type !== 'quran') {
+      throw new Error('مقطع الجلسة الصوتية غير موجود في آيات الرقية المعتمدة: ' + track.itemId);
+    }
+    const ayahs = await getRuqyahAyahs(item);
+    const repeatTotal = Math.max(1, track.repeatCount ?? 1);
+    passageStartIndices.push(queue.length);
+
+    for (let repeatIndex = 1; repeatIndex <= repeatTotal; repeatIndex++) {
+      for (const ayah of ayahs) {
+        queue.push({
+          surahNumber: item.surahNumber!,
+          ayahNumber: ayah.numberInSurah,
+          globalAyahNumber: ayah.number,
+          itemId: item.id,
+          title: repeatTotal > 1 ? `${item.title} (${repeatIndex}/${repeatTotal})` : item.title,
+          ayahText: ayah.text,
+          surahName: item.surahName,
+          passageIndex,
+          repeatIndex,
+          repeatTotal
+        });
+      }
+    }
+  }
+
+  return { queue, passageStartIndices };
 }

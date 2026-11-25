@@ -1,15 +1,34 @@
+import { ADHKAR_DAILY_EXPANSION_ITEMS, ADHKAR_OCCASION_ITEMS } from './adhkarCorpusOccasions';
+import { ADHKAR_DUAS_EXPANSION_ITEMS } from './adhkarCorpusDuas';
+
 export type AdhkarCategory =
+  // 1. Core Daily Adhkar (preserved existing IDs)
   | 'morning'
   | 'evening'
   | 'after_prayer'
   | 'sleeping'
   | 'waking_up'
+  | 'istighfar'
+  // 2. Hisn al-Muslim Occasion Adhkar (9 comprehensive new categories)
+  | 'wudu_adhan'
+  | 'mosque_prayer'
+  | 'home_entry'
+  | 'food_clothing'
+  | 'travel'
+  | 'distress_relief'
+  | 'weather_nature'
+  | 'illness_condolence'
+  | 'gathering_etiquette'
+  // 3. Dedicated Duas Section (preserved + expanded)
   | 'quranic_duas'
   | 'prophetic_duas'
-  | 'istighfar';
+  | 'istikhara_rizq';
+
+export type AdhkarSectionGroup = 'daily_adhkar' | 'occasion_adhkar' | 'duas';
 
 export interface AdhkarCategoryMeta {
   id: AdhkarCategory;
+  group: AdhkarSectionGroup;
   label: string;
   shortLabel: string;
   description: string;
@@ -47,65 +66,158 @@ export function getAdhkarRepeatTarget(item: AdhkarItem, category?: AdhkarCategor
 }
 
 export const ADHKAR_CATEGORIES: AdhkarCategoryMeta[] = [
+  // Group A: Daily Adhkar (الأذكار اليومية الثابتة)
   {
     id: 'morning',
+    group: 'daily_adhkar',
     label: 'أذكار الصباح',
     shortLabel: 'الصباح',
-    description: 'حصن المسلم في مطلع اليوم لحفظ القلب والبدن والرزق',
+    description: 'حصن المسلم الكامل في مطلع اليوم لحفظ القلب والبدن والرزق',
     recommendedTimeAr: 'من بعد صلاة الفجر إلى طلوع الشمس (ويمتد وقتها إلى الزوال)'
   },
   {
     id: 'evening',
+    group: 'daily_adhkar',
     label: 'أذكار المساء',
     shortLabel: 'المساء',
-    description: 'أذكار التحصين والسكينة في ختام النهار وإقبال الليل',
+    description: 'أذكار التحصين والسكينة الكاملة في ختام النهار وإقبال الليل',
     recommendedTimeAr: 'من بعد صلاة العصر إلى غروب الشمس (ويمتد وقتها إلى ثلث الليل)'
   },
   {
     id: 'after_prayer',
+    group: 'daily_adhkar',
     label: 'أذكار بعد الصلاة',
     shortLabel: 'بعد الصلاة',
-    description: 'الأذكار المشروعة دبر الصلوات المكتوبة كما ثبتت في السنة',
+    description: 'الأذكار المشروعة دبر الصلوات المكتوبة كما ثبتت في السنة الصحيحة',
     recommendedTimeAr: 'عقب السلام من كل صلاة مفروضة'
   },
   {
     id: 'sleeping',
+    group: 'daily_adhkar',
     label: 'أذكار النوم',
     shortLabel: 'النوم',
-    description: 'ما يقال عند الإيواء إلى الفراش للتحصين والختم بالتوحيد',
+    description: 'ما يقال عند الإيواء إلى الفراش للتحصين والختم بالتوحيد والتسبيح',
     recommendedTimeAr: 'عند الاضطجاع على الفراش قبل النوم'
   },
   {
     id: 'waking_up',
+    group: 'daily_adhkar',
     label: 'أذكار الاستيقاظ',
     shortLabel: 'الاستيقاظ',
-    description: 'حمد الله على رد الروح والعافية في مستهل اليقظة',
-    recommendedTimeAr: 'فور الاستيقاظ من النوم'
+    description: 'حمد الله على رد الروح والعافية وذكر التقلب في الليل',
+    recommendedTimeAr: 'فور الاستيقاظ من النوم أو التقلب ليلاً'
   },
   {
+    id: 'istighfar',
+    group: 'daily_adhkar',
+    label: 'الاستغفار والباقيات الصالحات',
+    shortLabel: 'الاستغفار',
+    description: 'الباقيات الصالحات وصيغ الاستغفار والتسبيح والتوحيد اليومية',
+    recommendedTimeAr: 'مطلق الذكر في سائر الأوقات والمجالس'
+  },
+
+  // Group B: Hisn al-Muslim Occasions (أذكار المناسبات والأحوال)
+  {
+    id: 'wudu_adhan',
+    group: 'occasion_adhkar',
+    label: 'أذكار الوضوء والأذان',
+    shortLabel: 'الوضوء والأذان',
+    description: 'التسمية والذكر بعد الوضوء وإجابة المؤذن والدعاء عقب الأذان',
+    recommendedTimeAr: 'عند الوضوء وسماع نداء الصلاة'
+  },
+  {
+    id: 'mosque_prayer',
+    group: 'occasion_adhkar',
+    label: 'أذكار المسجد والصلاة',
+    shortLabel: 'المسجد والصلاة',
+    description: 'الذهاب للمسجد ودخوله والخروج منه وأذكار الاستفتاح والركوع والسجود والتشهد',
+    recommendedTimeAr: 'عند التوجه للمسجد وأثناء أداء الصلاة'
+  },
+  {
+    id: 'home_entry',
+    group: 'occasion_adhkar',
+    label: 'أذكار المنزل والخلاء',
+    shortLabel: 'المنزل والخلاء',
+    description: 'أذكار الدخول إلى البيت والخروج منه وآداب دخول الخلاء والخروج منه',
+    recommendedTimeAr: 'عند دخول المنزل أو الخروج منه ودخول الخلاء'
+  },
+  {
+    id: 'food_clothing',
+    group: 'occasion_adhkar',
+    label: 'أذكار الطعام واللباس',
+    shortLabel: 'الطعام واللباس',
+    description: 'التسمية وحمد الطعام وإفطار الصائم ودعاء الضيف ولبس الثوب الجديد',
+    recommendedTimeAr: 'عند الطعام والشراب والإفطار ولبس الثياب'
+  },
+  {
+    id: 'travel',
+    group: 'occasion_adhkar',
+    label: 'أذكار السفر والركوب',
+    shortLabel: 'السفر والركوب',
+    description: 'دعاء الركوب والسفر والرجوع ودخول البلد ونزول المنزل والتوديع',
+    recommendedTimeAr: 'عند التنقل والركوب والسفر والعودة'
+  },
+  {
+    id: 'distress_relief',
+    group: 'occasion_adhkar',
+    label: 'أذكار الكرب والهم والدَّين',
+    shortLabel: 'الكرب والهم',
+    description: 'أدعية تفريج الكرب وجلاء الهم والحزن وقضاء الدَّين وتيسير الصعب',
+    recommendedTimeAr: 'عند الشدة والضيق واستصعاب الأمور'
+  },
+  {
+    id: 'weather_nature',
+    group: 'occasion_adhkar',
+    label: 'أذكار المطر والريح والهلال',
+    shortLabel: 'المطر والهلال',
+    description: 'ما يقال عند نزول المطر وبعده وهبوب الريح وسماع الرعد ورؤية الهلال',
+    recommendedTimeAr: 'عند تغير الأحوال الجوية وإهلال الشهر الجديد'
+  },
+  {
+    id: 'illness_condolence',
+    group: 'occasion_adhkar',
+    label: 'أذكار المريض والعيادة والمصيبة',
+    shortLabel: 'المريض والعيادة',
+    description: 'دعاء موضع الألم وعيادة المريض وطلب الشفاء وأذكار المصيبة والتعزية',
+    recommendedTimeAr: 'عند المرض وعيادة المرضى وحلول المصائب'
+  },
+  {
+    id: 'gathering_etiquette',
+    group: 'occasion_adhkar',
+    label: 'أذكار المجلس والآداب والأخوّة',
+    shortLabel: 'المجلس والآداب',
+    description: 'كفارة المجلس ودفع الغضب وتشميت العاطس والتهنئة والشكر والوقاية من الشرك',
+    recommendedTimeAr: 'في المجالس والمعاملات اليومية مع الناس'
+  },
+
+  // Group C: Dedicated Duas (الأدعية القرآنية والنبوية)
+  {
     id: 'quranic_duas',
+    group: 'duas',
     label: 'أدعية قرآنية جامعة',
     shortLabel: 'أدعية قرآنية',
-    description: 'جوامع الدعاء من آيات القرآن الكريم مع التلاوة الصوتية',
+    description: 'جوامع الدعاء من آيات القرآن الكريم بالنص الموثّق والتلاوة الصوتية',
     recommendedTimeAr: 'في كل وقت، وفي السجود وأدبار الصلوات'
   },
   {
     id: 'prophetic_duas',
+    group: 'duas',
     label: 'أدعية نبوية مأثورة',
     shortLabel: 'أدعية نبوية',
-    description: 'جوامع دعاء النبي ﷺ في صلاح الدين والدنيا والآخرة',
+    description: 'جوامع دعاء النبي ﷺ في صلاح الدين والدنيا والآخرة وتزكية القلب',
     recommendedTimeAr: 'في أوقات الإجابة وسائر اليوم'
   },
   {
-    id: 'istighfar',
-    label: 'الاستغفار والتسبيح',
-    shortLabel: 'الاستغفار',
-    description: 'الباقيات الصالحات وصيغ الاستغفار والتسبيح اليومية',
-    recommendedTimeAr: 'مطلق الذكر في سائر الأوقات'
+    id: 'istikhara_rizq',
+    group: 'duas',
+    label: 'الاستخارة والرزق والعلم والصلاة على النبي ﷺ',
+    shortLabel: 'الاستخارة والرزق',
+    description: 'دعاء صلاة الاستخارة وأدعية العلم النافع والرزق والذرية والصلاة الإبراهيمية',
+    recommendedTimeAr: 'عند الاستخارة وطلب العلم والرزق ويوم الجمعة'
   }
 ];
 
-export const ADHKAR_ITEMS: AdhkarItem[] = [
+const CORE_ADHKAR_ITEMS: AdhkarItem[] = [
   // 1. Quranic Adhkar (Morning, Evening, After Prayer, Sleeping)
   {
     id: 'adhkar-ayat-alkursi',
@@ -186,7 +298,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     grade: 'قرآن كريم'
   },
 
-  // 2. Morning & Evening Prophetic Adhkar
+  // 2. Morning & Evening Core Prophetic Adhkar
   {
     id: 'adhkar-sayyid-istighfar',
     title: 'سيد الاستغفار',
@@ -256,10 +368,11 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'adhkar-kalimat-tammat',
     title: 'أعوذ بكلمات الله التامات من شر ما خلق',
-    categories: ['evening'],
+    categories: ['evening', 'travel'],
     kind: 'hadith',
     text: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.',
     repeatTarget: 3,
+    repeatTargetByCategory: { travel: 1 },
     virtue: 'ثبتت في المساء بلفظ «أما لو قلت حين أمسيت... لم تضرك» (صحيح مسلم 2709)، وجاء التقييد بثلاث مرات في المساء في سنن الترمذي (3604) ومسند أحمد (7898): «من قال حين يمسي ثلاث مرات... لم تضره حُمة تلك الليلة»، وتقال أيضاً عند نزول منزل فيحفظه الله حتى يرتحل منه (صحيح مسلم 2708).',
     source: 'صحيح مسلم 2708 و2709؛ سنن الترمذي 3604؛ مسند أحمد 7898',
     grade: 'صحيح'
@@ -287,7 +400,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     grade: 'متفق عليه'
   },
 
-  // 3. After Prayer Adhkar
+  // 3. After Prayer Core Adhkar
   {
     id: 'adhkar-after-prayer-istighfar-salam',
     title: 'الاستغفار ثلاثاً واللهم أنت السلام',
@@ -355,7 +468,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     grade: 'صحيح'
   },
 
-  // 4. Sleeping & Waking Up Adhkar
+  // 4. Sleeping & Waking Up Core Adhkar
   {
     id: 'adhkar-sleep-bismika-amutu',
     title: 'باسمك اللهم أموت وأحيا',
@@ -412,7 +525,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     grade: 'حسن'
   },
 
-  // 5. Quranic Duas (Verified Local Corpus Coordinates + Audio)
+  // 5. Core Quranic Duas (Verified Local Corpus Coordinates + Audio)
   {
     id: 'dua-quran-rabbana-atina',
     title: 'ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة',
@@ -446,7 +559,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'dua-quran-yunus',
     title: 'لا إله إلا أنت سبحانك إني كنت من الظالمين',
-    categories: ['quranic_duas', 'istighfar'],
+    categories: ['quranic_duas', 'istighfar', 'distress_relief'],
     kind: 'quran',
     surahNumber: 21,
     surahName: 'الأنبياء',
@@ -461,7 +574,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'dua-quran-ishrah-sadri',
     title: 'رب اشرح لي صدري ويسر لي أمري',
-    categories: ['quranic_duas'],
+    categories: ['quranic_duas', 'istikhara_rizq'],
     kind: 'quran',
     surahNumber: 20,
     surahName: 'طه',
@@ -476,7 +589,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'dua-quran-hab-lana',
     title: 'ربنا هب لنا من أزواجنا وذرياتنا قرة أعين',
-    categories: ['quranic_duas'],
+    categories: ['quranic_duas', 'istikhara_rizq'],
     kind: 'quran',
     surahNumber: 25,
     surahName: 'الفرقان',
@@ -489,7 +602,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     grade: 'قرآن كريم'
   },
 
-  // 6. Prophetic Duas & Istighfar
+  // 6. Core Prophetic Duas & Istighfar
   {
     id: 'dua-prophetic-muqallib-alqulub',
     title: 'يا مقلب القلوب ثبت قلبي على دينك',
@@ -504,7 +617,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'dua-prophetic-hamm-hazan',
     title: 'الاستعاذة من الهم والحزن والعجز والكسل',
-    categories: ['prophetic_duas', 'morning', 'evening'],
+    categories: ['prophetic_duas', 'morning', 'evening', 'distress_relief'],
     kind: 'hadith',
     text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ، وَغَلَبَةِ الرِّجَالِ.',
     repeatTarget: 1,
@@ -515,7 +628,7 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
   {
     id: 'dua-prophetic-huda-tuqa',
     title: 'اللهم إني أسألك الهدى والتقى والعفاف والغنى',
-    categories: ['prophetic_duas'],
+    categories: ['prophetic_duas', 'istikhara_rizq'],
     kind: 'hadith',
     text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَىٰ وَالتُّقَىٰ، وَالْعَفَافَ وَالْغِنَىٰ.',
     repeatTarget: 1,
@@ -545,6 +658,13 @@ export const ADHKAR_ITEMS: AdhkarItem[] = [
     source: 'صحيح البخاري 6406؛ صحيح مسلم 2694',
     grade: 'متفق عليه'
   }
+];
+
+export const ADHKAR_ITEMS: AdhkarItem[] = [
+  ...CORE_ADHKAR_ITEMS,
+  ...ADHKAR_DAILY_EXPANSION_ITEMS,
+  ...ADHKAR_OCCASION_ITEMS,
+  ...ADHKAR_DUAS_EXPANSION_ITEMS
 ];
 
 export const FREE_TASBIH_PRESETS: Array<{ id: string; phrase: string; defaultTarget: number; virtue: string }> = [
@@ -577,8 +697,30 @@ export const FREE_TASBIH_PRESETS: Array<{ id: string; phrase: string; defaultTar
     phrase: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
     defaultTarget: 33,
     virtue: 'كنز من كنوز الجنة (متفق عليه)'
+  },
+  {
+    id: 'tahlil_complete',
+    phrase: 'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ',
+    defaultTarget: 100,
+    virtue: 'عدل عشر رقاب وحرز من الشيطان (متفق عليه)'
+  },
+  {
+    id: 'subhanallah_azim',
+    phrase: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ',
+    defaultTarget: 33,
+    virtue: 'كلمتان خفيفتان على اللسان ثقيلتان في الميزان (متفق عليه)'
+  },
+  {
+    id: 'istighfar_rabbi',
+    phrase: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
+    defaultTarget: 100,
+    virtue: 'كان يُعدّ للنبي ﷺ في المجلس الواحد مائة مرة (أبو داود 1516)'
   }
 ];
+
+export function getAdhkarCategoriesByGroup(group: AdhkarSectionGroup): AdhkarCategoryMeta[] {
+  return ADHKAR_CATEGORIES.filter(cat => cat.group === group);
+}
 
 export function getAdhkarItemsByCategory(category: AdhkarCategory): AdhkarItem[] {
   return ADHKAR_ITEMS.filter(item => item.categories.includes(category));
