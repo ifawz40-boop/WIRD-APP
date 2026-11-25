@@ -7,11 +7,13 @@
   "subtitle": "وداع حمزة ومصعب وسبعين من الأبرار وخروج الجرحى لاسترداد الهيبة",
   "periodLabel": "شوال، السنة الثالثة للهجرة",
   "datePrecision": "exact",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "توثيق ممتاز وأمانة علمية واضحة في عرض الخلاف التاريخي حول عدد شهداء أُحد (سبعون عند الجمهور وابن هشام مقابل 47–49 عند عروة وموسى بن عقبة) وفي بيان أن ضبط أيام الوقعة في منتصف شوال تقريبي. السرد خالٍ من المونولوجات النفسية المختلقة أو الوقائع الشاذة.",
+    "languageNotes": "نص رصين وجزل الأسلوب بضمير الغائب، غني بالتصوير الهادئ والوقور الملائم لمقام الشهداء، وخالٍ من الركاكة والتكرار الآلي. كلٌّ من الاستهلال والتمهيد الخاتم محكم الصياغة ولا يحتاج تعديلاً."
   },
   "wordCount": 1372,
   "estimatedReadingMinutes": 7,
@@ -187,5 +189,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-24",
-  "nextChapterId": "ch-26"
+  "nextChapterId": "ch-26",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

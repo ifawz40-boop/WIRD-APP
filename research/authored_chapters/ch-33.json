@@ -7,11 +7,13 @@
   "subtitle": "تواضع الفاتح على راحلته وتطهير الكعبة من الأصنام و«اذهبوا فأنتم الطلقاء»",
   "periodLabel": "رمضان، السنة الثامنة للهجرة",
   "datePrecision": "exact",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الترتيب الزمني وتحديد الفترة (`رمضان، السنة الثامنة للهجرة` / `exact`) دقيق ومتسق، وقد رُبط الخلاف المعروف في فتح مكة عنوةً أم صلحاً عبر `disp-fath-makkah-force-peace`. الوقائع المسرودة (نقض بني بكر وقريش للصلح، قصة حاطب، المسير بعشرة آلاف، إسلام أبي سفيان وتأمينه، توزيع الكتائب، التواضع عند الدخول) موثقة في الصحيحين وكتب السيرة المعتمدة دون حوارات مختلقة أو زيادات متخيّلة.",
+    "languageNotes": "أسلوب سلس متين يجمع بين الإيجاز ودقة التصوير بضمير الغائب، والاستهلال والتمهيد الختامي محكمان ويهيّئان للفصل التالي بسلاسة. يُلاحظ فقط استخدام صيغة «صلى الله عليه وسلم» مكتوبةً بالحروف هنا بدلاً من الرمز «ﷺ» المستعمل في الفصول المجاورة (توحيد تنسيقي اختياري)."
   },
   "wordCount": 1259,
   "estimatedReadingMinutes": 7,
@@ -193,5 +195,13 @@
     "disp-fath-makkah-force-peace"
   ],
   "previousChapterId": "ch-32",
-  "nextChapterId": "ch-34"
+  "nextChapterId": "ch-34",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

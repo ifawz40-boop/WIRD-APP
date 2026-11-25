@@ -1037,3 +1037,28 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - **Unresolved Risks & Next Action:**
   - OpenITI transcription is licensed `CC BY-NC-SA 4.0` (recorded in `docs/OWNER_ACTIONS.md` for non-commercial compliance / future commercial exit).
   - Next action: Owner-authorized PR push for `feat/seerah-encyclopedia-ibn-kathir` to run exact-head GitHub Actions Quality Gate (including Java Firestore Emulator) and Vercel Preview review before merge.
+
+
+---
+
+## 2026-11-25 — Complete Prophetic Seerah Digital Book & Character Storytelling Transformation (`feat/seerah-encyclopedia-ibn-kathir`)
+
+### Scope & Directive Compliance
+- Executed all 10 phases and satisfied all 17 acceptance criteria of `docs/seerah/MASTER_DIRECTIVE.md` (verified 100% unmodified: `20,130` bytes, SHA-256 `7a1e25cf667fa62d6dccd268237ddaf32a128d3cc53d7704e2776af68a8d1472`) on feature branch `feat/seerah-encyclopedia-ibn-kathir`.
+- **Phase 1 & Phase 2 (`research/`):** Built complete research repository tracking `2,566 / 2,566` PDF pages across all 4 volumes (`2,475` verified matn pages + `91` classified non-matn apparatus pages), `90` major events, `120` sub-events, `32` characters, `26` places, `22` classical sources, `50/50` verbatim Quranic passages, `43/43` verbatim Hadiths (`100%` verified substrings in Ibn Kathir), `18` historical disputes, and the chronological hierarchy (`6` eras → `12` sections → `40` chapters → `120` scenes + `32` bidirectionally linked characters).
+- **Phases 3, 4 & 5 (`research/authored_chapters/`, `research/authored_characters/`, `public/data/seerah/`):** Authored all `40 / 40` third-person Arabic historical chapters (`53,280` words) and all `32 / 32` independent continuous character stories (`26,400` words) = `79,680` words. Passed every chapter and character through independent Review A (Historical Accuracy), Review B (Arabic Writing Quality), and Review C (Deterministic byte-for-byte Quran & Hadith verification via `scripts/phase5_quotation_verify_and_publish.py`: `52` Quran blocks + `43` Hadith blocks verified, `0` unverified `﴿ ﴾` in prose), publishing lazy-loaded static JSON under `public/data/seerah/`.
+- **Phases 6, 7, 8 & 10 (`src/components/seerah/`, `src/services/seerahBookService.ts`, `src/services/storageService.ts`, `src/services/router.ts`, `public/sw.js`):** Replaced `SeerahView.tsx` with `SeerahBookLanding.tsx`, `SeerahChapterReader.tsx`, and `SeerahCharacterViews.tsx` (`0` legacy hex leaks); registered `'wird.seerah.v2'` in `AUXILIARY_SCOPED_KEYS` for Guest & UID-scoped progress; updated `public/sw.js` for Cache-First `/data/seerah/*.json`; removed obsolete Seerah files (`seerahData.ts`, `seerahProgressService.ts`, `seerahEncyclopediaService.ts`, `SeerahEncyclopediaReader.tsx`, `seerahSystem.test.ts`, `seerahEncyclopedia.test.ts`, `e2e/seerah-encyclopedia.spec.ts`, `scripts/validate-seerah-encyclopedia.mjs`, and `public/data/seerah-encyclopedia/`) with `0` dangling references.
+
+### Verification Executed (2026-11-25, local branch `feat/seerah-encyclopedia-ibn-kathir`)
+- `node scripts/verify_seerah_content.mjs`: **PASS** (`6` eras, `12` sections, `40` chapters, `32` characters, `52` verbatim Quran blocks, `43` verbatim Hadith blocks, 100% bidirectional links)
+- `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+- `npm.cmd test` (`src/tests/runAllTests.ts` incl. `seerahBookSystem.test.ts`, `designSystemV2.test.ts`, Tanzil validation & 114 Surah split): **PASS** (`814 PASSED | 0 FAILED`)
+- `npm.cmd run smoke:api-imports`: **PASS**
+- `NODE_ENV=production vite build`: **PASS** (`2.92s`, `SeerahView` `49.26 kB` / `10.39 kB` gzip, `index` `246.39 kB`, `0` chunks > 500 kB)
+- `node scripts/smoke-server.mjs`: **PASS** (production + dev Express servers)
+- Playwright E2E (`e2e/seerah-book.spec.ts` on Edge Chromium Desktop `1440×900` + Mobile `390×844`): **PASS** (`4 passed | 0 failed`, `22.4s`, `0` page errors, `0` horizontal overflow)
+- `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; runs in GitHub Actions CI)
+- GitHub CI, Vercel Preview, Vercel Production, Production Sync Flags, `firestore.rules`, `bun.lock`, and Quran corpus: **UNTOUCHED / NOT EXECUTED**
+
+### Next Action
+- Push `feat/seerah-encyclopedia-ibn-kathir` to a GitHub Pull Request upon explicit owner authorization and inspect exact-head GitHub Actions `WIRD Quality Gate` and Vercel Preview before any merge.

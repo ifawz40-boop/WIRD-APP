@@ -7,11 +7,13 @@
   "subtitle": "إسلام حمزة بن عبد المطلب وعمر بن الخطاب وثلاث سنين في شعب أبي طالب",
   "periodLabel": "السنة السادسة — العاشرة للبعثة",
   "datePrecision": "range",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "اتساق تام بين الترتيب الزمني ونطاق الفترة (`السنة السادسة — العاشرة للبعثة` / `range`). الوقائع (إسلام حمزة وما ورد في السيرة من تردده ودعائه ليلتها، إسلام عمر، وفد نصارى الحبشة، وصحيفة المقاطعة) موثقة في مصادر السيرة المعتمدة، ولا توجد حوارات مختلقة أو مونولوجات متخيّلة من خارج المرويات.",
+    "languageNotes": "أسلوب عربي فصيح وجزل يحافظ على وحدة السرد بضمير الغائب دون تكرار آلي، مع استهلالٍ قوي الصور وتمهيدٍ ختامي متقن يمهّد لعام الحزن والطائف."
   },
   "wordCount": 1242,
   "estimatedReadingMinutes": 7,
@@ -158,5 +160,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-13",
-  "nextChapterId": "ch-15"
+  "nextChapterId": "ch-15",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

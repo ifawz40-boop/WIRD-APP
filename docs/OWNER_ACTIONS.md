@@ -1,16 +1,16 @@
 # WIRD — Owner Actions and External Decisions
 
-**Current owner-action snapshot:** 2026-11-24 (Seerah Encyclopedia Feature Branch `feat/seerah-encyclopedia-ibn-kathir`)  
+**Current owner-action snapshot:** 2026-11-25 (Complete Seerah Digital Book Transformation on `feat/seerah-encyclopedia-ibn-kathir`)  
 **Live technical state:** [CONTINUE_HERE.md](./CONTINUE_HERE.md) · [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
 
 > This page lists actions that genuinely require owner approval, external access, or physical-device testing. Dated material below the snapshot is historical unless explicitly revalidated.
 
 ## Current observed items
 
-0. **Seerah Encyclopedia (`feat/seerah-encyclopedia-ibn-kathir`) — PR push/review & CC BY-NC-SA 4.0 license boundary:**
-   - The 4-volume Ibn Kathir Prophetic Seerah Encyclopedia (`public/data/seerah-encyclopedia/`, 2,475 printed pages, 90 sections) was extracted from OpenITI's verified UTF-8 transcription (`0774IbnKathir.Bidaya.Shamela0000930-ara6`, excluding the 1964 modern editor preface) matching `seerah-sources/` page-for-page.
-   - **License note:** Ibn Kathir's original work (d. 774 AH) is Public Domain; OpenITI's digital transcription is licensed **CC BY-NC-SA 4.0** (free non-commercial educational use with attribution). If WIRD ever transitions to commercial monetization, replace the OpenITI text source with a CC0/CC-BY or independently keyed public-domain transcription via `scripts/build-seerah-encyclopedia.py`.
-   - **Git/CI boundary:** Changes are committed locally on `feat/seerah-encyclopedia-ibn-kathir` only (not pushed/merged to `main` or deployed to Vercel without explicit owner authorization). Push to a PR and run the full GitHub Actions Quality Gate (including Java Firestore Rules Emulator) before any authorized merge.
+0. **Complete Prophetic Seerah Digital Book (`feat/seerah-encyclopedia-ibn-kathir`) — PR push/review, CI verification & research-source license boundary:**
+   - All 10 phases and all 17 acceptance criteria of `docs/seerah/MASTER_DIRECTIVE.md` (unmodified, SHA-256 `7a1e25cf...1472`) are completed and locally verified (`40` published chapters, `32` published character stories, `79,680` words, `52` verbatim Quran blocks, `43` verbatim Hadith blocks, `814 PASSED | 0 FAILED`, `vite build` PASS, Playwright E2E `4/4 PASS`).
+   - **Research-source license note:** Imam Ibn Kathir's *Al-Sīra al-Nabawiyya* (d. 774 AH) is Public Domain; the digital Arabic transcription consulted during Phase 1 research (`0774IbnKathir.Bidaya.Shamela0000930-ara6`) is distributed by OpenITI under **CC BY-NC-SA 4.0** (free non-commercial educational use with attribution). The raw encyclopedia dump (`public/data/seerah-encyclopedia/`) has been removed from the shipped app; the shipped `public/data/seerah/` bundle contains newly authored third-person narrative prose plus verbatim Quranic verses from WIRD's local corpus and verbatim classical Hadith quotations.
+   - **Git/CI boundary:** Changes are committed locally on `feat/seerah-encyclopedia-ibn-kathir` only (not pushed/merged to `main` or deployed to Vercel without explicit owner authorization). Upon authorization, push to a GitHub PR and inspect exact-head GitHub Actions `WIRD Quality Gate` (including Java Firestore Rules Emulator) and Vercel Preview before any merge.
 
 1. **GitHub export/PR & CI verification of 2026-11-16 AI Studio workspace fixes:** the 2026-11-16 TypeScript, server typo, React timer cleanup, `NODE_ENV=production` Vite build, non-blocking Service Worker registration, and E2E selector updates exist in the Google AI Studio workspace only and were **not** committed/pushed to GitHub or deployed to Vercel (per explicit owner directive). Push to a feature branch/PR and run the GitHub Quality Gate (which executes `npm run test:firestore-rules` with Java) before promoting to `main`/Vercel.
 2. **Production sync flags — owner decision required:** Vercel Production previously reported `VITE_WIRD_REVISIONED_SYNC_ENABLED=true` and `VITE_WIRD_REMOTE_PROJECTION_ENABLED=true` (2026-11-14). Neither value was changed. Decide separately whether to authorize disabling them while release gates are completed. Do not perform sync-related Production actions or toggle either value without explicit approval.

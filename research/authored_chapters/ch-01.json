@@ -7,11 +7,13 @@
   "subtitle": "إسماعيل وزمزم ورفع قواعد البيت العتيق وأنساب العرب",
   "periodLabel": "عهد إبراهيم وإسماعيل عليهما السلام",
   "datePrecision": "range",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الترتيب الزمني ووسم الفترة (`range`) متسقان مع عهد إبراهيم وإسماعيل عليهما السلام، والسرد ملتزم بحديث ابن عباس في صحيح البخاري وسياق القرآن دون حوارات مختلقة أو مونولوجات متخيّلة. وفي موضع الخلاف (`disp-zabih`) التزم النص بالأمانة العلمية بنسبته الترجيح إلى المحققين كابن كثير، مع ملاحظة منهجية لطيفة أن حصر القول الآخر في «الروايات الإسرائيلية» فيه تبسيطٌ طفيف لأن طائفة من السلف ذهبوا إليه أيضاً، وإن كان ابن كثير نفسه قد ردّ أصله إليها.",
+    "languageNotes": "سرد فصيح متماسك بضمير الغائب، خالٍ من الركاكة والتكرار الآلي. الاستهلال جزل ومشوق، والتمهيد الختامي يربط بسلاسة بالتحولات اليمانية في الفصل التالي."
   },
   "wordCount": 1399,
   "estimatedReadingMinutes": 7,
@@ -182,5 +184,13 @@
     "disp-zabih"
   ],
   "previousChapterId": null,
-  "nextChapterId": "ch-02"
+  "nextChapterId": "ch-02",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

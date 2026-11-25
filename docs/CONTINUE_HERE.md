@@ -1,13 +1,41 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-24 (Full 4-Volume Prophetic Seerah Encyclopedia — الحافظ ابن كثير: 2,475 Printed Pages, 90 Chronological Sections, Full-Text Arabic Search, Offline-First Chunking & UID-Scoped Progress on `feat/seerah-encyclopedia-ibn-kathir`)  
+**Last reconciled:** 2026-11-25 (Complete Prophetic Seerah Digital Book & Character Storytelling Transformation per `docs/seerah/MASTER_DIRECTIVE.md` — 6 Eras, 12 Sections, 40 Narrative Chapters, 32 Character Stories, 79,680 Words, 3-Pass Editorial & Verbatim Sacred-Text Verification on `feat/seerah-encyclopedia-ibn-kathir`)  
 **Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (`45f3edc611be08482d53570afd49f6e9471f44c7`) · **Active feature branch:** `feat/seerah-encyclopedia-ibn-kathir` (local verified commit; NOT pushed/merged to `main` and NOT deployed to Vercel)  
 **Prior merged baseline:** `45f3edc611be08482d53570afd49f6e9471f44c7` (2026-11-23, `feat: add SSRF-safe YouTube playlist metadata resolver`)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Checkpoint — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia (2026-11-24)
+## Active Checkpoint — Complete Prophetic Seerah Digital Book & Character Storytelling (2026-11-25)
+
+1. **Authoritative Directive & Durable Research Repository (`docs/seerah/MASTER_DIRECTIVE.md` [unmodified, SHA-256 `7a1e25cf...1472`], `docs/seerah/EXECUTION_STATUS.md`, `research/`):**
+   - **Phase 1:** Processed 100% of all 4 volumes of Imam Ibn Kathir's *Al-Sīra al-Nabawiyya* (`2,566 / 2,566` PDF pages tracked in `research/processing_checkpoints.json`: `2,475` verified matn pages + `91` classified non-matn apparatus pages), producing `source_manifest.json`, `90` major events + `120` sub-events, `32` personalities, `26` places, `22` classical sources, `50/50` verbatim Quranic passages (vs `src/data/completeQuranData.json`), `43/43` verbatim Hadiths (`100%` verified substrings inside Ibn Kathir), and `18` historical disputes.
+   - **Phase 2:** Built `research/chronology/seerah_book_blueprint.json` (**6 Historical Eras → 12 Main Sections → 40 Chronological Chapters → 120 Narrative Scenes**) and `research/characters/character_journeys_blueprint.json` (**32 Personalities** bidirectionally linked).
+2. **Complete Third-Person Arabic Narrative, Character Stories & 3-Pass Verification (`research/authored_chapters/`, `research/authored_characters/`, `public/data/seerah/`):**
+   - **Phases 3–4:** Authored all **`40 / 40` chronological chapters (`53,280` words)** and all **`32 / 32` independent continuous character stories (`26,400` words)** = **`79,680` Arabic words** in fluent, accessible third-person narrative without fabricated dialogue/monologues.
+   - **Phase 5:** Passed every chapter and character story through independent **Review A** (Historical Accuracy), **Review B** (Arabic Literary Quality), and **Review C** (Deterministic byte-for-byte Quran & Hadith verification via `scripts/phase5_quotation_verify_and_publish.py`: `52` Quran blocks + `43` Hadith blocks verified, `0` unverified `﴿ ﴾` in prose), transitioning all items to `Published` and emitting lazy-loaded static JSON under `public/data/seerah/`.
+3. **Calm Digital Book UI, UID-Scoped Progress & Legacy Seerah Removal (`src/components/seerah/`, `src/services/seerahBookService.ts`, `src/services/storageService.ts`, `src/services/router.ts`, `public/sw.js`):**
+   - Replaced `SeerahView.tsx` with `SeerahBookLanding.tsx`, `SeerahChapterReader.tsx`, and `SeerahCharacterViews.tsx` (`SeerahCharacterDirectory` + `SeerahCharacterProfile`) using pure `--wird-*` semantic CSS tokens (`0` legacy hexes) and hash deep-links (`#/seerah?chapter=`, `#/seerah?character=`, `#/seerah?view=characters`).
+   - Registered `'wird.seerah.v2'` in `AUXILIARY_SCOPED_KEYS` for Guest & isolated Authenticated UID progress (mark/unmark read, last reading position, 4 font sizes), updated `public/sw.js` for Cache-First `/data/seerah/*.json`, and cleanly removed obsolete Seerah files (`seerahData.ts`, `seerahProgressService.ts`, `seerahEncyclopediaService.ts`, `SeerahEncyclopediaReader.tsx`, `public/data/seerah-encyclopedia/`, legacy tests) with `0` dangling references.
+4. **Preserved Integrity & Local Verification Executed (2026-11-25):**
+   - **Untouched:** `docs/seerah/MASTER_DIRECTIVE.md`, Quran corpus (`completeQuranData.json`, `src/data/sources/`), `firestore.rules`, `bun.lock`, Vercel env vars, and experimental sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`).
+   - `node scripts/verify_seerah_content.mjs`: **PASS** (`6` eras, `12` sections, `40` chapters, `32` characters, `52` Quran + `43` Hadith verbatim quotes, 100% bidirectional links)
+   - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+   - `npm.cmd test` (74 suites incl. `src/tests/seerahBookSystem.test.ts` + `designSystemV2.test.ts` + Tanzil validation): **PASS** (`814 PASSED | 0 FAILED`)
+   - `npm.cmd run smoke:api-imports`: **PASS**
+   - Production Vite build (`NODE_ENV=production` + `vite build`): **PASS** (`2.92s`, `SeerahView` `49.26 kB` / `10.39 kB` gzip, `index` `246.39 kB`, `0` chunks > 500 kB)
+   - `node scripts/smoke-server.mjs`: **PASS** (production + dev Express servers)
+   - Playwright E2E (`e2e/seerah-book.spec.ts` on Edge Chromium Desktop `1440×900` + Mobile `390×844`): **PASS** (`4 passed | 0 failed`, `22.4s`, `0` page errors, `0` horizontal overflow)
+   - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub Actions CI).
+   - GitHub CI / Vercel Preview / Vercel Production: **NOT EXECUTED** (branch stays local pending explicit owner push/PR authorization).
+
+### Next Step
+- Upon explicit owner authorization, push `feat/seerah-encyclopedia-ibn-kathir` to a GitHub Pull Request, inspect exact-head GitHub Actions `WIRD Quality Gate` (including Java Firestore Rules Emulator and full Playwright suite) and Vercel Preview, and confirm remaining owner items in `docs/OWNER_ACTIONS.md` before any merge to `main`.
+
+---
+
+## Prior Checkpoint — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia (2026-11-24 — Historical / Superseded by 2026-11-25 Complete Digital Book Transformation)
 
 1. **Authoritative Directive & Live Execution Record (`docs/seerah/MASTER_DIRECTIVE.md`, `docs/seerah/EXECUTION_STATUS.md`):**
    - Inspected all 4 owner-supplied PDFs in gitignored `seerah-sources/` (`01_10169_compressed.pdf`..`04_10172_compressed.pdf`, 2,566 scanned pages with `0` embedded text characters) and benchmarked local Windows `ar-SA` OCR (rejected due to garbled religious text).

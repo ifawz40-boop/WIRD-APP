@@ -7,11 +7,13 @@
   "subtitle": "فقد أبي طالب وخديجة ودماء القدمين الشريفتين ورحمة تأبى إطباق الأخشبين",
   "periodLabel": "السنة العاشرة للبعثة تقريباً",
   "datePrecision": "approximate",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "اتساق دقيق بين الترتيب الزمني والفترة (`السنة العاشرة للبعثة تقريباً` / `approximate`)، وسرد موثق لوفاة أبي طالب وخديجة رضي الله عنها وأذى قريش والرحلة إلى الطائف دون اختلاق، مع أمانة علمية بارزة في بيان الخلاف حول الترتيب والفاصل الزمني بين الوفاتين وتأخر اشتهار تسمية «عام الحزن» (`disp-sorrow-year-term`).",
+    "languageNotes": "نثر أدبي رفيع يجمع بين الرصانة والدفء الوجداني بضمير الغائب، ويتميّز الاستهلال والتمهيد الختامي بسلاسة الإيقاع وحسن الربط بمعجزة الإسراء والمعراج."
   },
   "wordCount": 1388,
   "estimatedReadingMinutes": 7,
@@ -175,5 +177,13 @@
     "disp-sorrow-year-term"
   ],
   "previousChapterId": "ch-14",
-  "nextChapterId": "ch-16"
+  "nextChapterId": "ch-16",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

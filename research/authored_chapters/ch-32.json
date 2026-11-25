@@ -7,11 +7,13 @@
   "subtitle": "ثلاثة آلاف أمام جحافل الروم واستشهاد الأمراء الثلاثة وانسحاب خالد العبقري",
   "periodLabel": "جمادى الأولى، السنة الثامنة للهجرة",
   "datePrecision": "exact",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الترتيب الزمني وتحديد الفترة (`جمادى الأولى، السنة الثامنة للهجرة` / `exact`) دقيق ومتسق. السرد موثّق في مصادره المعتمدة (مقتل الحارث بن عمير الأزدي، تجهيز ثلاثة آلاف مقاتل، إمارة زيد ثم جعفر ثم ابن رواحة، الوصايا النبوية في آداب القتال، مشاورة معان، استشهاد زيد وجعفر)، وخالٍ من الحوارات المختلقة أو المونولوجات النفسية، كما أحسن النص بعدم الجزم بعدد جيش الروم المختلف فيه مكتفياً بعبارة «جموعٍ هائلة».",
+    "languageNotes": "لغة سردية رصينة غنية بالمفردات العربية الأصيلة («أوثقه رباطاً»، «شاط في رماح القوم»)، وتدفق سلس بضمير الغائب. الاستهلال تصويري مؤثر، والتمهيد الختامي يربط بوضوح بالفتح الأعظم مع ملاحظة طفيفة في «بغارتهم الغادرة» و«أبواب الطريق الكبرى» دون إخلال بالسلاسة العامة."
   },
   "wordCount": 1293,
   "estimatedReadingMinutes": 7,
@@ -179,5 +181,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-31",
-  "nextChapterId": "ch-33"
+  "nextChapterId": "ch-33",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

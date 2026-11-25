@@ -1,7 +1,32 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-24 (Local Feature Branch `feat/seerah-encyclopedia-ibn-kathir` on `main` @ `45f3edc611be08482d53570afd49f6e9471f44c7` — Full 4-Volume Ibn Kathir Prophetic Seerah Encyclopedia: 2,475 Printed Pages, 90 Sections, Full-Text Arabic Search, Offline-First Chunking & UID-Scoped Progress)  
+**Current snapshot reconciled:** 2026-11-25 (Local Feature Branch `feat/seerah-encyclopedia-ibn-kathir` on `main` @ `45f3edc611be08482d53570afd49f6e9471f44c7` — Complete Prophetic Seerah Digital Book & Character Storytelling Transformation per `docs/seerah/MASTER_DIRECTIVE.md`: 6 Eras, 12 Sections, 40 Chapters, 32 Character Stories, 79,680 Words, 3-Pass Review & Verbatim Sacred Quotations)  
 **Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (`45f3edc611be08482d53570afd49f6e9471f44c7`) · **Active branch:** `feat/seerah-encyclopedia-ibn-kathir`
+
+- **Local Feature Branch State & Verification (2026-11-25 — NOT pushed/merged to `main` and NOT deployed to Vercel):**
+  - **Structured Research Repository & Chronological Blueprint (`research/`, `scripts/phase1_build_research_repo.py`, `scripts/phase2_build_seerah_blueprint.py`):**
+    - Tracked 100% of all `2,566` PDF pages across the 4 volumes of Imam Ibn Kathir's *Al-Sīra al-Nabawiyya* (`2,475` verified matn pages + `91` classified non-matn apparatus pages) in `research/processing_checkpoints.json`, with `90` major events, `120` sub-events, `32` personalities, `26` places, `22` classical sources, `50/50` verbatim Quranic passages, `43/43` verbatim Hadiths, and `18` historical disputes.
+    - Reconstructed the complete book hierarchy: **6 Historical Eras → 12 Main Sections → 40 Chronological Chapters → 120 Narrative Scenes** + **32 Personalities** bidirectionally linked.
+  - **Complete Narrative Authoring, 3-Pass Editorial Review & Static Bundle Publication (`research/authored_chapters/`, `research/authored_characters/`, `scripts/phase5_quotation_verify_and_publish.py`, `public/data/seerah/`):**
+    - Authored `40 / 40` third-person Arabic historical chapters (`53,280` words) and `32 / 32` independent continuous character stories (`26,400` words) = **`79,680` words**.
+    - Passed all `40` chapters and `32` characters through independent Review A (Historical Accuracy), Review B (Arabic Writing Quality), and Review C (Deterministic byte-for-byte verification of `52` Quranic blocks vs `src/data/completeQuranData.json` and `43` Hadith blocks vs Ibn Kathir matn), publishing lazy-loaded static JSON under `public/data/seerah/`.
+  - **Calm Digital Book Reader, UID-Scoped Progress & Legacy Cleanup (`src/components/seerah/`, `src/services/seerahBookService.ts`, `src/services/storageService.ts`, `src/services/router.ts`, `public/sw.js`):**
+    - Replaced `SeerahView.tsx` with `SeerahBookLanding.tsx`, `SeerahChapterReader.tsx`, and `SeerahCharacterViews.tsx` (`0` legacy hexes); registered `'wird.seerah.v2'` in `AUXILIARY_SCOPED_KEYS`; updated `public/sw.js` for `/data/seerah/*.json`; removed obsolete Seerah files and `public/data/seerah-encyclopedia/` (`0` dangling refs).
+  - **Local Verification Executed (2026-11-25):**
+    - `node scripts/verify_seerah_content.mjs`: **PASS** (`6` eras, `12` sections, `40` chapters, `32` characters, `52` Quran + `43` Hadith verbatim quotes, 100% bidirectional links)
+    - `npm.cmd run lint` (`tsc --noEmit`): **PASS** (`0` errors)
+    - `npm.cmd test` (74 suites incl. `src/tests/seerahBookSystem.test.ts` + Tanzil validation & 114 Surah chunk split): **PASS** (`814 PASSED | 0 FAILED`)
+    - `npm.cmd run smoke:api-imports`: **PASS**
+    - `NODE_ENV=production` + `vite build`: **PASS** (`2.92s`, `SeerahView` `49.26 kB` / `10.39 kB` gzip, `index` `246.39 kB`, `0` chunks > 500 kB)
+    - `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+    - Playwright E2E (`e2e/seerah-book.spec.ts` on Edge Chromium Desktop `1440×900` & Mobile `390×844`): **PASS** (`4 passed | 0 failed`, `22.4s`, `0` page errors, `0` horizontal overflow)
+    - `docs/seerah/MASTER_DIRECTIVE.md` integrity check: **PASS** (unmodified, `20,130` bytes, SHA-256 `7a1e25cf667fa62d6dccd268237ddaf32a128d3cc53d7704e2776af68a8d1472`)
+    - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub CI).
+    - GitHub Actions CI, Vercel Preview, Vercel Production, Production Sync Flags, `firestore.rules`, `bun.lock`, and Quran corpus: **UNTOUCHED / NOT EXECUTED**.
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Workspace Snapshot — 2026-11-24 (Superseded Raw Encyclopedia Prototype on `feat/seerah-encyclopedia-ibn-kathir`)
 
 - **Local Feature Branch State & Verification (2026-11-24 — NOT pushed/merged to `main` and NOT deployed to Vercel):**
   - **Directives & Corpus Build Pipeline (`docs/seerah/MASTER_DIRECTIVE.md`, `docs/seerah/EXECUTION_STATUS.md`, `scripts/build-seerah-encyclopedia.py`, `scripts/validate-seerah-encyclopedia.mjs`, `public/data/seerah-encyclopedia/`):**

@@ -67,8 +67,7 @@ import { runTestQuestionGeneratorTests } from '../services/testQuestionGenerator
 import { runMushafSpreadServiceTests } from '../services/mushafSpreadService.test';
 import { runCumulativeLinkingServiceTests } from '../services/cumulativeLinkingService.test';
 import { runAdhkarSystemTests } from './adhkarSystem.test';
-import { runSeerahSystemTests } from './seerahSystem.test';
-import { runSeerahEncyclopediaTests } from './seerahEncyclopedia.test';
+import { runSeerahBookSystemTests } from './seerahBookSystem.test';
 import { runPrayerTimesServiceTests } from '../services/prayerTimesService.test';
 import { runTombstoneReconciliationServiceTests } from '../services/tombstoneReconciliationService.test';
 import { runDesignSystemV2Tests } from './designSystemV2.test';
@@ -187,8 +186,7 @@ async function main() {
     { name: 'Two-Page Printed Mushaf Spread Math & Surface Preferences', runner: runMushafSpreadServiceTests },
     { name: '5-Stage Cumulative Linking Memorization Engine & Recall Gate', runner: runCumulativeLinkingServiceTests },
     { name: 'Daily Adhkar & Duas Corpus, UID-Scoped Counter, Free Tasbih & Offline Audio', runner: runAdhkarSystemTests },
-    { name: 'Chronological Sourced Prophetic Seerah Book, Claims, Bookmarks & UID-Scoped Progress', runner: runSeerahSystemTests },
-    { name: 'Full 4-Volume Ibn Kathir Seerah Encyclopedia Corpus, Arabic Search & UID-Scoped Reader', runner: runSeerahEncyclopediaTests },
+    { name: 'Complete Chronological Prophetic Seerah Book, Character Stories, Verbatim Quotes & UID Progress', runner: runSeerahBookSystemTests },
     { name: 'AlAdhan Prayer Times Adapter, Great-Circle Qibla Bearing & UID-Scoped Offline Cache', runner: runPrayerTimesServiceTests },
     { name: 'Multi-Device Tombstone Anti-Resurrection, Restore & Weak-Verse Delta Convergence', runner: runTombstoneReconciliationServiceTests },
     { name: 'WIRD Design System V2 Multi-Theme Presets, Token Cascade & Application Shell', runner: runDesignSystemV2Tests },

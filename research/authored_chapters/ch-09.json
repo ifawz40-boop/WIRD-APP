@@ -7,11 +7,13 @@
   "subtitle": "زيد بن عمرو بن نفيل وبحث القلوب الصادقة عن فجر التوحيد",
   "periodLabel": "السنوات الممهدة للمبعث النبوي الشريف",
   "datePrecision": "range",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "وسم الفترة (`السنوات الممهدة للمبعث` / `range`) ملائم لطبيعة الفصل الموضوعية الممهّدة للبعثة، والسرد ملتزم بمرويات الصحيح والسيرة (زيد بن عمرو بن نفيل، أمية بن أبي الصلت، بشارات الرهبان وبحيرا، وسلمان الفارسي) دون اختلاق. ملاحظتان علميتان: (1) أسانيد خطبة قس بن ساعدة فيها مقال وضعف عند نقاد الحديث وإن أوردها ابن كثير؛ (2) رحلة سلمان الفارسي امتدّت زمانياً إلى ما بعد البعثة حتى الهجرة، فإيرادها هنا على سبيل التمهيد الموضوعي لا التتابع الزمني الصرف.",
+    "languageNotes": "تصوير أدبي راقٍ وسلاسة عالية بضمير الغائب دون تكرار آلي. الاستهلال بديع البناء، والتمهيد الختامي يهيّئ بجدارة للحظة نزول الوحي في غار حراء."
   },
   "wordCount": 1288,
   "estimatedReadingMinutes": 7,
@@ -152,5 +154,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-08",
-  "nextChapterId": "ch-10"
+  "nextChapterId": "ch-10",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

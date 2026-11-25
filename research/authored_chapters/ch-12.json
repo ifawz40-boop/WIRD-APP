@@ -7,11 +7,13 @@
   "subtitle": "إنذار العشيرة الأقربين ومواجهة أبي لهب وسفارات قريش إلى أبي طالب",
   "periodLabel": "السنة الرابعة للبعثة تقريباً",
   "datePrecision": "approximate",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الترتيب الزمني متسق مع `periodLabel` و`datePrecision: approximate`، والوقائع (دعوة العشيرة، نداء الصفا، موقف أبي لهب وأم جميل وأبي طالب) موثقة في مصادر السيرة دون حوارات مختلقة أو مونولوجات متخيّلة، مع أمانة علمية واضحة في بيان التقريب الزمني وتنوع الروايات في ترتيب المأدبة ونداء الصفا.",
+    "languageNotes": "لغة أدبية متماسكة وجزلة بضمير الغائب، وتصوير بليغ في الاستهلال («سريان الماء العذب تحت الصخر الأصم»)، مع انتقال سلس ومتوازن في التمهيد الختامي إلى مرحلة الابتلاء والهجرة إلى الحبشة."
   },
   "wordCount": 1400,
   "estimatedReadingMinutes": 7,
@@ -204,5 +206,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-11",
-  "nextChapterId": "ch-13"
+  "nextChapterId": "ch-13",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

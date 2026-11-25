@@ -5,11 +5,13 @@
   "epithet": "الفاروق أمير المؤمنين",
   "category": "العشرة المبشرون وكبار السابقين",
   "summary": "أعز الله بإسلامه الدين وشهد المشاهد كلها مع النبي ﷺ",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "النسب العدوي القرشي، ولادته بعد عام الفيل بثلاث عشرة سنة، السفارة والكتابة، قصة إسلامه في السنة السادسة للبعثة، وهجرته ونزوله بقباء على رفاعة بن عبد المنذر، ومواقفه في بدر وأحد وبني النضير والخندق وبني المصطلق والحديبية وفتح مكة وتبوك وحجة الوداع وموافقاته للوحي والمصاهرة بحفصة كلها ثابتة وموثّقة بدقة. السرد بضمير الغائب دون حوارات مختلقة، وتسلسل الفصول المرتبطة متسق زمنياً.",
+    "languageNotes": "نص بليغ محكم السبك، يسير بضمير الغائب في تسلسل تاريخي وأدبي متقن، والمدخل التعريفي بديع التصوير وشديد التماسك."
   },
   "wordCount": 831,
   "estimatedReadingMinutes": 4,
@@ -118,5 +120,13 @@
       "volume": 1,
       "page": 17
     }
-  }
+  },
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

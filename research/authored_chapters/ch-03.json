@@ -7,11 +7,13 @@
   "subtitle": "زحف أبرهة لهدم الكعبة وموقف عبد المطلب المهيب وآية الطير الأبابيل",
   "periodLabel": "عام الفيل (نحو 570 – 571 م)",
   "datePrecision": "approximate",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الفترة الزمنية (`عام الفيل نحو 570 – 571 م`) ودقة التأريخ (`approximate`) متسقتان، والوقائع مطابقة لمرويات ابن إسحاق وابن هشام وابن كثير (بناء القُلّيس، ذو نفر، نفيل، أبو رغال، وموقف عبد المطلب مع أبرهة) بأسلوب رصين خالٍ من الاختلاق. ملاحظة ترتيبية: وُضع هذا الفصل قبل الفصل الرابع جرياً على الترتيب الموضوعي لموسوعة ابن كثير (إتمام سياق اليمن والحبشة)، بينما يتقدمه الفصل الرابع زمنياً.",
+    "languageNotes": "أسلوب أدبي متين وتدفق سردي حيّ بضمير الغائب. الاستهلال قوي التصوير، والتمهيد الختامي يربط بمهارة بين عام الفيل وولاية قريش ونذر عبد المطلب."
   },
   "wordCount": 1323,
   "estimatedReadingMinutes": 7,
@@ -158,5 +160,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-02",
-  "nextChapterId": "ch-04"
+  "nextChapterId": "ch-04",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

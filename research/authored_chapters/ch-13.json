@@ -7,11 +7,13 @@
   "subtitle": "رمضاء مكة وصمود بلال وآل ياسر ومناظرة جعفر في بلاط النجاشي",
   "periodLabel": "السنة الخامسة للبعثة",
   "datePrecision": "exact",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "السرد متماسك وموثق في مصادر السيرة (ثبات بلال وآل ياسر، عتق أبي بكر للمستضعفين، الإذن بالهجرة إلى الحبشة وخروج الطليعة الأولى في السنة الخامسة للبعثة) وخالٍ من الحوارات المختلقة. ملاحظة تحريرية طفيفة لا تخل بالصحة: بدأت محنة المستضعفين قبيل السنة الخامسة، بينما تضبط السنة الخامسة (`exact`) تاريخ الهجرة الأولى إلى الحبشة بدقة.",
+    "languageNotes": "سرد مؤثّر ومتدفّق بضمير الغائب مع استهلالٍ حيّ وتمهيدٍ ختامي محكم يربط بسلاسة بالفصل التالي. ملاحظة فرعية في المتن: «وأعتقه فوره» والأفصح «من فوره»."
   },
   "wordCount": 1358,
   "estimatedReadingMinutes": 7,
@@ -184,5 +186,13 @@
   ],
   "disputeIds": [],
   "previousChapterId": "ch-12",
-  "nextChapterId": "ch-14"
+  "nextChapterId": "ch-14",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

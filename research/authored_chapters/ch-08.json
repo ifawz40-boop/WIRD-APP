@@ -7,11 +7,13 @@
   "subtitle": "حلف الفضول والبيت الطاهر مع خديجة وحكمته ﷺ في وضع الحجر الأسود",
   "periodLabel": "من العشرين إلى الخامسة والثلاثين من عمره ﷺ",
   "datePrecision": "approximate",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الترتيب الزمني (`من العشرين إلى الخامسة والثلاثين` / `approximate`) سليم ومتسق، والسرد موثّق في حرب الفجار وحلف الفضول وتجارة خديجة وزواجها دون حوارات مختلقة. أمانة علمية عالية في عرض الخلاف حول سنّ النبي ﷺ في حرب الفجار (قرب العشرين عند ابن إسحاق أو أواسط العقد الثاني في روايات أخرى). ملاحظة طفيفة: عبارة «في الراجح المجمع عليه عند المحققين» بشأن تولي عمرو بن أسد تزويج خديجة فيها شيء من المبالغة في لفظ «المجمع عليه» نظراً لورود رواية ابن إسحاق بتزويج خويلد، ويكفي «في الراجح عند المحققين».",
+    "languageNotes": "لغة جزلة ومنضبطة بضمير الغائب، وتدفق سردي متوازن في عرض الوقائع. الاستهلال والتمهيد الختامي كلاهما محكمان ولا يحتاجان لصقل."
   },
   "wordCount": 1301,
   "estimatedReadingMinutes": 7,
@@ -152,5 +154,13 @@
     "disp-khadijah-age"
   ],
   "previousChapterId": "ch-07",
-  "nextChapterId": "ch-09"
+  "nextChapterId": "ch-09",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

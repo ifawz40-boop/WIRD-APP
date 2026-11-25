@@ -18,7 +18,7 @@ import {
   type SeerahProgressState,
   type SeerahSearchItem
 } from '../../services/seerahBookService';
-import { WirdIslamicPattern, WirdMihrabArch } from '../brand/WirdPattern';
+import { WirdIslamicPattern } from '../brand/WirdPattern';
 
 interface SeerahBookLandingProps {
   manifest: SeerahBookManifest;
@@ -130,7 +130,6 @@ export const SeerahBookLanding: React.FC<SeerahBookLandingProps> = ({
                 </span>
               </button>
             )}
-            <WirdMihrabArch size={80} variant="gold" className="hidden sm:block shrink-0" />
           </div>
         </div>
 

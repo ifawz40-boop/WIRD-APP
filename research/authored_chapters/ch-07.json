@@ -7,11 +7,13 @@
   "subtitle": "وداع الأم بالأبواء ورحيل الجد عبد المطلب وحنان العم أبي طالب",
   "periodLabel": "من السادسة إلى الثانية عشرة من عمره ﷺ تقريباً",
   "datePrecision": "approximate",
-  "status": "Draft",
+  "status": "Published",
   "reviews": {
-    "historical": "pending",
-    "language": "pending",
-    "quotation": "pending"
+    "historical": "passed",
+    "language": "passed",
+    "quotation": "passed",
+    "historicalNotes": "الترتيب الزمني ووسم الفترة (`من السادسة إلى الثانية عشرة تقريباً` / `approximate`) متسقان مع الفصل السابق (مع جسر زمني سليم في الفقرة الأولى لعام الإقامة مع آمنة). أمانة علمية جيدة في تقييد سنّ وفاة آمنة بـ «على المشهور عند أهل السير» مراعاةً لـ `disp-mother-passing-age`، والسرد ملتزم بمرويات السيرة في زيارة يثرب والأبواء وكفالة عبد المطلب دون اختلاق.",
+    "languageNotes": "نبرة وجدانية رفيعة وسرد سلس بضمير الغائب بلا ركاكة أو تكرار. الاستهلال مؤثر وبليغ، والتمهيد الختامي يربط بانسيابية بفترة الشباب والزواج وبناء الكعبة."
   },
   "wordCount": 1325,
   "estimatedReadingMinutes": 7,
@@ -164,5 +166,13 @@
     "disp-mother-passing-age"
   ],
   "previousChapterId": "ch-06",
-  "nextChapterId": "ch-08"
+  "nextChapterId": "ch-08",
+  "statusHistory": [
+    "Draft",
+    "Historical review",
+    "Language review",
+    "Quotation verification",
+    "Approved",
+    "Published"
+  ]
 }

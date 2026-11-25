@@ -1,1164 +1,309 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import {
-  BookMarked,
-  BookOpen,
-  Bookmark,
-  BookmarkCheck,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Compass,
-  ExternalLink,
-  FileText,
-  HelpCircle,
-  Layers,
-  MapPin,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  Users
-} from 'lucide-react';
+  loadSeerahBookManifest,
+  loadSeerahChapter,
+  loadSeerahCharacter,
+  loadSeerahSearchIndex,
+  readSeerahProgress,
+  saveSeerahBookPosition,
+  setSeerahBookFontSize,
+  toggleSeerahChapterReadState,
+  type SeerahBookManifest,
+  type SeerahChapterDocument,
+  type SeerahCharacterDocument,
+  type SeerahFontSize,
+  type SeerahProgressState,
+  type SeerahSearchItem
+} from '../../services/seerahBookService';
+import { navigateTo, parseRoute } from '../../services/router';
+import { SeerahBookLanding } from './SeerahBookLanding';
+import { SeerahChapterReader } from './SeerahChapterReader';
 import {
-  SEERAH_BOOK_VERSION,
-  SEERAH_CHAPTERS,
-  SEERAH_CLAIMS,
-  SEERAH_PARTS,
-  SEERAH_PEOPLE,
-  SEERAH_PLACES,
-  SEERAH_SOURCES,
-  getSeerahChapterById,
-  getSeerahChaptersByPart,
-  type SeerahChapter,
-  type SeerahDatePrecision
-} from '../../data/seerahData';
-import {
-  getSeerahOverallProgress,
-  readSeerahProgressStore,
-  saveSeerahReadingPosition,
-  setSeerahReadingMode,
-  toggleSeerahBookmark,
-  toggleSeerahChapterCompleted,
-  type SeerahProgressStore
-} from '../../services/seerahProgressService';
-import {
-  getEncyclopediaProgressSummary,
-  loadSeerahEncyclopediaManifest,
-  loadSeerahEncyclopediaToc,
-  readSeerahEncyclopediaStore,
-  toggleEncyclopediaBookmark,
-  type SeerahEncyclopediaManifest,
-  type SeerahEncyclopediaProgressStore,
-  type SeerahEncyclopediaToc
-} from '../../services/seerahEncyclopediaService';
-import {
-  SeerahEncyclopediaReader,
-  type SeerahEncyclopediaJumpTarget
-} from './SeerahEncyclopediaReader';
-import { WirdIslamicPattern, WirdMihrabArch } from '../brand/WirdPattern';
-import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
+  SeerahCharacterDirectory,
+  SeerahCharacterProfile
+} from './SeerahCharacterViews';
 
 interface SeerahViewProps {
   onToast?: (message: string, type?: 'success' | 'info' | 'warn' | 'error') => void;
 }
 
-const DATE_PRECISION_LABELS: Record<SeerahDatePrecision, { label: string; style: string }> = {
-  exact: {
-    label: 'تاريخ مضبوط ومثبت',
-    style: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30'
-  },
-  approximate: {
-    label: 'تاريخ تقريبي في السير',
-    style: 'bg-[#C59B27]/15 text-[#9A7415] dark:text-[var(--wird-accent)] border-[#C59B27]/35'
-  },
-  range: {
-    label: 'نطاق زمني مرحلي',
-    style: 'bg-sky-500/15 text-sky-800 dark:text-sky-300 border-sky-500/30'
-  },
-  disputed: {
-    label: 'فيه تفصيل واختلاف تاريخي',
-    style: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/35'
+type ActiveSeerahScreen =
+  | { mode: 'landing' }
+  | { mode: 'chapter'; chapterId: string; sceneId?: string }
+  | { mode: 'characters' }
+  | { mode: 'character'; characterId: string };
+
+function screenFromCurrentHash(): ActiveSeerahScreen {
+  const route = parseRoute();
+  if (route.tab === 'seerah') {
+    if (route.seerahChapterId) {
+      return { mode: 'chapter', chapterId: route.seerahChapterId };
+    }
+    if (route.seerahCharacterId) {
+      return { mode: 'character', characterId: route.seerahCharacterId };
+    }
+    if (route.seerahView === 'characters') {
+      return { mode: 'characters' };
+    }
   }
-};
+  return { mode: 'landing' };
+}
 
 export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
-  const [store, setStore] = useState<SeerahProgressStore>(() => readSeerahProgressStore());
-  const overallProgress = useMemo(() => getSeerahOverallProgress(store), [store]);
+  const [manifest, setManifest] = useState<SeerahBookManifest | null>(null);
+  const [loadingManifest, setLoadingManifest] = useState(true);
+  const [manifestError, setManifestError] = useState<string | null>(null);
 
-  const [encyStore, setEncyStore] = useState<SeerahEncyclopediaProgressStore>(() =>
-    readSeerahEncyclopediaStore()
+  const [progress, setProgress] = useState<SeerahProgressState>(() =>
+    readSeerahProgress()
   );
-  const [encyManifest, setEncyManifest] = useState<SeerahEncyclopediaManifest | null>(null);
-  const [encyToc, setEncyToc] = useState<SeerahEncyclopediaToc | null>(null);
-  const [loadingEncyMeta, setLoadingEncyMeta] = useState(true);
-  const [encyMetaError, setEncyMetaError] = useState<string | null>(null);
-  const [encyJumpTarget, setEncyJumpTarget] = useState<SeerahEncyclopediaJumpTarget | null>(null);
+  const [screen, setScreen] = useState<ActiveSeerahScreen>(() =>
+    screenFromCurrentHash()
+  );
 
+  // Active Chapter state
+  const [activeChapter, setActiveChapter] = useState<SeerahChapterDocument | null>(
+    null
+  );
+  const [loadingChapter, setLoadingChapter] = useState(false);
+  const [chapterError, setChapterError] = useState<string | null>(null);
+
+  // Active Character state
+  const [activeCharacter, setActiveCharacter] =
+    useState<SeerahCharacterDocument | null>(null);
+  const [loadingCharacter, setLoadingCharacter] = useState(false);
+  const [characterError, setCharacterError] = useState<string | null>(null);
+
+  // Search Index state (lazy-loaded on first search interaction)
+  const [searchIndex, setSearchIndex] = useState<SeerahSearchItem[] | null>(null);
+  const searchLoadingRef = useRef(false);
+  const reqSeqRef = useRef(0);
+
+  // Load Manifest on mount
   useEffect(() => {
     let alive = true;
-    Promise.all([loadSeerahEncyclopediaManifest(), loadSeerahEncyclopediaToc()])
-      .then(([manifest, toc]) => {
+    setLoadingManifest(true);
+    loadSeerahBookManifest()
+      .then((data) => {
         if (!alive) return;
-        setEncyManifest(manifest);
-        setEncyToc(toc);
-        setLoadingEncyMeta(false);
+        setManifest(data);
+        setLoadingManifest(false);
       })
       .catch((err) => {
         if (!alive) return;
-        setEncyMetaError(err instanceof Error ? err.message : 'تعذر تحميل فهرس موسوعة السيرة.');
-        setLoadingEncyMeta(false);
+        setManifestError(
+          err instanceof Error ? err.message : 'تعذر تحميل فهرس كتاب السيرة النبوية.'
+        );
+        setLoadingManifest(false);
       });
     return () => {
       alive = false;
     };
   }, []);
 
-  const encyProgress = useMemo(
-    () => getEncyclopediaProgressSummary(encyStore, encyToc),
-    [encyStore, encyToc]
-  );
+  // Sync screen with browser hash navigation (Back/Forward support)
+  useEffect(() => {
+    const onHashChange = () => {
+      const route = parseRoute();
+      if (route.tab !== 'seerah') return;
+      setScreen(screenFromCurrentHash());
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
-  const [activeChapterId, setActiveChapterId] = useState<string>(
-    () => store.lastPosition?.chapterId || SEERAH_CHAPTERS[0].id
-  );
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<
-    'encyclopedia' | 'reader' | 'timeline' | 'figures' | 'bookmarks'
-  >('encyclopedia');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPartFilter, setSelectedPartFilter] = useState<string>('all');
-  const [selectedQuizAnswers, setSelectedQuizAnswers] = useState<Record<string, number>>({});
+  // Load Chapter Document when in chapter screen
+  useEffect(() => {
+    if (screen.mode !== 'chapter') return;
+    const seq = ++reqSeqRef.current;
+    setLoadingChapter(true);
+    setChapterError(null);
 
-  const openInEncyclopedia = (volume: number, page: number, sectionId?: string) => {
-    setActiveWorkspaceTab('encyclopedia');
-    setEncyJumpTarget({ volume, page, sectionId, nonce: Date.now() });
+    loadSeerahChapter(screen.chapterId)
+      .then((doc) => {
+        if (seq !== reqSeqRef.current) return;
+        setActiveChapter(doc);
+        setLoadingChapter(false);
+        setProgress(saveSeerahBookPosition(doc.id, screen.sceneId));
+      })
+      .catch((err) => {
+        if (seq !== reqSeqRef.current) return;
+        setChapterError(
+          err instanceof Error ? err.message : 'تعذر تحميل محتوى هذا الفصل.'
+        );
+        setLoadingChapter(false);
+      });
+  }, [screen]);
+
+  // Load Character Document when in character screen
+  useEffect(() => {
+    if (screen.mode !== 'character') return;
+    const seq = ++reqSeqRef.current;
+    setLoadingCharacter(true);
+    setCharacterError(null);
+
+    loadSeerahCharacter(screen.characterId)
+      .then((doc) => {
+        if (seq !== reqSeqRef.current) return;
+        if (!doc) {
+          setCharacterError('لم يُعثر على ملف هذه الشخصية.');
+        } else {
+          setActiveCharacter(doc);
+        }
+        setLoadingCharacter(false);
+      })
+      .catch((err) => {
+        if (seq !== reqSeqRef.current) return;
+        setCharacterError(
+          err instanceof Error ? err.message : 'تعذر تحميل سيرة الشخصية.'
+        );
+        setLoadingCharacter(false);
+      });
+  }, [screen]);
+
+  const ensureSearchIndex = useCallback(() => {
+    if (searchIndex || searchLoadingRef.current) return;
+    searchLoadingRef.current = true;
+    loadSeerahSearchIndex()
+      .then((items) => {
+        setSearchIndex(items);
+      })
+      .catch(() => {
+        searchLoadingRef.current = false;
+      });
+  }, [searchIndex]);
+
+  const handleOpenLanding = useCallback(() => {
+    setScreen({ mode: 'landing' });
+    navigateTo({ tab: 'seerah' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  const totalBookmarksCount = store.bookmarks.length + encyStore.bookmarks.length;
+  const handleOpenChapter = useCallback((chapterId: string, sceneId?: string) => {
+    setScreen({ mode: 'chapter', chapterId, sceneId });
+    navigateTo({ tab: 'seerah', seerahChapterId: chapterId });
+  }, []);
 
-  const activeChapter: SeerahChapter = useMemo(
-    () => getSeerahChapterById(activeChapterId) || SEERAH_CHAPTERS[0],
-    [activeChapterId]
-  );
-  const activePart = useMemo(
-    () => SEERAH_PARTS.find(part => part.id === activeChapter.partId) || SEERAH_PARTS[0],
-    [activeChapter.partId]
-  );
-
-  const openChapter = (chapterId: string, sceneId?: string) => {
-    const ch = getSeerahChapterById(chapterId);
-    if (!ch) return;
-    setActiveChapterId(ch.id);
-    setActiveWorkspaceTab('reader');
-    setStore(saveSeerahReadingPosition(ch.id, sceneId));
+  const handleOpenCharacterDirectory = useCallback(() => {
+    setScreen({ mode: 'characters' });
+    navigateTo({ tab: 'seerah', seerahView: 'characters' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  const handleToggleCompleted = (chapterId: string) => {
-    const updated = toggleSeerahChapterCompleted(chapterId);
-    setStore(updated);
-    const isNowDone = updated.completedChapterIds.includes(chapterId);
-    const ch = getSeerahChapterById(chapterId);
-    if (isNowDone && ch) {
-      onToast?.(`تم تسجيل إتمام قراءة «${ch.title}» في سجل السيرة النبوية.`, 'success');
-    }
-  };
+  const handleOpenCharacter = useCallback((characterId: string) => {
+    setScreen({ mode: 'character', characterId });
+    navigateTo({ tab: 'seerah', seerahCharacterId: characterId });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
-  const handleToggleSceneBookmark = (chapterId: string, sceneId: string) => {
-    const updated = toggleSeerahBookmark(chapterId, sceneId);
-    setStore(updated);
-    const key = `${chapterId}:${sceneId}`;
-    const isSaved = updated.bookmarks.some(b => b.id === key);
-    onToast?.(
-      isSaved ? 'تم حفظ العلامة المرجعية في هذا المشهد.' : 'تمت إزالة العلامة المرجعية.',
-      'info'
+  const handleToggleChapterRead = useCallback(
+    (chapterId: string) => {
+      const updated = toggleSeerahChapterReadState(chapterId);
+      setProgress(updated);
+      const isNowRead = updated.completedChapterIds.includes(chapterId);
+      const title =
+        manifest?.chapters.find((c) => c.id === chapterId)?.title || 'الفصل';
+      onToast?.(
+        isNowRead
+          ? `تم تحديد «${title}» كمقروء.`
+          : `تم إلغاء تحديد «${title}» كمقروء.`,
+        isNowRead ? 'success' : 'info'
+      );
+    },
+    [manifest, onToast]
+  );
+
+  const handleChangeFontSize = useCallback((size: SeerahFontSize) => {
+    setProgress(setSeerahBookFontSize(size));
+  }, []);
+
+  const handleSceneFocus = useCallback(
+    (sceneId: string) => {
+      if (screen.mode === 'chapter') {
+        setProgress(saveSeerahBookPosition(screen.chapterId, sceneId));
+      }
+    },
+    [screen]
+  );
+
+  if (loadingManifest) {
+    return (
+      <div className="max-w-4xl mx-auto wird-card p-12 flex flex-col items-center justify-center gap-3 text-center">
+        <Loader2 className="w-7 h-7 animate-spin text-[var(--wird-accent)]" />
+        <p className="text-sm font-bold text-[var(--wird-text)]">
+          جارٍ فتح كتاب السيرة النبوية الشريفة…
+        </p>
+      </div>
     );
-  };
+  }
 
-  const filteredTimelineChapters = useMemo(() => {
-    const query = searchQuery.trim();
-    return SEERAH_CHAPTERS.filter(ch => {
-      if (selectedPartFilter !== 'all' && ch.partId !== selectedPartFilter) return false;
-      if (!query) return true;
-      const inScenes = ch.scenes.some(sc =>
-        sc.title.includes(query) || sc.bodyBlocks.some(blk => blk.text.includes(query))
-      );
-      return (
-        ch.title.includes(query) ||
-        ch.subtitle.includes(query) ||
-        ch.intro.includes(query) ||
-        ch.periodLabel.includes(query) ||
-        inScenes
-      );
-    });
-  }, [searchQuery, selectedPartFilter]);
+  if (manifestError || !manifest) {
+    return (
+      <div className="max-w-4xl mx-auto wird-card p-10 text-center space-y-3">
+        <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
+          {manifestError || 'تعذر فتح كتاب السيرة النبوية حالياً.'}
+        </p>
+      </div>
+    );
+  }
 
-  const chapterClaims = useMemo(() => {
-    const ids = new Set<string>();
-    for (const sc of activeChapter.scenes) {
-      for (const blk of sc.bodyBlocks) {
-        for (const cid of blk.claimIds) ids.add(cid);
-      }
-    }
-    return Array.from(ids)
-      .map(id => SEERAH_CLAIMS[id])
-      .filter(Boolean);
-  }, [activeChapter]);
+  if (screen.mode === 'chapter') {
+    return (
+      <SeerahChapterReader
+        manifest={manifest}
+        chapter={activeChapter}
+        loading={loadingChapter}
+        error={chapterError}
+        isCompleted={progress.completedChapterIds.includes(screen.chapterId)}
+        fontSize={progress.fontSize}
+        initialSceneId={screen.sceneId}
+        onChangeFontSize={handleChangeFontSize}
+        onToggleCompleted={handleToggleChapterRead}
+        onOpenChapter={handleOpenChapter}
+        onOpenCharacter={handleOpenCharacter}
+        onBackToIndex={handleOpenLanding}
+        onSceneFocus={handleSceneFocus}
+      />
+    );
+  }
 
-  const chapterSources = useMemo(() => {
-    const ids = new Set<string>();
-    for (const sc of activeChapter.scenes) {
-      for (const blk of sc.bodyBlocks) {
-        for (const sid of blk.sourceIds) ids.add(sid);
-      }
-    }
-    return Array.from(ids)
-      .map(id => SEERAH_SOURCES[id])
-      .filter(Boolean);
-  }, [activeChapter]);
+  if (screen.mode === 'characters') {
+    return (
+      <SeerahCharacterDirectory
+        manifest={manifest}
+        onOpenCharacter={handleOpenCharacter}
+        onBackToBook={handleOpenLanding}
+      />
+    );
+  }
 
-  const isActiveChapterCompleted = store.completedChapterIds.includes(activeChapter.id);
-  const previousChapter = activeChapter.previousChapterId
-    ? getSeerahChapterById(activeChapter.previousChapterId)
-    : undefined;
-  const nextChapter = activeChapter.nextChapterId
-    ? getSeerahChapterById(activeChapter.nextChapterId)
-    : undefined;
+  if (screen.mode === 'character') {
+    return (
+      <SeerahCharacterProfile
+        manifest={manifest}
+        character={activeCharacter}
+        loading={loadingCharacter}
+        error={characterError}
+        fontSize={progress.fontSize}
+        onChangeFontSize={handleChangeFontSize}
+        onOpenChapter={handleOpenChapter}
+        onBackToDirectory={handleOpenCharacterDirectory}
+        onBackToBook={handleOpenLanding}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* 1. Architectural Hero Banner */}
-      <section
-        aria-labelledby="seerah-hero-title"
-        className="wird-hero-surface relative p-6 md:p-8 overflow-hidden"
-      >
-        <WirdIslamicPattern opacity={0.06} variant="gold" />
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="wird-section-badge">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>
-                  موسوعة السيرة النبوية الشريفة · 4 مجلدات ({encyManifest?.totalPages?.toLocaleString('ar-EG') || '2,475'} صفحة) + {SEERAH_CHAPTERS.length} فصلاً سردياً
-                </span>
-              </span>
-              <span className="text-xs font-semibold text-[#F2EDE2]/80">
-                · نص الحافظ ابن كثير المحقق مع البحث الشامل والعمل دون إنترنت
-              </span>
-            </div>
-            <h2 id="seerah-hero-title" className="text-2xl md:text-3xl font-extrabold font-quran text-[#F5F1E8]">
-              السيرة النبوية الشريفة — موسوعة الحافظ ابن كثير والكتاب السردي الموثق
-            </h2>
-            <p className="text-xs md:text-sm text-[#F2EDE2]/90 leading-relaxed">
-              ﴿ لَّقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ ﴾ — اقرأ الموسوعة الكاملة للسيرة النبوية للحافظ ابن كثير (ت 774 هـ) بأجزائها الأربعة المطابقة للمطبوع وبحثها الشامل، أو طالع الخلاصة السردية الموثقة بـ 16 فصلاً مترابطاً ومصادرها الكلاسيكية.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
-            {encyStore.lastPosition ? (
-              <button
-                type="button"
-                onClick={() =>
-                  openInEncyclopedia(
-                    encyStore.lastPosition!.volume,
-                    encyStore.lastPosition!.page,
-                    encyStore.lastPosition!.sectionId
-                  )
-                }
-                className="wird-btn-accent min-h-11 px-4 py-2.5 text-xs font-bold"
-              >
-                <BookMarked className="w-4 h-4" />
-                <span>
-                  استئناف الموسوعة: ج {encyStore.lastPosition.volume} · ص {encyStore.lastPosition.page}
-                </span>
-              </button>
-            ) : store.lastPosition ? (
-              <button
-                type="button"
-                onClick={() => openChapter(store.lastPosition!.chapterId, store.lastPosition!.sceneId)}
-                className="wird-btn-accent min-h-11 px-4 py-2.5 text-xs font-bold"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>
-                  استئناف القراءة: {getSeerahChapterById(store.lastPosition.chapterId)?.title || 'الفصل الحالي'}
-                </span>
-              </button>
-            ) : null}
-            <WirdMihrabArch size={84} variant="gold" className="hidden sm:block shrink-0" />
-          </div>
-        </div>
-
-        {/* Overall Progress Bar (Independent of Quran Memorization/Khatma Stats) */}
-        <div className="relative z-10 mt-6 pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#F2EDE2]">
-            <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#E0A96D]" />
-              <span>
-                تقدم الموسوعة (ابن كثير):{' '}
-                <strong className="font-mono">
-                  {encyProgress.completedSections} / {encyProgress.totalSections || 90} باباً ({encyProgress.percent}%)
-                </strong>
-              </span>
-            </span>
-            <span className="text-[#F2EDE2]/75">
-              · الخلاصة السردية:{' '}
-              <strong className="font-mono">{overallProgress.completedChapters} / {overallProgress.totalChapters} فصلاً</strong>
-            </span>
-          </div>
-          <div
-            role="progressbar"
-            aria-label="تقدم قراءة موسوعة السيرة النبوية"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={activeWorkspaceTab === 'encyclopedia' ? encyProgress.percent : overallProgress.percent}
-            className="w-full sm:w-64 h-2 rounded-full bg-white/15 overflow-hidden"
-          >
-            <div
-              className="h-full rounded-full bg-gradient-to-l from-[#F6D78B] to-[#C59B27] transition-all duration-300"
-              style={{ width: `${activeWorkspaceTab === 'encyclopedia' ? encyProgress.percent : overallProgress.percent}%` }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Workspace Mode Switcher & Reading Mode Controls */}
-      <div className="wird-card p-4 sm:p-5 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              aria-pressed={activeWorkspaceTab === 'encyclopedia'}
-              onClick={() => setActiveWorkspaceTab('encyclopedia')}
-              className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                activeWorkspaceTab === 'encyclopedia'
-                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
-              }`}
-            >
-              <BookMarked className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>موسوعة ابن كثير (4 مجلدات)</span>
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={activeWorkspaceTab === 'reader'}
-              onClick={() => setActiveWorkspaceTab('reader')}
-              className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                activeWorkspaceTab === 'reader'
-                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
-              }`}
-            >
-              <BookOpen className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>الخلاصة السردية ({SEERAH_CHAPTERS.length})</span>
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={activeWorkspaceTab === 'timeline'}
-              onClick={() => setActiveWorkspaceTab('timeline')}
-              className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                activeWorkspaceTab === 'timeline'
-                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
-              }`}
-            >
-              <Layers className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>الخط الزمني ({SEERAH_CHAPTERS.length})</span>
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={activeWorkspaceTab === 'figures'}
-              onClick={() => setActiveWorkspaceTab('figures')}
-              className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                activeWorkspaceTab === 'figures'
-                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
-              }`}
-            >
-              <Users className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>الأعلام والأماكن والمصادر</span>
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={activeWorkspaceTab === 'bookmarks'}
-              onClick={() => setActiveWorkspaceTab('bookmarks')}
-              className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                activeWorkspaceTab === 'bookmarks'
-                  ? 'bg-[var(--wird-primary)] text-white ring-1 ring-[#C59B27]'
-                  : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)]'
-              }`}
-            >
-              <Bookmark className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span>العلامات المرجعية ({totalBookmarksCount})</span>
-            </button>
-          </div>
-
-          {activeWorkspaceTab === 'reader' && (
-            <div className="wird-segmented-track inline-flex items-center gap-1">
-              <button
-                type="button"
-                aria-pressed={store.readingMode === 'continuous'}
-                onClick={() => setStore(setSeerahReadingMode('continuous'))}
-                className={`min-h-10 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                  store.readingMode === 'continuous'
-                    ? 'bg-[var(--wird-primary)] text-white'
-                    : 'text-[var(--wird-muted)]'
-                }`}
-              >
-                قراءة متصلة صافية
-              </button>
-              <button
-                type="button"
-                aria-pressed={store.readingMode === 'study'}
-                onClick={() => setStore(setSeerahReadingMode('study'))}
-                className={`min-h-10 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                  store.readingMode === 'study'
-                    ? 'bg-[var(--wird-primary)] text-white'
-                    : 'text-[var(--wird-muted)]'
-                }`}
-              >
-                قراءة وتعلّم وتوثيق
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Horizontal Chapter Rail for quick chapter switching in Reader mode */}
-        {activeWorkspaceTab === 'reader' && (
-          <HorizontalScrollRail ariaLabel="التنقل السريع بين فصول السيرة النبوية">
-            {SEERAH_CHAPTERS.map(ch => {
-              const isCurrent = ch.id === activeChapter.id;
-              const isDone = store.completedChapterIds.includes(ch.id);
-              return (
-                <button
-                  key={ch.id}
-                  type="button"
-                  aria-pressed={isCurrent}
-                  onClick={() => openChapter(ch.id)}
-                  className={`min-h-11 shrink-0 snap-start px-3.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all ${
-                    isCurrent
-                      ? 'bg-[var(--wird-primary)] text-white border-[#C59B27]'
-                      : isDone
-                      ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 border-emerald-500/30'
-                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border-[var(--wird-border)]'
-                  }`}
-                >
-                  {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
-                  <span>{ch.order}. {ch.title.replace(/^الفصل [^:]+:\s*/, '')}</span>
-                </button>
-              );
-            })}
-          </HorizontalScrollRail>
-        )}
-      </div>
-
-      {/* 3. FULL 4-VOLUME IBN KATHIR ENCYCLOPEDIA VIEW */}
-      {activeWorkspaceTab === 'encyclopedia' && (
-        <SeerahEncyclopediaReader
-          manifest={encyManifest}
-          toc={encyToc}
-          loadingMeta={loadingEncyMeta}
-          metaError={encyMetaError}
-          store={encyStore}
-          onStoreChange={setEncyStore}
-          jumpTarget={encyJumpTarget}
-          onToast={onToast}
-        />
-      )}
-
-      {/* 3A. CONTINUOUS NARRATIVE READER VIEW */}
-      {activeWorkspaceTab === 'reader' && (
-        <article className="space-y-6">
-          {/* Part Context Header */}
-          <div className="wird-card p-5 md:p-6 bg-[var(--wird-surface-muted)] dark:bg-[var(--wird-surface)] border border-[#C59B27]/35 space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                {activePart.title}
-              </span>
-              <span className="font-mono text-[var(--wird-muted)]">
-                {activePart.periodLabel}
-              </span>
-            </div>
-            <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
-              {activePart.summary}
-            </p>
-          </div>
-
-          {/* Chapter Main Book Sheet */}
-          <div className="wird-card p-6 md:p-10 space-y-8">
-            {/* Chapter Title & Metadata Header */}
-            <header className="space-y-4 pb-6 border-b border-[var(--wird-border)]">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/40 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] text-xs font-bold">
-                    الفصل {activeChapter.order} من {SEERAH_CHAPTERS.length}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-semibold text-[var(--wird-text)]">
-                    <Clock className="w-3.5 h-3.5 text-[#C59B27]" />
-                    <span>{activeChapter.periodLabel}</span>
-                  </span>
-                  <span
-                    className={`px-3 py-1 rounded-full border text-[11px] font-bold ${
-                      DATE_PRECISION_LABELS[activeChapter.datePrecision].style
-                    }`}
-                  >
-                    {DATE_PRECISION_LABELS[activeChapter.datePrecision].label}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  aria-pressed={isActiveChapterCompleted}
-                  onClick={() => handleToggleCompleted(activeChapter.id)}
-                  className={`min-h-11 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                    isActiveChapterCompleted
-                      ? 'bg-emerald-700 text-white'
-                      : 'bg-[var(--wird-surface-muted)] text-[var(--wird-text)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
-                  }`}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{isActiveChapterCompleted ? 'تم إتمام قراءة الفصل' : 'تسجيل الفصل كمقروء'}</span>
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-2xl md:text-3xl font-black font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)] leading-snug">
-                  {activeChapter.title}
-                </h3>
-                <p className="text-sm md:text-base font-semibold text-[var(--wird-accent)]">
-                  {activeChapter.subtitle}
-                </p>
-              </div>
-
-              {/* Narrative Introduction & Historical Context */}
-              <div className="p-4 md:p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2.5">
-                <p className="text-sm md:text-base text-[var(--wird-text)] leading-relaxed">
-                  <strong className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">مدخل الفصل: </strong>
-                  {activeChapter.intro}
-                </p>
-                <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
-                  <strong>تمهيد السياق: </strong>
-                  {activeChapter.contextNote}
-                </p>
-                {encyManifest?.curatedChapterLinks?.[activeChapter.id] && (
-                  <div className="pt-2 border-t border-[var(--wird-border)] flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] text-[var(--wird-muted)]">
-                      التوسّع من المصدر التراثي الأم (السيرة النبوية لابن كثير):
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = encyManifest.curatedChapterLinks[activeChapter.id];
-                        openInEncyclopedia(link.volume, link.page, link.sectionId);
-                      }}
-                      className="min-h-10 px-3.5 py-1.5 rounded-xl bg-[var(--wird-primary)] text-white text-xs font-bold inline-flex items-center gap-1.5 hover:opacity-95 transition-opacity"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
-                      <span>{encyManifest.curatedChapterLinks[activeChapter.id].label}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </header>
-
-            {/* Chapter Narrative Scenes */}
-            <div className="space-y-8">
-              {activeChapter.scenes.map(scene => {
-                const bookmarkKey = `${activeChapter.id}:${scene.id}`;
-                const isBookmarked = store.bookmarks.some(bm => bm.id === bookmarkKey);
-
-                return (
-                  <section
-                    key={scene.id}
-                    id={`seerah-scene-${scene.id}`}
-                    className="space-y-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <h4 className="text-lg md:text-xl font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                        {scene.title}
-                      </h4>
-                      <button
-                        type="button"
-                        aria-pressed={isBookmarked}
-                        aria-label={isBookmarked ? `إزالة علامة ${scene.title}` : `حفظ علامة في ${scene.title}`}
-                        onClick={() => handleToggleSceneBookmark(activeChapter.id, scene.id)}
-                        className={`min-h-11 px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${
-                          isBookmarked
-                            ? 'bg-[#C59B27]/15 border-[#C59B27] text-[#9A7415] dark:text-[var(--wird-accent)]'
-                            : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)]'
-                        }`}
-                      >
-                        {isBookmarked ? (
-                          <>
-                            <BookmarkCheck className="w-4 h-4" />
-                            <span>محفوظ في العلامات</span>
-                          </>
-                        ) : (
-                          <>
-                            <Bookmark className="w-4 h-4" />
-                            <span>حفظ علامة</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="space-y-4">
-                      {scene.bodyBlocks.map(block => {
-                        if (block.type === 'quote_verified') {
-                          return (
-                            <blockquote
-                              key={block.id}
-                              className="p-5 rounded-2xl bg-[var(--wird-surface-muted)] border-r-4 border-[var(--wird-border-gold)] space-y-2"
-                            >
-                              <p className="hadith-matn text-[var(--wird-text)]">
-                                {block.text}
-                              </p>
-                              {store.readingMode === 'study' && (
-                                <div className="text-[11px] font-semibold text-[var(--wird-muted)]">
-                                  التوثيق: {block.sourceIds.map(sid => SEERAH_SOURCES[sid]?.workTitle).filter(Boolean).join(' · ')}
-                                </div>
-                              )}
-                            </blockquote>
-                          );
-                        }
-
-                        if (block.type === 'uncertainty_note') {
-                          return (
-                            <div
-                              key={block.id}
-                              className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/35 text-xs md:text-sm text-[var(--wird-text)] leading-relaxed"
-                            >
-                              <strong className="text-amber-800 dark:text-amber-300 block mb-1">
-                                منهج التحقيق وضبط اختلاف الروايات:
-                              </strong>
-                              {block.text}
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div key={block.id} className="space-y-1.5">
-                            <p className="hadith-matn text-[var(--wird-text)]">
-                              {block.text}
-                            </p>
-                            {store.readingMode === 'study' && (
-                              <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--wird-muted)]">
-                                {block.claimIds.map(cid => {
-                                  const clm = SEERAH_CLAIMS[cid];
-                                  if (!clm) return null;
-                                  return (
-                                    <span
-                                      key={cid}
-                                      className="px-2 py-0.5 rounded-md bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] font-semibold"
-                                    >
-                                      {clm.evidenceGrade}
-                                    </span>
-                                  );
-                                })}
-                                <span>
-                                  المصادر: {block.sourceIds.map(sid => SEERAH_SOURCES[sid]?.workTitle).filter(Boolean).join(' · ')}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-
-            {/* Closing Narrative Bridge */}
-            <div className="p-5 rounded-2xl bg-gradient-to-l bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-2">
-              <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                خاتمة الفصل والجسر التاريخي لما بعده:
-              </span>
-              <p className="text-sm md:text-base text-[var(--wird-text)] leading-relaxed">
-                {activeChapter.closingNarrative}
-              </p>
-            </div>
-
-            {/* Study Mode Sections: Lessons, Linked Figures/Places, Verified Claims & Sources, Optional Quiz */}
-            {store.readingMode === 'study' && (
-              <div className="space-y-6 pt-4 border-t border-[var(--wird-border)]">
-                {/* Pedagogical Lessons */}
-                <div className="space-y-2.5">
-                  <h4 className="text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-                    <Compass className="w-4 h-4" />
-                    <span>فوائد ودروس منهجية من هذا الفصل</span>
-                  </h4>
-                  <ul className="space-y-2 text-xs md:text-sm text-[var(--wird-text)]">
-                    {activeChapter.lessons.map((lesson, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-[#C59B27] font-bold">•</span>
-                        <span>{lesson}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Linked Figures & Places in this Chapter */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2.5">
-                    <h5 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
-                      <Users className="w-4 h-4" />
-                      <span>الأعلام والشخصيات في هذا الفصل</span>
-                    </h5>
-                    <div className="space-y-2">
-                      {activeChapter.peopleIds.map(pid => {
-                        const person = SEERAH_PEOPLE[pid];
-                        if (!person) return null;
-                        return (
-                          <div key={pid} className="text-xs space-y-0.5">
-                            <div className="font-bold text-[var(--wird-text)]">
-                              {person.name} <span className="text-[var(--wird-accent)]">({person.epithet})</span>
-                            </div>
-                            <p className="text-[11px] text-[var(--wird-muted)]">{person.summary}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-2.5">
-                    <h5 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4" />
-                      <span>المعالم والأماكن المرتبطة</span>
-                    </h5>
-                    <div className="space-y-2">
-                      {activeChapter.placeIds.map(plId => {
-                        const place = SEERAH_PLACES[plId];
-                        if (!place) return null;
-                        return (
-                          <div key={plId} className="text-xs space-y-0.5">
-                            <div className="font-bold text-[var(--wird-text)]">
-                              {place.name} <span className="text-[11px] text-[var(--wird-muted)]">({place.region} · {place.precisionNote})</span>
-                            </div>
-                            <p className="text-[11px] text-[var(--wird-muted)]">{place.summary}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Claim-Level Sources Drawer */}
-                <div className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-3">
-                  <h5 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-1.5">
-                    <FileText className="w-4 h-4" />
-                    <span>سجل التوثيق والمصادر الكلاسيكية المعتمدة في هذا الفصل</span>
-                  </h5>
-                  <div className="space-y-2 text-xs">
-                    {chapterClaims.map(clm => (
-                      <div key={clm.id} className="p-2.5 rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] space-y-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-bold text-[var(--wird-text)]">{clm.statement}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-[var(--wird-primary)]/12 dark:bg-[var(--wird-primary)]/40 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] text-[10px] font-bold">
-                            {clm.evidenceGrade}
-                          </span>
-                        </div>
-                        {clm.scholarlyNote && (
-                          <p className="text-[11px] text-amber-800 dark:text-amber-300">
-                            ملاحظة تحقيق: {clm.scholarlyNote}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                    <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-[var(--wird-muted)]">
-                      {chapterSources.map(src => (
-                        <span key={src.id} className="px-2.5 py-1 rounded-lg bg-[var(--wird-surface)] border border-[var(--wird-border)]">
-                          <strong>{src.workTitle}</strong> — {src.author} ({src.referenceLocator})
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Optional End-of-Chapter Comprehension Quiz */}
-                {activeChapter.quizQuestions.length > 0 && (
-                  <div className="p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[#C59B27]/35 space-y-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <h5 className="text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-                        <HelpCircle className="w-4 h-4 text-[#C59B27]" />
-                        <span>وقفة فهم واسترجاع اختيارية (لا تقطع القراءة)</span>
-                      </h5>
-                      <span className="text-[11px] text-[var(--wird-muted)]">مشتقة من الوقائع الثابتة في الفصل</span>
-                    </div>
-
-                    {activeChapter.quizQuestions.map(q => {
-                      const chosenIdx = selectedQuizAnswers[q.id];
-                      const hasAnswered = chosenIdx !== undefined;
-                      const isCorrect = chosenIdx === q.correctIndex;
-
-                      return (
-                        <div key={q.id} className="space-y-3 text-xs">
-                          <p className="font-bold text-sm text-[var(--wird-text)]">{q.prompt}</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {q.choices.map((choice, idx) => {
-                              const isSelected = chosenIdx === idx;
-                              const isRightOption = idx === q.correctIndex;
-                              return (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() => setSelectedQuizAnswers(prev => ({ ...prev, [q.id]: idx }))}
-                                  className={`min-h-11 p-3 rounded-xl border text-right font-semibold transition-all ${
-                                    !hasAnswered
-                                      ? 'bg-[var(--wird-surface)] text-[var(--wird-text)] border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
-                                      : isRightOption
-                                      ? 'bg-emerald-600/15 border-emerald-600 text-emerald-900 dark:text-emerald-200'
-                                      : isSelected
-                                      ? 'bg-rose-600/15 border-rose-600 text-rose-900 dark:text-rose-200'
-                                      : 'bg-white/60 dark:bg-[var(--wird-surface)] text-[var(--wird-muted)] border-transparent'
-                                  }`}
-                                >
-                                  {choice}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {hasAnswered && (
-                            <div
-                              className={`p-3 rounded-xl border text-xs leading-relaxed ${
-                                isCorrect
-                                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
-                                  : 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200'
-                              }`}
-                            >
-                              <strong>{isCorrect ? 'إجابة صحيحة: ' : 'التصويب والتوضيح: '}</strong>
-                              {q.explanation}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Bottom Previous / Next Chapter Navigation Bar */}
-            <footer className="pt-6 border-t border-[var(--wird-border)] grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {previousChapter ? (
-                <button
-                  type="button"
-                  onClick={() => openChapter(previousChapter.id)}
-                  className="min-h-14 p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] text-right flex items-center justify-between gap-3 transition-all"
-                >
-                  <ChevronRight className="w-5 h-5 text-[#C59B27] shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[11px] text-[var(--wird-muted)]">الفصل السابق</div>
-                    <div className="text-xs md:text-sm font-bold text-[var(--wird-text)] truncate">
-                      {previousChapter.title}
-                    </div>
-                  </div>
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {nextChapter ? (
-                <button
-                  type="button"
-                  onClick={() => openChapter(nextChapter.id)}
-                  className="min-h-14 p-4 rounded-2xl bg-[var(--wird-primary)] hover:bg-[#28665B] dark:bg-[var(--wird-primary)] text-white border border-[#C59B27]/40 text-right flex items-center justify-between gap-3 transition-all shadow-sm"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[11px] text-[#F2EDE2]/80">الفصل التالي في الحكاية</div>
-                    <div className="text-xs md:text-sm font-bold truncate">
-                      {nextChapter.title}
-                    </div>
-                  </div>
-                  <ChevronLeft className="w-5 h-5 text-[#E0A96D] shrink-0" />
-                </button>
-              ) : (
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-center">
-                  تمّ بحمد الله آخر فصول الكتاب — تقبل الله منك وحشرنا وإياك في زمرة نبيه ﷺ
-                </div>
-              )}
-            </footer>
-          </div>
-        </article>
-      )}
-
-      {/* 3B. TIMELINE & PARTS DIRECTORY VIEW */}
-      {activeWorkspaceTab === 'timeline' && (
-        <div className="space-y-6">
-          <div className="wird-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[var(--wird-muted)] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="search"
-                aria-label="البحث في فصول ومشاهد السيرة النبوية"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن حدث، غزوة، شخصية، أو مرحلة زمنية..."
-                className="w-full min-h-11 pr-10 pl-3 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs text-[var(--wird-text)]"
-              />
-            </div>
-
-            <select
-              aria-label="تصفية حسب جزء السيرة"
-              value={selectedPartFilter}
-              onChange={e => setSelectedPartFilter(e.target.value)}
-              className="min-h-11 px-3.5 py-2 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)]"
-            >
-              <option value="all">جميع أجزاء السيرة (5 أجزاء · 16 فصلاً)</option>
-              {SEERAH_PARTS.map(part => (
-                <option key={part.id} value={part.id}>{part.title}</option>
-              ))}
-            </select>
-          </div>
-
-          {SEERAH_PARTS.filter(part => selectedPartFilter === 'all' || part.id === selectedPartFilter).map(part => {
-            const partChapters = getSeerahChaptersByPart(part.id).filter(ch =>
-              filteredTimelineChapters.some(f => f.id === ch.id)
-            );
-            if (partChapters.length === 0) return null;
-
-            return (
-              <section key={part.id} className="wird-card p-6 space-y-4">
-                <div className="border-b border-[var(--wird-border)] pb-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                      {part.title}
-                    </h3>
-                    <span className="text-xs font-mono text-[var(--wird-muted)]">
-                      {part.periodLabel}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[var(--wird-muted)] mt-1">{part.summary}</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {partChapters.map(ch => {
-                    const isDone = store.completedChapterIds.includes(ch.id);
-                    return (
-                      <div
-                        key={ch.id}
-                        className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex flex-col justify-between gap-3"
-                      >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[11px] font-mono font-bold text-[var(--wird-accent)]">
-                              {ch.periodLabel}
-                            </span>
-                            {isDone && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>مقروء</span>
-                              </span>
-                            )}
-                          </div>
-                          <h4 className="text-base font-bold font-quran text-[var(--wird-text)]">
-                            {ch.title}
-                          </h4>
-                          <p className="text-xs text-[var(--wird-muted)] leading-relaxed">
-                            {ch.subtitle}
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => openChapter(ch.id)}
-                          className="min-h-11 w-full px-4 py-2 rounded-xl bg-[var(--wird-primary)] hover:bg-[#28665B] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
-                        >
-                          <BookOpen className="w-3.5 h-3.5" />
-                          <span>قراءة هذا الفصل</span>
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-        </div>
-      )}
-
-      {/* 3C. FIGURES, PLACES & CLASSICAL SOURCES DIRECTORY */}
-      {activeWorkspaceTab === 'figures' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="wird-card p-6 space-y-4">
-            <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span>الأعلام والصحابة الكرام</span>
-            </h3>
-            <div className="space-y-3">
-              {Object.values(SEERAH_PEOPLE).map(person => (
-                <div key={person.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1.5 text-xs">
-                  <div className="font-bold text-[var(--wird-text)]">{person.name}</div>
-                  <div className="text-[11px] font-semibold text-[var(--wird-accent)]">{person.epithet}</div>
-                  <p className="text-[11px] text-[var(--wird-muted)] leading-relaxed">{person.summary}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="wird-card p-6 space-y-4">
-            <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              <span>الأماكن والمعالم الجغرافية الموثقة</span>
-            </h3>
-            <div className="space-y-3">
-              {Object.values(SEERAH_PLACES).map(place => (
-                <div key={place.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1 text-xs">
-                  <div className="font-bold text-[var(--wird-text)]">{place.name}</div>
-                  <div className="text-[11px] text-[var(--wird-accent)]">{place.region} · {place.precisionNote}</div>
-                  <p className="text-[11px] text-[var(--wird-muted)] leading-relaxed">{place.summary}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="wird-card p-6 space-y-4">
-            <h3 className="text-base font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              <span>سجل المصادر الكلاسيكية المعتمدة</span>
-            </h3>
-            <div className="space-y-3">
-              {encyManifest && (
-                <div className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-1.5 text-xs">
-                  <div className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                    {encyManifest.title}
-                  </div>
-                  <div className="text-[11px] font-semibold text-[var(--wird-text)]">
-                    {encyManifest.author}
-                  </div>
-                  <div className="text-[11px] text-[var(--wird-muted)] leading-relaxed">
-                    {encyManifest.editionAlignment}
-                  </div>
-                  <div className="text-[10px] text-[var(--wird-muted)] leading-relaxed">
-                    {encyManifest.licenseNotice}
-                  </div>
-                </div>
-              )}
-              {Object.values(SEERAH_SOURCES).map(src => (
-                <div key={src.id} className="p-3.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1 text-xs">
-                  <div className="font-bold text-[var(--wird-text)]">{src.workTitle}</div>
-                  <div className="text-[11px] text-[var(--wird-accent)]">{src.author}</div>
-                  <div className="text-[11px] text-[var(--wird-muted)]">{src.referenceLocator}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      )}
-
-      {/* 3D. SAVED BOOKMARKS VIEW */}
-      {activeWorkspaceTab === 'bookmarks' && (
-        <div className="space-y-6">
-          <section className="wird-card p-6 space-y-4">
-            <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-              <BookMarked className="w-5 h-5" />
-              <span>علامات موسوعة السيرة لابن كثير ({encyStore.bookmarks.length})</span>
-            </h3>
-
-            {encyStore.bookmarks.length === 0 ? (
-              <div className="p-8 text-center space-y-2 text-xs text-[var(--wird-muted)]">
-                <Bookmark className="w-7 h-7 text-[var(--wird-accent)] mx-auto" />
-                <p>لم تحفظ أي علامة في موسوعة ابن كثير بعد. اضغط «علامة» بجانب أي صفحة مطبوعة لحفظها مع ملاحظاتك.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {encyStore.bookmarks.map(bm => (
-                  <div
-                    key={bm.id}
-                    className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex flex-col justify-between gap-3"
-                  >
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-[var(--wird-text)]">
-                        {bm.title}
-                      </div>
-                      <div className="text-[10px] font-mono text-[var(--wird-muted)]">
-                        المجلد {bm.volume} · صفحة {bm.page}
-                      </div>
-                      {bm.note && (
-                        <p className="text-[11px] text-[var(--wird-text)] bg-[var(--wird-surface)] p-2 rounded-lg border border-[var(--wird-border)]">
-                          {bm.note}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => openInEncyclopedia(bm.volume, bm.page, bm.sectionId)}
-                        className="min-h-10 px-3.5 py-1.5 rounded-xl bg-[var(--wird-primary)] text-white text-xs font-bold"
-                      >
-                        فتح الصفحة
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEncyStore(
-                            toggleEncyclopediaBookmark(bm.volume, bm.page, bm.sectionId, bm.title)
-                          );
-                          onToast?.('تمت إزالة العلامة المرجعية من الموسوعة.', 'info');
-                        }}
-                        className="min-h-10 px-3.5 py-1.5 rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] text-xs font-bold text-rose-700 dark:text-rose-300"
-                      >
-                        إزالة
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="wird-card p-6 space-y-4">
-            <h3 className="text-lg font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
-              <Bookmark className="w-5 h-5" />
-              <span>علامات الخلاصة السردية ({store.bookmarks.length})</span>
-            </h3>
-
-          {store.bookmarks.length === 0 ? (
-            <div className="p-10 text-center space-y-2 text-xs text-[var(--wird-muted)]">
-              <Bookmark className="w-8 h-8 text-[#C59B27] mx-auto" />
-              <p>لم تحفظ أي علامة مرجعية بعد. اضغط «حفظ علامة» بجانب أي مشهد أثناء القراءة للرجوع إليه لاحقاً.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {store.bookmarks.map(bm => (
-                <div
-                  key={bm.id}
-                  className="p-4 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex items-center justify-between gap-3"
-                >
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="text-xs font-bold text-[var(--wird-text)] truncate">
-                      {bm.title}
-                    </div>
-                    <div className="text-[10px] font-mono text-[var(--wird-muted)]">
-                      الإصدار {bm.bookVersion}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => openChapter(bm.chapterId, bm.sceneId)}
-                      className="min-h-11 px-3.5 py-1.5 rounded-xl bg-[var(--wird-primary)] text-white text-xs font-bold"
-                    >
-                      انتقال
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleSceneBookmark(bm.chapterId, bm.sceneId)}
-                      className="min-h-11 px-3 py-1.5 rounded-xl bg-[var(--wird-surface-muted)] text-xs font-bold text-rose-700 dark:text-rose-300"
-                    >
-                      إزالة
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-        </div>
-      )}
-    </div>
+    <SeerahBookLanding
+      manifest={manifest}
+      progressState={progress}
+      searchIndex={searchIndex}
+      onEnsureSearchIndex={ensureSearchIndex}
+      onOpenChapter={handleOpenChapter}
+      onToggleChapterRead={handleToggleChapterRead}
+      onOpenCharacterDirectory={handleOpenCharacterDirectory}
+      onOpenCharacter={handleOpenCharacter}
+    />
   );
 };
