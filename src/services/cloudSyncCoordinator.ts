@@ -102,6 +102,8 @@ export class CloudSyncCoordinator {
   private legacyCheckUid: string | null = null;
   private legacyDataDetected: boolean | null = null;
   private autoSyncInterval: ReturnType<typeof setInterval> | null = null;
+  private retryTimeout: ReturnType<typeof setTimeout> | null = null;
+  private consecutiveFailures = 0;
   private state: CloudSyncState = {
     status: 'idle',
     lastSyncAtMs: null,
@@ -365,6 +367,16 @@ export class CloudSyncCoordinator {
               : null)
       });
 
+      if (status === 'synced') {
+        this.consecutiveFailures = 0;
+        if (this.retryTimeout) {
+          clearTimeout(this.retryTimeout);
+          this.retryTimeout = null;
+        }
+      } else if (status === 'error' && revisionedSyncEnabled && typeof window !== 'undefined') {
+        this.scheduleBackoffRetry();
+      }
+
       return status === 'synced';
     } catch (syncError: any) {
       if (isSyncScopeChanged(syncError)) {
@@ -376,6 +388,9 @@ export class CloudSyncCoordinator {
         status: 'error',
         errorMessage: syncError?.message || 'تعذر استكمال المزامنة السحابية.'
       });
+      if (typeof window !== 'undefined') {
+        this.scheduleBackoffRetry();
+      }
       return false;
     } finally {
       this.syncInProgress = false;
@@ -521,10 +536,29 @@ export class CloudSyncCoordinator {
     }, intervalMs);
   }
 
+  private scheduleBackoffRetry(): void {
+    if (this.retryTimeout || !checkIsOnline()) return;
+    this.consecutiveFailures = Math.min(6, this.consecutiveFailures + 1);
+    const delayMs = Math.min(120_000, 10_000 * Math.pow(2, this.consecutiveFailures - 1));
+    this.retryTimeout = setTimeout(() => {
+      this.retryTimeout = null;
+      if (checkIsOnline()) {
+        void this.triggerSync();
+      }
+    }, delayMs);
+    if (typeof this.retryTimeout === 'object' && this.retryTimeout && 'unref' in this.retryTimeout) {
+      (this.retryTimeout as any).unref();
+    }
+  }
+
   public stopPeriodicSync(): void {
     if (this.autoSyncInterval) {
       clearInterval(this.autoSyncInterval);
       this.autoSyncInterval = null;
+    }
+    if (this.retryTimeout) {
+      clearTimeout(this.retryTimeout);
+      this.retryTimeout = null;
     }
   }
 }

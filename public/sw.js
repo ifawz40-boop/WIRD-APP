@@ -82,13 +82,38 @@ async function precacheQuranFont(cache) {
   }
 }
 
+async function fetchOfflineAssetWithRetry(request, pathname) {
+  let lastError = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await fetchWithTimeout(request, {}, OFFLINE_ASSET_REQUEST_TIMEOUT_MS);
+      if (!isValidOfflineAssetResponse(pathname, response)) {
+        throw new Error('تعذر التحقق من نوع أحد ملفات التطبيق قبل حفظه: ' + pathname);
+      }
+      return response;
+    } catch (err) {
+      lastError = err;
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 450));
+      }
+    }
+  }
+  throw lastError || new Error('تعذر تحميل الملف المحلي: ' + pathname);
+}
+
 async function prepareFullOfflinePackage(port) {
-  const manifestResponse = await fetchWithTimeout(
-    PRECACHE_MANIFEST_URL,
-    { cache: 'no-store' },
-    OFFLINE_MANIFEST_REQUEST_TIMEOUT_MS
-  );
-  if (!manifestResponse.ok) throw new Error('تعذر تحميل فهرس ملفات وِرد.');
+  let manifestResponse;
+  try {
+    manifestResponse = await fetchWithTimeout(
+      PRECACHE_MANIFEST_URL,
+      { cache: 'no-store' },
+      OFFLINE_MANIFEST_REQUEST_TIMEOUT_MS
+    );
+  } catch {
+    manifestResponse = await caches.match(PRECACHE_MANIFEST_URL);
+  }
+  if (!manifestResponse || !manifestResponse.ok) throw new Error('تعذر تحميل فهرس ملفات وِرد.');
+  const manifestForCache = manifestResponse.clone();
   const manifest = await manifestResponse.json();
   const assets = manifest && Array.isArray(manifest.allAssets) ? manifest.allAssets : null;
   if (!assets || assets.length === 0 || assets.length > MAX_OFFLINE_PACKAGE_ASSETS) {
@@ -101,23 +126,41 @@ async function prepareFullOfflinePackage(port) {
   });
   if (safeAssets.length !== assets.length) throw new Error('الفهرس يحتوي على ملفات غير مسموح بها.');
   const cache = await caches.open(CONTENT_CACHE_NAME);
+  await cache.put(PRECACHE_MANIFEST_URL, manifestForCache);
+
+  let cursor = 0;
   let completed = 0;
-  for (const asset of safeAssets) {
-    const request = new Request(new URL(asset, self.location.origin).href, { credentials: 'same-origin' });
-    const cachedResponse = await cache.match(request);
-    const validCachedResponse = cachedResponse &&
-      isValidOfflineAssetResponse(new URL(asset, self.location.origin).pathname, cachedResponse);
-    if (!validCachedResponse) {
-      if (cachedResponse) await cache.delete(request);
-      const response = await fetchWithTimeout(request, {}, OFFLINE_ASSET_REQUEST_TIMEOUT_MS);
-      if (!isValidOfflineAssetResponse(new URL(asset, self.location.origin).pathname, response)) {
-        throw new Error('تعذر التحقق من نوع أحد ملفات التطبيق قبل حفظه: ' + asset);
+  let fatalError = null;
+  const concurrency = Math.min(4, safeAssets.length);
+
+  async function worker() {
+    while (cursor < safeAssets.length && !fatalError) {
+      const asset = safeAssets[cursor++];
+      if (!asset) return;
+      try {
+        const assetUrl = new URL(asset, self.location.origin);
+        const request = new Request(assetUrl.href, { credentials: 'same-origin' });
+        const cachedResponse = await cache.match(request);
+        const validCachedResponse = cachedResponse &&
+          isValidOfflineAssetResponse(assetUrl.pathname, cachedResponse);
+        if (!validCachedResponse) {
+          if (cachedResponse) await cache.delete(request);
+          const response = await fetchOfflineAssetWithRetry(request, assetUrl.pathname);
+          await cache.put(request, response.clone());
+        }
+        completed++;
+        if (port && !fatalError) {
+          port.postMessage({ type: 'progress', completed, total: safeAssets.length, asset });
+        }
+      } catch (err) {
+        fatalError = err instanceof Error ? err : new Error('تعذر تحميل ملف التطبيق للعمل دون إنترنت: ' + asset);
+        return;
       }
-      await cache.put(request, response.clone());
     }
-    completed++;
-    if (port) port.postMessage({ type: 'progress', completed, total: safeAssets.length, asset });
   }
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
+  if (fatalError) throw fatalError;
   if (port) port.postMessage({ type: 'complete', completed, total: safeAssets.length });
 }
 

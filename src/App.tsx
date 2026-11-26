@@ -36,6 +36,7 @@ import {
 } from './services/themePreferences';
 import { WirdViewSkeleton } from './components/ui/WirdPrimitives';
 import { ThemeCustomizerSheet } from './components/ui/ThemeCustomizerSheet';
+import { installRuntimeLifecycleCoordinator } from './services/runtimeCoordinator';
 
 // Lazy loaded views for optimal chunking and initial load performance
 const QuranLibraryView = React.lazy(() => import('./components/library/QuranLibraryView').then(m => ({ default: m.QuranLibraryView })));
@@ -231,8 +232,12 @@ export default function App() {
     window.addEventListener('wird-pwa-update-available', handlePwaUpdate);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    const uninstallRuntime = installRuntimeLifecycleCoordinator((msg, kind) => {
+      showToast(msg, kind || 'info');
+    });
 
     return () => {
+      uninstallRuntime();
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('wird-pwa-update-available', handlePwaUpdate);
       window.removeEventListener('online', handleOnline);

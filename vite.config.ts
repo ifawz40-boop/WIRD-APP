@@ -1,8 +1,34 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
 import path from 'path';
 import {defineConfig} from 'vite';
 import type {Plugin} from 'vite';
+
+function collectStaticPublicOfflineAssets(publicDir: string): string[] {
+  const collected: string[] = [
+    '/manifest.json',
+    '/favicon.svg',
+    '/icon-192.png',
+    '/icon-512.png',
+    '/apple-touch-icon.png'
+  ];
+  const seerahRoot = path.join(publicDir, 'data', 'seerah');
+  const walk = (dir: string, urlPrefix: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      const nextUrl = `${urlPrefix}/${entry.name}`;
+      if (entry.isDirectory()) {
+        walk(fullPath, nextUrl);
+      } else if (entry.isFile() && /\.json$/i.test(entry.name)) {
+        collected.push(nextUrl);
+      }
+    }
+  };
+  walk(seerahRoot, '/data/seerah');
+  return collected;
+}
 
 function offlineShellManifestPlugin(): Plugin {
   return {
@@ -37,20 +63,24 @@ function offlineShellManifestPlugin(): Plugin {
       };
 
       visitStaticChunk(entry.fileName);
+      const bundleAssets = Object.values(bundle)
+        .filter(item => item.type === 'chunk' || (
+          item.type === 'asset' &&
+          /\.(?:css|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|json|webmanifest)$/i.test(item.fileName)
+        ))
+        .map(item => '/' + item.fileName);
+      const publicOfflineAssets = collectStaticPublicOfflineAssets(path.resolve('public'));
+      const mergedAllAssets = [...bundleAssets, ...publicOfflineAssets]
+        .filter((asset, index, list) => list.indexOf(asset) === index)
+        .sort();
+
       this.emitFile({
         type: 'asset',
         fileName: 'wird-precache-manifest.json',
         source: JSON.stringify({
           schemaVersion: 1,
           assets: [...assets].sort(),
-          allAssets: Object.values(bundle)
-            .filter(item => item.type === 'chunk' || (
-              item.type === 'asset' &&
-              /\.(?:css|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|json|webmanifest)$/i.test(item.fileName)
-            ))
-            .map(item => '/' + item.fileName)
-            .filter((asset, index, list) => list.indexOf(asset) === index)
-            .sort()
+          allAssets: mergedAllAssets
         })
       });
     }

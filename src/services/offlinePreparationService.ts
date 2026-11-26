@@ -16,6 +16,25 @@ type OfflineWorkerMessage =
 
 const DEFAULT_OFFLINE_PREPARATION_TIMEOUT_MS = 15 * 60 * 1000;
 const SERVICE_WORKER_READY_TIMEOUT_MS = 20 * 1000;
+const OFFLINE_RESUME_PENDING_KEY = 'wird.offline.package.pendingResume.v1';
+
+function setPendingOfflineResumeFlag(pending: boolean): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    if (pending) localStorage.setItem(OFFLINE_RESUME_PENDING_KEY, 'true');
+    else localStorage.removeItem(OFFLINE_RESUME_PENDING_KEY);
+  } catch {
+    // Ignore storage access errors in test/restricted contexts
+  }
+}
+
+export function hasPendingOfflinePackageResume(): boolean {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem(OFFLINE_RESUME_PENDING_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -57,6 +76,7 @@ export async function prepareWirdForOffline(
   }
 
   const channel = new MessageChannel();
+  setPendingOfflineResumeFlag(true);
   return new Promise((resolve, reject) => {
     let settled = false;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -65,8 +85,12 @@ export async function prepareWirdForOffline(
       settled = true;
       clearTimeout(timeoutId);
       channel.port1.close();
-      if (error) reject(error);
-      else resolve(result!);
+      if (error) {
+        reject(error);
+      } else {
+        setPendingOfflineResumeFlag(false);
+        resolve(result!);
+      }
     };
 
     timeoutId = setTimeout(() => {

@@ -143,3 +143,18 @@ export async function loadSimpleBasmala(surahNumber: number): Promise<string | u
   if (module.default.surahNumber !== surahNumber || !module.default.bismillahText) throw new Error('Invalid Tanzil Simple basmala for Surah ' + surahNumber);
   return module.default.bismillahText;
 }
+
+/** Bounds in-memory Surah chunk Maps when the app moves to background to keep RAM usage low. */
+export function trimLoadedQuranCaches(maxEntries = 24): void {
+  const safeMax = Math.max(4, maxEntries);
+  while (surahCache.size > safeMax) {
+    const oldest = surahCache.keys().next().value;
+    if (oldest === undefined) break;
+    surahCache.delete(oldest);
+  }
+  while (simpleSurahCache.size > safeMax) {
+    const oldest = simpleSurahCache.keys().next().value;
+    if (oldest === undefined) break;
+    simpleSurahCache.delete(oldest);
+  }
+}

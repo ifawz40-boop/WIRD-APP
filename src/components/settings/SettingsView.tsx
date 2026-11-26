@@ -833,7 +833,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <span>يعمل دون إنترنت 100%</span>
             </div>
             <p className="text-[11px] text-[var(--wird-muted)] leading-5">
-              المصحف كاملاً بالنص المعتمد، جلسات الحفظ والربط التراكمي، مركز المراجعة والآيات المتعثرة، الاختبارات، خطط الحفظ، والتلاوات المحمّلة أدناه.
+              المصحف كاملاً بالنص المعتمد، جلسات الحفظ والربط التراكمي، المراجعة والاختبارات، الأذكار والأدعية، الرقية الشرعية، كتاب السيرة النبوية وشخصياته، المستشار المحلي، والتلاوات المحمّلة أدناه.
             </p>
           </div>
           <div className="rounded-xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-3 space-y-1.5">

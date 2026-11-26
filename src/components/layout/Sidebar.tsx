@@ -19,6 +19,7 @@ import {
 import { UserProfile } from '../../types/quran';
 import { WirdBrandLockup } from '../brand/WirdLogo';
 import { WirdAvatar } from '../brand/WirdAvatar';
+import { prefetchRouteView } from '../../services/runtimeCoordinator';
 
 export type NavTabId =
   | 'dashboard'
@@ -235,6 +236,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   type="button"
+                  onMouseEnter={() => prefetchRouteView(item.id)}
+                  onFocus={() => prefetchRouteView(item.id)}
                   onClick={() => handleSelect(item.id)}
                   aria-current={isActive ? 'page' : undefined}
                   className={`w-full min-h-11 flex items-center justify-between px-3 py-2 rounded-[var(--wird-radius-control)] text-xs sm:text-[13px] font-semibold transition-colors duration-150 wird-focus-ring ${
@@ -345,6 +348,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 type="button"
+                onTouchStart={() => prefetchRouteView(item.id)}
+                onMouseEnter={() => prefetchRouteView(item.id)}
                 onClick={() => handleSelect(item.id)}
                 aria-current={active ? 'page' : undefined}
                 className={
