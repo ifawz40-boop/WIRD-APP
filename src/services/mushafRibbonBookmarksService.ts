@@ -1,4 +1,5 @@
 import { StorageService } from './storageService';
+import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
 
 export type MushafRibbonId = 'khatma' | 'hifz' | 'murajaah' | 'tadabbur';
 
@@ -91,6 +92,7 @@ export function saveMushafRibbons(ribbons: MushafRibbonBookmark[]): MushafRibbon
         StorageService.resolveScopedKey(MUSHAF_RIBBONS_STORAGE_KEY),
         JSON.stringify(ribbons)
       );
+      scheduleAuxiliaryCloudSync();
     }
   } catch {
     // Graceful degradation when storage is restricted.

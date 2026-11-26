@@ -211,7 +211,13 @@ export async function projectRemoteInboxBatch(
       };
     }
 
-    const decision = isResumingThisProjection
+    const isConvergentAuxiliaryEvent =
+      remoteEvent.collection === 'syncMeta' &&
+      remoteEvent.documentId === 'auxiliaryDomainsV1' &&
+      remoteEvent.operation === 'upsert' &&
+      isRecord(remoteEvent.payload.auxiliarySnapshot);
+
+    const rawDecision = isResumingThisProjection
       ? (hasPendingLocalMutation
           ? 'blocked_pending_local'
           : remoteEvent.operation === 'tombstone'
@@ -225,6 +231,11 @@ export async function projectRemoteInboxBatch(
           localProjectionEmpty,
           remoteCollectionInitialized
         });
+
+    const decision =
+      isConvergentAuxiliaryEvent && rawDecision === 'blocked_base_revision' && !hasPendingLocalMutation
+        ? 'apply'
+        : rawDecision;
 
     const localRuqyahSnapshot = remoteEvent.collection === 'ruqyahProgress'
       ? dependencies.getLocalRuqyahProgressSnapshot?.() ?? null

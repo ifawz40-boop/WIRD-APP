@@ -1162,10 +1162,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
+        <div className="rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] p-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="font-bold text-[11px] text-[var(--wird-text)]">نطاقات المزامنة السحابية والدمج التلقائي (V3):</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الحفظ والمراجعة</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">ختمات القراءة والفواصل الملونة</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الأذكار والمسبحة</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الرقية الشرعية</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">تقدم السيرة والسلاسل</span>
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
           <div className="space-y-1 max-w-xl">
             <p className="text-[11px] text-[var(--wird-muted)] leading-5">
-              المزامنة الثنائية ما زالت تمر باختبارات الحماية والتعارض. بياناتك المحلية لا تُحذف عند تعذر الرفع أو تطبيق الأحداث المستقبلة.
+              تُدمج الختمات والفواصل والأذكار والرقية وتقدم السيرة تلقائياً دون تعارض بين أجهزتك، بينما تظل سجلات الحفظ محمية بسجل إصدارات موثق لا يستبدل أي بيانات محلية دون إذنك.
             </p>
             {syncErrorMessage && (
               <p className="text-[11px] text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)] leading-5" role="status">
@@ -1222,45 +1233,50 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             الحدث #{conflict.event.serverSequence} · {new Date(conflict.createdAtMs).toLocaleString('ar-EG')}
                           </span>
                         </summary>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 text-[11px]">
-                          <div className="space-y-1">
-                            <p className="font-bold text-[var(--wird-text)]">بيانات الحدث البعيد</p>
-                            <p className="text-[var(--wird-muted)]">العملية: {conflict.event.operation} · الإصدار: {conflict.event.baseRevision} ← {conflict.event.revision}</p>
-                            <pre dir="ltr" className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[var(--wird-surface)] border border-[var(--wird-border)] p-2 text-[10px] text-[var(--wird-text)]">{JSON.stringify(conflict.event.payload, null, 2)}</pre>
+                        <details className="mt-3 rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface)] p-2.5 text-[11px]">
+                          <summary className="cursor-pointer font-semibold text-[var(--wird-muted)] hover:text-[var(--wird-text)]">
+                            عرض التفاصيل التقنية المتقدمة للسجل (JSON)
+                          </summary>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 text-[11px]">
+                            <div className="space-y-1">
+                              <p className="font-bold text-[var(--wird-text)]">بيانات الحدث البعيد</p>
+                              <p className="text-[var(--wird-muted)]">العملية: {conflict.event.operation} · الإصدار: {conflict.event.baseRevision} ← {conflict.event.revision}</p>
+                              <pre dir="ltr" className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] p-2 text-[10px] text-[var(--wird-text)]">{JSON.stringify(conflict.event.payload, null, 2)}</pre>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="font-bold text-[var(--wird-text)]">لقطة البيانات المحلية وقت اكتشاف التعارض</p>
+                              {Object.entries(conflict.localSnapshot).map(([key, value]) => (
+                                <div key={key} className="space-y-1">
+                                  <p className="text-[var(--wird-muted)] break-all">{key}</p>
+                                  <pre dir="ltr" className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] p-2 text-[10px] text-[var(--wird-text)]">{formatConflictSnapshotValue(value)}</pre>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <p className="font-bold text-[var(--wird-text)]">لقطة البيانات المحلية وقت اكتشاف التعارض</p>
-                            {Object.entries(conflict.localSnapshot).map(([key, value]) => (
-                              <div key={key} className="space-y-1">
-                                <p className="text-[var(--wird-muted)] break-all">{key}</p>
-                                <pre dir="ltr" className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[var(--wird-surface)] border border-[var(--wird-border)] p-2 text-[10px] text-[var(--wird-text)]">{formatConflictSnapshotValue(value)}</pre>
+                          <div className="mt-3 space-y-2">
+                            <p className="font-bold text-[11px] text-[var(--wird-text)]">
+                              العمليات المحلية المعلقة المحفوظة ({conflict.localMutations?.length || 0})
+                            </p>
+                            {(conflict.localMutations || []).slice(0, 10).map(mutation => (
+                              <div key={mutation.mutationId} className="rounded-lg border border-[var(--wird-border)] p-2 space-y-1">
+                                <p className="text-[10px] text-[var(--wird-muted)] break-all">
+                                  {mutation.collection}/{mutation.documentId} · revision base {mutation.baseRevision} · sequence {mutation.sequence}
+                                </p>
+                                <pre dir="ltr" className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] p-2 text-[10px] text-[var(--wird-text)]">{JSON.stringify(mutation.payload, null, 2)}</pre>
                               </div>
                             ))}
-                          </div>
-                        </div>
-                        <div className="mt-3 space-y-2">
-                          <p className="font-bold text-[11px] text-[var(--wird-text)]">
-                            العمليات المحلية المعلقة المحفوظة ({conflict.localMutations?.length || 0})
-                          </p>
-                          {(conflict.localMutations || []).slice(0, 10).map(mutation => (
-                            <div key={mutation.mutationId} className="rounded-lg border border-[var(--wird-border)] p-2 space-y-1">
-                              <p className="text-[10px] text-[var(--wird-muted)] break-all">
-                                {mutation.collection}/{mutation.documentId} · revision base {mutation.baseRevision} · sequence {mutation.sequence}
+                            {(conflict.localMutations || []).length === 0 && (
+                              <p className="text-[10px] text-[var(--wird-muted)]">
+                                لم تكن هناك عملية محلية معلقة مرتبطة بهذا المستند عند حفظ التعارض؛ لقطة التخزين المحلية محفوظة أعلاه.
                               </p>
-                              <pre dir="ltr" className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[var(--wird-surface)] border border-[var(--wird-border)] p-2 text-[10px] text-[var(--wird-text)]">{JSON.stringify(mutation.payload, null, 2)}</pre>
-                            </div>
-                          ))}
-                          {(conflict.localMutations || []).length === 0 && (
-                            <p className="text-[10px] text-[var(--wird-muted)]">
-                              لم تكن هناك عملية محلية معلقة مرتبطة بهذا المستند عند حفظ التعارض؛ لقطة التخزين المحلية محفوظة أعلاه.
-                            </p>
-                          )}
-                          {(conflict.localMutations || []).length > 10 && (
-                            <p className="text-[10px] text-[var(--wird-muted)]">
-                              عُرضت أول 10 عمليات فقط؛ بقية العمليات محفوظة في سجل التعافي المحلي.
-                            </p>
-                          )}
-                        </div>
+                            )}
+                            {(conflict.localMutations || []).length > 10 && (
+                              <p className="text-[10px] text-[var(--wird-muted)]">
+                                عُرضت أول 10 عمليات فقط؛ بقية العمليات محفوظة في سجل التعافي المحلي.
+                              </p>
+                            )}
+                          </div>
+                        </details>
                         <p className="mt-2 text-[10px] text-[var(--wird-muted)]">
                           سبب الإيقاف: {conflict.reason} · معرّف الحدث: <span dir="ltr">{conflict.event.eventId}</span>
                         </p>

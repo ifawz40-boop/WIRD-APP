@@ -1,4 +1,5 @@
 import { StorageService } from './storageService';
+import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
 
 export interface ReadingKhatmaPlanOptions {
   durationDays: number;
@@ -355,6 +356,9 @@ function persistStore(
   };
 
   storage.setItem(getScopedV2Key(), JSON.stringify(finalStore));
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    scheduleAuxiliaryCloudSync();
+  }
   if (active) {
     const legacyMirror: ReadingKhatma = {
       ...active,

@@ -15,6 +15,14 @@ import type { JournalEvent } from './indexedDbSyncJournal';
 import type { SyncCollection } from './localSyncOutbox';
 import { isValidRuqyahProgressSnapshot } from './ruqyahProgressSchema';
 import type { RuqyahProgressSnapshot } from './ruqyahProgressSchema';
+import {
+  AUXILIARY_SYNC_DOCUMENT_ID,
+  SYNCED_AUXILIARY_KEYS,
+  applyMergedAuxiliaryDomainSnapshot,
+  captureAuxiliaryDomainSnapshot,
+  isValidAuxiliaryDomainSnapshot,
+  mergeAuxiliaryDomainSnapshots,
+} from './auxiliaryDomainsSchema';
 
 export interface PreparedDataMigration {
   report: MigrationReport;
@@ -390,7 +398,7 @@ export const DEMO_PROFILE: UserProfile = {
 function isValidUserProfile(value: unknown): value is UserProfile {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const profile = value as Record<string, unknown>;
-  const reciters = ['alafasy', 'husary', 'abdulbasit', 'ghamdi', 'minshawi'];
+  const reciters = ['alafasy', 'husary', 'minshawi', 'abdulbasit', 'sudais', 'shuraim', 'ajamy', 'ghamdi'];
   const fontSizes = ['sm', 'md', 'lg', 'xl'];
   if (typeof profile.name !== 'string' || !profile.name.trim() || profile.name.length > 100) return false;
   if (typeof profile.email !== 'string' || profile.email.length > 254) return false;
@@ -1742,6 +1750,15 @@ export const StorageService = {
       stableSerialize(actual) === stableSerialize(expected);
     try {
       if (collection === 'syncMeta') {
+        if (documentId === AUXILIARY_SYNC_DOCUMENT_ID && payload.auxiliarySnapshot !== undefined) {
+          if (!isValidAuxiliaryDomainSnapshot(payload.auxiliarySnapshot)) return false;
+          const currentAux = captureAuxiliaryDomainSnapshot(key => getItem(key), payload.auxiliarySnapshot.updatedAtMs);
+          const mergedAux = mergeAuxiliaryDomainSnapshots(currentAux, payload.auxiliarySnapshot);
+          return equals(
+            { ...currentAux, updatedAtMs: 0, lastPage: currentAux.lastPage?.page ?? null },
+            { ...mergedAux, updatedAtMs: 0, lastPage: mergedAux.lastPage?.page ?? null }
+          );
+        }
         if (!isPlainRecord(payload.transaction) || payload.transaction.version !== 1 ||
             !Array.isArray(payload.transaction.operations) ||
             payload.transaction.operations.length < 1 ||
@@ -1840,6 +1857,27 @@ export const StorageService = {
 
     if (event.collection === 'syncMeta') {
       const payload = event.payload;
+      if (event.documentId === AUXILIARY_SYNC_DOCUMENT_ID && payload.auxiliarySnapshot !== undefined) {
+        if (!isValidAuxiliaryDomainSnapshot(payload.auxiliarySnapshot)) return false;
+        const auxKeys = Object.values(SYNCED_AUXILIARY_KEYS).map(k => resolveStorageKey(k));
+        const priorSnapshot = new Map<string, string | null>();
+        for (const key of auxKeys) {
+          const val = readRawStorageValue(key);
+          if (val === undefined) return false;
+          priorSnapshot.set(key, val);
+        }
+        const currentAux = captureAuxiliaryDomainSnapshot(key => getItem(key), event.clientUpdatedAtMs);
+        const mergedAux = mergeAuxiliaryDomainSnapshots(currentAux, payload.auxiliarySnapshot);
+        const ok = applyMergedAuxiliaryDomainSnapshot(mergedAux, (key, value) => setItem(key, value));
+        if (!ok) {
+          restoreRawStorageValues(priorSnapshot);
+          return false;
+        }
+        if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('wird:auxiliary-sync-applied'));
+        }
+        return true;
+      }
       if (payload.transaction === undefined) return true;
       if (!isPlainRecord(payload.transaction) || payload.transaction.version !== 1 ||
           !Array.isArray(payload.transaction.operations)) return false;

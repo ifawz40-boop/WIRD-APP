@@ -13,6 +13,7 @@ import {
   type VideoSeriesDefinition,
 } from '../data/videoSeriesCatalog';
 import { StorageService } from './storageService';
+import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
 import { getLocalDateString } from './unifiedPortionService';
 
 export const VIDEO_SERIES_STORAGE_KEY = 'wird.video.series.v1';
@@ -264,6 +265,9 @@ function persistVideoSeriesStore(
 ): VideoSeriesStoreV1 {
   try {
     storage.setItem(getScopedKey(), JSON.stringify(store));
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      scheduleAuxiliaryCloudSync();
+    }
   } catch {
     // Keep session responsive if storage quota or privacy mode restricts persistence
   }

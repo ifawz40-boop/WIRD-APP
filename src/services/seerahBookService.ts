@@ -1,4 +1,5 @@
 import { StorageService } from './storageService';
+import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
 
 export const SEERAH_BOOK_STORAGE_KEY = 'wird.seerah.v2';
 export const SEERAH_BOOK_BASE_PATH = '/data/seerah';
@@ -429,6 +430,9 @@ function writeSeerahProgress(
 ): SeerahProgressState {
   try {
     storage.setItem(resolveKey(), JSON.stringify(state));
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      scheduleAuxiliaryCloudSync();
+    }
   } catch {
     // Preserve interactive reading even under storage quota restriction
   }

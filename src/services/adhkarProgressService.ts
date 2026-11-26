@@ -8,6 +8,7 @@ import {
   type AdhkarCategory
 } from '../data/adhkarData';
 import { StorageService } from './storageService';
+import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
 import { getLocalDateString } from './unifiedPortionService';
 
 export const ADHKAR_PROGRESS_KEY = 'wird.adhkar.progress.v1';
@@ -187,6 +188,9 @@ function persistAdhkarProgressStore(
 ): AdhkarProgressStore {
   try {
     storage.setItem(getScopedKey(), JSON.stringify(store));
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      scheduleAuxiliaryCloudSync();
+    }
   } catch {
     // Keep interactive counter responsive if storage quota is blocked
   }

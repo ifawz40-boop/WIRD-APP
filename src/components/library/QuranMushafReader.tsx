@@ -79,6 +79,7 @@ import {
   type MushafRibbonBookmark,
   type MushafRibbonId
 } from '../../services/mushafRibbonBookmarksService';
+import { scheduleAuxiliaryCloudSync } from '../../services/auxiliaryCloudSyncService';
 import { PrintedMushafSpread, type PrintedMushafSpreadContext } from './PrintedMushafSpread';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 import { SurahPickerControl } from '../shared/SurahPickerControl';
@@ -314,7 +315,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
 
   useEffect(() => {
     setPageInput(String(page));
-    try { localStorage.setItem(StorageService.resolveScopedKey(LAST_PAGE_KEY), String(page)); } catch { /* Reading remains available without persistence. */ }
+    try {
+      localStorage.setItem(StorageService.resolveScopedKey(LAST_PAGE_KEY), String(page));
+      scheduleAuxiliaryCloudSync(2500);
+    } catch { /* Reading remains available without persistence. */ }
     onPageVisitedRef.current?.(page);
   }, [page]);
 
@@ -646,7 +650,10 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   const toggleBookmark = () => {
     setBookmarks(current => {
       const next = current.includes(page) ? current.filter(item => item !== page) : [...current, page].sort((a, b) => a - b);
-      try { localStorage.setItem(StorageService.resolveScopedKey(BOOKMARKS_KEY), JSON.stringify(next)); } catch { /* Bookmark works for this view if storage is blocked. */ }
+      try {
+        localStorage.setItem(StorageService.resolveScopedKey(BOOKMARKS_KEY), JSON.stringify(next));
+        scheduleAuxiliaryCloudSync();
+      } catch { /* Bookmark works for this view if storage is blocked. */ }
       return next;
     });
   };

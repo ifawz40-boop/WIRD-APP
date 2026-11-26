@@ -5,6 +5,7 @@ import type { RemoteInboxEventInput } from './indexedDbSyncJournal';
 import { StorageService } from './storageService';
 import { writeRevisionedRemoteMutation } from './revisionedRemoteMutation';
 import { projectRemoteInboxBatch } from './remoteInboxProjector';
+import { flushAuxiliaryCloudSyncNow } from './auxiliaryCloudSyncService';
 
 function isSyncScopeChanged(error: unknown): boolean {
   return error instanceof Error && error.message === 'SYNC_SCOPE_CHANGED';
@@ -68,14 +69,14 @@ export interface CloudSyncState {
 
 type SyncListener = (state: CloudSyncState) => void;
 
-/** Cloud writes stay disabled until the matching revision-enforcing Firestore rules are deployed. */
+/** Revision-enforcing Firestore rules are active; allow explicit 'false' kill-switch only if needed. */
 export function isRevisionedSyncEnabled(): boolean {
-  return import.meta.env.VITE_WIRD_REVISIONED_SYNC_ENABLED === 'true';
+  return import.meta.env.VITE_WIRD_REVISIONED_SYNC_ENABLED !== 'false';
 }
 
-/** Remote projection stays off until local mutation coverage and conflict UX pass release tests. */
+/** Remote projection is enabled by default with durable conflict archiving; disable only if explicitly 'false'. */
 export function isRemoteProjectionEnabled(): boolean {
-  return import.meta.env.VITE_WIRD_REMOTE_PROJECTION_ENABLED === 'true';
+  return import.meta.env.VITE_WIRD_REMOTE_PROJECTION_ENABLED !== 'false';
 }
 
 /** Full sync requires durable remote import and local projection, not just upload success. */
@@ -277,6 +278,7 @@ export class CloudSyncCoordinator {
     this.updateState({ status: 'syncing', errorMessage: null });
 
     try {
+      await flushAuxiliaryCloudSyncNow().catch(() => undefined);
       let hasMore = true;
       let firstPushError: string | null = null;
 
