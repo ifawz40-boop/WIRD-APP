@@ -942,7 +942,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
                                 : 'bg-[var(--wird-surface-muted)] text-[var(--wird-muted)] border-[var(--wird-border)]'
                             }`}
                           >
-                            {day.label} {isActive ? '✓' : '· راحة'}
+                            {day.label}{!isActive ? ' · راحة' : ''}
                           </button>
                         );
                       })}
@@ -1566,7 +1566,7 @@ export const PlanningEngineWizard: React.FC<PlanningEngineWizardProps> = ({
 
                         {day.memorizationTask && isDone && (
                           <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                            ✓ مكتملة في الجدول
+                            مكتملة في الجدول
                           </span>
                         )}
                       </div>

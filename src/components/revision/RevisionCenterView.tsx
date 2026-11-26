@@ -1265,7 +1265,7 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
                         </span>
                       </td>
                       <td className="py-3 px-3 font-mono tabular-nums text-[var(--wird-muted)]">
-                        {entry.intervalDaysBefore}d ➔ {entry.intervalDaysAfter}d
+                        <span dir="ltr">{entry.intervalDaysBefore}d &rarr; {entry.intervalDaysAfter}d</span>
                       </td>
                       <td className="py-3 px-3 text-[var(--wird-muted)]">
                         {entry.notes || '—'}

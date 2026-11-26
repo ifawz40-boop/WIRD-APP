@@ -99,13 +99,13 @@ export const WirdOrnateFrame: React.FC<{
   variant = 'subtle',
 }) => {
   const borderColors = {
-    emerald: 'border-[#102D29]/20 dark:border-[#1D4940]/40',
-    gold: 'border-[#B99B62]/35 dark:border-[#B99B62]/25',
-    subtle: 'border-[#1C4E46]/15 dark:border-[#E0A96D]/20',
+    emerald: 'border-[var(--wird-border-strong)]',
+    gold: 'border-[var(--wird-border-gold)]',
+    subtle: 'border-[var(--wird-border)]',
   }[variant];
 
   return (
-    <div className={`relative rounded-2xl border ${borderColors} p-5 md:p-6 bg-white dark:bg-[#111F36] shadow-xs overflow-hidden ${className}`}>
+    <div className={`relative rounded-2xl border ${borderColors} p-5 md:p-6 bg-[var(--wird-surface)] shadow-2xs overflow-hidden ${className}`}>
       {/* Decorative corner florets */}
       <svg className="absolute top-2 right-2 w-4 h-4 text-[#B99B62]/40 pointer-events-none" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M1 1 H7 M1 1 V7 M3 3 H6 M3 3 V6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />

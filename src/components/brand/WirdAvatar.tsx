@@ -54,11 +54,11 @@ export const WirdAvatar: React.FC<WirdAvatarProps> = ({
   const shapeClass = shapeMap[shape];
 
   const ringStyles = withRing
-    ? 'ring-1.5 ring-[#C59B27]/60 dark:ring-[#E0A96D]/50 shadow-sm'
+    ? 'ring-1 ring-[var(--wird-border)] shadow-2xs'
     : '';
 
   const glowStyles = withGlow
-    ? 'shadow-[0_0_25px_rgba(224,169,109,0.35)]'
+    ? 'ring-1 ring-[var(--wird-border-gold)]'
     : '';
 
   return (
@@ -67,7 +67,7 @@ export const WirdAvatar: React.FC<WirdAvatarProps> = ({
       aria-label={alt}
       data-emblem-mode={renderMode}
       style={isCustomSize ? { width: size, height: size } : undefined}
-      className={`relative inline-flex items-center justify-center shrink-0 overflow-hidden select-none bg-[#0B132B] transition-all duration-200 ${shapeClass} ${containerClass} ${ringStyles} ${glowStyles} ${className}`}
+      className={`relative inline-flex items-center justify-center shrink-0 overflow-hidden select-none bg-[var(--wird-primary)] transition-all duration-150 ${shapeClass} ${containerClass} ${ringStyles} ${glowStyles} ${className}`}
     >
       {renderMode === 'raster' ? (
         <img

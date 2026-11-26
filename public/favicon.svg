@@ -1,78 +1,54 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="شعار وِرد الرسمي">
   <defs>
-    <radialGradient id="wirdBg" cx="50%" cy="38%" r="65%">
-      <stop offset="0%" stop-color="#1C4E46" />
-      <stop offset="58%" stop-color="#0F293A" />
-      <stop offset="100%" stop-color="#0B132B" />
+    <radialGradient id="wirdSanctuaryBg" cx="50%" cy="28%" r="78%">
+      <stop offset="0%" stop-color="#0D3D2E" />
+      <stop offset="55%" stop-color="#06291F" />
+      <stop offset="100%" stop-color="#031711" />
     </radialGradient>
-    <linearGradient id="wirdGold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F6D78B" />
-      <stop offset="50%" stop-color="#E0A96D" />
-      <stop offset="100%" stop-color="#C59B27" />
+    <linearGradient id="wirdBrassGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAC67A" />
+      <stop offset="52%" stop-color="#C89B3C" />
+      <stop offset="100%" stop-color="#A67822" />
     </linearGradient>
-    <linearGradient id="wirdIvory" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFFDF7" />
-      <stop offset="100%" stop-color="#EAE1CE" />
+    <linearGradient id="wirdFolioIvory" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FCF9F2" />
+      <stop offset="100%" stop-color="#EDE4D0" />
     </linearGradient>
   </defs>
 
-  <!-- Outer Medallion Base -->
-  <circle cx="60" cy="60" r="57" fill="url(#wirdBg)" stroke="url(#wirdGold)" stroke-width="2.5" />
-  <circle cx="60" cy="60" r="51.5" fill="none" stroke="url(#wirdGold)" stroke-width="0.9" stroke-dasharray="2.5 2.5" opacity="0.65" />
+  <!-- Architectural Squircle Base -->
+  <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#wirdSanctuaryBg)" />
+  <rect x="8.5" y="8.5" width="103" height="103" rx="24" fill="none" stroke="url(#wirdBrassGold)" stroke-width="1.2" opacity="0.28" />
 
-  <!-- Rub el Hizb (8-Pointed Khatam Star) Geometric Frame -->
-  <g stroke="url(#wirdGold)" stroke-width="1.35" fill="none" opacity="0.55">
-    <rect x="27" y="27" width="66" height="66" rx="5" />
-    <rect x="27" y="27" width="66" height="66" rx="5" transform="rotate(45 60 60)" />
-  </g>
+  <!-- Guiding Wird Diamond Point -->
+  <path d="M60 20 L64.8 26.8 L60 33.6 L55.2 26.8 Z" fill="url(#wirdBrassGold)" />
 
-  <!-- Mihrab Arch & Crescent Finial -->
+  <!-- Sculpted Open Mushaf Folio Leaves (Negative-Space Spine) -->
   <path
-    d="M36 82 V53 C36 37 48 28 60 22 C72 28 84 37 84 53 V82"
-    fill="none"
-    stroke="url(#wirdGold)"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    opacity="0.88"
+    d="M58 41.5 C47.5 34.8 34 35.8 24.5 42.2 V79.5 C34 73.4 47.5 72.8 58 80.2 Z"
+    fill="url(#wirdFolioIvory)"
   />
-  <!-- Finial Crescent & Star -->
-  <circle cx="60" cy="17.5" r="2.2" fill="url(#wirdGold)" />
-  <path d="M56 32 L60 27 L64 32" fill="none" stroke="url(#wirdGold)" stroke-width="1.2" stroke-linecap="round" opacity="0.7" />
-
-  <!-- Radiant Illumination Rays above the Mushaf -->
-  <g stroke="url(#wirdGold)" stroke-width="1.2" stroke-linecap="round" opacity="0.75">
-    <line x1="60" y1="33" x2="60" y2="41" />
-    <line x1="49" y1="36" x2="53" y2="43" />
-    <line x1="71" y1="36" x2="67" y2="43" />
-  </g>
-
-  <!-- Open Illuminated Mushaf Pages -->
   <path
-    d="M60 49 C52 45 41 45.5 33 49 V72 C41 68.5 52 68.5 60 73 C68 68.5 79 68.5 87 72 V49 C79 45.5 68 45 60 49 Z"
-    fill="url(#wirdIvory)"
-    stroke="url(#wirdGold)"
-    stroke-width="1.8"
-    stroke-linejoin="round"
+    d="M62 41.5 C72.5 34.8 86 35.8 95.5 42.2 V79.5 C86 73.4 72.5 72.8 62 80.2 Z"
+    fill="url(#wirdFolioIvory)"
   />
-  <!-- Mushaf Center Spine & Script Lines -->
-  <line x1="60" y1="49" x2="60" y2="73" stroke="#1C4E46" stroke-width="1.6" stroke-linecap="round" />
-  <g stroke="#1C4E46" stroke-width="1.25" stroke-linecap="round" opacity="0.78">
-    <path d="M39 55 C44 53.5 50 53.5 55 55.5" fill="none" />
-    <path d="M39 60.5 C44 59 50 59 55 61" fill="none" />
-    <path d="M39 66 C44 64.5 50 64.5 55 66.5" fill="none" />
-    <path d="M65 55.5 C70 53.5 76 53.5 81 55" fill="none" />
-    <path d="M65 61 C70 59 76 59 81 60.5" fill="none" />
-    <path d="M65 66.5 C70 64.5 76 64.5 81 66" fill="none" />
-  </g>
 
-  <!-- Rihal (Traditional Quran Stand) -->
+  <!-- Minimalist Architectural Rihal Cradle -->
   <path
-    d="M36 75 L60 83 L84 75 M46 89 L60 81 L74 89"
+    d="M33 87.5 L60 96.5 L87 87.5"
     fill="none"
-    stroke="url(#wirdGold)"
-    stroke-width="2.4"
+    stroke="url(#wirdBrassGold)"
+    stroke-width="3.6"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
-  <circle cx="60" cy="95" r="2.2" fill="url(#wirdGold)" />
+  <path
+    d="M46 97.5 L60 92.5 L74 97.5"
+    fill="none"
+    stroke="url(#wirdBrassGold)"
+    stroke-width="2.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.82"
+  />
 </svg>

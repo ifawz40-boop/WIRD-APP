@@ -424,7 +424,7 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-[11px] tabular-nums">
                     <span className="text-[var(--wird-muted)]">
-                      {featured ? '★ معروضة في اقتراح الرئيسية' : series.categoryLabelAr}
+                      {featured ? 'معروضة في اقتراح الرئيسية' : series.categoryLabelAr}
                     </span>
                     <span className="font-mono font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                       {summary.completedCount}/{summary.totalCount} ({summary.percent}%)
@@ -574,7 +574,7 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
                   <CheckCircle2 className="w-4 h-4" />
                   <span>
                     {activeLessonStatus === 'completed'
-                      ? 'تمت المشاهدة والانتهاء ✓'
+                      ? 'تمت المشاهدة والانتهاء'
                       : 'تحديد كمكتمل'}
                   </span>
                 </WirdButton>

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../../types/quran';
 import { useCloudSync } from '../../hooks/useCloudSync';
+import { WirdSymbol } from '../brand/WirdLogo';
 
 import { type WirdDesignId } from '../../services/themePreferences';
 
@@ -127,18 +128,24 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        <div className="min-w-0 flex items-baseline gap-2">
-          <h1 className="text-sm sm:text-base font-bold text-[var(--wird-text)] truncate whitespace-nowrap leading-tight">
-            {tabTitle}
-          </h1>
-          {sectionGroup && (
-            <span className="hidden md:inline-flex items-center gap-2 text-xs text-[var(--wird-muted)] whitespace-nowrap shrink-0">
-              <span aria-hidden="true" className="opacity-45">
-                ·
+        <div className="min-w-0 flex items-center gap-2.5">
+          <WirdSymbol
+            size={28}
+            className={isSidebarOpen ? 'lg:hidden' : ''}
+          />
+          <div className="min-w-0 flex items-baseline gap-2">
+            <h1 className="text-sm sm:text-base font-bold text-[var(--wird-text)] truncate whitespace-nowrap leading-tight">
+              {tabTitle}
+            </h1>
+            {sectionGroup && (
+              <span className="hidden md:inline-flex items-center gap-2 text-xs text-[var(--wird-muted)] whitespace-nowrap shrink-0">
+                <span aria-hidden="true" className="opacity-45">
+                  ·
+                </span>
+                <span>{sectionGroup}</span>
               </span>
-              <span>{sectionGroup}</span>
-            </span>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

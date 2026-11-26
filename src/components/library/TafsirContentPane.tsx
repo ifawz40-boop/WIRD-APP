@@ -204,7 +204,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
     const plainTafsir = sanitizeTafsirToPlainText(rawText);
     const surahName = surah?.name || ayah.surahNumber;
     const displayText = await getAyahDisplayText(ayah);
-    const shareText = `﴿ ${displayText} ﴾ [سورة ${surahName}، آية ${ayah.numberInSurah}]\n\n📖 ${currentBookName}:\n${plainTafsir}\n\n— عبر تطبيق وِرد القرآني (WIRD)`;
+    const shareText = `﴿ ${displayText} ﴾ [سورة ${surahName}، آية ${ayah.numberInSurah}]\n\n${currentBookName}:\n${plainTafsir}\n\n— عبر تطبيق وِرد (WIRD)`;
 
     try {
       if (navigator?.clipboard?.writeText) {

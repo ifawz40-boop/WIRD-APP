@@ -286,7 +286,7 @@ export const DailyVideoSuggestionCard: React.FC<DailyVideoSuggestionCardProps> =
               aria-pressed={status === 'completed'}
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{status === 'completed' ? 'مكتمل ✓' : 'تحديد كمكتمل'}</span>
+              <span>{status === 'completed' ? 'مكتمل' : 'تحديد كمكتمل'}</span>
             </WirdButton>
 
             <WirdButton

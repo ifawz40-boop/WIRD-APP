@@ -568,8 +568,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       key={`done-${done.planId}-${done.scheduledDate}`}
                       className="py-2 first:pt-1 last:pb-1 flex items-center justify-between gap-3 text-[11px] text-[var(--wird-muted)]"
                     >
-                      <span className="font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                        ✓ {done.planTitle}: سورة {done.task.surahName} ({done.task.startAyah}–{done.task.endAyah})
+                      <span className="font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] inline-flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>{done.planTitle}: سورة {done.task.surahName} ({done.task.startAyah}–{done.task.endAyah})</span>
                       </span>
                       <span className="font-mono tabular-nums">
                         {done.completionTiming === 'completed_early'

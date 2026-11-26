@@ -2,8 +2,8 @@ import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import {
   Home,
   BookOpen,
+  BookMarked,
   Calendar,
-  Sparkles,
   Repeat,
   CheckCircle,
   BarChart3,
@@ -152,7 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       label: 'الحفظ والتثبيت',
       items: [
-        { id: 'session', label: 'جلسة الحفظ', icon: Sparkles },
+        { id: 'session', label: 'جلسة الحفظ', icon: BookMarked },
         { id: 'plans', label: 'خطط الحفظ', icon: Calendar },
         {
           id: 'revision',
@@ -336,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {[
             { id: 'dashboard' as NavTabId, label: 'الرئيسية', icon: Home },
             { id: 'library' as NavTabId, label: 'المصحف', icon: BookOpen },
-            { id: 'session' as NavTabId, label: 'الحفظ', icon: Sparkles },
+            { id: 'session' as NavTabId, label: 'الحفظ', icon: BookMarked },
             { id: 'revision' as NavTabId, label: 'المراجعة', icon: Repeat },
           ].map((item) => {
             const Icon = item.icon;

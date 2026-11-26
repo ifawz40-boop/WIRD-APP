@@ -23,82 +23,82 @@
   color-scheme: light;
 
   /* Raw Brand Constants */
-  --wird-brand-cream: #fff9ec;
-  --wird-brand-teal: #00241a;
+  --wird-brand-cream: #faf6ee;
+  --wird-brand-teal: #06291f;
   --wird-brand-teal-light: #0d3b2e;
-  --wird-brand-gold: #b58932;
-  --wird-brand-gold-bright: #c5a059;
-  --wird-brand-gold-amber: #e9c176;
-  --wird-brand-midnight: #041610;
-  --wird-brand-glass: #0a241c;
+  --wird-brand-gold: #a67c2e;
+  --wird-brand-gold-bright: #c59f52;
+  --wird-brand-gold-amber: #dfb86c;
+  --wird-brand-midnight: #06120e;
+  --wird-brand-glass: #0b1d17;
 
-  /* Semantic Surface & Ink Tokens */
-  --wird-bg: #fff9ec;
+  /* Semantic Surface & Ink Tokens — Warm Fine-Book Paper */
+  --wird-bg: #faf6ee;
   --wird-surface: #ffffff;
-  --wird-surface-muted: #f5efe1;
-  --wird-surface-elevated: #fffdf7;
-  --wird-sidebar-bg: #fbf5e7;
-  --wird-mushaf-paper: #fdf9ee;
-  --wird-header-glass: rgba(255, 249, 236, 0.9);
-  --wird-text: #1d1c14;
-  --wird-muted: #545247;
-  --wird-primary: #00241a;
-  --wird-primary-strong: #001a12;
+  --wird-surface-muted: #f2ece0;
+  --wird-surface-elevated: #fffdfa;
+  --wird-sidebar-bg: #f6f1e6;
+  --wird-mushaf-paper: #fcf9f2;
+  --wird-header-glass: rgba(250, 246, 238, 0.9);
+  --wird-text: #181814;
+  --wird-muted: #5c5a50;
+  --wird-primary: #06291f;
+  --wird-primary-strong: #031a13;
   --wird-primary-hover: #0d3b2e;
   --wird-primary-ink: #ffffff;
   --wird-secondary: #0d3b2e;
-  --wird-accent: #b58932;
-  --wird-accent-hover: #8f691e;
+  --wird-accent: #a67c2e;
+  --wird-accent-hover: #88631f;
   --wird-accent-ink: #13110b;
-  --wird-accent-soft: rgba(181, 137, 50, 0.13);
-  --wird-ring: rgba(181, 137, 50, 0.48);
-  --wird-border: rgba(181, 137, 50, 0.22);
-  --wird-border-strong: rgba(0, 36, 26, 0.24);
-  --wird-border-gold: rgba(181, 137, 50, 0.42);
-  --wird-hero-gradient: linear-gradient(135deg, #00241a 0%, #083326 58%, #041d15 100%);
-  --wird-shadow: 0 1px 2px rgba(29, 28, 20, 0.04), 0 10px 26px -12px rgba(0, 36, 26, 0.09);
-  --wird-shadow-lg: 0 18px 36px -14px rgba(0, 36, 26, 0.16);
+  --wird-accent-soft: rgba(166, 124, 46, 0.11);
+  --wird-ring: rgba(6, 41, 31, 0.36);
+  --wird-border: rgba(24, 24, 20, 0.085);
+  --wird-border-strong: rgba(24, 24, 20, 0.18);
+  --wird-border-gold: rgba(166, 124, 46, 0.34);
+  --wird-hero-gradient: linear-gradient(160deg, #072d22 0%, #052018 100%);
+  --wird-shadow: 0 1px 2px rgba(24, 24, 20, 0.035), 0 6px 20px -12px rgba(6, 41, 31, 0.07);
+  --wird-shadow-lg: 0 14px 32px -16px rgba(6, 41, 31, 0.13);
 
   /* Layout Rhythm & Geometry Tokens */
-  --wird-radius-card: 1.25rem;
-  --wird-radius-control: 0.8rem;
+  --wird-radius-card: 1.125rem;
+  --wird-radius-control: 0.75rem;
   --wird-card-pad: 1.25rem;
   --wird-section-gap: 1.35rem;
 }
 
 /* --------------------------------------------------------------------------
-   2. DESIGN A — DARK (ليلي أندلسي زمردي)
+   2. DESIGN A — DARK (ليلي أندلسي زمردي هادئ)
    -------------------------------------------------------------------------- */
 .dark,
 :root.dark[data-wird-design='design-a'],
 .dark[data-wird-design='design-a'] {
   color-scheme: dark;
 
-  --wird-bg: #041610;
-  --wird-surface: #0a241c;
-  --wird-surface-muted: #071d16;
-  --wird-surface-elevated: #103227;
-  --wird-sidebar-bg: #061b14;
-  --wird-mushaf-paper: #091f18;
-  --wird-header-glass: rgba(4, 22, 16, 0.9);
-  --wird-text: #f6f0e3;
-  --wird-muted: #a2bfb3;
-  --wird-primary: #124b3b;
-  --wird-primary-strong: #19624e;
-  --wird-primary-hover: #1b6853;
-  --wird-primary-ink: #f6f0e3;
+  --wird-bg: #06120e;
+  --wird-surface: #0b1d17;
+  --wird-surface-muted: #081712;
+  --wird-surface-elevated: #102921;
+  --wird-sidebar-bg: #071611;
+  --wird-mushaf-paper: #091a14;
+  --wird-header-glass: rgba(6, 18, 14, 0.9);
+  --wird-text: #f3efe6;
+  --wird-muted: #94ada3;
+  --wird-primary: #145240;
+  --wird-primary-strong: #1b6650;
+  --wird-primary-hover: #1d6d56;
+  --wird-primary-ink: #f6f2e9;
   --wird-secondary: #0d3b2e;
-  --wird-accent: #e9c176;
-  --wird-accent-hover: #f5d492;
-  --wird-accent-ink: #041610;
-  --wird-accent-soft: rgba(233, 193, 118, 0.15);
-  --wird-ring: rgba(233, 193, 118, 0.5);
-  --wird-border: rgba(233, 193, 118, 0.16);
-  --wird-border-strong: rgba(233, 193, 118, 0.3);
-  --wird-border-gold: rgba(233, 193, 118, 0.38);
-  --wird-hero-gradient: linear-gradient(135deg, #0d3b2e 0%, #07241c 56%, #041610 100%);
-  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.36), 0 12px 28px -12px rgba(0, 0, 0, 0.62);
-  --wird-shadow-lg: 0 22px 42px -14px rgba(0, 0, 0, 0.78);
+  --wird-accent: #dfb86c;
+  --wird-accent-hover: #ecc983;
+  --wird-accent-ink: #06120e;
+  --wird-accent-soft: rgba(223, 184, 108, 0.13);
+  --wird-ring: rgba(223, 184, 108, 0.44);
+  --wird-border: rgba(243, 239, 230, 0.09);
+  --wird-border-strong: rgba(243, 239, 230, 0.18);
+  --wird-border-gold: rgba(223, 184, 108, 0.3);
+  --wird-hero-gradient: linear-gradient(160deg, #0d3428 0%, #071e17 100%);
+  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.32), 0 10px 26px -14px rgba(0, 0, 0, 0.58);
+  --wird-shadow-lg: 0 18px 38px -16px rgba(0, 0, 0, 0.72);
 }
 
 /* --------------------------------------------------------------------------
@@ -107,31 +107,31 @@
 :root[data-wird-design='design-b'] {
   color-scheme: light;
 
-  --wird-bg: #f9fbfa;
+  --wird-bg: #f8faf9;
   --wird-surface: #ffffff;
-  --wird-surface-muted: #ebf3f0;
+  --wird-surface-muted: #eef3f1;
   --wird-surface-elevated: #ffffff;
-  --wird-sidebar-bg: #ffffff;
+  --wird-sidebar-bg: #fcfdfd;
   --wird-mushaf-paper: #ffffff;
-  --wird-header-glass: rgba(249, 251, 250, 0.92);
-  --wird-text: #0f1a17;
-  --wird-muted: #4b6960;
-  --wird-primary: #0d3b2e;
-  --wird-primary-strong: #082920;
-  --wird-primary-hover: #145240;
+  --wird-header-glass: rgba(248, 250, 249, 0.92);
+  --wird-text: #111917;
+  --wird-muted: #526660;
+  --wird-primary: #0b382c;
+  --wird-primary-strong: #07261e;
+  --wird-primary-hover: #124d3d;
   --wird-primary-ink: #ffffff;
-  --wird-secondary: #1e5f4d;
-  --wird-accent: #9a7228;
-  --wird-accent-hover: #7c5a1c;
+  --wird-secondary: #1b5948;
+  --wird-accent: #966f26;
+  --wird-accent-hover: #79581b;
   --wird-accent-ink: #ffffff;
-  --wird-accent-soft: rgba(154, 114, 40, 0.11);
-  --wird-ring: rgba(13, 59, 46, 0.4);
-  --wird-border: #d5e4de;
-  --wird-border-strong: #b4cfc5;
-  --wird-border-gold: rgba(154, 114, 40, 0.32);
-  --wird-hero-gradient: linear-gradient(135deg, #0d3b2e 0%, #134d3d 60%, #0a2e24 100%);
-  --wird-shadow: 0 1px 2px rgba(15, 26, 23, 0.03), 0 6px 18px -10px rgba(13, 59, 46, 0.08);
-  --wird-shadow-lg: 0 16px 32px -14px rgba(13, 59, 46, 0.14);
+  --wird-accent-soft: rgba(150, 111, 38, 0.1);
+  --wird-ring: rgba(11, 56, 44, 0.36);
+  --wird-border: rgba(17, 25, 23, 0.085);
+  --wird-border-strong: rgba(17, 25, 23, 0.17);
+  --wird-border-gold: rgba(150, 111, 38, 0.28);
+  --wird-hero-gradient: linear-gradient(160deg, #0d382c 0%, #08261e 100%);
+  --wird-shadow: 0 1px 2px rgba(17, 25, 23, 0.03), 0 6px 18px -12px rgba(11, 56, 44, 0.07);
+  --wird-shadow-lg: 0 14px 30px -16px rgba(11, 56, 44, 0.12);
 
   /* Modern Crisp Geometry */
   --wird-radius-card: 1rem;
@@ -145,31 +145,31 @@
 .dark[data-wird-design='design-b'] {
   color-scheme: dark;
 
-  --wird-bg: #08121e;
-  --wird-surface: #0d1c2e;
-  --wird-surface-muted: #0a1625;
-  --wird-surface-elevated: #13263e;
-  --wird-sidebar-bg: #091524;
-  --wird-mushaf-paper: #0b1827;
-  --wird-header-glass: rgba(8, 18, 30, 0.92);
-  --wird-text: #f1f5f9;
-  --wird-muted: #94a3b8;
-  --wird-primary: #183b5e;
-  --wird-primary-strong: #204c78;
-  --wird-primary-hover: #245585;
+  --wird-bg: #081019;
+  --wird-surface: #0e1926;
+  --wird-surface-muted: #0a141f;
+  --wird-surface-elevated: #132234;
+  --wird-sidebar-bg: #09131e;
+  --wird-mushaf-paper: #0b1623;
+  --wird-header-glass: rgba(8, 16, 25, 0.92);
+  --wird-text: #eef2f6;
+  --wird-muted: #8fa0b3;
+  --wird-primary: #1b436b;
+  --wird-primary-strong: #235382;
+  --wird-primary-hover: #275c90;
   --wird-primary-ink: #f8fafc;
   --wird-secondary: #122c47;
-  --wird-accent: #e2b15b;
-  --wird-accent-hover: #efc476;
-  --wird-accent-ink: #08121e;
-  --wird-accent-soft: rgba(226, 177, 91, 0.14);
-  --wird-ring: rgba(226, 177, 91, 0.48);
-  --wird-border: rgba(148, 163, 184, 0.16);
-  --wird-border-strong: rgba(226, 177, 91, 0.3);
-  --wird-border-gold: rgba(226, 177, 91, 0.36);
-  --wird-hero-gradient: linear-gradient(135deg, #10253d 0%, #0b1929 58%, #08121e 100%);
-  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.38), 0 12px 30px -12px rgba(0, 0, 0, 0.65);
-  --wird-shadow-lg: 0 22px 44px -14px rgba(0, 0, 0, 0.8);
+  --wird-accent: #dda955;
+  --wird-accent-hover: #eab96c;
+  --wird-accent-ink: #081019;
+  --wird-accent-soft: rgba(221, 169, 85, 0.12);
+  --wird-ring: rgba(221, 169, 85, 0.42);
+  --wird-border: rgba(238, 242, 246, 0.09);
+  --wird-border-strong: rgba(238, 242, 246, 0.18);
+  --wird-border-gold: rgba(221, 169, 85, 0.3);
+  --wird-hero-gradient: linear-gradient(160deg, #10243a 0%, #091523 100%);
+  --wird-shadow: 0 1px 2px rgba(0, 0, 0, 0.34), 0 10px 26px -14px rgba(0, 0, 0, 0.6);
+  --wird-shadow-lg: 0 18px 38px -16px rgba(0, 0, 0, 0.75);
 
   --wird-radius-card: 1rem;
   --wird-radius-control: 0.7rem;
@@ -248,6 +248,13 @@ body {
 
 .wird-card:hover {
   border-color: var(--wird-border-strong);
+}
+
+/* Enforce flat single-elevation discipline: prevent nested card-in-card visual clutter */
+.wird-card .wird-card,
+.wird-surface-editorial .wird-card {
+  box-shadow: none;
+  background: var(--wird-surface-muted);
 }
 
 .wird-hairline {
