@@ -55,9 +55,9 @@ export function runGeminiSecurityTests(): { passed: number; failed: number } {
   });
 
   // 2. Strict Free Tier Model identifier
-  test('Serverless handler uses gemini-3.8-flash Free Tier model', () => {
+  test('Serverless handler uses gemini-2.5-flash Free Tier model', () => {
     const apiAdvisorContent = fs.readFileSync(path.resolve('./api/advisor.ts'), 'utf8');
-    assert(apiAdvisorContent.includes("'gemini-3.8-flash'"), 'Must specify gemini-3.8-flash model identifier');
+    assert(apiAdvisorContent.includes("'gemini-2.5-flash'"), 'Must specify gemini-2.5-flash model identifier');
     assert(!apiAdvisorContent.includes('gemini-1.5-pro'), 'Must not reference paid pro models');
   });
 

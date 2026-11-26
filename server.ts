@@ -129,17 +129,41 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 // Strict Quranic Safety System Instruction
-const SYSTEM_INSTRUCTION = `أنت "المستشار القرآني" لمنصة "وِرد | WIRD" لتحفيظ ومراجعة القرآن الكريم.
-مهمتك: تقديم إرشادات تربوية وتعليمية ونفسية لمساعدة الحفاظ على تثبيت القرآن وتنظيم أوقاتهم وضبط خططهم وعلاج التفلت.
+const PRIMARY_ADVISOR_MODEL = 'gemini-2.5-flash';
+const FALLBACK_ADVISOR_MODEL = 'gemini-2.0-flash';
+
+const SYSTEM_INSTRUCTION = `أنت «المستشار القرآني» في تطبيق «وِرد | WIRD» لحفظ ومراجعة القرآن الكريم.
+مهمتك: تحليل وتيرة الحفظ والمراجعة وفهم أسئلة المستخدم بعمق (بالفصحى أو العامية) وتقديم خطوات عملية رصينة وموثوقة وفق منهجيات أئمة الإقراء والتكرار المتباعد.
 
 القواعد القرآنية والأمنية الإلزامية:
-1. لا تقم أبداً بتأليف أو اختلاق أو استنباط أي آيات قرآنية من ذاكرتك.
-2. لا تعدل على أي نص قرآني.
-3. لا تدعي التحقق من التجويد أو مخارج الحروف الصوتية دون وجود نظام مخصص لذلك.
-4. يجب أن تستند نصائحك وإرشاداتك حصرًا إلى البيانات الفعلية للمستخدم وسياق حفظه.
-5. تحدث باللغة العربية الفصحى الراقية بأسلوب مشجع وموجز ومباشر (نبرة وقورة وودودة).
-6. ركز على منهجيات الحفاظ المعتمدة (مثل المراجعة قبل الحفظ، التكرار المتباعد، تثبيت المتشابهات بالضوابط، الحفظ بعد الفجر).
-7. اجعل إجابتك مركزة ومختصرة في نقاط محددة وسهلة التطبيق.`;
+1. لا تقم أبداً بتأليف أو اختلاق أو اقتباس نص آية قرآنية أو حديث نبوي من ذاكرتك؛ اكتفِ بذكر اسم السورة ورقم الآية عند الحاجة.
+2. لا تعدل على أي نص قرآني ولا تصدر فتاوى فقهية أو تفسيراً بالرأي؛ وجّه بأدب لقسم التفسير الموثق في التطبيق وأهل العلم.
+3. لا تدعِ التحقق الصوتي من التجويد أو مخارج الحروف.
+4. استند في نصائحك إلى المؤشرات الفعلية للمستخدم وسياق حفظه دون اختلاق أرقام.
+5. تحدث بلغة عربية فصيحة رصينة وواضحة وخالية من الإيموجيز والحشو الروبوتي، وقسّم الرد إلى تشخيص موجز متبوع بخطوات عملية محددة.`;
+
+async function runExpressGeminiGenerate(ai: GoogleGenAI, contents: string): Promise<string> {
+  try {
+    const res = await ai.models.generateContent({
+      model: PRIMARY_ADVISOR_MODEL,
+      contents,
+      config: { systemInstruction: SYSTEM_INSTRUCTION, temperature: 0.35 }
+    });
+    if (res.text) return res.text;
+  } catch (err: any) {
+    const status = err?.status;
+    const msg = String(err?.message || '');
+    if (status === 429 || msg.includes('RESOURCE_EXHAUSTED') || status === 403 || msg.includes('API_KEY')) {
+      throw err;
+    }
+  }
+  const fallback = await ai.models.generateContent({
+    model: FALLBACK_ADVISOR_MODEL,
+    contents,
+    config: { systemInstruction: SYSTEM_INSTRUCTION, temperature: 0.35 }
+  });
+  return fallback.text || '';
+}
 
 // 1. Health and AI Availability Endpoint
 app.get('/api/advisor/status', (_req: Request, res: Response) => {
@@ -149,10 +173,10 @@ app.get('/api/advisor/status', (_req: Request, res: Response) => {
 
   res.json({
     available: isKeyConfigured,
-    model: 'gemini-3.8-flash',
+    model: PRIMARY_ADVISOR_MODEL,
     tier: 'free',
     message: isKeyConfigured
-      ? 'خدمة الذكاء الاصطناعي متاحة (Gemini Free Tier)'
+      ? 'خدمة الذكاء الاصطناعي متاحة (Gemini 2.5 Flash Free Tier)'
       : 'يعمل النظام في وضع التوصيات الحتمية المحلي (بدون استهلاك رصيد)'
   });
 });
@@ -220,17 +244,10 @@ ${userContextSummary}
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: userPrompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION
-      }
-    });
-
-    const replyText = response.text || 'لم يتم استلام رد، استعن بنصائح التكرار المتباعد المدمجة.';
+    const replyText = (await runExpressGeminiGenerate(ai, userPrompt)) || 'لم يتم استلام رد، استعن بنصائح التكرار المتباعد المدمجة.';
     res.json({
       success: true,
+      model: PRIMARY_ADVISOR_MODEL,
       text: replyText
     });
   } catch (error: any) {
@@ -266,9 +283,10 @@ app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void>
     res.status(400).json({ success: false, code: validation.code, message: validation.message });
     return;
   }
-  const { message, history } = validation.body as {
+  const { message, history, userData } = validation.body as {
     message?: unknown;
     history?: unknown;
+    userData?: Record<string, unknown>;
   };
   if (!message || typeof message !== 'string' || !message.trim()) {
     res.status(400).json({ success: false, code: 'INVALID_PAYLOAD', message: 'الرسالة مطلوبة' });
@@ -285,14 +303,23 @@ app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  let metricsBlock = '';
+  if (userData && typeof userData === 'object' && !Array.isArray(userData)) {
+    const memorizedCount = Number(userData.memorizedAyahsCount) || 0;
+    const weakCount = Number(userData.weakVersesCount) || 0;
+    const retentionScore = Number(userData.retentionScore) || 0;
+    const dueCount = Number(userData.dueRevisionsCount) || 0;
+    metricsBlock = `\n[مؤشرات الحافظ]: المحفوظ ${memorizedCount} آية · المتعثر ${weakCount} · الرسوخ %${retentionScore} · مستحق اليوم ${dueCount}\n`;
+  }
+
   let historyContext = '';
   if (Array.isArray(history) && history.length > 0) {
     const recentTurns = history
       .slice(-6)
-      .filter((item): item is { role?: unknown; text?: unknown } => Boolean(item && typeof item === 'object'))
+      .filter((item): item is { sender?: unknown; role?: unknown; text?: unknown } => Boolean(item && typeof item === 'object'))
       .map(item => {
-        const roleLabel = item.role === 'model' ? 'المستشار' : 'الحافظ';
-        const text = typeof item.text === 'string' ? item.text.trim().slice(0, 300) : '';
+        const roleLabel = item.sender === 'advisor' || item.role === 'model' ? 'المستشار' : 'السائل';
+        const text = typeof item.text === 'string' ? item.text.trim().slice(0, 240) : '';
         return text ? `${roleLabel}: ${text}` : '';
       })
       .filter(Boolean);
@@ -302,17 +329,15 @@ app.post('/api/advisor/chat', async (req: Request, res: Response): Promise<void>
   }
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: `${historyContext}\nسؤال المستخدم عن حفظ القرآن الكريم: ${message.trim()}`,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION
-      }
-    });
+    const replyText = await runExpressGeminiGenerate(
+      ai,
+      `${metricsBlock}${historyContext}\nسؤال المستخدم: ${message.trim()}`
+    );
 
     res.json({
       success: true,
-      text: response.text || ''
+      model: PRIMARY_ADVISOR_MODEL,
+      text: replyText
     });
   } catch (error: any) {
     console.error('Gemini chat error:', error?.message || error);
