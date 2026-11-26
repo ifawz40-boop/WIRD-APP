@@ -18,6 +18,9 @@ export const STANDARD_RECITER_IDS: readonly ReciterId[] = [
   'husary',
   'minshawi',
   'abdulbasit',
+  'sudais',
+  'shuraim',
+  'ajamy',
   'ghamdi'
 ] as const;
 
@@ -46,6 +49,9 @@ const STANDARD_TO_RUQYAH_MAP: Record<ReciterId, ApprovedRuqyahReciterId> = {
   husary: 'ar.husary',
   minshawi: 'ar.minshawi',
   abdulbasit: 'ar.abdulbasit',
+  sudais: 'ar.sudais',
+  shuraim: 'ar.shuraim',
+  ajamy: 'ar.ajamy',
   ghamdi: 'ar.alafasy'
 };
 
@@ -53,7 +59,10 @@ const RUQYAH_TO_STANDARD_MAP: Partial<Record<ApprovedRuqyahReciterId, ReciterId>
   'ar.alafasy': 'alafasy',
   'ar.husary': 'husary',
   'ar.minshawi': 'minshawi',
-  'ar.abdulbasit': 'abdulbasit'
+  'ar.abdulbasit': 'abdulbasit',
+  'ar.sudais': 'sudais',
+  'ar.shuraim': 'shuraim',
+  'ar.ajamy': 'ajamy'
 };
 
 let inMemoryFallback: Partial<UnifiedAudioPreferences> = {};

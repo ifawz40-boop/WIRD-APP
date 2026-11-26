@@ -468,6 +468,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const selectedAudioPlan = enginePlans.find(p => p.id === audioPlanId) || enginePlans[0] || null;
   const targetAudioPayload = (() => {
+    if (audioScopeKind === 'range') {
+      const ranges = ALL_SURAHS.map(s => ({ surahNumber: s.number, startAyah: 1, endAyah: s.versesCount }));
+      return { ranges, totalAyahs: 6236, labelAr: 'القرآن الكريم كاملاً (114 سورة)' };
+    }
     if (audioScopeKind === 'juz') {
       const ranges = buildJuzAudioRanges(audioJuzNumber);
       const totalAyahs = ranges.reduce((s, r) => s + (r.endAyah - r.startAyah + 1), 0);
@@ -876,7 +880,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               >
                 {FALLBACK_QURAN_RECITERS.map(r => (
                   <option key={r.id} value={r.id}>
-                    {r.name} ({r.bitrate} kbps)
+                    الشيخ {r.arabicName} ({r.bitrate} kbps)
                   </option>
                 ))}
               </select>
@@ -884,11 +888,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <div className="flex flex-col gap-1">
               <span className="font-semibold text-[var(--wird-text)]">نطاق التحميل:</span>
-              <div role="group" aria-label="نطاق تحميل التلاوات أوفلاين" className="grid grid-cols-3 gap-1.5">
+              <div role="group" aria-label="نطاق تحميل التلاوات أوفلاين" className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                 {[
                   { id: 'surah' as const, label: 'سورة كاملة' },
                   { id: 'juz' as const, label: 'جزء كامل' },
-                  { id: 'plan' as const, label: 'الخطة النشطة' }
+                  { id: 'plan' as const, label: 'الخطة النشطة' },
+                  { id: 'range' as const, label: 'المصحف كاملاً' }
                 ].map(item => (
                   <button
                     key={item.id}
@@ -998,7 +1003,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   job.status === 'partial' ? 'مكتمل جزئياً' :
                   job.status === 'failed' ? 'تعذر الاكتمال' :
                   job.status === 'cancelled' ? 'ملغى' : 'في الانتظار';
-                const reciterName = FALLBACK_QURAN_RECITERS.find(r => r.id === job.reciterId)?.name || job.reciterId;
+                const reciterObj = FALLBACK_QURAN_RECITERS.find(r => r.id === job.reciterId);
+                const reciterName = reciterObj ? `الشيخ ${reciterObj.arabicName}` : job.reciterId;
 
                 return (
                   <div

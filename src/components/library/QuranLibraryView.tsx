@@ -54,6 +54,7 @@ import {
 import type { AudioRepeatCount, PlaybackRate } from '../../services/audioPreferences';
 import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
+import { InlineAudioOfflineBadgeButton } from '../shared/InlineAudioOfflineBadgeButton';
 import { QuranMushafReader } from './QuranMushafReader';
 import { QURAN_JUZ_STARTS } from '../../data/quranNavigationIndex.generated';
 import {
@@ -994,6 +995,14 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
+                      <InlineAudioOfflineBadgeButton
+                        reciter={activeReciter}
+                        scopeKind="surah"
+                        labelAr={`سورة ${surah.name}`}
+                        ranges={[{ surahNumber: surah.number, startAyah: 1, endAyah: surah.versesCount }]}
+                        compact
+                      />
+
                       <button
                         type="button"
                         onClick={() => {

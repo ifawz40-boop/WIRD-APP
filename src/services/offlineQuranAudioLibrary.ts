@@ -10,7 +10,7 @@ export const OFFLINE_AUDIO_DB_VERSION = 1;
 export const OFFLINE_AUDIO_CACHE_NAME = 'wird-offline-quran-audio-v1';
 export const MAX_AUDIO_FILE_BYTES = 8 * 1024 * 1024;
 export const APP_STORAGE_RESERVE_BYTES = 25 * 1024 * 1024;
-export const DEFAULT_AUDIO_DOWNLOAD_CONCURRENCY = 2;
+export const DEFAULT_AUDIO_DOWNLOAD_CONCURRENCY = 6;
 
 export const STORE_AUDIO_JOBS = 'jobs';
 export const STORE_AUDIO_FILES = 'files';
@@ -296,7 +296,7 @@ export class OfflineQuranAudioLibrary {
         : undefined);
     this.lockRunner = deps.lockRunner;
     const requestedConcurrency = deps.concurrency ?? DEFAULT_AUDIO_DOWNLOAD_CONCURRENCY;
-    this.concurrency = Math.max(1, Math.min(2, requestedConcurrency));
+    this.concurrency = Math.max(1, Math.min(6, requestedConcurrency));
   }
 
   subscribe(listener: () => void): () => void {
@@ -927,13 +927,40 @@ export class OfflineQuranAudioLibrary {
         const controller = new AbortController();
         controllers.add(controller);
         try {
-          const response = await this.fetchFn!(item.url, {
-            method: 'GET',
-            redirect: 'error',
-            credentials: 'omit',
-            cache: 'no-store',
-            signal: controller.signal
-          });
+          let response: Response | null = null;
+          let lastNetErr: unknown = null;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              response = await this.fetchFn!(item.url, {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'error',
+                credentials: 'omit',
+                cache: 'no-store',
+                signal: controller.signal
+              });
+              if (response.status >= 500 && attempt === 0) {
+                await new Promise(r => setTimeout(r, 320));
+                continue;
+              }
+              break;
+            } catch (fetchErr) {
+              lastNetErr = fetchErr;
+              if (
+                this.pausedJobs.has(jobId) ||
+                this.cancelledJobs.has(jobId) ||
+                (fetchErr instanceof Error && fetchErr.name === 'AbortError')
+              ) {
+                throw fetchErr;
+              }
+              if (attempt === 0) {
+                await new Promise(r => setTimeout(r, 320));
+              }
+            }
+          }
+          if (!response) {
+            throw lastNetErr instanceof Error ? lastNetErr : new Error('تعذر الاتصال بمصدر التلاوة.');
+          }
           if (response.status !== 200 || response.type === 'opaque') {
             throw new Error(`استجابة غير صالحة من مصدر التلاوة (${response.status}).`);
           }
@@ -1254,6 +1281,39 @@ export class OfflineQuranAudioLibrary {
     for (const orphan of orphansToFinalize) {
       await this.finalizeOrphanDeletion(orphan);
     }
+
+    // Recover jobs stuck in 'downloading' from a previous closed tab/reload where no worker is active
+    await this.runWithLock('wird-offline-audio-jobs', async () => {
+      const txStale = db.transaction([STORE_AUDIO_JOBS, STORE_AUDIO_JOB_ITEMS], 'readwrite');
+      const jobsStore = txStale.objectStore(STORE_AUDIO_JOBS);
+      const itemsStore = txStale.objectStore(STORE_AUDIO_JOB_ITEMS);
+      const allJobs = (await idbReq(jobsStore.getAll())) as OfflineAudioJob[];
+      for (const job of allJobs) {
+        if (job.status === 'downloading' && !this.runningWorkers.has(job.jobId)) {
+          const items = (await idbReq(
+            itemsStore.index('jobId').getAll(IDBKeyRange.only(job.jobId))
+          )) as OfflineAudioJobItem[];
+          let verifiedCount = 0;
+          for (const it of items) {
+            if (it.status === 'verified') verifiedCount++;
+            else if (it.status === 'downloading') {
+              itemsStore.put({ ...it, status: 'queued' });
+            }
+          }
+          jobsStore.put({
+            ...job,
+            completedItems: verifiedCount,
+            status: verifiedCount === items.length && items.length > 0
+              ? 'completed'
+              : verifiedCount > 0
+                ? 'partial'
+                : 'queued',
+            updatedAtMs: Date.now()
+          });
+        }
+      }
+      await idbTx(txStale);
+    });
 
     // Sweep any unindexed Cache Storage generation entries not referenced by active STORE_AUDIO_FILES
     if (this.cacheStorageFactory) {

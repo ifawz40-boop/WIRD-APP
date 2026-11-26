@@ -151,7 +151,7 @@ export interface UserProfile {
   lastActiveDate: string;
 }
 
-export type ReciterId = 'alafasy' | 'husary' | 'abdulbasit' | 'ghamdi' | 'minshawi';
+export type ReciterId = 'alafasy' | 'husary' | 'abdulbasit' | 'ghamdi' | 'minshawi' | 'sudais' | 'shuraim' | 'ajamy';
 
 export interface ReciterInfo {
   id: ReciterId;

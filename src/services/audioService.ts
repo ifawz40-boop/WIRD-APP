@@ -7,6 +7,9 @@ export const RECITERS: ReciterInfo[] = [
   { id: 'husary', name: 'الشيخ محمود خليل الحصري (مرتل)', identifier: 'Husary_128kbps', subfolder: 'Husary_128kbps' },
   { id: 'minshawi', name: 'الشيخ محمد صديق المنشاوي (مرتل)', identifier: 'Minshawy_Murattal_128kbps', subfolder: 'Minshawy_Murattal_128kbps' },
   { id: 'abdulbasit', name: 'الشيخ عبد الباسط عبد الصمد (مرتل)', identifier: 'Abdul_Basit_Murattal_192kbps', subfolder: 'Abdul_Basit_Murattal_192kbps' },
+  { id: 'sudais', name: 'الشيخ عبدالرحمن السديس', identifier: 'Abdurrahmaan_As-Sudais_192kbps', subfolder: 'Abdurrahmaan_As-Sudais_192kbps' },
+  { id: 'shuraim', name: 'الشيخ سعود الشريم', identifier: 'Saood_ash-Shuraym_128kbps', subfolder: 'Saood_ash-Shuraym_128kbps' },
+  { id: 'ajamy', name: 'الشيخ أحمد بن علي العجمي', identifier: 'ahmed_ibn_ali_al-ajamy_128kbps', subfolder: 'ahmed_ibn_ali_al-ajamy_128kbps' },
   { id: 'ghamdi', name: 'الشيخ سعد الغامدي', identifier: 'Ghamadi_40kbps', subfolder: 'Ghamadi_40kbps' },
 ];
 
@@ -14,7 +17,10 @@ export const OFFLINE_RECITER_MAP: Partial<Record<ReciterId, string>> = {
   alafasy: 'ar.alafasy',
   husary: 'ar.husary',
   minshawi: 'ar.minshawi',
-  abdulbasit: 'ar.abdulbasit'
+  abdulbasit: 'ar.abdulbasit',
+  sudais: 'ar.sudais',
+  shuraim: 'ar.shuraim',
+  ajamy: 'ar.ajamy'
 };
 
 export function resolveApprovedOfflineReciterId(reciterId: ReciterId): string | null {

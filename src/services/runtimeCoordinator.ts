@@ -114,10 +114,18 @@ export function installRuntimeLifecycleCoordinator(
   window.addEventListener('online', handleOnlineReconnect);
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  // Reconcile offline audio cache metadata quietly after boot
+  // Reconcile offline audio cache metadata quietly after boot and auto-resume unfinished jobs if online
   const reconcileTimer = window.setTimeout(() => {
-    void offlineQuranAudioLibrary.reconcileLibrary().catch(() => undefined);
-  }, 2500);
+    void offlineQuranAudioLibrary
+      .reconcileLibrary()
+      .then(() => {
+        if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+          return offlineQuranAudioLibrary.resumeInterruptedJobsOnReconnect();
+        }
+        return 0;
+      })
+      .catch(() => undefined);
+  }, 1800);
 
   return () => {
     stopWarmup();

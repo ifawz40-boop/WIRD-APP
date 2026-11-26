@@ -60,6 +60,7 @@ import {
 import { QuranAudioQueueController } from '../../services/audioQueueController';
 import type { Ayah, ReciterId } from '../../types/quran';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
+import { InlineAudioOfflineBadgeButton } from '../shared/InlineAudioOfflineBadgeButton';
 import { TafsirSheet } from './TafsirSheet';
 import {
   getReadingKhatmaProgress,
@@ -1097,6 +1098,20 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               <span>{isPlaying ? 'إيقاف مؤقت' : isAudioPaused ? 'استئناف التلاوة' : 'استماع للمقطع'}</span>
             </button>
+
+            {pageSegments.length > 0 && (
+              <InlineAudioOfflineBadgeButton
+                reciter={activeReciter}
+                scopeKind="range"
+                labelAr={`صفحة المصحف ${page}`}
+                ranges={pageSegments.map(seg => ({
+                  surahNumber: seg.surahNumber,
+                  startAyah: seg.startAyah,
+                  endAyah: seg.endAyah
+                }))}
+                compact
+              />
+            )}
 
             {segmentPlaybackStatus && (
               <span aria-live="polite" className="text-[11px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] bg-[var(--wird-surface-muted)] px-2.5 py-1.5 rounded-lg border border-[var(--wird-border-gold)] tabular-nums">
