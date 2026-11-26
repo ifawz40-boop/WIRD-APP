@@ -3,8 +3,10 @@ import { ALL_SURAHS } from '../../data/quranMeta';
 import type { Ayah } from '../../types/quran';
 import { loadAyahByCoordinate } from '../../data/quranDataLoader';
 import {
+  getCachedMushafFacsimilePageSync,
   loadMushafFacsimilePage,
-  matchMushafAyahAreas
+  matchMushafAyahAreas,
+  preloadAdjacentMushafPages
 } from '../../services/mushafFacsimileService';
 import type { MushafFacsimilePageData } from '../../services/mushafFacsimileService';
 
@@ -12,6 +14,7 @@ interface QuranMushafFacsimilePageProps {
   page: number;
   onAyahsResolved: (resolved: { page: number; ayahs: Ayah[] }) => void;
   selectedAyah: Ayah | null;
+  playingAyah?: Ayah | null;
   onSelectAyah: (ayah: Ayah) => void;
   onFallback: () => void;
   maxWidthClass?: string;
@@ -27,22 +30,29 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
   page,
   onAyahsResolved,
   selectedAyah,
+  playingAyah,
   onSelectAyah,
   onFallback,
   maxWidthClass = 'max-w-3xl',
   sessionAyahKeys
 }) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
-  const [pageData, setPageData] = useState<MushafFacsimilePageData | null>(null);
+  const [pageData, setPageData] = useState<MushafFacsimilePageData | null>(() =>
+    getCachedMushafFacsimilePageSync(page)
+  );
   const [matchedAreas, setMatchedAreas] = useState<MatchedAyahArea[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
-    setPageData(null);
-    setMatchedAreas([]);
+    const syncHit = getCachedMushafFacsimilePageSync(page);
+    if (!syncHit) {
+      setPageData(null);
+      setMatchedAreas([]);
+    }
     setError(null);
+    preloadAdjacentMushafPages(page);
 
     loadMushafFacsimilePage(page, controller.signal)
       .then(async data => {
@@ -107,6 +117,8 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
       const key = `${surahNumber}:${ayahNumber}`;
       const selected = selectedAyah?.surahNumber === surahNumber &&
         selectedAyah?.numberInSurah === ayahNumber;
+      const isRecitingNow = playingAyah?.surahNumber === surahNumber &&
+        playingAyah?.numberInSurah === ayahNumber;
       const inSessionRange = sessionAyahKeys?.has(key) ?? false;
       const surah = ALL_SURAHS.find(item => item.number === surahNumber);
       path.setAttribute('id', `wird-ayah-${surahNumber}-${ayahNumber}`);
@@ -115,12 +127,20 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
       path.setAttribute('tabindex', '0');
       path.setAttribute('aria-label', `تفسير الآية ${ayahNumber} من سورة ${surah?.name || surahNumber}`);
       path.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      if (isRecitingNow) {
+        path.setAttribute('data-playing-ayah', 'true');
+      } else {
+        path.removeAttribute('data-playing-ayah');
+      }
       if (inSessionRange) {
         path.setAttribute('data-session-ayah', 'true');
       } else {
         path.removeAttribute('data-session-ayah');
       }
-      if (selected) {
+      if (isRecitingNow) {
+        path.setAttribute('fill', '#d4a017');
+        path.setAttribute('fill-opacity', '0.38');
+      } else if (selected) {
         path.setAttribute('fill', '#c59b27');
         path.setAttribute('fill-opacity', '0.34');
       } else if (inSessionRange) {
@@ -173,7 +193,7 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
       host.removeEventListener('click', handleClick);
       host.removeEventListener('keydown', handleKeyDown);
     };
-  }, [page, pageData, matchedAreas, selectedAyah, onSelectAyah, sessionAyahKeys]);
+  }, [page, pageData, matchedAreas, selectedAyah, playingAyah, onSelectAyah, sessionAyahKeys]);
 
   if (error) {
     return (
@@ -204,7 +224,7 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
   }
 
   return (
-    <figure className={`isolate mx-auto w-full ${maxWidthClass} overflow-hidden rounded-2xl border border-[#C59B27]/45 bg-[#F9F6EE] p-2 shadow-xl dark:border-[#E0A96D]/35 dark:bg-[#0E1A2F] sm:p-4 transition-colors`}>
+    <figure className={`mushaf-printed-leaf isolate mx-auto w-full ${maxWidthClass} overflow-hidden rounded-2xl border border-[#C59B27]/45 bg-[var(--wird-mushaf-paper)] p-2 shadow-xl dark:border-[#E0A96D]/35 dark:bg-[#0E1A2F] sm:p-4 transition-colors`}>
       <div
         ref={hostRef}
         className="mushaf-facsimile-svg w-full"

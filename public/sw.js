@@ -2,6 +2,8 @@ const CACHE_NAME = 'wird-app-v3';
 const AUDIO_CACHE_NAME = 'wird-app-audio-v1';
 const CONTENT_CACHE_NAME = 'wird-app-content-v1';
 const MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-v1';
+const PINNED_MUSHAF_PAGE_CACHE_NAME = 'wird-app-mushaf-pinned-v1';
+const SEERAH_AUDIO_CACHE_NAME = 'wird-app-seerah-audio-v1';
 const MAX_MUSHAF_PAGE_CACHE_ENTRIES = 24;
 const MAX_OFFLINE_PACKAGE_ASSETS = 2000;
 const OFFLINE_MANIFEST_REQUEST_TIMEOUT_MS = 15000;
@@ -294,7 +296,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => Promise.all(
       cacheNames
-        .filter((name) => name.startsWith('wird-app-') && name !== CACHE_NAME && name !== AUDIO_CACHE_NAME && name !== CONTENT_CACHE_NAME && name !== MUSHAF_PAGE_CACHE_NAME)
+        .filter((name) => name.startsWith('wird-app-') && name !== CACHE_NAME && name !== AUDIO_CACHE_NAME && name !== CONTENT_CACHE_NAME && name !== MUSHAF_PAGE_CACHE_NAME && name !== PINNED_MUSHAF_PAGE_CACHE_NAME && name !== SEERAH_AUDIO_CACHE_NAME)
         .map((name) => caches.delete(name))
     )).then(() => pruneUnlicensedEveryAyahAudioCache())
       .then(() => self.clients.claim())
@@ -426,6 +428,10 @@ self.addEventListener('fetch', (event) => {
   if (url.protocol === 'https:' && url.hostname === 'raw.githubusercontent.com' &&
       isPinnedMushafPage && !url.search) {
     event.respondWith((async () => {
+      const pinnedCache = await caches.open(PINNED_MUSHAF_PAGE_CACHE_NAME);
+      const pinnedHit = await pinnedCache.match(req);
+      if (pinnedHit) return pinnedHit;
+
       const cache = await caches.open(MUSHAF_PAGE_CACHE_NAME);
       const cached = await cache.match(req);
       if (cached) {

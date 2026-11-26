@@ -15,7 +15,11 @@ import {
   Layers,
   X,
   Check,
-  RotateCcw
+  RotateCcw,
+  Maximize2,
+  Minimize2,
+  Download,
+  Flag
 } from 'lucide-react';
 import { ALL_SURAHS } from '../../data/quranMeta';
 import { QURAN_DATA_SOURCE_INFO } from '../../data/quranDataInfo';
@@ -63,7 +67,17 @@ import {
 } from '../../services/readingKhatmaService';
 import { QuranText } from '../shared/QuranText';
 import { QuranBasmala } from '../shared/QuranBasmala';
-import { loadMushafFacsimilePage } from '../../services/mushafFacsimileService';
+import {
+  downloadFullMushafForOffline,
+  getPinnedMushafOfflineStatus,
+  loadMushafFacsimilePage
+} from '../../services/mushafFacsimileService';
+import {
+  placeMushafRibbon,
+  readMushafRibbons,
+  type MushafRibbonBookmark,
+  type MushafRibbonId
+} from '../../services/mushafRibbonBookmarksService';
 import { PrintedMushafSpread, type PrintedMushafSpreadContext } from './PrintedMushafSpread';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 import { SurahPickerControl } from '../shared/SurahPickerControl';
@@ -199,6 +213,11 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   const [uiScale, setUiScale] = useState<number>(readMushafUiScale);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [bookmarks, setBookmarks] = useState<number[]>(readBookmarks);
+  const [ribbons, setRibbons] = useState<MushafRibbonBookmark[]>(readMushafRibbons);
+  const [zenMode, setZenMode] = useState<boolean>(false);
+  const [pinnedMushafStatus, setPinnedMushafStatus] = useState<{ cachedPages: number; totalPages: number; isComplete: boolean } | null>(null);
+  const [isDownloadingMushaf, setIsDownloadingMushaf] = useState(false);
+  const mushafDownloadAbortRef = useRef<AbortController | null>(null);
   const [activeReciter, setActiveReciter] = useState<ReciterId>(() =>
     getSavedPreferredReciter(preferredReciter || 'alafasy')
   );
@@ -574,6 +593,55 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
     changePage(requestedPage);
   };
 
+  useEffect(() => {
+    let active = true;
+    void getPinnedMushafOfflineStatus().then(st => {
+      if (active) setPinnedMushafStatus(st);
+    });
+    return () => {
+      active = false;
+      mushafDownloadAbortRef.current?.abort();
+    };
+  }, []);
+
+  const handleDownloadFullPrintedMushaf = async () => {
+    if (isDownloadingMushaf) {
+      mushafDownloadAbortRef.current?.abort();
+      setIsDownloadingMushaf(false);
+      return;
+    }
+    const ctrl = new AbortController();
+    mushafDownloadAbortRef.current = ctrl;
+    setIsDownloadingMushaf(true);
+    try {
+      await downloadFullMushafForOffline(prog => {
+        setPinnedMushafStatus({
+          cachedPages: prog.completed,
+          totalPages: prog.total,
+          isComplete: prog.completed >= prog.total,
+        });
+      }, ctrl.signal);
+      const finalSt = await getPinnedMushafOfflineStatus();
+      setPinnedMushafStatus(finalSt);
+    } catch {
+      const st = await getPinnedMushafOfflineStatus();
+      setPinnedMushafStatus(st);
+    } finally {
+      setIsDownloadingMushaf(false);
+    }
+  };
+
+  const handleToggleOrJumpRibbon = (ribbonId: MushafRibbonId, currentRibbonPage: number | null) => {
+    if (currentRibbonPage === page) {
+      setRibbons(placeMushafRibbon(ribbonId, null));
+    } else {
+      setRibbons(placeMushafRibbon(ribbonId, page));
+    }
+  };
+
+  const activePlayingAyah =
+    isPlaying && playingIndex !== null ? audioAyahs[playingIndex] || null : null;
+
   const toggleBookmark = () => {
     setBookmarks(current => {
       const next = current.includes(page) ? current.filter(item => item !== page) : [...current, page].sort((a, b) => a - b);
@@ -678,6 +746,21 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
 
             <button
               type="button"
+              onClick={() => setZenMode(prev => !prev)}
+              aria-pressed={zenMode}
+              title={zenMode ? 'إظهار شريط الأدوات الكامل' : 'وضع القراءة الصافية (إخفاء القوائم العلوية)'}
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-[var(--wird-radius-control)] border px-3 py-1.5 text-xs font-bold transition-colors ${
+                zenMode
+                  ? 'border-[var(--wird-accent)] bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                  : 'border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
+              }`}
+            >
+              {zenMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />}
+              <span className="hidden sm:inline">{zenMode ? 'إنهاء القراءة الصافية' : 'قراءة صافية'}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={toggleBookmark}
               aria-label={currentBookmark ? 'إزالة العلامة المحفوظة' : 'حفظ علامة مرجعية'}
               title={currentBookmark ? 'إزالة العلامة من هذه الصفحة' : 'حفظ الصفحة في العلامات المرجعية'}
@@ -693,8 +776,78 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
           </div>
         </div>
 
+        {/* Colored Silk Ribbons & 604-Page Offline Mushaf Pack Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[var(--wird-border)] text-xs">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--wird-muted)] me-1">
+              <Flag className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+              <span>الفواصل الملونة:</span>
+            </span>
+            {ribbons.map(ribbon => {
+              const isOnCurrentPage = ribbon.page === page;
+              return (
+                <div
+                  key={ribbon.id}
+                  className="inline-flex items-center rounded-lg border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleToggleOrJumpRibbon(ribbon.id, ribbon.page)}
+                    title={isOnCurrentPage ? `إزالة ${ribbon.labelAr} من هذه الصفحة` : `وضع ${ribbon.labelAr} على صفحة ${page}`}
+                    className={`min-h-9 px-2.5 py-1 inline-flex items-center gap-1.5 text-[11px] font-bold transition-colors ${
+                      isOnCurrentPage
+                        ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
+                        : 'text-[var(--wird-text)] hover:bg-[var(--wird-surface)]'
+                    }`}
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: ribbon.colorHex }}
+                      aria-hidden="true"
+                    />
+                    <span>{ribbon.labelAr.replace('فاصل ', '')}</span>
+                  </button>
+                  {ribbon.page !== null && !isOnCurrentPage && (
+                    <button
+                      type="button"
+                      onClick={() => changePage(ribbon.page!)}
+                      title={`الانتقال إلى ${ribbon.labelAr} (صفحة ${ribbon.page})`}
+                      className="min-h-9 px-2 py-1 border-s border-[var(--wird-border)] font-mono tabular-nums text-[10px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] hover:bg-[var(--wird-accent-soft)] transition-colors"
+                    >
+                      ص {ribbon.page}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {readerLayout === 'printed' && (
+            <button
+              type="button"
+              onClick={() => void handleDownloadFullPrintedMushaf()}
+              className={`min-h-9 px-3 py-1.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors ${
+                pinnedMushafStatus?.isComplete
+                  ? 'border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)]'
+                  : 'border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-[var(--wird-text)] hover:border-[var(--wird-accent)]'
+              }`}
+            >
+              <Download className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+              <span className="tabular-nums">
+                {isDownloadingMushaf
+                  ? `جارٍ حفظ المصحف أوفلاين (${pinnedMushafStatus?.cachedPages ?? 0}/604) — إيقاف`
+                  : pinnedMushafStatus?.isComplete
+                    ? 'المصحف المطبوع محفوظ أوفلاين (604/604)'
+                    : pinnedMushafStatus && pinnedMushafStatus.cachedPages > 0
+                      ? `استكمال حفظ المصحف أوفلاين (${pinnedMushafStatus.cachedPages}/604)`
+                      : 'حفظ المصحف المطبوع كاملاً أوفلاين (604 ص)'}
+              </span>
+            </button>
+          )}
+        </div>
+
         {/* Navigation: Searchable Surah Picker + Hizb Modal + Direct Juz Scroll Rail + Bookmarks */}
-        <div className="space-y-2.5 pt-2.5 border-t border-[var(--wird-border)] text-xs">
+        <div className={`${zenMode ? 'hidden' : 'space-y-2.5 pt-2.5 border-t border-[var(--wird-border)] text-xs'}`}>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex-1 min-w-[210px]">
               <SurahPickerControl
@@ -759,7 +912,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
         </div>
 
         {/* Display Layout Toggle (Printed Mushaf Primary + Flexible Flow Fallback) */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--wird-border)] pt-3">
+        <div className={`${zenMode ? 'hidden' : 'flex flex-wrap items-center justify-between gap-2 border-t border-[var(--wird-border)] pt-3'}`}>
           <span className="text-xs font-semibold text-[var(--wird-muted)]">طريقة عرض الصفحة</span>
           <div role="group" aria-label="طريقة عرض المصحف" className="inline-flex rounded-[var(--wird-radius-control)] border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] p-1">
             <button
@@ -1209,6 +1362,8 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
             anchorPage={page}
             onAnchorPageChange={changePage}
             selectedAyah={tafsirAyah}
+            playingAyah={activePlayingAyah}
+            ribbons={ribbons}
             onSelectAyah={setTafsirAyah}
             onAyahsResolved={handlePrintedPageResolved}
             onSpreadContextChange={setPrintedSpreadContext}

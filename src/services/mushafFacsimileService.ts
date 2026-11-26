@@ -1,7 +1,28 @@
 export const MUSHAF_FACSIMILE_VERSION = 'v1.1.1';
 export const MUSHAF_FACSIMILE_COMMIT = '3ff27b46cecb0c0519d77531d9c868a579d1f623';
 export const MUSHAF_FACSIMILE_EDITION = 'hafs-kfqc';
+export const PINNED_MUSHAF_OFFLINE_CACHE_NAME = 'wird-app-mushaf-pinned-v1';
 const MUSHAF_FACSIMILE_BASE_URL = `https://raw.githubusercontent.com/quran-ws/quran-svg/${MUSHAF_FACSIMILE_COMMIT}/mushafs/hafs/kfqc/svg`;
+
+const MAX_PARSED_MUSHAF_RAM_CACHE = 20;
+const parsedPageMemoryCache = new Map<number, MushafFacsimilePageData>();
+const inflightPageRequests = new Map<number, Promise<MushafFacsimilePageData>>();
+
+function rememberParsedMushafPage(page: number, data: MushafFacsimilePageData): void {
+  if (parsedPageMemoryCache.has(page)) {
+    parsedPageMemoryCache.delete(page);
+  }
+  parsedPageMemoryCache.set(page, data);
+  while (parsedPageMemoryCache.size > MAX_PARSED_MUSHAF_RAM_CACHE) {
+    const oldest = parsedPageMemoryCache.keys().next().value;
+    if (typeof oldest !== 'number') break;
+    parsedPageMemoryCache.delete(oldest);
+  }
+}
+
+export function getCachedMushafFacsimilePageSync(page: number): MushafFacsimilePageData | null {
+  return parsedPageMemoryCache.get(page) ?? null;
+}
 
 export interface MushafViewBox {
   x: number;
@@ -152,17 +173,173 @@ export async function loadMushafFacsimilePage(
   signal?: AbortSignal
 ): Promise<MushafFacsimilePageData> {
   const { svgUrl } = getMushafFacsimilePageUrls(page);
-  const response = await fetch(svgUrl, { signal, mode: 'cors', credentials: 'omit', headers: { Accept: 'image/svg+xml' } });
-  if (!response.ok) {
-    throw new Error('تعذر تحميل الصفحة المطبوعة؛ يمكنك متابعة القراءة بالعرض المرن.');
+  const memCached = parsedPageMemoryCache.get(page);
+  if (memCached) {
+    rememberParsedMushafPage(page, memCached);
+    return memCached;
   }
-  const contentType = (response.headers.get('content-type') || '').toLowerCase();
-  if (!contentType.includes('image/svg+xml')) {
-    throw new Error('نوع ملف صفحة المصحف لا يطابق صيغة SVG المتوقعة.');
+
+  if (!signal && inflightPageRequests.has(page)) {
+    return inflightPageRequests.get(page)!;
   }
-  const svgMarkup = await response.text();
-  const viewBox = parseMushafViewBox(svgMarkup);
-  const ayahAreas = parseMushafAyahCoordinates(svgMarkup);
-  const safeSvgMarkup = sanitizeMushafSvgMarkup(svgMarkup);
-  return { page, svgUrl, svgMarkup: safeSvgMarkup, viewBox, ayahAreas };
+
+  const runFetch = async (): Promise<MushafFacsimilePageData> => {
+    // Check permanent user-downloaded offline Mushaf cache first when available
+    if (typeof caches !== 'undefined') {
+      try {
+        const pinnedCache = await caches.open(PINNED_MUSHAF_OFFLINE_CACHE_NAME);
+        const pinnedMatch = await pinnedCache.match(svgUrl);
+        if (pinnedMatch && pinnedMatch.ok) {
+          const cachedMarkup = await pinnedMatch.text();
+          const viewBox = parseMushafViewBox(cachedMarkup);
+          const ayahAreas = parseMushafAyahCoordinates(cachedMarkup);
+          const safeSvgMarkup = sanitizeMushafSvgMarkup(cachedMarkup);
+          const built = { page, svgUrl, svgMarkup: safeSvgMarkup, viewBox, ayahAreas };
+          rememberParsedMushafPage(page, built);
+          return built;
+        }
+      } catch {
+        // Fall through to normal fetch / SW cache
+      }
+    }
+
+    const response = await fetch(svgUrl, {
+      signal,
+      mode: 'cors',
+      credentials: 'omit',
+      headers: { Accept: 'image/svg+xml' }
+    });
+    if (!response.ok) {
+      throw new Error('تعذر تحميل الصفحة المطبوعة؛ يمكنك متابعة القراءة بالعرض المرن.');
+    }
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('image/svg+xml')) {
+      throw new Error('نوع ملف صفحة المصحف لا يطابق صيغة SVG المتوقعة.');
+    }
+    const svgMarkup = await response.text();
+    const viewBox = parseMushafViewBox(svgMarkup);
+    const ayahAreas = parseMushafAyahCoordinates(svgMarkup);
+    const safeSvgMarkup = sanitizeMushafSvgMarkup(svgMarkup);
+    const built = { page, svgUrl, svgMarkup: safeSvgMarkup, viewBox, ayahAreas };
+    rememberParsedMushafPage(page, built);
+    return built;
+  };
+
+  if (signal) {
+    return runFetch();
+  }
+  const p = runFetch().finally(() => {
+    inflightPageRequests.delete(page);
+  });
+  inflightPageRequests.set(page, p);
+  return p;
+}
+
+/**
+ * Pre-fetch and parse adjacent Mushaf pages into RAM so RTL page-flipping
+ * renders in 0ms without a loading spinner.
+ */
+export function preloadAdjacentMushafPages(anchorPage: number): void {
+  const neighbors = [
+    anchorPage + 1,
+    anchorPage + 2,
+    anchorPage - 1,
+    anchorPage - 2,
+    anchorPage + 3,
+  ].filter((p) => Number.isInteger(p) && p >= 1 && p <= 604);
+
+  for (const neighbor of neighbors) {
+    if (parsedPageMemoryCache.has(neighbor) || inflightPageRequests.has(neighbor)) continue;
+    void loadMushafFacsimilePage(neighbor).catch(() => {
+      // Opportunistic warm-up; ignore background network misses.
+    });
+  }
+}
+
+export interface PinnedMushafOfflineProgress {
+  completed: number;
+  total: number;
+  cachedBytesApprox: number;
+}
+
+export async function getPinnedMushafOfflineStatus(): Promise<{
+  cachedPages: number;
+  totalPages: number;
+  isComplete: boolean;
+}> {
+  const totalPages = 604;
+  if (typeof caches === 'undefined') {
+    return { cachedPages: 0, totalPages, isComplete: false };
+  }
+  try {
+    const cache = await caches.open(PINNED_MUSHAF_OFFLINE_CACHE_NAME);
+    const keys = await cache.keys();
+    const valid = keys.filter((req) => /\/[0-9]{3}\.svg$/.test(new URL(req.url).pathname));
+    const count = Math.min(totalPages, valid.length);
+    return { cachedPages: count, totalPages, isComplete: count === totalPages };
+  } catch {
+    return { cachedPages: 0, totalPages, isComplete: false };
+  }
+}
+
+export async function downloadFullMushafForOffline(
+  onProgress?: (progress: PinnedMushafOfflineProgress) => void,
+  signal?: AbortSignal
+): Promise<{ cachedPages: number; totalPages: number }> {
+  if (typeof caches === 'undefined') {
+    throw new Error('ذاكرة التخزين الدائم غير مدعومة في هذا المتصفح.');
+  }
+  const totalPages = 604;
+  const cache = await caches.open(PINNED_MUSHAF_OFFLINE_CACHE_NAME);
+  let cursor = 1;
+  let completed = 0;
+  let approxBytes = 0;
+  const concurrency = 6;
+
+  const worker = async () => {
+    while (cursor <= totalPages) {
+      if (signal?.aborted) throw new Error('تم إيقاف تنزيل صفحات المصحف مؤقتاً.');
+      const pageNum = cursor++;
+      if (pageNum > totalPages) return;
+      const { svgUrl } = getMushafFacsimilePageUrls(pageNum);
+      const request = new Request(svgUrl, {
+        mode: 'cors',
+        credentials: 'omit',
+        headers: { Accept: 'image/svg+xml' },
+      });
+      const existing = await cache.match(request);
+      if (existing && existing.ok) {
+        completed++;
+        approxBytes += 42_000;
+        onProgress?.({ completed, total: totalPages, cachedBytesApprox: approxBytes });
+        continue;
+      }
+      const response = await fetch(request, { signal });
+      if (!response.ok) {
+        throw new Error(`تعذر تحميل صفحة المصحف رقم ${pageNum}.`);
+      }
+      const text = await response.text();
+      parseMushafViewBox(text);
+      parseMushafAyahCoordinates(text);
+      const safeSvg = sanitizeMushafSvgMarkup(text);
+      approxBytes += safeSvg.length;
+      await cache.put(
+        request,
+        new Response(safeSvg, {
+          status: 200,
+          headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' },
+        })
+      );
+      completed++;
+      onProgress?.({ completed, total: totalPages, cachedBytesApprox: approxBytes });
+    }
+  };
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
+  return { cachedPages: completed, totalPages };
+}
+
+export async function clearPinnedMushafOfflineCache(): Promise<void> {
+  if (typeof caches === 'undefined') return;
+  await caches.delete(PINNED_MUSHAF_OFFLINE_CACHE_NAME);
 }

@@ -50,6 +50,7 @@ export const AUXILIARY_SCOPED_KEYS = [
   'wird.reading.khatma.v1',
   'wird.reading.khatmas.v2',
   'wird.quran.pageBookmarks.v1',
+  'wird.quran.ribbons.v1',
   'wird.quran.lastPage.v1',
   'wird.quran.lastReadingPosition.v1',
   'wird.adhkar.progress.v1',

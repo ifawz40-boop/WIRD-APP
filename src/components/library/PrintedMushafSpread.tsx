@@ -9,10 +9,13 @@ import {
   resolveSpreadLayout,
   saveMushafSpreadMode,
   saveMushafTafsirLayout,
+  stepSpreadPage,
   type MushafSpreadMode,
   type MushafSurfaceId,
   type MushafTafsirDesktopLayout
 } from '../../services/mushafSpreadService';
+import type { MushafRibbonBookmark } from '../../services/mushafRibbonBookmarksService';
+import { MushafPaperFlipStage } from './MushafPaperFlipStage';
 import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
 import { TafsirContentPane } from './TafsirContentPane';
 import { TafsirSheet } from './TafsirSheet';
@@ -29,6 +32,8 @@ interface PrintedMushafSpreadProps {
   anchorPage: number;
   onAnchorPageChange?: (page: number) => void;
   selectedAyah: Ayah | null;
+  playingAyah?: Ayah | null;
+  ribbons?: MushafRibbonBookmark[];
   onSelectAyah: (ayah: Ayah | null) => void;
   tafsirAyah?: Ayah | null;
   onTafsirAyahChange?: (ayah: Ayah | null) => void;
@@ -45,6 +50,8 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   anchorPage,
   onAnchorPageChange,
   selectedAyah,
+  playingAyah,
+  ribbons,
   onSelectAyah,
   tafsirAyah,
   onTafsirAyahChange,
@@ -305,62 +312,84 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
         )}
       </div>
 
-      {/* Main Facing Spread + Optional Desktop Side Panel */}
+      {/* Main Facing Spread inside 3D RTL Physical Paper-Curl Stage + Optional Desktop Side Panel */}
       <div className="flex flex-col lg:flex-row items-stretch gap-4" dir="rtl">
-        <div className={`flex-1 min-w-0 grid gap-4 ${isTwoPage ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
-          {spreadSlots.map(pageNum => {
-            const shouldReplaceThisSlot =
-              (pageNum === rightPage && replaceRightSlotWithTafsir) ||
-              (pageNum === leftPage && replaceLeftSlotWithTafsir);
-
-            if (shouldReplaceThisSlot && activeTafsirAyah) {
-              return (
-                <section
-                  key={`opposite-tafsir-${pageNum}`}
-                  aria-label="التفسير بدلاً من الصفحة المقابلة"
-                  className="flex flex-col min-h-[520px] max-h-[820px] rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] shadow-lg overflow-hidden bg-[var(--wird-surface)]"
-                >
-                  <TafsirContentPane
-                    ayah={activeTafsirAyah}
-                    onSelectAyah={next => {
-                      setTafsirTarget(next);
-                      onSelectAyah(next);
-                    }}
-                    onClose={handleCloseTafsir}
-                    returnToMushafLabel="العودة لصفحة المصحف"
-                    pageNumber={inspectedOwnerPage || pageNum}
-                    pageAyahs={activePageAyahs}
-                    desktopLayout={desktopTafsirLayout}
-                    onChangeDesktopLayout={handleChangeTafsirLayout}
-                    syncReadingPageAction={syncReadingPageAction}
-                    compactHeader
-                  />
-                </section>
-              );
+        <div className="flex-1 min-w-0">
+          <MushafPaperFlipStage
+            anchorPage={readingPage}
+            isTwoPage={isTwoPage && !isOppositeTafsirActive}
+            canTurnNext={readingPage < 604}
+            canTurnPrev={readingPage > 1}
+            onTurnNext={() =>
+              onAnchorPageChange?.(
+                stepSpreadPage(readingPage, 'next', isTwoPage, { isOppositeTafsirActive })
+              )
             }
+            onTurnPrev={() =>
+              onAnchorPageChange?.(
+                stepSpreadPage(readingPage, 'prev', isTwoPage, { isOppositeTafsirActive })
+              )
+            }
+            ribbons={ribbons}
+            visiblePages={visiblePages}
+          >
+            <div className={`grid gap-3 sm:gap-5 ${isTwoPage ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+              {spreadSlots.map(pageNum => {
+                const shouldReplaceThisSlot =
+                  (pageNum === rightPage && replaceRightSlotWithTafsir) ||
+                  (pageNum === leftPage && replaceLeftSlotWithTafsir);
 
-            return (
-              <div key={`spread-page-${pageNum}`} className="min-w-0 flex flex-col gap-1.5">
-                {isTwoPage && (
-                  <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--wird-muted)] tabular-nums">
-                    <span>صفحة {pageNum}</span>
-                    {pageNum === readingPage && (
-                      <span className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الصفحة الحالية</span>
+                if (shouldReplaceThisSlot && activeTafsirAyah) {
+                  return (
+                    <section
+                      key={`opposite-tafsir-${pageNum}`}
+                      aria-label="التفسير بدلاً من الصفحة المقابلة"
+                      className="flex flex-col min-h-[520px] max-h-[820px] rounded-[var(--wird-radius-card)] border border-[var(--wird-border-gold)] shadow-lg overflow-hidden bg-[var(--wird-surface)]"
+                    >
+                      <TafsirContentPane
+                        ayah={activeTafsirAyah}
+                        onSelectAyah={next => {
+                          setTafsirTarget(next);
+                          onSelectAyah(next);
+                        }}
+                        onClose={handleCloseTafsir}
+                        returnToMushafLabel="العودة لصفحة المصحف"
+                        pageNumber={inspectedOwnerPage || pageNum}
+                        pageAyahs={activePageAyahs}
+                        desktopLayout={desktopTafsirLayout}
+                        onChangeDesktopLayout={handleChangeTafsirLayout}
+                        syncReadingPageAction={syncReadingPageAction}
+                        compactHeader
+                      />
+                    </section>
+                  );
+                }
+
+                return (
+                  <div key={`spread-page-${pageNum}`} className="min-w-0 flex flex-col gap-1.5">
+                    {isTwoPage && (
+                      <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--wird-muted)] tabular-nums">
+                        <span>صفحة {pageNum}</span>
+                        {pageNum === readingPage && (
+                          <span className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الصفحة الحالية</span>
+                        )}
+                      </div>
                     )}
+                    <QuranMushafFacsimilePage
+                      page={pageNum}
+                      onAyahsResolved={handleAyahsResolved}
+                      selectedAyah={autoOpenTafsirOnSelect ? (activeTafsirAyah || selectedAyah) : (selectedAyah || activeTafsirAyah)}
+                      playingAyah={playingAyah}
+                      onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
+                      onFallback={onFallback}
+                      maxWidthClass="max-w-none"
+                      sessionAyahKeys={sessionAyahKeys}
+                    />
                   </div>
-                )}
-                <QuranMushafFacsimilePage
-                  page={pageNum}
-                  onAyahsResolved={handleAyahsResolved}
-                  selectedAyah={autoOpenTafsirOnSelect ? (activeTafsirAyah || selectedAyah) : (selectedAyah || activeTafsirAyah)}
-                  onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
-                  onFallback={onFallback}
-                  maxWidthClass="max-w-none"
-                  sessionAyahKeys={sessionAyahKeys}
-                />
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </MushafPaperFlipStage>
         </div>
 
         {/* Desktop Slide-Over Side Panel Option (keeps both facing pages visible) */}
