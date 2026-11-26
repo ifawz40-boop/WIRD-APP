@@ -14,9 +14,10 @@ test.describe('WIRD dashboard accessibility and responsive UX', () => {
     await expect(quickAction).toBeVisible();
     await expect(quickAction).toHaveCSS('min-height', '64px');
     await expect(activity.getByRole('listitem')).toHaveCount(7);
-    await expect(page.getByRole('progressbar')).toHaveCount(9);
+    await expect(page.getByRole('progressbar')).toHaveCount(10);
     await expect(page.getByRole('progressbar', { name: 'نسبة الآيات المحفوظة' })).toBeVisible();
     await expect(page.getByRole('progressbar', { name: 'نسبة الصفحات المحفوظة بالكامل' })).toBeVisible();
+    await expect(page.getByRole('progressbar', { name: /نسبة إنجاز سلسلة بناء النفس المطمئنة/ })).toBeVisible();
     await quickAction.focus();
     await expect(quickAction).toBeFocused();
   });

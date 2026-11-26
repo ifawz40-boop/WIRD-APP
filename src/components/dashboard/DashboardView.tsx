@@ -322,15 +322,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <BookOpen className="w-4 h-4 text-[#E6B85C]" />
               <span>فتح المصحف المطبوع</span>
             </button>
-            <button
-              type="button"
-              disabled={dailyTask.source === 'blocked'}
-              onClick={() => onStartSession(dailyTask.surahNumber, dailyTask.startAyah, dailyTask.endAyah, dailyTask.mode)}
-              className="wird-btn-accent min-h-11 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold disabled:opacity-50 whitespace-nowrap"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>{dailyTask.mode === 'review' ? 'ابدأ مراجعة اليوم' : 'ابدأ ورد اليوم'}</span>
-            </button>
           </div>
         </div>
       </section>
@@ -1040,7 +1031,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {[
               {
                 tab: 'library' as NavTabId,
-                title: 'المصحف المطبوع والمكتبة',
+                title: 'تصفح المصحف والمكتبة',
                 subtitle: '604 صفحة مع التفسير المقابل والاستماع',
                 icon: BookOpen
               },
@@ -1087,7 +1078,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   key={action.tab}
                   type="button"
                   onClick={() => onNavigate(action.tab)}
-                  className="w-full min-h-14 flex items-center justify-between p-3 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)]/65 hover:bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] transition-colors text-right wird-focus-ring"
+                  className="w-full min-h-16 flex items-center justify-between p-3 rounded-[var(--wird-radius-control)] bg-[var(--wird-surface-muted)]/65 hover:bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] hover:border-[var(--wird-border-gold)] transition-colors text-right wird-focus-ring"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 rounded-lg bg-[var(--wird-surface)] text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border border-[var(--wird-border)] flex items-center justify-center shrink-0">

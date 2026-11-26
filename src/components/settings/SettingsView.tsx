@@ -1556,7 +1556,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   }`}
                 >
                   <Moon className="w-4 h-4" />
-                  <span>ليلي</span>
+                  <span>داكن ليلي</span>
                 </button>
               </div>
             </div>

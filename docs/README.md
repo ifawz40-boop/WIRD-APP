@@ -11,7 +11,8 @@
 4. [engineering/README.md](./engineering/README.md) — فهرس الهندسة والوثائق التخصصية.
 5. [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) — خارطة المنتج.
 6. [engineering/WORK_LOG.md](./engineering/WORK_LOG.md) — سجل العمل التاريخي append-only.
-7. [agent-handoffs/LATEST-GOOGLE-STUDIO.md](./agent-handoffs/LATEST-GOOGLE-STUDIO.md) — تسليم Google AI Studio.
+7. [MASTER_APP_OVERHAUL.md](./MASTER_APP_OVERHAUL.md) — خطة وسجل إعادة البناء والتطوير الشاملة لتطبيق وِرد (2026-11-26).
+8. [agent-handoffs/LATEST-GOOGLE-STUDIO.md](./agent-handoffs/LATEST-GOOGLE-STUDIO.md) — تسليم Google AI Studio.
 
 ## مصدر الحقيقة
 - الحالة المثبتة: `docs/engineering/MASTER_PROJECT_STATE.md`.

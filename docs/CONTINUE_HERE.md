@@ -1,13 +1,44 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-25 (Complete Prophetic Seerah Digital Book & Character Storytelling Transformation per `docs/seerah/MASTER_DIRECTIVE.md` — 6 Eras, 12 Sections, 40 Narrative Chapters, 32 Character Stories, 79,680 Words, 3-Pass Editorial & Verbatim Sacred-Text Verification on `feat/seerah-encyclopedia-ibn-kathir`)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (`45f3edc611be08482d53570afd49f6e9471f44c7`) · **Active feature branch:** `feat/seerah-encyclopedia-ibn-kathir` (local verified commit; NOT pushed/merged to `main` and NOT deployed to Vercel)  
-**Prior merged baseline:** `45f3edc611be08482d53570afd49f6e9471f44c7` (2026-11-23, `feat: add SSRF-safe YouTube playlist metadata resolver`)  
+**Last reconciled:** 2026-11-26 (Master App Overhaul — Typography/Circle-Glyph Fix, New Geometric SVG Brand & PWA Icons, Written + Audio Ruqyah Rebuild with MediaSession & Offline Downloads, Gemini 2.5 Flash AI Assistant Upgrade, Internal Runtime & 100% Full-Offline Engine on `feat/master-app-overhaul-20261126` → merging & pushing to `main` per explicit owner directive)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (pre-merge base `9d97c725`) · **Active feature branch:** `feat/master-app-overhaul-20261126`  
+**Prior merged baseline:** `9d97c725` (`feat(adhkar): implement interactive Adhkar redesign`, descended from `b5d5061b` Seerah Digital Book)  
 **Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Checkpoint — Complete Prophetic Seerah Digital Book & Character Storytelling (2026-11-25)
+## Active Checkpoint — Master App Overhaul (2026-11-26)
+
+Full phased plan and execution log: [`docs/MASTER_APP_OVERHAUL.md`](./MASTER_APP_OVERHAUL.md).
+
+1. **Phase 1 — Quranic & Editorial Typography + Circle-Glyph Elimination (`37af33d0`):**
+   - Diagnosed the mid-ayah black-ball/dotted-circle (`●◌`) artifact as a QPC-font mismatch (`UthmanicHafs1Ver18` lacks Tanzil `U+06DF` and combining pause marks). Switched `.font-quran` to `'Amiri Quran', 'Scheherazade New', 'Amiri', serif`, passed canonical coordinates to `QuranText`, and replaced `' ۞ '` separators with clean ayah brackets `﴿رقم﴾` without touching a single character of `completeQuranData.json` or `quran-simple-1.1.xml`.
+2. **Phase 2 — Minimalist Geometric Brand, PWA Icons & ZERO AI Look (`bde6aaa8`):**
+   - Replaced the legacy emblem with a clean minimalist geometric SVG logo across `WirdLogo.tsx`, `WirdAvatar.tsx`, `WirdPattern.tsx`, `favicon.svg`, `icon-192.png`, `icon-512.png`, and `apple-touch-icon.png`. Refined warm paper light mode (`#FAF6EE`) & restful deep dark mode (`#06120E`), eliminated card-in-card nesting, and removed all emojis from production `src/` (`0` hits verified).
+3. **Phase 3 — Written & Audio Ruqyah Shar'iyyah Rebuild (`d99ab6be`):**
+   - Separated Written Ruqyah cleanly into **القرآن الكريم** and **السنة النبوية الصحيحة** with sources/takhrij, repetition counters, and progress tracking. Added `MediaSession` lock-screen/background playback controls, ±10s seek, mute toggle, floating mini-player, and full offline audio session/category download via `offlineQuranAudioLibrary.ts` (`'ruqyah'` scope + reconnect auto-resume).
+4. **Phase 4 — Gemini 2.5 Flash AI Assistant Upgrade (`871b74dd`):**
+   - Connected `api/advisor.ts` and `server.ts` to **`gemini-2.5-flash`** (with `'gemini-2.0-flash'` and deterministic offline fallback; zero client-exposed keys), added deep Arabic intent classification (`classifyAdvisorIntent` / `detectAdvisorQueryIntent`), user-progress context, and UID-scoped persistent chat history (`wird.advisor.chat.v1` in `AUXILIARY_SCOPED_KEYS`).
+5. **Phase 5 — Internal Runtime & 100% Offline-First Engine (`577a7fe7`):**
+   - Created `src/services/runtimeCoordinator.ts` (hover/focus + idle route chunk prefetching, background Surah cache RAM trimming via `trimLoadedQuranCaches`, reconnect auto-resume for offline packages & audio downloads). Added exponential backoff retry in `cloudSyncCoordinator.ts`, included all `43` Seerah JSON files + PWA icons in `wird-precache-manifest.json` (`311` assets via `vite.config.ts`), and upgraded `public/sw.js` to 4-worker parallel resumable full-offline downloads.
+6. **Phase 6 — Full Verification & E2E Stabilization (2026-11-26):**
+   - **Untouched:** `docs/seerah/MASTER_DIRECTIVE.md` (LF SHA-256 `7a1e25cf...1472`), Quran corpus (`completeQuranData.json`, `quran-simple-1.1.xml`, `tanzilReferenceData.json`), `firestore.rules`, `bun.lock`, Vercel env vars, and Production sync flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`).
+   - `npm.cmd run lint` (`tsc --noEmit` + Tanzil validation): **PASS** (`0` errors)
+   - `node scripts/verify_seerah_content.mjs`: **PASS**
+   - `npm.cmd run smoke:api-imports`: **PASS**
+   - `npm.cmd test` (74 suites): **PASS** (`816 PASSED | 0 FAILED`)
+   - `NODE_ENV=production vite build`: **PASS** (`3.07s`, `allAssets: 311` incl. `43` Seerah JSON files, `0` chunks > 500 kB)
+   - `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+   - Production `src/` emoji scan: **PASS** (`0` hits)
+   - Playwright E2E on Edge Chromium Desktop (`1440×900`) & Mobile (`390×844`) across `app-shell`, `dashboard-ux`, `ruqyah-ux`, `ruqyah-audio`, `advisor-ux`, `seerah-book`, `settings-ux`: **PASS** (`50 passed | 0 failed`)
+   - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub Actions CI).
+
+### Next Step
+- Merge `feat/master-app-overhaul-20261126` into `main`, push to `origin/main` (per explicit owner authorization «كمل وارفع على جيت هب main و انشر على فيرسل»), and verify GitHub Actions CI + Vercel Production deployment status on the exact pushed SHA.
+
+---
+
+## Prior Checkpoint — Complete Prophetic Seerah Digital Book & Character Storytelling (2026-11-25 — Historical / Merged into `main`)
 
 1. **Authoritative Directive & Durable Research Repository (`docs/seerah/MASTER_DIRECTIVE.md` [unmodified, SHA-256 `7a1e25cf...1472`], `docs/seerah/EXECUTION_STATUS.md`, `research/`):**
    - **Phase 1:** Processed 100% of all 4 volumes of Imam Ibn Kathir's *Al-Sīra al-Nabawiyya* (`2,566 / 2,566` PDF pages tracked in `research/processing_checkpoints.json`: `2,475` verified matn pages + `91` classified non-matn apparatus pages), producing `source_manifest.json`, `90` major events + `120` sub-events, `32` personalities, `26` places, `22` classical sources, `50/50` verbatim Quranic passages (vs `src/data/completeQuranData.json`), `43/43` verbatim Hadiths (`100%` verified substrings inside Ibn Kathir), and `18` historical disputes.

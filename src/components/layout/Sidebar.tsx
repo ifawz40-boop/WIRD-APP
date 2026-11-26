@@ -278,11 +278,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quiet User Profile Footer */}
       <div className="px-3.5 py-3 border-t border-[var(--wird-border)]">
-        <button
-          type="button"
-          onClick={() => handleSelect('settings')}
-          className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-[var(--wird-radius-control)] hover:bg-[var(--wird-surface-muted)] transition-colors text-right wird-focus-ring"
-        >
+        <div className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-[var(--wird-radius-control)] text-right">
           <WirdAvatar size="sm" shape="circle" variant="primary" />
           <div className="min-w-0 flex-1">
             <div className="text-xs font-bold text-[var(--wird-text)] truncate">
@@ -292,7 +288,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {profile.memorizationGoal || 'طالب حفظ ومراجعة'}
             </div>
           </div>
-        </button>
+        </div>
       </div>
     </aside>
   );

@@ -1,7 +1,30 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-25 (Local Feature Branch `feat/seerah-encyclopedia-ibn-kathir` on `main` @ `45f3edc611be08482d53570afd49f6e9471f44c7` — Complete Prophetic Seerah Digital Book & Character Storytelling Transformation per `docs/seerah/MASTER_DIRECTIVE.md`: 6 Eras, 12 Sections, 40 Chapters, 32 Character Stories, 79,680 Words, 3-Pass Review & Verbatim Sacred Quotations)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (`45f3edc611be08482d53570afd49f6e9471f44c7`) · **Active branch:** `feat/seerah-encyclopedia-ibn-kathir`
+**Current snapshot reconciled:** 2026-11-26 (Master App Overhaul on `feat/master-app-overhaul-20261126` from `main` @ `9d97c725` — Typography & Circle-Glyph Elimination, New Minimalist Geometric SVG Logo & PWA Icons, Written + Audio Ruqyah Rebuild with MediaSession & Offline Downloads, Gemini 2.5 Flash AI Assistant Upgrade, Runtime Prefetch/Memory Coordinator & 100% Full-Offline 311-Asset Package)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (base `9d97c725`) · **Active branch:** `feat/master-app-overhaul-20261126`
+
+- **Verified Feature Branch State (2026-11-26 — Owner-Authorized for `main` Push & Vercel Deployment):**
+  - **Phase 1 — Typography & Circle-Glyph Elimination (`37af33d0`):** Replaced QPC-encoded `UthmanicHafs1Ver18` primary font with `Amiri Quran` / `Scheherazade New` for Quranic text and `Amiri` / `IBM Plex Sans Arabic` for editorial & UI copy; passed canonical `(surahNumber, ayahNumber)` coordinates to `QuranText`; replaced `' ۞ '` separators with `﴿رقم﴾`; `0` bytes changed in canonical Quran corpus.
+  - **Phase 2 — Brand Identity & ZERO AI Look (`bde6aaa8`):** New geometric SVG emblem across `WirdLogo.tsx`, `WirdAvatar.tsx`, `WirdPattern.tsx`, `favicon.svg`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`; refined warm paper light (`#FAF6EE`) & restful deep dark (`#06120E`) tokens; zero card-in-card nesting; `0` emojis in production `src/`.
+  - **Phase 3 — Ruqyah Shar'iyyah Rebuild (`d99ab6be`):** Clear separation & 3-way filtering between Quranic Ruqyah and Authentic Prophetic Sunnah Duas; `MediaSession` lock-screen/background audio controls, ±10s seek, floating mini-player, and full offline audio download/storage (`offlineQuranAudioLibrary.ts` `'ruqyah'` scope + reconnect auto-resume).
+  - **Phase 4 — Gemini 2.5 Flash AI Assistant (`871b74dd`):** Upgraded `api/advisor.ts` & `server.ts` to `gemini-2.5-flash` (with `gemini-2.0-flash` + deterministic local fallback, server-side key only), Arabic intent analyzer, progress-aware context, and UID-scoped chat persistence (`wird.advisor.chat.v1`).
+  - **Phase 5 — Internal Runtime & 100% Offline-First (`577a7fe7`):** Added `runtimeCoordinator.ts` (hover/idle route prefetching, Surah cache RAM trimming, reconnect download auto-resume), exponential-backoff retry in `cloudSyncCoordinator.ts`, `311` total offline assets in `wird-precache-manifest.json` (incl. all `43` Seerah JSON files + PWA icons), and 4-worker parallel resumable full-offline downloads in `public/sw.js`.
+  - **Local Verification Executed (2026-11-26):**
+    - `npm.cmd run lint` (`tsc --noEmit` + Tanzil validation): **PASS** (`0` errors)
+    - `node scripts/verify_seerah_content.mjs`: **PASS** (`6` eras, `12` sections, `40` chapters, `32` characters, `52` Quran + `43` Hadith verbatim quotes)
+    - `npm.cmd run smoke:api-imports`: **PASS**
+    - `npm.cmd test` (74 suites): **PASS** (`816 PASSED | 0 FAILED`)
+    - `NODE_ENV=production vite build`: **PASS** (`3.07s`, `allAssets: 311`, `seerahInAll: 43`, `0` chunks > 500 kB)
+    - `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+    - Protected files diff (`MASTER_DIRECTIVE.md`, Quran corpus, `firestore.rules`, `bun.lock`): **PASS** (`0` bytes diff)
+    - Production `src/` emoji scan: **PASS** (`0` hits)
+    - Playwright E2E (`app-shell`, `dashboard-ux`, `ruqyah-ux`, `ruqyah-audio`, `advisor-ux`, `seerah-book`, `settings-ux` on Edge Chromium Desktop `1440×900` & Mobile `390×844`): **PASS** (`50 passed | 0 failed`)
+    - `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub Actions CI).
+    - Production Sync Flags (`VITE_WIRD_REVISIONED_SYNC_ENABLED`, `VITE_WIRD_REMOTE_PROJECTION_ENABLED`), `firestore.rules`, `bun.lock`, secrets, and Quran corpus: **UNTOUCHED**.
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Workspace Snapshot — 2026-11-25 (Complete Prophetic Seerah Digital Book — Merged into `main`)
 
 - **Local Feature Branch State & Verification (2026-11-25 — NOT pushed/merged to `main` and NOT deployed to Vercel):**
   - **Structured Research Repository & Chronological Blueprint (`research/`, `scripts/phase1_build_research_repo.py`, `scripts/phase2_build_seerah_blueprint.py`):**

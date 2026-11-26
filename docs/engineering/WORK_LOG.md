@@ -1103,3 +1103,30 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 
 ### Next Action
 - Push `feat/seerah-encyclopedia-ibn-kathir` to a GitHub Pull Request upon explicit owner authorization and inspect exact-head GitHub Actions `WIRD Quality Gate` and Vercel Preview before any merge.
+
+---
+
+## 2026-11-26 — Master App Overhaul (`feat/master-app-overhaul-20261126` → `main`)
+
+### Scope & Phased Execution (`docs/MASTER_APP_OVERHAUL.md`)
+- **Phase 1 (`37af33d0`) — Quranic/Editorial Typography & Circle-Glyph Elimination:** Reproduced and fixed the mid-ayah black-ball/dotted-circle (`●◌`) glyph artifact caused by QPC-encoded `UthmanicHafs1Ver18` lacking Tanzil `U+06DF` and combining pause marks. Switched `.font-quran` to `'Amiri Quran', 'Scheherazade New', 'Amiri', serif`, passed canonical `(surahNumber, ayahNumber)` coordinates to `QuranText`, and replaced `' ۞ '` separators with `﴿رقم﴾` without altering canonical Quran sources.
+- **Phase 2 (`bde6aaa8`) — New Minimalist Geometric SVG Logo, PWA Icons & ZERO AI Look:** Created a clean geometric SVG logo across `WirdLogo.tsx`, `WirdAvatar.tsx`, `WirdPattern.tsx`, `favicon.svg`, `icon-192.png`, `icon-512.png`, and `apple-touch-icon.png`; refined warm paper light (`#FAF6EE`) & restful deep dark (`#06120E`) surfaces; eliminated card-in-card nesting; removed all emojis from production `src/`.
+- **Phase 3 (`d99ab6be`) — Written & Audio Ruqyah Shar'iyyah Rebuild:** Separated written Ruqyah clearly into Quranic verses and Authentic Prophetic Sunnah Duas with 3-way filtering, sources/takhrij, repetition counters, and progress tracking; added `MediaSession` lock-screen/background audio playback, ±10s seek, mute toggle, floating mini-player, and full offline audio session/category downloads via `offlineQuranAudioLibrary.ts` (`'ruqyah'` scope + reconnect auto-resume).
+- **Phase 4 (`871b74dd`) — Gemini 2.5 Flash AI Assistant Upgrade:** Upgraded `api/advisor.ts` and `server.ts` to `gemini-2.5-flash` (with `gemini-2.0-flash` and deterministic local fallback; server-side API key only), added Arabic intent classification (`classifyAdvisorIntent` / `detectAdvisorQueryIntent`), user-progress context, and UID-scoped persistent chat history (`wird.advisor.chat.v1`).
+- **Phase 5 (`577a7fe7`) — Internal Runtime & 100% Offline-First Engine:** Added `src/services/runtimeCoordinator.ts` (hover/focus + idle route chunk prefetching, background Surah cache RAM trimming, reconnect download auto-resume), exponential backoff retry in `cloudSyncCoordinator.ts`, included all `43` Seerah JSON files + PWA icons in `wird-precache-manifest.json` (`311` assets via `vite.config.ts`), and upgraded `public/sw.js` to 4-worker parallel resumable full-offline downloads.
+- **Phase 6 — Full Verification, E2E Fixes & Documentation Closeout:** Fixed 4 E2E regressions caught by Playwright (`Sidebar.tsx` non-focusable footer preserving `الإعدادات` as last focus-trap element, `DashboardView.tsx` single daily session CTA + `64px` quick-action height + `'تصفح المصحف والمكتبة'` label, `SettingsView.tsx` `'داكن ليلي'` label, and `e2e/dashboard-ux.spec.ts` 10-progressbar count including `DailyVideoSuggestionCard`), added optional `PLAYWRIGHT_CHANNEL`/`PLAYWRIGHT_PREVIEW_CMD` env overrides to `playwright.config.ts` (preserving exact CI defaults), and reconciled canonical docs.
+
+### Verification Executed (2026-11-26, `feat/master-app-overhaul-20261126`)
+- `npm.cmd run lint` (`tsc --noEmit` + Tanzil validation): **PASS** (`0` errors)
+- `node scripts/verify_seerah_content.mjs`: **PASS** (`6` eras, `12` sections, `40` chapters, `32` characters, `52` verbatim Quran + `43` verbatim Hadith quotes)
+- `npm.cmd run smoke:api-imports`: **PASS**
+- `npm.cmd test` (74 suites): **PASS** (`816 PASSED | 0 FAILED`)
+- `NODE_ENV=production vite build`: **PASS** (`3.07s`, `allAssets: 311` incl. `43` Seerah JSON files, `0` chunks > 500 kB)
+- `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+- Protected files diff (`MASTER_DIRECTIVE.md`, Quran corpus, `firestore.rules`, `bun.lock`): **PASS** (`0` bytes diff)
+- Production `src/` emoji scan: **PASS** (`0` hits)
+- Playwright E2E (`app-shell`, `dashboard-ux`, `ruqyah-ux`, `ruqyah-audio`, `advisor-ux`, `seerah-book`, `settings-ux` on Edge Chromium Desktop `1440×900` & Mobile `390×844`): **PASS** (`50 passed | 0 failed`)
+- `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub Actions CI).
+
+### Next Action
+- Per explicit owner authorization («كمل وارفع على جيت هب main و انشر على فيرسل»), merge `feat/master-app-overhaul-20261126` into `main`, push to `origin/main`, and verify GitHub Actions CI + Vercel Production deployment status.
