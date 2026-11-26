@@ -135,8 +135,8 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 // Strict Quranic Safety System Instruction
-const PRIMARY_ADVISOR_MODEL = 'gemini-2.5-flash';
-const FALLBACK_ADVISOR_MODEL = 'gemini-2.0-flash';
+const PRIMARY_ADVISOR_MODEL = 'gemini-4-hydrogen';
+const FALLBACK_ADVISOR_MODEL = 'gemini-3.5-flash-lite';
 
 const SYSTEM_INSTRUCTION = `أنت «المستشار القرآني» في تطبيق «وِرد | WIRD» لحفظ ومراجعة القرآن الكريم.
 مهمتك: تحليل وتيرة الحفظ والمراجعة وفهم أسئلة المستخدم بعمق (بالفصحى أو العامية) وتقديم خطوات عملية رصينة وموثوقة وفق منهجيات أئمة الإقراء والتكرار المتباعد.
@@ -182,7 +182,7 @@ app.get('/api/advisor/status', (_req: Request, res: Response) => {
     model: PRIMARY_ADVISOR_MODEL,
     tier: 'free',
     message: isKeyConfigured
-      ? 'خدمة الذكاء الاصطناعي متاحة (Gemini 2.5 Flash Free Tier)'
+      ? 'خدمة الذكاء الاصطناعي متاحة (Gemini 4 Hydrogen)'
       : 'يعمل النظام في وضع التوصيات الحتمية المحلي (بدون استهلاك رصيد)'
   });
 });

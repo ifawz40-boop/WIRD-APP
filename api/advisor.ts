@@ -8,8 +8,8 @@ interface RateLimitRecord {
 const MAX_RATE_LIMIT_BUCKETS = 1000;
 const rateLimitMap = new Map<string, RateLimitRecord>();
 
-const PRIMARY_FREE_MODEL = 'gemini-2.5-flash';
-const FALLBACK_FREE_MODEL = 'gemini-2.0-flash';
+const PRIMARY_FREE_MODEL = 'gemini-4-hydrogen';
+const FALLBACK_FREE_MODEL = 'gemini-3.5-flash-lite';
 
 function getClientIp(req: any): string {
   const realIp = req.headers?.['x-real-ip'];
@@ -197,7 +197,7 @@ export default async function handler(req: any, res: any) {
       tier: 'free',
       quotaExhausted: false,
       message: isKeyConfigured
-        ? 'المستشار الذكي متصل بنموذج Gemini 2.5 Flash المجاني'
+        ? 'المستشار الذكي متصل بنموذج Gemini 4 Hydrogen المتقدم'
         : 'يعمل المستشار في النمط التحليلي المحلي دون حاجة لاتصال أو مفاتيح'
     });
   }

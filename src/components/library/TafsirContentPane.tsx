@@ -6,7 +6,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Download,
   ExternalLink,
+  GitCompare,
   Layers,
   Loader2,
   PanelLeft,
@@ -24,6 +26,8 @@ import { parseTafsirToSegments, sanitizeTafsirToPlainText } from '../../utils/ta
 import type { MushafTafsirDesktopLayout } from '../../services/mushafSpreadService';
 import { RelatedHadithPanel } from '../shared/RelatedHadithPanel';
 import { QuranText } from '../shared/QuranText';
+import { findMutashabihatForAyah } from '../../data/mutashabihatData';
+import { exportAyahShareCardPng } from '../../utils/ayahShareCardRenderer';
 
 export interface TafsirContentPaneProps {
   ayah: Ayah;
@@ -120,8 +124,14 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
   const [isCached, setIsCached] = useState(false);
   const [retry, setRetry] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [exportingCard, setExportingCard] = useState(false);
   const [viewMode, setViewMode] = useState<'single_ayah' | 'page_overview'>('single_ayah');
   const copyTimerRef = useRef<number | null>(null);
+
+  const mutashabihatMatches = useMemo(
+    () => findMutashabihatForAyah(ayah.surahNumber, ayah.numberInSurah),
+    [ayah.surahNumber, ayah.numberInSurah]
+  );
 
   useEffect(() => {
     return () => {
@@ -228,6 +238,24 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
     }
   };
 
+  const handleExportCard = async () => {
+    if (exportingCard) return;
+    setExportingCard(true);
+    try {
+      const displayText = await getAyahDisplayText(ayah);
+      const plainTafsir = rawText ? sanitizeTafsirToPlainText(rawText) : undefined;
+      await exportAyahShareCardPng({
+        surahName: String(surah?.name || ayah.surahNumber),
+        ayahNumber: ayah.numberInSurah,
+        ayahText: displayText,
+        tafsirSnippet: plainTafsir,
+        tafsirBookName: currentBookName,
+      });
+    } finally {
+      setExportingCard(false);
+    }
+  };
+
   const currentSizeConfig = FONT_SIZES[fontSizeIndex];
 
   return (
@@ -252,6 +280,18 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => void handleExportCard()}
+              disabled={exportingCard}
+              aria-label="حفظ بطاقة مصورة للآية"
+              title="حفظ بطاقة مصورة للآية"
+              className="min-h-10 min-w-10 px-2.5 py-1.5 rounded-[var(--wird-radius-control)] border bg-[var(--wird-surface)] border-[var(--wird-border-strong)] text-[var(--wird-text)] hover:border-[var(--wird-accent)] transition-all text-xs font-semibold flex items-center gap-1.5 disabled:opacity-40"
+            >
+              <Download className="w-4 h-4 text-[var(--wird-accent)]" />
+              <span className="hidden sm:inline">{exportingCard ? 'جارٍ التصميم...' : 'بطاقة'}</span>
+            </button>
+
             <button
               type="button"
               onClick={handleCopyTafsir}
@@ -527,6 +567,58 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         )}
 
         <RelatedHadithPanel ayah={ayah} />
+
+        {/* Mutashabihat Hifz Distinctions for this Ayah / Surah */}
+        {(mutashabihatMatches.exactMatches.length > 0 || mutashabihatMatches.surahMatches.length > 0) && (
+          <section
+            aria-label="ضبط المتشابهات اللفظية"
+            className="rounded-2xl border border-[var(--wird-border-gold)] bg-[var(--wird-surface-muted)] p-4 space-y-3 text-xs"
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-[var(--wird-border)] pb-2">
+              <div className="flex items-center gap-2 font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                <GitCompare className="w-4 h-4 text-[var(--wird-accent)]" />
+                <span>
+                  {mutashabihatMatches.exactMatches.length > 0
+                    ? 'متشابهات لفظية مباشرة لهذه الآية'
+                    : `من متشابهات سورة ${surah?.name || ayah.surahNumber} للحفاظ`}
+                </span>
+              </div>
+              <span className="text-[10px] text-[var(--wird-muted)]">ضوابط مساعدة للتثبيت</span>
+            </div>
+
+            <div className="space-y-3">
+              {(mutashabihatMatches.exactMatches.length > 0
+                ? mutashabihatMatches.exactMatches
+                : mutashabihatMatches.surahMatches.slice(0, 2)
+              ).map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl bg-[var(--wird-surface)] border border-[var(--wird-border)] p-3.5 space-y-2"
+                >
+                  <div className="font-bold text-[var(--wird-text)]">{item.title}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="p-2.5 rounded-lg bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1">
+                      <span className="text-[10px] font-bold text-[var(--wird-accent)] block">
+                        سورة {item.surah1.name} ({item.surah1.ayahNumber})
+                      </span>
+                      <p className="font-quran text-sm leading-loose text-[var(--wird-text)]">{item.surah1.text}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1">
+                      <span className="text-[10px] font-bold text-[var(--wird-accent)] block">
+                        سورة {item.surah2.name} ({item.surah2.ayahNumber})
+                      </span>
+                      <p className="font-quran text-sm leading-loose text-[var(--wird-text)]">{item.surah2.text}</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[var(--wird-muted)] leading-relaxed pt-1">
+                    <strong className="text-[var(--wird-text)]">قاعدة الضبط: </strong>
+                    {item.distinctionRule}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Footer */}
         <div className="pt-4 border-t border-[var(--wird-border)] flex flex-wrap items-center justify-between gap-3 text-[11px] text-[var(--wird-muted)]">

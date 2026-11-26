@@ -47,6 +47,7 @@ import {
   type PrayerTimingKey,
 } from '../../services/prayerTimesService';
 import { DailyVideoSuggestionCard } from '../series/DailyVideoSuggestionCard';
+import { getContextualSunnahSuggestions } from '../../services/sunnahWirdRemindersService';
 
 interface DashboardViewProps {
   profile: UserProfile;
@@ -104,6 +105,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setPrayerSchedule(buildOfflineFallbackSchedule(preset));
   };
   const nextPrayer = getNextPrayerSummary(prayerSchedule.timings);
+  const sunnahSuggestions = getContextualSunnahSuggestions();
 
   // Choose one truthful task from the active plan, due revisions, or next uncovered range.
   const todayStr = getLocalDateString();
@@ -325,6 +327,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Timely Sunnah & Daily Wird Gentle Reminders (Al-Kahf Friday, Al-Mulk Nightly, Morning/Evening Adhkar) */}
+      {sunnahSuggestions.length > 0 && (
+        <section
+          aria-label="تذكيرات السنن والأوراد اليومية"
+          className="grid grid-cols-1 md:grid-cols-2 gap-3.5"
+        >
+          {sunnahSuggestions.map((sug) => (
+            <div
+              key={sug.id}
+              className="wird-card rounded-2xl p-4 flex items-center justify-between gap-3 border border-[var(--wird-border-gold)]/45"
+            >
+              <div className="space-y-1 min-w-0">
+                <span className="inline-block px-2 py-0.5 rounded-md bg-[var(--wird-accent-soft)] text-[10px] font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                  {sug.badgeAr}
+                </span>
+                <h3 className="text-sm font-bold text-[var(--wird-text)] font-quran truncate">
+                  {sug.titleAr}
+                </h3>
+                <p className="text-[11px] text-[var(--wird-muted)] leading-relaxed">
+                  {sug.subtitleAr}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (sug.target.kind === 'surah') {
+                    onStartSession(sug.target.surahNumber, sug.target.startAyah, sug.target.endAyah, 'review');
+                  } else {
+                    onNavigate(sug.target.tab);
+                  }
+                }}
+                className="min-h-10 px-3.5 py-2 rounded-xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] text-xs font-bold shrink-0 whitespace-nowrap transition-colors"
+              >
+                {sug.actionLabelAr}
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* 1.5 Missed-Day Recovery Shortcut Alert (across all active non-paused plans) */}
       {activeEnginePlan && missedSummary?.hasMissedDays && onUpdateEnginePlans && (

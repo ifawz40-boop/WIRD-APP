@@ -49,6 +49,7 @@ import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { AudioPlaybackRateControl } from '../shared/AudioPlaybackRateControl';
 import { attachAyahRepeatHandler } from '../../services/audioRepeatController';
 import { SessionTafsirPanel } from './SessionTafsirPanel';
+import { SelfRecitationRecorderCard } from './SelfRecitationRecorderCard';
 import { PrintedMushafSpread, type PrintedMushafSpreadContext } from '../library/PrintedMushafSpread';
 import { stepSpreadPage } from '../../services/mushafSpreadService';
 import {
@@ -927,6 +928,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
   const isWordMasked = (index: number) => {
     if (maskLevel === 0) return false;
     if (revealedWordIndices.has(index)) return false;
+    if (maskLevel === 4) return index > 0; // first-word cue only
     if (maskLevel === 3) return true; // all hidden
     if (maskLevel === 2) return index % 2 === 0; // 50-60% hidden
     if (maskLevel === 1) return index % 3 === 0; // 33% hidden
@@ -1976,6 +1978,7 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
               >
                 {[
                   { level: 0, label: 'إظهار كامل' },
+                  { level: 4, label: 'أول كلمة' },
                   { level: 1, label: 'إخفاء 30%' },
                   { level: 2, label: 'إخفاء 60%' },
                   { level: 3, label: 'إخفاء تام' },
@@ -2051,6 +2054,21 @@ export const MemorizationSessionView: React.FC<MemorizationSessionViewProps> = (
             </div>
           </div>
         </div>
+
+        {/* Muhaffidh Self-Recitation Voice Recorder & Comparison Studio */}
+        {!isMaskingDisabled && (
+          <SelfRecitationRecorderCard
+            ayahKey={`${surahNumber}:${currentAyah.numberInSurah}`}
+            surahName={surahMeta.name}
+            ayahNumber={currentAyah.numberInSurah}
+            onAutoHideForRecitation={() => {
+              if (maskLevel === 0) handleMaskLevelChange(4);
+            }}
+            onRevealAfterRecitation={() => handleMaskLevelChange(0)}
+            onPlayQari={() => void handleToggleAudio()}
+            onMarkWeak={onAddVerseToRevision ? () => void handleCaptureWeakVerse() : undefined}
+          />
+        )}
 
         {/* Study Method Strip & Instant Weak-Verse Capture */}
         <div className="wird-card rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3 text-xs">

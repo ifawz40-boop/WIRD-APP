@@ -326,7 +326,7 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
 
           <div className="flex items-center gap-2 shrink-0 text-xs font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
             <span>
-              {advisorStatus?.available ? 'متصل — Gemini 2.5 Flash' : 'يعمل محلياً دون اتصال'}
+              {advisorStatus?.available ? 'متصل — Gemini 4 Hydrogen' : 'يعمل محلياً دون اتصال'}
             </span>
           </div>
         </div>
@@ -488,7 +488,7 @@ export const QuranAdvisorView: React.FC<QuranAdvisorViewProps> = ({
                           <span>
                             {msg.isFallback
                               ? 'تم التحليل عبر المحرك المنهجي المحلي'
-                              : 'تحليل سياقي عبر Gemini 2.5 Flash'}
+                              : 'تحليل سياقي عبر Gemini 4 Hydrogen'}
                           </span>
                           <button
                             type="button"

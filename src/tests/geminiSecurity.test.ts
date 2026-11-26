@@ -54,11 +54,12 @@ export function runGeminiSecurityTests(): { passed: number; failed: number } {
     assert(!foundKey, 'No Gemini API key reference may exist in client src directory');
   });
 
-  // 2. Strict Free Tier Model identifier
-  test('Serverless handler uses gemini-2.5-flash Free Tier model', () => {
+  // 2. Strict Current-Generation Model identifier (no deprecated gemini-2.5-* / gemini-1.5-*)
+  test('Serverless handler uses gemini-4-hydrogen with gemini-3.5-flash-lite fallback', () => {
     const apiAdvisorContent = fs.readFileSync(path.resolve('./api/advisor.ts'), 'utf8');
-    assert(apiAdvisorContent.includes("'gemini-2.5-flash'"), 'Must specify gemini-2.5-flash model identifier');
-    assert(!apiAdvisorContent.includes('gemini-1.5-pro'), 'Must not reference paid pro models');
+    assert(apiAdvisorContent.includes("'gemini-4-hydrogen'"), 'Must specify gemini-4-hydrogen primary model identifier');
+    assert(apiAdvisorContent.includes("'gemini-3.5-flash-lite'"), 'Must specify gemini-3.5-flash-lite fallback model identifier');
+    assert(!apiAdvisorContent.includes('gemini-2.5-flash') && !apiAdvisorContent.includes('gemini-1.5-pro'), 'Must not reference deprecated models');
   });
 
   // 3. Fallback operates with 0 dependencies
