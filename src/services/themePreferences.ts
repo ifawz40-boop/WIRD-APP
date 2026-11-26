@@ -6,6 +6,8 @@ export type WirdThemePresetId = WirdDesignId;
 
 export type WirdLayoutDensity = 'comfortable' | 'compact';
 export type WirdCornerStyle = 'refined' | 'soft';
+export type WirdPaperTone = 'default' | 'madinah-cream' | 'sepia-warm';
+export type WirdQuranFontFamily = 'amiri-quran' | 'scheherazade';
 
 export interface WirdThemePreferences {
   schemaVersion: 3;
@@ -14,6 +16,10 @@ export interface WirdThemePreferences {
   preset: WirdDesignId;
   density: WirdLayoutDensity;
   corners: WirdCornerStyle;
+  /** Reading paper tone inspired by Ayah & Apple Books (Madinah Cream / Warm Sepia). */
+  paperTone?: WirdPaperTone;
+  /** Selectable self-hosted Quranic typeface family. */
+  quranFont?: WirdQuranFontFamily;
 }
 
 export interface WirdVariantPalette {
@@ -55,6 +61,8 @@ export const DEFAULT_THEME_PREFERENCES: WirdThemePreferences = {
   preset: 'design-a',
   density: 'comfortable',
   corners: 'refined',
+  paperTone: 'default',
+  quranFont: 'amiri-quran',
 };
 
 export const WIRD_DESIGNS: readonly WirdDesignMeta[] = [
@@ -192,6 +200,12 @@ export function normalizeThemePreferences(
     raw.density === 'compact' ? 'compact' : 'comfortable';
   const corners: WirdCornerStyle =
     raw.corners === 'soft' ? 'soft' : 'refined';
+  const paperTone: WirdPaperTone =
+    raw.paperTone === 'madinah-cream' || raw.paperTone === 'sepia-warm'
+      ? raw.paperTone
+      : 'default';
+  const quranFont: WirdQuranFontFamily =
+    raw.quranFont === 'scheherazade' ? 'scheherazade' : 'amiri-quran';
 
   return {
     schemaVersion: 3,
@@ -199,6 +213,8 @@ export function normalizeThemePreferences(
     preset: resolvedDesign,
     density,
     corners,
+    paperTone,
+    quranFont,
   };
 }
 
@@ -274,6 +290,8 @@ export function resetThemePreferences(): WirdThemePreferences {
     preset: DEFAULT_THEME_PREFERENCES.preset,
     density: DEFAULT_THEME_PREFERENCES.density,
     corners: DEFAULT_THEME_PREFERENCES.corners,
+    paperTone: DEFAULT_THEME_PREFERENCES.paperTone,
+    quranFont: DEFAULT_THEME_PREFERENCES.quranFont,
   });
 }
 
@@ -298,6 +316,8 @@ export function applyThemePreferencesToDocument(
   root.setAttribute('data-wird-mode', mode);
   root.setAttribute('data-wird-density', prefs.density);
   root.setAttribute('data-wird-corners', prefs.corners);
+  root.setAttribute('data-wird-paper', prefs.paperTone || 'default');
+  root.setAttribute('data-wird-quran-font', prefs.quranFont || 'amiri-quran');
 
   if (mode === 'dark') {
     root.classList.add('dark');

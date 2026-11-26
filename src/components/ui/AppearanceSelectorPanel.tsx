@@ -14,6 +14,8 @@ import {
   type WirdCornerStyle,
   type WirdDesignId,
   type WirdLayoutDensity,
+  type WirdPaperTone,
+  type WirdQuranFontFamily,
   type WirdThemePreferences,
   type WirdVariantPalette,
 } from '../../services/themePreferences';
@@ -544,6 +546,124 @@ export const AppearanceSelectorPanel: React.FC<AppearanceSelectorPanelProps> = (
                   <div className="text-[11px] text-[var(--wird-muted)] mt-0.5">
                     {option.hint}
                   </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+
+      {/* Reading Paper Surface & Self-Hosted Quranic Font Selector */}
+      <div
+        className={
+          isSettingsLayout
+            ? 'grid grid-cols-1 md:grid-cols-2 gap-4 pt-1'
+            : 'space-y-4'
+        }
+      >
+        <section className="space-y-2" aria-label="خامة ورق القراءة والمصحف">
+          <h3 className="text-xs font-bold text-[var(--wird-text)]">
+            خامة ورق القراءة (الوضع النهاري)
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                {
+                  id: 'default',
+                  label: 'القياسي',
+                  swatch: '#FAF6EE',
+                },
+                {
+                  id: 'madinah-cream',
+                  label: 'ورق المدينة',
+                  swatch: '#FDF6E2',
+                },
+                {
+                  id: 'sepia-warm',
+                  label: 'سيبيا دافئ',
+                  swatch: '#F5EAD2',
+                },
+              ] as const
+            ).map((option) => {
+              const active = (preferences.paperTone || 'default') === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() =>
+                    onUpdatePreferences({
+                      paperTone: option.id as WirdPaperTone,
+                    })
+                  }
+                  className={`p-2.5 rounded-[var(--wird-radius-control)] border text-right transition-colors wird-focus-ring flex items-center gap-2 ${
+                    active
+                      ? 'border-[var(--wird-accent)] bg-[var(--wird-surface-muted)]'
+                      : 'border-[var(--wird-border)] bg-[var(--wird-surface)] hover:border-[var(--wird-border-strong)]'
+                  }`}
+                >
+                  <span
+                    className="w-4 h-4 rounded-full border border-black/20 shrink-0"
+                    style={{ backgroundColor: option.swatch }}
+                    aria-hidden="true"
+                  />
+                  <span className="text-xs font-bold text-[var(--wird-text)] truncate">
+                    {option.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="space-y-2" aria-label="نوع الخط القرآني المدمج">
+          <h3 className="text-xs font-bold text-[var(--wird-text)]">
+            خط الآيات القرآنية (محلي أوفلاين)
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                {
+                  id: 'amiri-quran',
+                  label: 'أميري قرآني',
+                  sample: 'بِسْمِ اللَّهِ',
+                  fontFamily: "'Amiri Quran', serif",
+                },
+                {
+                  id: 'scheherazade',
+                  label: 'شهرزاد الفسيح',
+                  sample: 'بِسْمِ اللَّهِ',
+                  fontFamily: "'Scheherazade New', serif",
+                },
+              ] as const
+            ).map((option) => {
+              const active =
+                (preferences.quranFont || 'amiri-quran') === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() =>
+                    onUpdatePreferences({
+                      quranFont: option.id as WirdQuranFontFamily,
+                    })
+                  }
+                  className={`p-2.5 rounded-[var(--wird-radius-control)] border text-right transition-colors wird-focus-ring flex items-center justify-between gap-2 ${
+                    active
+                      ? 'border-[var(--wird-accent)] bg-[var(--wird-surface-muted)]'
+                      : 'border-[var(--wird-border)] bg-[var(--wird-surface)] hover:border-[var(--wird-border-strong)]'
+                  }`}
+                >
+                  <span className="text-xs font-bold text-[var(--wird-text)]">
+                    {option.label}
+                  </span>
+                  <span
+                    className="text-sm text-[var(--wird-primary)] dark:text-[var(--wird-accent)]"
+                    style={{ fontFamily: option.fontFamily }}
+                  >
+                    {option.sample}
+                  </span>
                 </button>
               );
             })}

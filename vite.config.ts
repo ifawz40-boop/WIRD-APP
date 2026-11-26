@@ -14,19 +14,21 @@ function collectStaticPublicOfflineAssets(publicDir: string): string[] {
     '/apple-touch-icon.png'
   ];
   const seerahRoot = path.join(publicDir, 'data', 'seerah');
-  const walk = (dir: string, urlPrefix: string) => {
+  const fontsRoot = path.join(publicDir, 'fonts');
+  const walk = (dir: string, urlPrefix: string, pattern: RegExp) => {
     if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
       const nextUrl = `${urlPrefix}/${entry.name}`;
       if (entry.isDirectory()) {
-        walk(fullPath, nextUrl);
-      } else if (entry.isFile() && /\.json$/i.test(entry.name)) {
+        walk(fullPath, nextUrl, pattern);
+      } else if (entry.isFile() && pattern.test(entry.name)) {
         collected.push(nextUrl);
       }
     }
   };
-  walk(seerahRoot, '/data/seerah');
+  walk(seerahRoot, '/data/seerah', /\.json$/i);
+  walk(fontsRoot, '/fonts', /\.(?:woff2?|ttf|otf)$/i);
   return collected;
 }
 

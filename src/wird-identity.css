@@ -175,7 +175,7 @@
   --wird-radius-control: 0.7rem;
 }
 
-/* Density & Corner Modifiers */
+/* Density, Corner & Reading Paper Tone Modifiers */
 :root[data-wird-density='compact'] {
   --wird-card-pad: 0.92rem;
   --wird-section-gap: 0.95rem;
@@ -184,6 +184,26 @@
 :root[data-wird-corners='soft'] {
   --wird-radius-card: 1.5rem;
   --wird-radius-control: 1rem;
+}
+
+:root:not(.dark)[data-wird-paper='madinah-cream'] {
+  --wird-bg: #f8f1df;
+  --wird-surface: #fdf9ee;
+  --wird-surface-muted: #efe6cf;
+  --wird-surface-elevated: #fffdf5;
+  --wird-sidebar-bg: #f4ebd5;
+  --wird-mushaf-paper: #fdf6e2;
+}
+
+:root:not(.dark)[data-wird-paper='sepia-warm'] {
+  --wird-bg: #f1e6d0;
+  --wird-surface: #f8eed9;
+  --wird-surface-muted: #e7d9be;
+  --wird-surface-elevated: #fbf3e2;
+  --wird-sidebar-bg: #ecdec4;
+  --wird-mushaf-paper: #f5ead2;
+  --wird-text: #221c12;
+  --wird-muted: #5f533e;
 }
 
 html,

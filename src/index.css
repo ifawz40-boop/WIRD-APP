@@ -1,20 +1,30 @@
+@import "./fonts.css";
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
  * Quran text uses Unicode-compliant classical Quranic typefaces (Amiri Quran & Scheherazade New)
- * engineered for full Tanzil Uthmani & Simple diacritics and waqf marks (U+06D6..U+06ED)
+ * self-hosted locally in /public/fonts/*.woff2 for 100% offline reliability and engineered for
+ * full Tanzil Uthmani & Simple diacritics and waqf marks (U+06D6..U+06ED)
  * with zero defective combining-circle artifacts.
  * Do not normalize, strip, replace, or rewrite Quranic characters/diacritics.
  */
 @layer base {
+  :root {
+    --wird-font-quran: 'Amiri Quran', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+  }
+
+  :root[data-wird-quran-font='scheherazade'] {
+    --wird-font-quran: 'Scheherazade New', 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
+  }
+
   * {
     font-family: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif;
   }
 
   .font-quran {
-    font-family: 'Amiri Quran', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+    font-family: var(--wird-font-quran);
     font-style: normal;
     font-weight: 400;
     direction: rtl;
