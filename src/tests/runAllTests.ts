@@ -72,6 +72,7 @@ import { runPrayerTimesServiceTests } from '../services/prayerTimesService.test'
 import { runTombstoneReconciliationServiceTests } from '../services/tombstoneReconciliationService.test';
 import { runDesignSystemV2Tests } from './designSystemV2.test';
 import { runVideoSeriesSystemTests } from './videoSeriesSystem.test';
+import { runWirdNextPlatformUpgradeTests } from './wirdNextPlatformUpgrade.test';
 
 export interface SuiteResult {
   passed: number;
@@ -191,6 +192,7 @@ async function main() {
     { name: 'Multi-Device Tombstone Anti-Resurrection, Restore & Weak-Verse Delta Convergence', runner: runTombstoneReconciliationServiceTests },
     { name: 'WIRD Design System V2 Multi-Theme Presets, Token Cascade & Application Shell', runner: runDesignSystemV2Tests },
     { name: 'Extensible Video Series Catalog, Daily Suggestion & UID-Scoped Watch Tracking', runner: runVideoSeriesSystemTests },
+    { name: 'WIRD Next Platform Upgrade (WOFF2 Fonts, Paper Mushaf, Reciters, Cloud Sync V3, Seerah Narrator & Hifz Studio)', runner: runWirdNextPlatformUpgradeTests },
   ];
 
   const { passed, failed } = await executeSuiteAggregation(suites);

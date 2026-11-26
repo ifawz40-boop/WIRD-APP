@@ -282,18 +282,6 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
-              onClick={() => void handleExportCard()}
-              disabled={exportingCard}
-              aria-label="حفظ بطاقة مصورة للآية"
-              title="حفظ بطاقة مصورة للآية"
-              className="min-h-10 min-w-10 px-2.5 py-1.5 rounded-[var(--wird-radius-control)] border bg-[var(--wird-surface)] border-[var(--wird-border-strong)] text-[var(--wird-text)] hover:border-[var(--wird-accent)] transition-all text-xs font-semibold flex items-center gap-1.5 disabled:opacity-40"
-            >
-              <Download className="w-4 h-4 text-[var(--wird-accent)]" />
-              <span className="hidden sm:inline">{exportingCard ? 'جارٍ التصميم...' : 'بطاقة'}</span>
-            </button>
-
-            <button
-              type="button"
               onClick={handleCopyTafsir}
               disabled={isLoading || !rawText}
               aria-label="نسخ الآية والتفسير"
@@ -496,9 +484,21 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         <div className="rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] p-4 md:p-5 relative overflow-hidden">
           <div className="flex items-center justify-between gap-2 mb-2.5 text-xs text-[var(--wird-accent)] font-semibold border-b border-[var(--wird-border)] pb-2">
             <span>نص الآية الكريمة</span>
-            <span className="font-sans-ui text-[11px] font-bold">
-              سورة {surah?.name || ayah.surahNumber} · الآية {ayah.numberInSurah}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-sans-ui text-[11px] font-bold">
+                سورة {surah?.name || ayah.surahNumber} · الآية {ayah.numberInSurah}
+              </span>
+              <button
+                type="button"
+                onClick={() => void handleExportCard()}
+                disabled={exportingCard}
+                aria-label="حفظ بطاقة مصورة للآية"
+                className="min-h-8 px-2.5 py-1 rounded-lg border bg-[var(--wird-surface)] border-[var(--wird-border)] hover:border-[var(--wird-accent)] text-[11px] font-bold text-[var(--wird-text)] inline-flex items-center gap-1 disabled:opacity-40"
+              >
+                <Download className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+                <span>{exportingCard ? 'جارٍ التصميم...' : 'بطاقة مشاركة'}</span>
+              </button>
+            </div>
           </div>
 
           <p className="font-quran text-xl md:text-2xl leading-[2.3] text-right text-[var(--wird-text)]">

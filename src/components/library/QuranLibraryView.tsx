@@ -772,7 +772,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
               className="min-h-12 inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--wird-radius-control)] wird-btn-accent text-xs md:text-sm font-bold"
             >
               <BookOpen className="w-4 h-4" />
-              <span>فتح المصحف المطبوع (604)</span>
+              <span>فتح المصحف بالصفحات (604)</span>
             </button>
           </div>
         </div>

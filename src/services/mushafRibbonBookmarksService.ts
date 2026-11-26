@@ -48,8 +48,7 @@ export const DEFAULT_MUSHAF_RIBBONS: readonly MushafRibbonBookmark[] = [
 export function readMushafRibbons(): MushafRibbonBookmark[] {
   const defaults = DEFAULT_MUSHAF_RIBBONS.map((r) => ({ ...r }));
   try {
-    if (typeof localStorage === 'undefined') return defaults;
-    const raw = localStorage.getItem(StorageService.resolveScopedKey(MUSHAF_RIBBONS_STORAGE_KEY));
+    const raw = StorageService.getRawItem(MUSHAF_RIBBONS_STORAGE_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return defaults;
@@ -87,13 +86,8 @@ export function readMushafRibbons(): MushafRibbonBookmark[] {
 
 export function saveMushafRibbons(ribbons: MushafRibbonBookmark[]): MushafRibbonBookmark[] {
   try {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        StorageService.resolveScopedKey(MUSHAF_RIBBONS_STORAGE_KEY),
-        JSON.stringify(ribbons)
-      );
-      scheduleAuxiliaryCloudSync();
-    }
+    StorageService.setRawItem(MUSHAF_RIBBONS_STORAGE_KEY, JSON.stringify(ribbons));
+    scheduleAuxiliaryCloudSync();
   } catch {
     // Graceful degradation when storage is restricted.
   }

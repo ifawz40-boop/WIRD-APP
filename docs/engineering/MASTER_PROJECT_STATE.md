@@ -1,7 +1,29 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-26 (Master App Overhaul on `feat/master-app-overhaul-20261126` from `main` @ `9d97c725` — Typography & Circle-Glyph Elimination, New Minimalist Geometric SVG Logo & PWA Icons, Written + Audio Ruqyah Rebuild with MediaSession & Offline Downloads, Gemini 2.5 Flash AI Assistant Upgrade, Runtime Prefetch/Memory Coordinator & 100% Full-Offline 311-Asset Package)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (base `9d97c725`) · **Active branch:** `feat/master-app-overhaul-20261126`
+**Current snapshot reconciled:** 2026-11-26 (WIRD Next Complete Platform Upgrade on `feat/wird-next-complete-platform-20261126` from `main` @ `24c05953` — Self-Hosted 18-File WOFF2 Typography & Paper Tones, Realistic 3D RTL Paper-Flip Mushaf + 4 Silk Ribbons + 604p Offline Pack, Unified 8-Reciter 6-Worker Offline Audio Manager + Inline Surah Badges, Cloud Sync V3 Full-Domain Convergent Merge, Realistic Seerah Audio Narrator (`gemini-3.8-flash-tts` + Qari Interleaving), Muhaffidh Self-Recitation Studio, Mutashabihat + Share Cards, and `gemini-4-hydrogen` Advisor)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (base `24c05953`) · **Active branch:** `feat/wird-next-complete-platform-20261126`
+
+- **Verified Feature Branch State (2026-11-26 — Local Feature Branch, Ready for Owner Review/Deploy):**
+  - **Step 1 — Self-Hosted WOFF2 Typography & Paper Tones (`c7858261`):** Bundled `18` SIL OFL-1.1 `.woff2` font files (`742 KB` in `public/fonts/`: `Amiri Quran`, `Scheherazade New`, `Amiri`, `IBM Plex Sans Arabic`), added `src/fonts.css`, and added selectable `paperTone` (`default` | `madinah-cream` | `sepia-warm`) and `quranFont` (`amiri-quran` | `scheherazade`) in `AppearanceSelectorPanel.tsx`.
+  - **Step 2 — Realistic 3D RTL Paper-Flip Mushaf & 604p Offline Pack (`10da3d0e`):** Built `MushafPaperFlipStage.tsx` (interactive RTL pointer/touch drag-to-curl physics, center spine crease, proportional paper fore-edges), `mushafRibbonBookmarksService.ts` (4 UID-scoped colored silk ribbons: `khatma`, `hifz`, `murajaah`, `tadabbur`), 20-page RAM LRU + adjacent preloader + 6-worker full-604p offline downloader in `mushafFacsimileService.ts` (`wird-app-mushaf-pinned-v1`), Zen reading mode, and live recitation glow on printed SVG hit areas.
+  - **Step 3 — Unified 8-Reciter Offline Audio Download Manager (`c3bfbca2`):** Unified 8 reciters (`alafasy`, `husary`, `minshawi`, `abdulbasit`, `sudais`, `shuraim`, `ajamy`, `ghamdi`), upgraded `offlineQuranAudioLibrary.ts` to 6-worker parallel downloads with auto-retry and boot/reconnect orphaned-job recovery, and added `InlineAudioOfflineBadgeButton.tsx` across Surah cards and Mushaf audio bar.
+  - **Step 4 — Seamless Full-Domain Cloud Sync V3 (`a9560315`):** Added `auxiliaryDomainsSchema.ts` & `auxiliaryCloudSyncService.ts` syncing all 8 auxiliary domains (`readingKhatmas`, `pageBookmarks`, `ribbons`, `lastPage`, `lastReadingPosition`, `adhkarProgress`, `seerahV2`, `videoSeries`) inside `syncMeta/auxiliaryDomainsV1` with deterministic CRDT union/max-timestamp convergence (`0` changes to `firestore.rules`).
+  - **Step 5 — Realistic Seerah Audio Narrator (`d5c2c650`):** Added `/api/seerah-tts` (`gemini-3.8-flash-tts` -> `gemini-3.8-flash-lite-tts`), `seerahAudioNarratorService.ts` (`wird-app-seerah-audio-v1` offline cache + device Arabic Neural fallback + **automatic authentic Qari recitation interleaving on every `quran` block**), and `SeerahAudioPlayerBar.tsx` with synchronized paragraph highlighting, `0.75x–2x` speed, sleep timer, and MediaSession controls.
+  - **Step 6 — Muhaffidh Self-Recitation Studio, Mutashabihat/Share Cards & Gemini 4 Advisor (`55ce59f2`):** Added local-only `SelfRecitationRecorderCard.tsx` + first-word hint mode (`أول كلمة`) in `MemorizationSessionView.tsx`, expanded `mutashabihatData.ts` + `ayahShareCardRenderer.ts` inside `TafsirContentPane.tsx`, added `sunnahWirdRemindersService.ts` in `DashboardView.tsx`, and upgraded `api/advisor.ts` & `server.ts` to `gemini-4-hydrogen` (`gemini-3.5-flash-lite` fallback).
+  - **Local Verification Executed (2026-11-26):**
+    - `npm.cmd run lint` (`tsc --noEmit` + Tanzil validation): **PASS** (`0` errors)
+    - `node scripts/verify_seerah_content.mjs`: **PASS** (`6` eras, `12` sections, `40` chapters, `32` characters, `52` Quran + `43` Hadith verbatim quotes)
+    - `npm.cmd run smoke:api-imports`: **PASS** (incl. `api/seerah-tts.ts`)
+    - `npm.cmd test` (75 suites incl. `wirdNextPlatformUpgrade.test.ts`): **PASS** (`833 PASSED | 0 FAILED`)
+    - `NODE_ENV=production vite build`: **PASS** (`allAssets: 327`, `fonts: 18`, `seerahInAll: 43`, `0` chunks > 500 kB)
+    - `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+    - Protected files diff (`MASTER_DIRECTIVE.md`, Quran corpus, `firestore.rules`, `bun.lock`): **PASS** (`0` bytes diff)
+    - Production UI/service `src/` emoji scan: **PASS** (`0` hits)
+    - Playwright E2E (`app-shell`, `dashboard-ux`, `mushaf-facsimile`, `ruqyah-ux`, `ruqyah-audio`, `advisor-ux`, `seerah-book`, `settings-ux` on Edge Chromium Desktop & Mobile): **PASS** (`56 passed | 0 failed`)
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Workspace Snapshot — 2026-11-26 (Earlier Master App Overhaul — Merged into `main` @ `24c05953`)
 
 - **Verified Feature Branch State (2026-11-26 — Owner-Authorized for `main` Push & Vercel Deployment):**
   - **Phase 1 — Typography & Circle-Glyph Elimination (`37af33d0`):** Replaced QPC-encoded `UthmanicHafs1Ver18` primary font with `Amiri Quran` / `Scheherazade New` for Quranic text and `Amiri` / `IBM Plex Sans Arabic` for editorial & UI copy; passed canonical `(surahNumber, ayahNumber)` coordinates to `QuranText`; replaced `' ۞ '` separators with `﴿رقم﴾`; `0` bytes changed in canonical Quran corpus.

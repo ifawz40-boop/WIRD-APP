@@ -167,7 +167,7 @@ export const MushafPaperFlipStage: React.FC<MushafPaperFlipStageProps> = ({
         transition: 'none',
         cursor: 'grabbing',
       }
-    : undefined || {};
+    : {};
 
   return (
     <div
