@@ -3,25 +3,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Quran text uses the King Fahd Complex Unicode Uthmanic Hafs font.
- * The text data remains Unicode from the verified Tanzil quran-uthmani dataset.
+ * Quran text uses Unicode-compliant classical Quranic typefaces (Amiri Quran & Scheherazade New)
+ * engineered for full Tanzil Uthmani & Simple diacritics and waqf marks (U+06D6..U+06ED)
+ * with zero defective combining-circle artifacts.
  * Do not normalize, strip, replace, or rewrite Quranic characters/diacritics.
  */
-@font-face {
-  font-family: 'UthmanicHafs';
-  src: url('https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
 @layer base {
   * {
-    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif;
   }
 
   .font-quran {
-    font-family: 'UthmanicHafs', 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
+    font-family: 'Amiri Quran', 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
     font-style: normal;
     font-weight: 400;
     direction: rtl;
@@ -36,8 +29,14 @@
     text-rendering: optimizeLegibility;
   }
 
+  .font-editorial-ar {
+    font-family: 'Amiri', 'Scheherazade New', Georgia, serif;
+    direction: rtl;
+    text-rendering: optimizeLegibility;
+  }
+
   .font-sans-ui {
-    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif;
   }
 }
 

@@ -106,7 +106,7 @@ export async function runRuqyahContentServiceTests(): Promise<{ passed: number; 
       assert(ayahs[ayahs.length - 1].number === expectedGlobalStart + range.end - range.start, item.id + ' ends at the wrong global Quran ayah');
       assert(ayahs.every((ayah, index) => ayah.numberInSurah === range.start + index), item.id + ' is not sequential');
       const display = await getRuqyahDisplayText(item);
-      assert(display === ayahs.map(ayah => ayah.text).join(' ۞ '), item.id + ' is not rendered from canonical Quran data');
+      assert(display === ayahs.map(ayah => `${ayah.text} ﴿${ayah.numberInSurah}﴾`).join(' '), item.id + ' is not rendered from canonical Quran data');
     }
   });
 

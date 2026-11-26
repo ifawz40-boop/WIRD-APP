@@ -10,7 +10,6 @@ import {
   FileText,
   Loader2,
   MapPin,
-  Sparkles,
   Type,
   Users
 } from 'lucide-react';
@@ -238,7 +237,7 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)] leading-snug">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-text)] leading-snug">
             {chapter.title}
           </h1>
 
@@ -264,7 +263,7 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
         {/* Opening Narrative Hook & Context */}
         <div className="max-w-3xl mx-auto space-y-5">
           <p
-            className={`font-quran font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] ${FONT_SIZE_STYLES[fontSize]}`}
+            className={`font-editorial-ar font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] ${FONT_SIZE_STYLES[fontSize]}`}
           >
             {chapter.openingHook}
           </p>
@@ -286,14 +285,14 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
               className="space-y-6 scroll-mt-24"
             >
               {sIdx > 0 && (
-                <div className="flex items-center justify-center gap-3 py-2 text-[var(--wird-accent)]/60" aria-hidden="true">
-                  <span className="h-px w-14 bg-[var(--wird-border)]" />
-                  <Sparkles className="w-4 h-4" />
-                  <span className="h-px w-14 bg-[var(--wird-border)]" />
+                <div className="flex items-center justify-center gap-3 py-2" aria-hidden="true">
+                  <span className="h-px w-16 bg-[var(--wird-border)]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--wird-accent)]/60" />
+                  <span className="h-px w-16 bg-[var(--wird-border)]" />
                 </div>
               )}
 
-              <h2 className="text-xl sm:text-2xl font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)] leading-snug">
+              <h2 className="text-xl sm:text-2xl font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-accent)] leading-snug">
                 {scene.title}
               </h2>
 
@@ -303,13 +302,15 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
                     return (
                       <div key={block.id} className="space-y-2.5 my-6">
                         {block.leadIn && (
-                          <p className={`font-quran text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
+                          <p className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
                             {block.leadIn}
                           </p>
                         )}
                         <figure className="p-6 sm:p-7 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-3">
                           <blockquote
-                            className={`font-quran text-center text-[var(--wird-primary)] dark:text-[var(--wird-text)] font-bold ${FONT_SIZE_STYLES[fontSize]}`}
+                            lang="ar"
+                            dir="rtl"
+                            className={`quran-text font-quran text-center text-[var(--wird-primary)] dark:text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
                           >
                             ﴿ {block.verbatimText} ﴾
                           </blockquote>
@@ -325,12 +326,12 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
                     return (
                       <div key={block.id} className="space-y-2.5 my-6">
                         {block.leadIn && (
-                          <p className={`font-quran text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
+                          <p className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
                             {block.leadIn}
                           </p>
                         )}
                         <figure className="p-5 sm:p-6 rounded-2xl bg-[var(--wird-surface-muted)] border-r-4 border-[var(--wird-border-gold)] space-y-2.5">
-                          <blockquote className={`font-quran text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
+                          <blockquote className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
                             «{block.verbatimText}»
                           </blockquote>
                           <figcaption className="text-xs font-semibold text-[var(--wird-muted)]">
@@ -359,7 +360,7 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
                   return (
                     <p
                       key={block.id}
-                      className={`font-quran text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
+                      className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
                     >
                       {block.text}
                     </p>
@@ -376,7 +377,7 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
             <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
               تمهيد لما بعده في مسيرة السيرة:
             </span>
-            <p className={`font-quran text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
+            <p className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
               {chapter.closingBridge}
             </p>
           </div>

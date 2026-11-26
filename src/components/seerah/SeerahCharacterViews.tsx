@@ -273,7 +273,7 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
           <span className="inline-block px-3 py-1 rounded-full bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-semibold text-[var(--wird-muted)]">
             {character.category}
           </span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black font-quran text-[var(--wird-primary)] dark:text-[var(--wird-text)] leading-snug">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-text)] leading-snug">
             {character.name}
           </h1>
           <p className="text-sm sm:text-base font-bold text-[var(--wird-accent)]">
@@ -292,7 +292,7 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
         {/* Introduction & Context Cards */}
         <div className="max-w-3xl mx-auto space-y-5">
           <p
-            className={`font-quran font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] ${FONT_SIZE_STYLES[fontSize]}`}
+            className={`font-editorial-ar font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] ${FONT_SIZE_STYLES[fontSize]}`}
           >
             {character.introduction}
           </p>
@@ -319,14 +319,14 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
 
         {/* Continuous Independent Character Narrative */}
         <section className="max-w-3xl mx-auto space-y-5">
-          <h2 className="text-xl sm:text-2xl font-bold font-quran text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+          <h2 className="text-xl sm:text-2xl font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
             الحكاية التاريخية الكاملة
           </h2>
           <div className="space-y-6">
             {character.narrativeStoryParagraphs.map((para, idx) => (
               <p
                 key={idx}
-                className={`font-quran text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
+                className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
               >
                 {para}
               </p>

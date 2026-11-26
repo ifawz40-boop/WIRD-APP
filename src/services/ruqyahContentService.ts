@@ -82,7 +82,7 @@ export async function getRuqyahAyahs(item: RuqyahItem): Promise<Ayah[]> {
 /** Non-Quran material remains synchronous; Quran text always resolves from verified local Surah chunks. */
 export function getRuqyahDisplayText(item: RuqyahItem): string | Promise<string> {
   if (item.type !== 'quran') return item.text;
-  return getRuqyahAyahs(item).then(ayahs => ayahs.map(ayah => ayah.text).join(' ۞ '));
+  return getRuqyahAyahs(item).then(ayahs => ayahs.map(ayah => `${ayah.text} ﴿${ayah.numberInSurah}﴾`).join(' '));
 }
 
 export async function getRuqyahAudioQueue(item: RuqyahItem): Promise<RuqyahAudioAyah[]> {

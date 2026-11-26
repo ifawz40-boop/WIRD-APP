@@ -26,7 +26,15 @@ export function QuranText({
     setDisplayText('');
     loadSimpleAyahRange(surahNumber as number, ayahNumber as number, endAyahNumber ?? ayahNumber)
       .then(verses => {
-        if (active) setDisplayText(verses.length ? verses.join(' ۞ ') : 'تعذر تحميل النص الإملائي المعتمد لهذه الآية.');
+        if (!active) return;
+        if (verses.length === 0) {
+          setDisplayText('تعذر تحميل النص الإملائي المعتمد لهذه الآية.');
+          return;
+        }
+        const formatted = verses.length === 1
+          ? verses[0]
+          : verses.map((verse, idx) => `${verse} ﴿${(ayahNumber as number) + idx}﴾`).join(' ');
+        setDisplayText(formatted);
       })
       .catch(error => {
         if (active) {

@@ -199,12 +199,12 @@ export const AdhkarCard: React.FC<AdhkarCardProps> = ({
               {resolvedAyahs && resolvedAyahs.length > 0 ? (
                 resolvedAyahs.map(ayah => (
                   <React.Fragment key={ayah.number}>
-                    <QuranText>{ayah.text}</QuranText>
+                    <QuranText surahNumber={ayah.surahNumber} ayahNumber={ayah.numberInSurah}>{ayah.text}</QuranText>
                     <span className="ayah-number">{ayah.numberInSurah}</span>
                   </React.Fragment>
                 ))
               ) : (
-                <QuranText>{item.text}</QuranText>
+                <QuranText surahNumber={item.surahNumber} ayahNumber={item.startAyah} endAyahNumber={item.endAyah}>{item.text}</QuranText>
               )}
             </p>
           ) : (

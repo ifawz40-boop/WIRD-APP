@@ -464,7 +464,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
   const handleCopyDhikr = (item: AdhkarItem) => {
     const resolvedAyahs = verifiedQuranAyahsById[item.id];
     const bodyText = resolvedAyahs && resolvedAyahs.length > 0
-      ? resolvedAyahs.map(a => a.text).join(' ۝ ')
+      ? resolvedAyahs.map(a => `${a.text} ﴿${a.numberInSurah}﴾`).join(' ')
       : item.text;
     const formatted = `${item.title}\n${bodyText}\n— المصدر: ${item.source} (${item.grade})`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {

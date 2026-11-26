@@ -761,7 +761,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const handleCopyItem = (item: RuqyahItem) => {
     const resolvedAyahs = quranAyahsByItem[item.id];
     const bodyText = item.type === 'quran' && resolvedAyahs && resolvedAyahs.length > 0
-      ? resolvedAyahs.map(a => a.text).join(' ۞ ')
+      ? resolvedAyahs.map(a => `${a.text} ﴿${a.numberInSurah}﴾`).join(' ')
       : item.text;
     const formatted = `${item.title}\n${bodyText}${item.source ? `\n— المصدر: ${item.source}` : ''}`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -1670,12 +1670,12 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                                   </button>
                                 </span>
                                 : quranAyahsByItem[item.id]
-                                  ? quranAyahsByItem[item.id].map((ayah, ayahIndex, ayahsArr) => (
+                                  ? quranAyahsByItem[item.id].map((ayah) => (
                                     <React.Fragment key={ayah.number}>
                                       <QuranText surahNumber={ayah.surahNumber} ayahNumber={ayah.numberInSurah}>
                                         {ayah.text}
                                       </QuranText>
-                                      {ayahIndex < ayahsArr.length - 1 ? ' ۞ ' : ''}
+                                      <span className="ayah-number">{ayah.numberInSurah}</span>
                                     </React.Fragment>
                                   ))
                                   : <span role="status" className="text-sm font-sans text-[var(--wird-muted)]">لم يتم تحميل نص الآيات بعد.</span>
