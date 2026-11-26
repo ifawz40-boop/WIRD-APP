@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -11,7 +11,8 @@ import {
   Loader2,
   MapPin,
   Type,
-  Users
+  Users,
+  Volume2
 } from 'lucide-react';
 import type {
   SeerahBookManifest,
@@ -19,6 +20,11 @@ import type {
   SeerahDatePrecision,
   SeerahFontSize
 } from '../../services/seerahBookService';
+import {
+  buildChapterAudioSegments,
+  type SeerahAudioSegment
+} from '../../services/seerahAudioNarratorService';
+import { SeerahAudioPlayerBar } from './SeerahAudioPlayerBar';
 
 const FONT_SIZE_STYLES: Record<SeerahFontSize, string> = {
   sm: 'text-base md:text-[17px] leading-[2.1]',
@@ -73,6 +79,22 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
   onSceneFocus,
 }) => {
   const [sourcesExpanded, setSourcesExpanded] = useState(false);
+  const [activeAudioDomId, setActiveAudioDomId] = useState<string | null>(null);
+  const jumpToSceneAudioRef = useRef<((sceneId: string) => void) | null>(null);
+
+  const audioSegments = useMemo(
+    () => (chapter ? buildChapterAudioSegments(chapter) : []),
+    [chapter]
+  );
+
+  const handleActiveAudioSegment = useCallback((seg: SeerahAudioSegment | null) => {
+    const nextDomId = seg?.domElementId ?? null;
+    setActiveAudioDomId(nextDomId);
+    if (nextDomId && typeof document !== 'undefined') {
+      const target = document.getElementById(nextDomId);
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
 
   const section = useMemo(
     () => (chapter ? manifest.sections.find((s) => s.id === chapter.sectionId) : undefined),
@@ -217,10 +239,26 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
         </div>
       </nav>
 
+      {/* Realistic Classical Arabic Audio Narrator + Qari Interleaving */}
+      <SeerahAudioPlayerBar
+        docKey={chapter.id}
+        titleAr={chapter.title}
+        segments={audioSegments}
+        onActiveSegmentChange={handleActiveAudioSegment}
+        exposeJumpToSceneRef={jumpToSceneAudioRef}
+      />
+
       {/* Main Digital Book Sheet */}
       <article className="wird-card px-5 py-8 sm:px-10 sm:py-12 md:px-14 md:py-14 space-y-10">
         {/* Chapter Heading */}
-        <header className="space-y-4 pb-8 border-b border-[var(--wird-border)] text-center max-w-2xl mx-auto">
+        <header
+          id={`seerah-block-header-${chapter.id}`}
+          className={`space-y-4 pb-8 border-b border-[var(--wird-border)] text-center max-w-2xl mx-auto transition-all ${
+            activeAudioDomId === `seerah-block-header-${chapter.id}`
+              ? 'ring-2 ring-[var(--wird-accent)]/60 bg-[var(--wird-accent-soft)]/30 rounded-2xl p-4'
+              : ''
+          }`}
+        >
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
             {era && (
               <span className="px-3 py-1 rounded-full bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] font-semibold text-[var(--wird-muted)]">
@@ -267,7 +305,14 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
           >
             {chapter.openingHook}
           </p>
-          <div className="p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)]">
+          <div
+            id={`seerah-block-context-${chapter.id}`}
+            className={`p-5 rounded-2xl bg-[var(--wird-surface-muted)] border transition-all ${
+              activeAudioDomId === `seerah-block-context-${chapter.id}`
+                ? 'border-[var(--wird-accent)] ring-2 ring-[var(--wird-accent)]/50'
+                : 'border-[var(--wird-border)]'
+            }`}
+          >
             <p className="text-xs sm:text-sm text-[var(--wird-muted)] leading-relaxed">
               <strong className="text-[var(--wird-text)]">مدخل السياق التاريخي: </strong>
               {chapter.historicalContext}
@@ -292,15 +337,32 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
                 </div>
               )}
 
-              <h2 className="text-xl sm:text-2xl font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-accent)] leading-snug">
-                {scene.title}
-              </h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl sm:text-2xl font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-accent)] leading-snug">
+                  {scene.title}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => jumpToSceneAudioRef.current?.(scene.id)}
+                  aria-label={`استمع من مشهد ${scene.title}`}
+                  className="min-h-9 px-2.5 py-1 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-gold)] text-[11px] font-bold text-[var(--wird-muted)] hover:text-[var(--wird-text)] inline-flex items-center gap-1 shrink-0 transition-colors"
+                >
+                  <Volume2 className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+                  <span>استمع من هنا</span>
+                </button>
+              </div>
 
               <div className="space-y-6">
                 {scene.blocks.map((block) => {
+                  const blockDomId = `seerah-block-${block.id}`;
+                  const isHighlighted = activeAudioDomId === blockDomId;
+                  const highlightClass = isHighlighted
+                    ? 'ring-2 ring-[var(--wird-accent)]/65 bg-[var(--wird-accent-soft)]/35 rounded-2xl p-3 -mx-3 transition-all'
+                    : '';
+
                   if (block.type === 'quran') {
                     return (
-                      <div key={block.id} className="space-y-2.5 my-6">
+                      <div key={block.id} id={blockDomId} className={`space-y-2.5 my-6 ${highlightClass}`}>
                         {block.leadIn && (
                           <p className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
                             {block.leadIn}
@@ -324,7 +386,7 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
 
                   if (block.type === 'hadith') {
                     return (
-                      <div key={block.id} className="space-y-2.5 my-6">
+                      <div key={block.id} id={blockDomId} className={`space-y-2.5 my-6 ${highlightClass}`}>
                         {block.leadIn && (
                           <p className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}>
                             {block.leadIn}
@@ -347,7 +409,10 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
                     return (
                       <aside
                         key={block.id}
-                        className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs sm:text-sm text-[var(--wird-text)] leading-relaxed"
+                        id={blockDomId}
+                        className={`p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs sm:text-sm text-[var(--wird-text)] leading-relaxed ${
+                          isHighlighted ? 'ring-2 ring-[var(--wird-accent)]' : ''
+                        }`}
                       >
                         <strong className="text-amber-800 dark:text-amber-300 block mb-1">
                           إضاءة تحقيقية وضبط للروايات:
@@ -360,7 +425,8 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
                   return (
                     <p
                       key={block.id}
-                      className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
+                      id={blockDomId}
+                      className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]} ${highlightClass}`}
                     >
                       {block.text}
                     </p>
@@ -373,7 +439,14 @@ export const SeerahChapterReader: React.FC<SeerahChapterReaderProps> = ({
 
         {/* Closing Narrative Bridge */}
         <div className="max-w-3xl mx-auto pt-4">
-          <div className="p-6 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-2">
+          <div
+            id={`seerah-block-closing-${chapter.id}`}
+            className={`p-6 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border-gold)] space-y-2 transition-all ${
+              activeAudioDomId === `seerah-block-closing-${chapter.id}`
+                ? 'ring-2 ring-[var(--wird-accent)]'
+                : ''
+            }`}
+          >
             <span className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
               تمهيد لما بعده في مسيرة السيرة:
             </span>

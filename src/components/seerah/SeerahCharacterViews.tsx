@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ArrowRight,
   Award,
@@ -16,6 +16,11 @@ import {
   type SeerahCharacterDocument,
   type SeerahFontSize
 } from '../../services/seerahBookService';
+import {
+  buildCharacterAudioSegments,
+  type SeerahAudioSegment
+} from '../../services/seerahAudioNarratorService';
+import { SeerahAudioPlayerBar } from './SeerahAudioPlayerBar';
 
 const FONT_SIZE_STYLES: Record<SeerahFontSize, string> = {
   sm: 'text-base md:text-[17px] leading-[2.1]',
@@ -187,6 +192,18 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
     () => new Map(manifest.chapters.map((c) => [c.id, c])),
     [manifest.chapters]
   );
+  const [activeAudioDomId, setActiveAudioDomId] = useState<string | null>(null);
+  const audioSegments = useMemo(
+    () => (character ? buildCharacterAudioSegments(character) : []),
+    [character]
+  );
+  const handleActiveAudioSegment = useCallback((seg: SeerahAudioSegment | null) => {
+    const nextDomId = seg?.domElementId ?? null;
+    setActiveAudioDomId(nextDomId);
+    if (nextDomId && typeof document !== 'undefined') {
+      document.getElementById(nextDomId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -268,8 +285,22 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
         </div>
       </nav>
 
+      <SeerahAudioPlayerBar
+        docKey={character.id}
+        titleAr={character.name}
+        segments={audioSegments}
+        onActiveSegmentChange={handleActiveAudioSegment}
+      />
+
       <article className="wird-card px-5 py-8 sm:px-10 sm:py-12 md:px-14 space-y-9">
-        <header className="space-y-3 pb-7 border-b border-[var(--wird-border)] text-center max-w-2xl mx-auto">
+        <header
+          id={`seerah-char-intro-${character.id}`}
+          className={`space-y-3 pb-7 border-b border-[var(--wird-border)] text-center max-w-2xl mx-auto transition-all ${
+            activeAudioDomId === `seerah-char-intro-${character.id}`
+              ? 'ring-2 ring-[var(--wird-accent)]/60 bg-[var(--wird-accent-soft)]/30 rounded-2xl p-4'
+              : ''
+          }`}
+        >
           <span className="inline-block px-3 py-1 rounded-full bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-semibold text-[var(--wird-muted)]">
             {character.category}
           </span>
@@ -297,7 +328,14 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
             {character.introduction}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div
+            id={`seerah-char-context-${character.id}`}
+            className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-all ${
+              activeAudioDomId === `seerah-char-context-${character.id}`
+                ? 'ring-2 ring-[var(--wird-accent)]/60 rounded-2xl p-2'
+                : ''
+            }`}
+          >
             <div className="p-5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-1.5">
               <h2 className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                 النشأة والخلفية التاريخية
@@ -326,7 +364,12 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
             {character.narrativeStoryParagraphs.map((para, idx) => (
               <p
                 key={idx}
-                className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]}`}
+                id={`seerah-char-para-${idx}`}
+                className={`font-editorial-ar text-[var(--wird-text)] ${FONT_SIZE_STYLES[fontSize]} ${
+                  activeAudioDomId === `seerah-char-para-${idx}`
+                    ? 'ring-2 ring-[var(--wird-accent)]/65 bg-[var(--wird-accent-soft)]/35 rounded-2xl p-3 -mx-3 transition-all'
+                    : ''
+                }`}
               >
                 {para}
               </p>
@@ -336,7 +379,14 @@ export const SeerahCharacterProfile: React.FC<SeerahCharacterProfileProps> = ({
 
         {/* Documented Virtues */}
         {character.documentedVirtues.length > 0 && (
-          <section className="max-w-3xl mx-auto p-5 sm:p-6 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-3">
+          <section
+            id={`seerah-char-virtues-${character.id}`}
+            className={`max-w-3xl mx-auto p-5 sm:p-6 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] space-y-3 ${
+              activeAudioDomId === `seerah-char-virtues-${character.id}`
+                ? 'ring-2 ring-[var(--wird-accent)]'
+                : ''
+            }`}
+          >
             <h2 className="text-sm font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] flex items-center gap-2">
               <Award className="w-4 h-4 text-[var(--wird-accent)]" />
               <span>مناقب وإسهامات موثقة</span>

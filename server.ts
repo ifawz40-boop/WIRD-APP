@@ -8,6 +8,7 @@ import ruqyahHandler from './api/ruqyah';
 import quranAudioHandler from './api/quran-audio';
 import hadithReferencesHandler from './api/hadith-references';
 import youtubePlaylistHandler from './api/youtube-playlist';
+import seerahTtsHandler from './api/seerah-tts';
 
 dotenv.config();
 
@@ -43,6 +44,11 @@ app.all('/api/quran-audio', (req: Request, res: Response) => {
 // Read-only YouTube playlist metadata proxy for extensible learning series.
 app.all('/api/youtube-playlist', (req: Request, res: Response) => {
   void youtubePlaylistHandler(req, res);
+});
+
+// Expressive classical Arabic TTS proxy for Seerah book chapters & biographies.
+app.all('/api/seerah-tts', (req: Request, res: Response) => {
+  void seerahTtsHandler(req, res);
 });
 
 // In-memory rate limiter for Gemini Free Tier (15 requests/minute)
