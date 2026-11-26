@@ -1,30 +1,38 @@
 import React, { useMemo, useState } from 'react';
 import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock,
+  Download,
   Headphones,
   ListMusic,
+  Loader2,
   Pause,
   Play,
   Repeat,
+  RotateCcw,
+  RotateCw,
   ShieldCheck,
   SkipBack,
   SkipForward,
   Square,
   Timer,
   Volume2,
-  ChevronDown,
-  ChevronUp
+  VolumeX
 } from 'lucide-react';
 import { AUDIO_RUQYAH_SESSIONS, RUQYAH_ITEMS } from '../../data/ruqyahData';
 import type { RuqyahAudioSession } from '../../data/ruqyahData';
 import type { QuranReciter } from '../../services/ruqyahAudioService';
-import { estimateRuqyahSessionStats } from '../../services/ruqyahContentService';
+import { estimateRuqyahSessionStats, parseRuqyahVerseRange } from '../../services/ruqyahContentService';
+import { ALL_SURAHS } from '../../data/quranMeta';
 import { QuranText } from '../shared/QuranText';
 
 export interface ActiveSessionPlaybackInfo {
   sessionId: string | null;
   isPlaying: boolean;
   isLoading: boolean;
+  isOfflinePlayback?: boolean;
   currentTitle: string;
   currentSurahName: string;
   currentSurahNumber: number;
@@ -37,6 +45,13 @@ export interface ActiveSessionPlaybackInfo {
   duration: number;
   error: string;
   statusMessage: string;
+}
+
+export interface SessionOfflineDownloadState {
+  isDownloading: boolean;
+  completedItems: number;
+  totalItems: number;
+  error?: string;
 }
 
 interface AudioRuqyahStudioProps {
@@ -53,12 +68,16 @@ interface AudioRuqyahStudioProps {
   sleepTimerRemainingSec: number | null;
   onSelectSleepTimer: (minutes: number | null) => void;
   playback: ActiveSessionPlaybackInfo;
+  availableOfflineAyahs: ReadonlySet<number>;
+  sessionDownloads: Record<string, SessionOfflineDownloadState | undefined>;
+  onDownloadSessionOffline: (session: RuqyahAudioSession) => void;
   onPlaySession: (session: RuqyahAudioSession, startPassageIndex?: number) => void;
   onTogglePlayPause: () => void;
   onStop: () => void;
   onPrevPassage: () => void;
   onNextPassage: () => void;
   onSeek: (nextSeconds: number) => void;
+  onSeekDelta: (deltaSeconds: number) => void;
 }
 
 const SLEEP_TIMER_OPTIONS: Array<{ value: number | null; label: string }> = [
@@ -78,6 +97,25 @@ function formatClock(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+function getSessionUniqueGlobalAyahs(session: RuqyahAudioSession): number[] {
+  const byId = new Map(RUQYAH_ITEMS.map(item => [item.id, item]));
+  const globals = new Set<number>();
+  for (const track of session.tracks) {
+    const item = byId.get(track.itemId);
+    if (!item || item.type !== 'quran' || !item.surahNumber || !item.verseRange) continue;
+    try {
+      const range = parseRuqyahVerseRange(item.verseRange);
+      const preceding = ALL_SURAHS.slice(0, item.surahNumber - 1).reduce((s, x) => s + x.versesCount, 0);
+      for (let a = range.start; a <= range.end; a++) {
+        globals.add(preceding + a);
+      }
+    } catch {
+      // ignore invalid coordinate
+    }
+  }
+  return [...globals];
+}
+
 export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
   reciters,
   selectedReciterId,
@@ -92,17 +130,22 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
   sleepTimerRemainingSec,
   onSelectSleepTimer,
   playback,
+  availableOfflineAyahs,
+  sessionDownloads,
+  onDownloadSessionOffline,
   onPlaySession,
   onTogglePlayPause,
   onStop,
   onPrevPassage,
   onNextPassage,
-  onSeek
+  onSeek,
+  onSeekDelta
 }) => {
   const [selectedSessionId, setSelectedSessionId] = useState<string>(
     playback.sessionId || AUDIO_RUQYAH_SESSIONS[0].id
   );
   const [showTracklist, setShowTracklist] = useState<boolean>(true);
+  const [previousVolume, setPreviousVolume] = useState<number>(0.85);
 
   const activeSession = useMemo(
     () => AUDIO_RUQYAH_SESSIONS.find(s => s.id === (playback.sessionId || selectedSessionId)) || AUDIO_RUQYAH_SESSIONS[0],
@@ -114,11 +157,36 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
     []
   );
 
+  const sessionOfflineMap = useMemo(() => {
+    const result = new Map<string, { cached: number; total: number; isReady: boolean }>();
+    for (const session of AUDIO_RUQYAH_SESSIONS) {
+      const ayahs = getSessionUniqueGlobalAyahs(session);
+      const cached = ayahs.filter(g => availableOfflineAyahs.has(g)).length;
+      result.set(session.id, {
+        cached,
+        total: ayahs.length,
+        isReady: ayahs.length > 0 && cached === ayahs.length
+      });
+    }
+    return result;
+  }, [availableOfflineAyahs]);
+
   const activeStats = useMemo(() => estimateRuqyahSessionStats(activeSession, RUQYAH_ITEMS), [activeSession]);
+  const activeOffline = sessionOfflineMap.get(activeSession.id) ?? { cached: 0, total: 0, isReady: false };
+  const activeDownloadJob = sessionDownloads[activeSession.id];
   const isThisSessionLoaded = playback.sessionId === activeSession.id && playback.queueLength > 0;
   const progressPercent = isThisSessionLoaded
     ? Math.round((playback.queuePosition / Math.max(1, playback.queueLength)) * 100)
     : 0;
+
+  const handleToggleMute = () => {
+    if (audioVolume > 0) {
+      setPreviousVolume(audioVolume);
+      onAudioVolumeChange(0);
+    } else {
+      onAudioVolumeChange(previousVolume > 0 ? previousVolume : 0.85);
+    }
+  };
 
   return (
     <section aria-label="استوديو الرقية الشرعية المسموعة" className="space-y-6">
@@ -126,11 +194,11 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
       <div className="space-y-3.5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <h2 className="text-lg font-extrabold font-quran text-[var(--wird-text)]">
-              رقى صوتية مجهّزة للاستماع بمدد مختلفة
+            <h2 className="text-lg font-bold font-editorial-ar text-[var(--wird-text)]">
+              جلسات الرقية الصوتية الموثقة
             </h2>
             <p className="text-xs text-[var(--wird-muted)] mt-0.5">
-              اختر الجلسة المناسبة لوقتك واستمع لتلاوة متتابعة لآيات الرقية الشرعية بأصوات نخبة من القراء المعتمدين.
+              تلاوات قرآنية نقية تدعم التشغيل في الخلفية والمتابعة التلقائية والتنزيل للاستماع الكامل بدون إنترنت.
             </p>
           </div>
           <span className="text-xs font-semibold tabular-nums text-[var(--wird-muted)]">
@@ -143,14 +211,16 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
             const stats = estimateRuqyahSessionStats(session, RUQYAH_ITEMS);
             const isSelected = activeSession.id === session.id;
             const isPlayingThis = playback.sessionId === session.id && playback.isPlaying;
+            const offlineInfo = sessionOfflineMap.get(session.id) ?? { cached: 0, total: 0, isReady: false };
+            const dlState = sessionDownloads[session.id];
 
             return (
               <div
                 key={session.id}
                 className={`wird-card rounded-2xl p-5 flex flex-col justify-between gap-4 border transition-all duration-150 ${
                   isSelected
-                    ? 'border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)]/55 shadow-xs'
-                    : 'border-[var(--wird-border)] hover:border-[var(--wird-border-gold)]'
+                    ? 'border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)]/40'
+                    : 'border-[var(--wird-border)] hover:border-[var(--wird-border-strong)]'
                 }`}
               >
                 <div className="space-y-2.5">
@@ -165,14 +235,22 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                       <Headphones className="w-5 h-5" />
                     </div>
 
-                    <span className="inline-flex items-center gap-1 text-xs font-bold tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{session.durationBadge}</span>
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{session.durationBadge}</span>
+                      </span>
+                      {offlineInfo.isReady && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>متاحة بدون إنترنت</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="text-base font-extrabold font-quran text-[var(--wird-text)] leading-snug">
+                    <h3 className="text-base font-bold font-editorial-ar text-[var(--wird-text)] leading-snug">
                       {session.title}
                     </h3>
                     <p className="text-[11px] font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
@@ -182,6 +260,25 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                       {session.description}
                     </p>
                   </div>
+
+                  {dlState?.isDownloading && (
+                    <div className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                        <span>جارٍ تنزيل الصوتيات…</span>
+                        <span>
+                          {dlState.completedItems}/{dlState.totalItems}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-[var(--wird-surface-muted)] overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-[var(--wird-primary)] dark:bg-[var(--wird-accent)] transition-all"
+                          style={{
+                            width: `${dlState.totalItems > 0 ? Math.round((dlState.completedItems / dlState.totalItems) * 100) : 0}%`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 pt-2 border-t border-[var(--wird-border)]">
@@ -205,14 +302,32 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                     <span>{isPlayingThis ? 'إيقاف مؤقت' : 'استمع الآن'}</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setSelectedSessionId(session.id)}
-                    aria-pressed={isSelected}
-                    className="min-h-11 px-3 py-2 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-gold)] text-xs font-bold text-[var(--wird-text)] transition-colors whitespace-nowrap"
-                  >
-                    التفاصيل
-                  </button>
+                  {!offlineInfo.isReady ? (
+                    <button
+                      type="button"
+                      onClick={() => onDownloadSessionOffline(session)}
+                      disabled={Boolean(dlState?.isDownloading)}
+                      aria-label={`تنزيل ${session.title} للاستماع بدون إنترنت`}
+                      title="تنزيل الجلسة للاستماع بدون إنترنت"
+                      className="min-h-11 px-3 py-2 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-gold)] text-xs font-bold text-[var(--wird-text)] inline-flex items-center gap-1.5 transition-colors whitespace-nowrap disabled:opacity-50"
+                    >
+                      {dlState?.isDownloading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+                      )}
+                      <span>تنزيل</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSessionId(session.id)}
+                      aria-pressed={isSelected}
+                      className="min-h-11 px-3 py-2 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-gold)] text-xs font-bold text-[var(--wird-text)] transition-colors whitespace-nowrap"
+                    >
+                      التفاصيل
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -221,7 +336,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
       </div>
 
       {/* 2. Active Listening Studio Deck */}
-      <div className="wird-card rounded-3xl p-5 md:p-6 border border-[var(--wird-border-gold)]/70 space-y-5">
+      <div className="wird-card rounded-2xl p-5 md:p-6 space-y-5">
         {/* Studio Header & Controls */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[var(--wird-border)]">
           <div className="space-y-1 min-w-0">
@@ -231,8 +346,14 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
               <span>{activeSession.durationBadge}</span>
               <span aria-hidden="true">·</span>
               <span><span className="font-mono tabular-nums">{activeStats.totalAyahCount}</span> آية متتالية</span>
+              {activeOffline.isReady && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-emerald-700 dark:text-emerald-400">محفوظة دون إنترنت</span>
+                </>
+              )}
             </div>
-            <h3 className="text-xl font-extrabold font-quran text-[var(--wird-text)]">
+            <h3 className="text-xl font-bold font-editorial-ar text-[var(--wird-text)]">
               {activeSession.title}
             </h3>
             <p className="text-xs text-[var(--wird-muted)]">
@@ -281,6 +402,29 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                 ))}
               </div>
             </div>
+
+            {!activeOffline.isReady && (
+              <button
+                type="button"
+                onClick={() => onDownloadSessionOffline(activeSession)}
+                disabled={Boolean(activeDownloadJob?.isDownloading)}
+                className="min-h-11 px-3.5 py-2 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-gold)] text-xs font-bold text-[var(--wird-text)] inline-flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                {activeDownloadJob?.isDownloading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>
+                      جارٍ الحفظ ({activeDownloadJob.completedItems}/{activeDownloadJob.totalItems})
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+                    <span>حفظ للاستماع بدون إنترنت ({activeOffline.cached}/{activeOffline.total})</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
@@ -298,21 +442,28 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                     </span>
                   </>
                 )}
+                {playback.isOfflinePlayback && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="text-emerald-700 dark:text-emerald-400">تشغيل محلي بدون إنترنت</span>
+                  </>
+                )}
               </div>
-              <p className="font-quran text-xl md:text-2xl leading-[2.3] text-[var(--wird-text)]">
+              <p className="font-quran text-xl md:text-2xl leading-[2.35] text-[var(--wird-text)]">
                 <QuranText surahNumber={playback.currentSurahNumber} ayahNumber={playback.currentAyahNumber}>
                   {playback.currentAyahText}
                 </QuranText>
+                <span className="ayah-number">{playback.currentAyahNumber}</span>
               </p>
             </>
           ) : (
             <div className="py-3 space-y-2">
-              <Headphones className="w-8 h-8 text-[var(--wird-accent)] mx-auto" />
+              <Headphones className="w-7 h-7 text-[var(--wird-accent)] mx-auto" />
               <p className="text-sm font-bold text-[var(--wird-text)]">
                 جاهزة للاستماع الهادئ — اضغط «تشغيل الجلسة الصوتية» للبدء
               </p>
               <p className="text-xs text-[var(--wird-muted)] max-w-lg mx-auto leading-relaxed">
-                ستُعرض الآية القرآنية المتلوّة لحظة بلحظة من مصحف وِرد المعتمد مع إمكانية التكرار المستمر وضبط مؤقّت النوم.
+                تعمل الجلسة في الخلفية وعلى شاشة القفل، وتعرض الآية المتلوّة لحظة بلحظة من مصحف وِرد المعتمد.
               </p>
             </div>
           )}
@@ -327,9 +478,22 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                 onClick={onPrevPassage}
                 disabled={!isThisSessionLoaded || playback.currentPassageIndex <= 0}
                 aria-label="المقطع السابق"
-                className="min-h-11 min-w-11 px-3 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-border-gold)] disabled:opacity-40 flex items-center justify-center transition-colors"
+                title="المقطع السابق"
+                className="min-h-11 min-w-11 px-3 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-border-strong)] disabled:opacity-40 flex items-center justify-center transition-colors"
               >
                 <SkipForward className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSeekDelta(-10)}
+                disabled={!isThisSessionLoaded || !playback.duration}
+                aria-label="إرجاع 10 ثوانٍ"
+                title="إرجاع 10 ثوانٍ"
+                className="min-h-11 px-3 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-xs font-mono font-bold text-[var(--wird-text)] hover:border-[var(--wird-border-strong)] disabled:opacity-40 inline-flex items-center gap-1 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>10ث</span>
               </button>
 
               <button
@@ -342,7 +506,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                   }
                 }}
                 disabled={playback.isLoading}
-                className="min-h-11 px-5 py-2.5 rounded-xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-colors disabled:opacity-55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
+                className="min-h-11 px-5 py-2.5 rounded-xl bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)]"
               >
                 {isThisSessionLoaded && playback.isPlaying ? (
                   <>
@@ -359,10 +523,23 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
 
               <button
                 type="button"
+                onClick={() => onSeekDelta(10)}
+                disabled={!isThisSessionLoaded || !playback.duration}
+                aria-label="تقديم 10 ثوانٍ"
+                title="تقديم 10 ثوانٍ"
+                className="min-h-11 px-3 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-xs font-mono font-bold text-[var(--wird-text)] hover:border-[var(--wird-border-strong)] disabled:opacity-40 inline-flex items-center gap-1 transition-colors"
+              >
+                <span>10ث</span>
+                <RotateCw className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
                 onClick={onNextPassage}
                 disabled={!isThisSessionLoaded || playback.currentPassageIndex >= activeSession.tracks.length - 1}
                 aria-label="المقطع التالي"
-                className="min-h-11 min-w-11 px-3 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-border-gold)] disabled:opacity-40 flex items-center justify-center transition-colors"
+                title="المقطع التالي"
+                className="min-h-11 min-w-11 px-3 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-[var(--wird-text)] hover:border-[var(--wird-border-strong)] disabled:opacity-40 flex items-center justify-center transition-colors"
               >
                 <SkipBack className="w-4 h-4" />
               </button>
@@ -371,7 +548,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                 <button
                   type="button"
                   onClick={onStop}
-                  className="min-h-11 px-3.5 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-border-gold)] flex items-center gap-1.5 transition-colors"
+                  className="min-h-11 px-3.5 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] text-xs font-bold text-[var(--wird-text)] hover:border-[var(--wird-border-strong)] flex items-center gap-1.5 transition-colors"
                 >
                   <Square className="w-3.5 h-3.5" />
                   <span>إيقاف</span>
@@ -397,7 +574,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
           </div>
 
           {/* Sleep Timer Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] px-3.5 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] px-3.5 py-2.5">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--wird-text)]">
               <Timer className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
               <span>مؤقّت النوم:</span>
@@ -420,7 +597,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                     className={`min-h-9 px-3 rounded-lg text-xs font-bold transition-colors ${
                       active
                         ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)]'
-                        : 'bg-[var(--wird-surface)] border border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-border-gold)]'
+                        : 'bg-[var(--wird-surface)] border border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-border-strong)]'
                     }`}
                   >
                     {option.label}
@@ -432,7 +609,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
 
           {/* Progress & Volume Row */}
           {isThisSessionLoaded && (
-            <div className="space-y-2.5 rounded-2xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] p-3.5">
+            <div className="space-y-2.5 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                 <p role="status" aria-live="polite" className="font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
                   {playback.isLoading
@@ -475,9 +652,15 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                 <span dir="ltr" className="shrink-0 font-mono tabular-nums text-[11px] text-[var(--wird-muted)]">
                   {formatClock(playback.currentTime)} / {formatClock(playback.duration)}
                 </span>
-                <label className="flex shrink-0 items-center gap-2 text-[11px] text-[var(--wird-muted)]">
-                  <Volume2 className="w-4 h-4" />
-                  <span>الصوت</span>
+                <div className="flex shrink-0 items-center gap-2 text-[11px] text-[var(--wird-muted)]">
+                  <button
+                    type="button"
+                    onClick={handleToggleMute}
+                    aria-label={audioVolume === 0 ? 'إلغاء كتم الصوت' : 'كتم الصوت'}
+                    className="min-h-9 min-w-9 rounded-lg flex items-center justify-center hover:bg-[var(--wird-surface)] text-[var(--wird-text)] transition-colors"
+                  >
+                    {audioVolume === 0 ? <VolumeX className="w-4 h-4 text-rose-600" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
                   <input
                     type="range"
                     min="0"
@@ -488,7 +671,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                     onChange={e => onAudioVolumeChange(Number(e.target.value))}
                     className="min-h-11 w-20 accent-[var(--wird-primary)] dark:accent-[var(--wird-accent)]"
                   />
-                </label>
+                </div>
               </div>
             </div>
           )}
@@ -535,7 +718,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
                     className={`text-right p-3 rounded-xl border transition-colors flex items-center justify-between gap-2 min-h-12 ${
                       isCurrentPassage
                         ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-transparent'
-                        : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-border-gold)]'
+                        : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-text)] hover:border-[var(--wird-border-strong)]'
                     }`}
                   >
                     <div className="min-w-0">
@@ -564,7 +747,7 @@ export const AudioRuqyahStudio: React.FC<AudioRuqyahStudioProps> = ({
         <div className="flex items-start gap-2.5 pt-3 border-t border-[var(--wird-border)] text-[11px] text-[var(--wird-muted)] leading-relaxed">
           <ShieldCheck className="w-4 h-4 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] shrink-0 mt-0.5" />
           <p>
-            جميع جلسات الرقية المسموعة تتلو آيات القرآن الكريم الموثقة من مصحف وِرد المعتمد بأصوات القراء المرخّصين (Al Quran Cloud)، دون تسجيلات خارجية غير موثقة المصدر. الاستماع الصوتي لا يعدّل عدّادات القراءة الخاصة بك.
+            جميع جلسات الرقية المسموعة تتلو آيات القرآن الكريم الموثقة من مصحف وِرد المعتمد بأصوات القراء المرخّصين (Al Quran Cloud)، وتدعم الحفظ الكامل على الجهاز للاستماع بدون إنترنت. الاستماع الصوتي لا يعدّل عدّادات القراءة الخاصة بك.
           </p>
         </div>
       </div>

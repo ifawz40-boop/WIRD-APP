@@ -2,13 +2,17 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   buildAudioRuqyahSessionQueue,
   getRuqyahAudioQueueForItems,
-  getRuqyahAyahs
+  getRuqyahAyahs,
+  parseRuqyahVerseRange
 } from '../../services/ruqyahContentService';
 import type { RuqyahSessionAudioEntry } from '../../services/ruqyahContentService';
 import type { Ayah } from '../../types/quran';
 import { QuranText } from '../shared/QuranText';
 import { buildQuranAyahAudioUrl, FALLBACK_QURAN_RECITERS, fetchQuranReciters } from '../../services/ruqyahAudioService';
 import { requestOfflineAudioCache } from '../../services/audioService';
+import { offlineQuranAudioLibrary } from '../../services/offlineQuranAudioLibrary';
+import type { MemorizedAyahRange } from '../../services/memorizedRangeService';
+import { ALL_SURAHS } from '../../data/quranMeta';
 import { getRuqyahProgressDeviceId, loadRuqyahProgress } from '../../services/ruqyahProgressService';
 import { adjustRuqyahProgressCounter, createEmptyRuqyahProgressSnapshot, migrateRuqyahProgressSnapshot, resetRuqyahProgressCounter } from '../../services/ruqyahProgressSchema';
 import type { RuqyahProgressSnapshotV2 } from '../../services/ruqyahProgressSchema';
@@ -25,6 +29,7 @@ import { globalAudioCoordinator } from '../../services/globalAudioCoordinator';
 import { RuqyahApiLibrary } from './RuqyahApiLibrary';
 import { RuqyahCountdownRing } from './RuqyahCountdownRing';
 import { AudioRuqyahStudio } from './AudioRuqyahStudio';
+import type { SessionOfflineDownloadState } from './AudioRuqyahStudio';
 import {
   ShieldCheck,
   Volume2,
@@ -33,7 +38,6 @@ import {
   Square,
   RotateCcw,
   CheckCircle2,
-  Sparkles,
   BookOpen,
   Heart,
   Info,
@@ -46,7 +50,9 @@ import {
   X,
   Home,
   CloudMoon,
-  Shield
+  Shield,
+  Download,
+  Loader2
 } from 'lucide-react';
 import {
   AUDIO_RUQYAH_SESSIONS,
@@ -74,7 +80,7 @@ const RECITATION_CATEGORIES = RUQYAH_CATEGORIES.filter(cat => cat.id !== 'guidel
 function renderCategoryIcon(catId: RuqyahCategory, className = 'w-4 h-4') {
   switch (catId) {
     case 'brief':
-      return <Sparkles className={className} />;
+      return <BookOpen className={className} />;
     case 'medium':
       return <BookOpen className={className} />;
     case 'full':
@@ -82,7 +88,7 @@ function renderCategoryIcon(catId: RuqyahCategory, className = 'w-4 h-4') {
     case 'eye_envy':
       return <Heart className={className} />;
     case 'illness':
-      return <Sparkles className={className} />;
+      return <Heart className={className} />;
     case 'magic_protection':
       return <Shield className={className} />;
     case 'children_home':
@@ -93,6 +99,26 @@ function renderCategoryIcon(catId: RuqyahCategory, className = 'w-4 h-4') {
     default:
       return <Info className={className} />;
   }
+}
+
+type RuqyahSourceFilter = 'all' | 'quran' | 'dua';
+
+function buildRangesFromRuqyahItems(items: RuqyahItem[]): MemorizedAyahRange[] {
+  const ranges: MemorizedAyahRange[] = [];
+  for (const item of items) {
+    if (item.type !== 'quran' || !item.surahNumber || !item.verseRange) continue;
+    try {
+      const parsed = parseRuqyahVerseRange(item.verseRange);
+      ranges.push({
+        surahNumber: item.surahNumber,
+        startAyah: parsed.start,
+        endAyah: parsed.end
+      });
+    } catch {
+      // ignore invalid range
+    }
+  }
+  return ranges;
 }
 
 type ManagedQueueEntry = {
@@ -115,6 +141,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   } = useReadingDisplayPreferences('ruqyah');
   const [activeCategory, setActiveCategory] = useState<RuqyahCategory>('brief');
   const [viewMode, setViewMode] = useState<RuqyahWorkspaceMode>('interactive');
+  const [sourceFilter, setSourceFilter] = useState<RuqyahSourceFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showExplanationAndSource, setShowExplanationAndSource] = useState<boolean>(() => {
     try {
@@ -155,8 +182,12 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const [audioDuration, setAudioDuration] = useState(0);
   const [audioVolume, setAudioVolume] = useState(0.85);
 
-  // Audio Ruqyah Studio specific state
+  // Audio Ruqyah Studio & Offline Audio Library state
   const [activeAudioSessionId, setActiveAudioSessionId] = useState<string | null>(null);
+  const [audioIsOfflinePlayback, setAudioIsOfflinePlayback] = useState(false);
+  const [availableOfflineAyahs, setAvailableOfflineAyahs] = useState<Set<number>>(() => new Set());
+  const [sessionDownloads, setSessionDownloads] = useState<Record<string, SessionOfflineDownloadState | undefined>>({});
+  const [categoryDownloadState, setCategoryDownloadState] = useState<SessionOfflineDownloadState | null>(null);
   const [audioCurrentAyahText, setAudioCurrentAyahText] = useState('');
   const [audioCurrentSurahName, setAudioCurrentSurahName] = useState('');
   const [audioCurrentSurahNumber, setAudioCurrentSurahNumber] = useState(1);
@@ -174,6 +205,8 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeBlobRevokeRef = useRef<(() => void) | null>(null);
+  const availableOfflineAyahsRef = useRef<Set<number>>(new Set());
   const selectedReciterIdRef = useRef(selectedReciterId);
   const sessionLoopRef = useRef(sessionLoopEnabled);
   const activeAudioSessionIdRef = useRef<string | null>(null);
@@ -188,17 +221,41 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
   const currentItems = useMemo(() => getRuqyahItemsByCategory(activeCategory), [activeCategory]);
   const activeCategoryMeta = useMemo(() => getRuqyahCategoryMeta(activeCategory), [activeCategory]);
 
+  const categoryQuranCount = useMemo(() => currentItems.filter(i => i.type === 'quran').length, [currentItems]);
+  const categoryDuaCount = useMemo(() => currentItems.filter(i => i.type === 'dua').length, [currentItems]);
+
+  const categoryOfflineSummary = useMemo(() => {
+    const globals = new Set<number>();
+    for (const item of currentItems) {
+      if (item.type !== 'quran' || !item.surahNumber || !item.verseRange) continue;
+      try {
+        const range = parseRuqyahVerseRange(item.verseRange);
+        const preceding = ALL_SURAHS.slice(0, item.surahNumber - 1).reduce((s, x) => s + x.versesCount, 0);
+        for (let a = range.start; a <= range.end; a++) globals.add(preceding + a);
+      } catch {
+        // ignore
+      }
+    }
+    const list = [...globals];
+    const cached = list.filter(g => availableOfflineAyahs.has(g)).length;
+    return { cached, total: list.length, isReady: list.length > 0 && cached === list.length };
+  }, [currentItems, availableOfflineAyahs]);
+
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim();
-    if (!q) return currentItems;
-    return currentItems.filter(item =>
-      item.title.includes(q) ||
-      item.text.includes(q) ||
-      (item.surahName && item.surahName.includes(q)) ||
-      (item.source && item.source.includes(q)) ||
-      (item.explanation && item.explanation.includes(q))
-    );
-  }, [currentItems, searchQuery]);
+    return currentItems.filter(item => {
+      if (sourceFilter === 'quran' && item.type !== 'quran') return false;
+      if (sourceFilter === 'dua' && item.type !== 'dua') return false;
+      if (!q) return true;
+      return (
+        item.title.includes(q) ||
+        item.text.includes(q) ||
+        (item.surahName && item.surahName.includes(q)) ||
+        (item.source && item.source.includes(q)) ||
+        (item.explanation && item.explanation.includes(q))
+      );
+    });
+  }, [currentItems, searchQuery, sourceFilter]);
 
   useEffect(() => {
     sessionLoopRef.current = sessionLoopEnabled;
@@ -298,14 +355,60 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
 
     try {
       globalAudioCoordinator.claimFocus('ruqyah');
+      activeBlobRevokeRef.current?.();
+      activeBlobRevokeRef.current = null;
       requestOfflineAudioCache(
         audioQueueRef.current.slice(index, index + 20).map(item =>
           buildQuranAyahAudioUrl(selectedReciterIdRef.current, item.globalAyahNumber)
         )
       );
       audio.playbackRate = getSavedPlaybackRate();
-      audio.src = buildQuranAyahAudioUrl(selectedReciterIdRef.current, entry.globalAyahNumber);
+      const networkUrl = buildQuranAyahAudioUrl(selectedReciterIdRef.current, entry.globalAyahNumber);
+      if (availableOfflineAyahsRef.current.has(entry.globalAyahNumber)) {
+        const resolved = await offlineQuranAudioLibrary.resolvePlaybackSource(
+          selectedReciterIdRef.current,
+          entry.globalAyahNumber,
+          networkUrl
+        );
+        if (requestId !== audioRequestIdRef.current) {
+          resolved.revoke?.();
+          return;
+        }
+        if (resolved.sourceKind === 'local-cache') {
+          activeBlobRevokeRef.current = resolved.revoke ?? null;
+          setAudioIsOfflinePlayback(true);
+          audio.src = resolved.src;
+        } else {
+          setAudioIsOfflinePlayback(false);
+          audio.src = buildQuranAyahAudioUrl(selectedReciterIdRef.current, entry.globalAyahNumber);
+        }
+      } else {
+        setAudioIsOfflinePlayback(false);
+        audio.src = buildQuranAyahAudioUrl(selectedReciterIdRef.current, entry.globalAyahNumber);
+      }
       audio.load();
+
+      // Update OS MediaSession for lock-screen & background playback controls
+      if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof MediaMetadata !== 'undefined') {
+        try {
+          const activeReciter = reciters.find(r => r.id === selectedReciterIdRef.current);
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: entry.surahName
+              ? `${entry.title} — سورة ${entry.surahName} (${entry.ayahNumber || 1})`
+              : entry.title,
+            artist: activeReciter?.arabicName || 'تلاوة قرآنية معتمدة',
+            album: 'الرقية الشرعية — وِرد',
+            artwork: [
+              { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+              { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }
+            ]
+          });
+          navigator.mediaSession.playbackState = 'playing';
+        } catch {
+          // ignore MediaSession errors on restricted platforms
+        }
+      }
+
       await audio.play();
       if (requestId !== audioRequestIdRef.current) return;
       setAudioIsPlaying(true);
@@ -416,6 +519,16 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       audio.removeAttribute('src');
       audio.load();
     }
+    activeBlobRevokeRef.current?.();
+    activeBlobRevokeRef.current = null;
+    setAudioIsOfflinePlayback(false);
+    if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+      try {
+        navigator.mediaSession.playbackState = 'none';
+      } catch {
+        // ignore
+      }
+    }
     setActiveAudioSessionId(null);
     setAudioIsPlaying(false);
     setAudioIsLoading(false);
@@ -514,9 +627,196 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
     startRuqyahAudio(item);
   };
 
+  const handleSeekDelta = (deltaSeconds: number) => {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const clamped = Math.max(0, Math.min(audio.duration, (audio.currentTime || 0) + deltaSeconds));
+    audio.currentTime = clamped;
+    setAudioCurrentTime(clamped);
+  };
+
+  const handleDownloadSessionOffline = async (session: RuqyahAudioSession) => {
+    const itemsById = new Map(RUQYAH_ITEMS.map(i => [i.id, i]));
+    const sessionItems = session.tracks
+      .map(t => itemsById.get(t.itemId))
+      .filter((x): x is RuqyahItem => Boolean(x && x.type === 'quran'));
+    const ranges = buildRangesFromRuqyahItems(sessionItems);
+    if (ranges.length === 0) return;
+
+    setSessionDownloads(prev => ({
+      ...prev,
+      [session.id]: { isDownloading: true, completedItems: 0, totalItems: ranges.length }
+    }));
+
+    try {
+      const job = await offlineQuranAudioLibrary.enqueueDownloadJob({
+        scopeKind: 'ruqyah',
+        labelAr: session.title,
+        reciterId: selectedReciterIdRef.current,
+        ranges
+      });
+      setSessionDownloads(prev => ({
+        ...prev,
+        [session.id]: {
+          isDownloading: job.status !== 'completed',
+          completedItems: job.completedItems,
+          totalItems: job.totalItems
+        }
+      }));
+      if (job.status !== 'completed') {
+        const unsub = offlineQuranAudioLibrary.subscribe(() => {
+          void offlineQuranAudioLibrary.listJobs().then(jobs => {
+            const latest = jobs.find(j => j.jobId === job.jobId);
+            if (!latest) return;
+            setSessionDownloads(prev => ({
+              ...prev,
+              [session.id]: {
+                isDownloading: latest.status === 'downloading' || latest.status === 'queued',
+                completedItems: latest.completedItems,
+                totalItems: latest.totalItems,
+                error: latest.lastError
+              }
+            }));
+          });
+        });
+        try {
+          const finished = await offlineQuranAudioLibrary.startOrResumeJob(job.jobId);
+          const refreshed = await offlineQuranAudioLibrary.getAvailableGlobalAyahsForReciter(selectedReciterIdRef.current);
+          availableOfflineAyahsRef.current = refreshed;
+          setAvailableOfflineAyahs(refreshed);
+          if (finished?.status === 'completed') {
+            onToast?.(`اكتمل حفظ «${session.title}» للاستماع بدون إنترنت.`, 'success');
+          } else if (finished?.lastError) {
+            onToast?.(finished.lastError, 'warn');
+          }
+        } finally {
+          unsub();
+          setSessionDownloads(prev => ({ ...prev, [session.id]: undefined }));
+        }
+      } else {
+        const refreshed = await offlineQuranAudioLibrary.getAvailableGlobalAyahsForReciter(selectedReciterIdRef.current);
+        availableOfflineAyahsRef.current = refreshed;
+        setAvailableOfflineAyahs(refreshed);
+        setSessionDownloads(prev => ({ ...prev, [session.id]: undefined }));
+        onToast?.(`«${session.title}» محفوظة بالفعل للاستماع بدون إنترنت.`, 'info');
+      }
+    } catch (err) {
+      setSessionDownloads(prev => ({ ...prev, [session.id]: undefined }));
+      onToast?.(err instanceof Error ? err.message : 'تعذر بدء تنزيل الجلسة الصوتية.', 'error');
+    }
+  };
+
+  const handleDownloadCategoryOffline = async () => {
+    const quranItems = currentItems.filter(i => i.type === 'quran');
+    const ranges = buildRangesFromRuqyahItems(quranItems);
+    if (ranges.length === 0) return;
+
+    setCategoryDownloadState({ isDownloading: true, completedItems: 0, totalItems: ranges.length });
+    try {
+      const job = await offlineQuranAudioLibrary.enqueueDownloadJob({
+        scopeKind: 'ruqyah',
+        labelAr: `آيات ${activeCategoryMeta.label}`,
+        reciterId: selectedReciterIdRef.current,
+        ranges
+      });
+      setCategoryDownloadState({
+        isDownloading: job.status !== 'completed',
+        completedItems: job.completedItems,
+        totalItems: job.totalItems
+      });
+      if (job.status !== 'completed') {
+        const unsub = offlineQuranAudioLibrary.subscribe(() => {
+          void offlineQuranAudioLibrary.listJobs().then(jobs => {
+            const latest = jobs.find(j => j.jobId === job.jobId);
+            if (!latest) return;
+            setCategoryDownloadState({
+              isDownloading: latest.status === 'downloading' || latest.status === 'queued',
+              completedItems: latest.completedItems,
+              totalItems: latest.totalItems,
+              error: latest.lastError
+            });
+          });
+        });
+        try {
+          const finished = await offlineQuranAudioLibrary.startOrResumeJob(job.jobId);
+          const refreshed = await offlineQuranAudioLibrary.getAvailableGlobalAyahsForReciter(selectedReciterIdRef.current);
+          availableOfflineAyahsRef.current = refreshed;
+          setAvailableOfflineAyahs(refreshed);
+          if (finished?.status === 'completed') {
+            onToast?.(`اكتمل حفظ تلاوة «${activeCategoryMeta.label}» للاستماع بدون إنترنت.`, 'success');
+          }
+        } finally {
+          unsub();
+          setCategoryDownloadState(null);
+        }
+      } else {
+        const refreshed = await offlineQuranAudioLibrary.getAvailableGlobalAyahsForReciter(selectedReciterIdRef.current);
+        availableOfflineAyahsRef.current = refreshed;
+        setAvailableOfflineAyahs(refreshed);
+        setCategoryDownloadState(null);
+      }
+    } catch (err) {
+      setCategoryDownloadState(null);
+      onToast?.(err instanceof Error ? err.message : 'تعذر تنزيل تلاوة القسم.', 'error');
+    }
+  };
+
   useEffect(() => {
     selectedReciterIdRef.current = selectedReciterId;
+    let active = true;
+    const syncCachedSet = () => {
+      void offlineQuranAudioLibrary.getAvailableGlobalAyahsForReciter(selectedReciterId).then(set => {
+        if (!active) return;
+        availableOfflineAyahsRef.current = set;
+        setAvailableOfflineAyahs(set);
+      });
+    };
+    syncCachedSet();
+    const unsub = offlineQuranAudioLibrary.subscribe(syncCachedSet);
+    const onReconnect = () => {
+      void offlineQuranAudioLibrary.resumeInterruptedJobsOnReconnect();
+    };
+    window.addEventListener('online', onReconnect);
+    return () => {
+      active = false;
+      unsub();
+      window.removeEventListener('online', onReconnect);
+    };
   }, [selectedReciterId]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.setActionHandler('play', () => toggleAudioPlayback());
+      navigator.mediaSession.setActionHandler('pause', () => toggleAudioPlayback());
+      navigator.mediaSession.setActionHandler('stop', () => stopRuqyahAudioRef.current());
+      navigator.mediaSession.setActionHandler('seekbackward', () => handleSeekDelta(-10));
+      navigator.mediaSession.setActionHandler('seekforward', () => handleSeekDelta(10));
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        if (activeAudioSessionIdRef.current) handleJumpSessionPassage(-1);
+        else if (audioQueueIndexRef.current > 0) void playAudioQueuePosition(audioQueueIndexRef.current - 1);
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        if (activeAudioSessionIdRef.current) handleJumpSessionPassage(1);
+        else if (audioQueueIndexRef.current + 1 < audioQueueRef.current.length) void playAudioQueuePosition(audioQueueIndexRef.current + 1);
+      });
+    } catch {
+      // ignore unsupported MediaSession actions
+    }
+    return () => {
+      try {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('stop', null);
+        navigator.mediaSession.setActionHandler('seekbackward', null);
+        navigator.mediaSession.setActionHandler('seekforward', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+      } catch {
+        // ignore
+      }
+    };
+  });
 
   useEffect(() => {
     const unregisterAudio = globalAudioCoordinator.register('ruqyah', () => stopRuqyahAudioRef.current());
@@ -877,9 +1177,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
 
   const handleSwitchMode = (nextMode: RuqyahWorkspaceMode) => {
     if (nextMode !== viewMode) {
-      if (nextMode === 'api_library' || nextMode === 'guidelines') {
-        stopRuqyahAudio();
-      } else if (nextMode === 'interactive' && activeAudioSessionId) {
+      if (nextMode === 'api_library') {
         stopRuqyahAudio();
       } else if (nextMode === 'audio_studio' && !activeAudioSessionId && audioQueueLength > 0) {
         stopRuqyahAudio();
@@ -1010,6 +1308,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
             sessionId: activeAudioSessionId,
             isPlaying: audioIsPlaying,
             isLoading: audioIsLoading,
+            isOfflinePlayback: audioIsOfflinePlayback,
             currentTitle: audioCurrentItemTitle,
             currentSurahName: audioCurrentSurahName,
             currentSurahNumber: audioCurrentSurahNumber,
@@ -1023,6 +1322,9 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
             error: audioError,
             statusMessage: audioStatusMessage
           }}
+          availableOfflineAyahs={availableOfflineAyahs}
+          sessionDownloads={sessionDownloads}
+          onDownloadSessionOffline={session => void handleDownloadSessionOffline(session)}
           onPlaySession={(session, startIdx = 0) => void startTimedAudioSession(session, startIdx)}
           onTogglePlayPause={toggleAudioPlayback}
           onStop={stopRuqyahAudio}
@@ -1032,6 +1334,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
             setAudioCurrentTime(nextTime);
             if (audioRef.current) audioRef.current.currentTime = nextTime;
           }}
+          onSeekDelta={handleSeekDelta}
         />
       )}
 
@@ -1131,6 +1434,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                       stopRuqyahAudio();
                       setShowResetConfirmation(false);
                       setSearchQuery('');
+                      setSourceFilter('all');
                       setActiveCategory(cat.id);
                     }}
                     className={`min-h-12 text-right p-4 rounded-2xl border transition-all duration-150 flex flex-col justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wird-ring)] ${
@@ -1248,6 +1552,34 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                       <Play className="w-4 h-4" />
                       <span>تشغيل آيات القسم</span>
                     </button>
+                    {categoryOfflineSummary.total > 0 && !categoryOfflineSummary.isReady && (
+                      <button
+                        type="button"
+                        onClick={() => void handleDownloadCategoryOffline()}
+                        disabled={Boolean(categoryDownloadState?.isDownloading)}
+                        className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] hover:border-[var(--wird-border-strong)] px-3.5 py-2.5 text-xs font-bold text-[var(--wird-text)] disabled:opacity-50 transition-colors"
+                      >
+                        {categoryDownloadState?.isDownloading ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>
+                              تنزيل ({categoryDownloadState.completedItems}/{categoryDownloadState.totalItems})
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)]" />
+                            <span>حفظ تلاوة القسم بدون إنترنت</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {categoryOfflineSummary.isReady && (
+                      <span className="inline-flex min-h-11 items-center gap-1.5 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>التلاوة محفوظة دون إنترنت</span>
+                      </span>
+                    )}
                     {audioQueueLength > 0 && !activeAudioSessionId && (
                       <>
                         <button
@@ -1389,6 +1721,39 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
+
+                {/* Explicit Quran vs Authenticated Sunnah Source Filter */}
+                {categoryQuranCount > 0 && categoryDuaCount > 0 && (
+                  <div
+                    role="group"
+                    aria-label="تصفية الرقية حسب المصدر الشرعي"
+                    className="flex flex-wrap items-center gap-1.5 pt-1"
+                  >
+                    {([
+                      { id: 'all' as const, label: 'الكل (القرآن والسنة)', count: currentItems.length },
+                      { id: 'quran' as const, label: 'من القرآن الكريم', count: categoryQuranCount },
+                      { id: 'dua' as const, label: 'من السنة النبوية الصحيحة', count: categoryDuaCount }
+                    ]).map(opt => {
+                      const active = sourceFilter === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => setSourceFilter(opt.id)}
+                          className={`min-h-10 px-3.5 py-1.5 rounded-xl border text-xs font-bold inline-flex items-center gap-1.5 transition-colors ${
+                            active
+                              ? 'bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] border-transparent'
+                              : 'bg-[var(--wird-surface-muted)] border-[var(--wird-border)] text-[var(--wird-muted)] hover:text-[var(--wird-text)]'
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          <span className="font-mono text-[11px] tabular-nums opacity-80">({opt.count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Search inside category */}
                 {currentItems.length > 8 && (
@@ -1533,9 +1898,22 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
               </div>
             )}
 
-            {/* Redesigned Interactive Ruqyah Cards with Circular Countdown Counter */}
+            {/* Redesigned Interactive Ruqyah Cards with Clear Quran vs Prophetic Sunnah Division */}
             <div className={ruqyahListSpacing}>
               {filteredItems.map((item, idx) => {
+                const prevItem = idx > 0 ? filteredItems[idx - 1] : null;
+                const showQuranSectionHeading =
+                  sourceFilter === 'all' &&
+                  categoryQuranCount > 0 &&
+                  categoryDuaCount > 0 &&
+                  item.type === 'quran' &&
+                  (!prevItem || prevItem.type !== 'quran');
+                const showSunnahSectionHeading =
+                  sourceFilter === 'all' &&
+                  categoryQuranCount > 0 &&
+                  categoryDuaCount > 0 &&
+                  item.type === 'dua' &&
+                  (!prevItem || prevItem.type !== 'dua');
                 const currentCount = counts[item.id] || 0;
                 const isCompleted =
                   item.type !== 'guideline' &&
@@ -1547,8 +1925,24 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                 const isPlayingThis = audioCurrentItemId === item.id && audioIsPlaying && !activeAudioSessionId;
 
                 return (
+                  <React.Fragment key={item.id}>
+                    {showQuranSectionHeading && (
+                      <div className="pt-2 pb-1 flex items-center justify-between border-b border-[var(--wird-border)]">
+                        <h4 className="text-sm font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                          أولاً: آيات الرقية الثابتة من القرآن الكريم ({categoryQuranCount})
+                        </h4>
+                        <span className="text-[11px] text-[var(--wird-muted)]">من مصحف وِرد المعتمد</span>
+                      </div>
+                    )}
+                    {showSunnahSectionHeading && (
+                      <div className="pt-4 pb-1 flex items-center justify-between border-b border-[var(--wird-border)]">
+                        <h4 className="text-sm font-bold font-editorial-ar text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
+                          ثانياً: الرقية والأدعية الثابتة من السنة النبوية الصحيحة ({categoryDuaCount})
+                        </h4>
+                        <span className="text-[11px] text-[var(--wird-muted)]">بتخريجها من الصحيحين والسنن</span>
+                      </div>
+                    )}
                   <article
-                    key={item.id}
                     id={`ruqyah-card-${item.id}`}
                     onClick={event => {
                       if ((event.target as HTMLElement).closest('button, a, input, select, label')) return;
@@ -1720,6 +2114,7 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
                       </div>
                     )}
                   </article>
+                  </React.Fragment>
                 );
               })}
 
@@ -1759,6 +2154,49 @@ export const RuqyahView: React.FC<RuqyahViewProps> = ({ onToast }) => {
       {viewMode === 'api_library' && (
         <div style={{ zoom: displayPreferences.uiScale / 100 }}>
           <RuqyahApiLibrary />
+        </div>
+      )}
+
+      {/* Floating Background Mini-Player when Timed Session Plays Across Written Tabs */}
+      {activeAudioSessionId && audioQueueLength > 0 && viewMode !== 'audio_studio' && (
+        <div
+          role="region"
+          aria-label="مشغل الرقية المصغر في الخلفية"
+          className="fixed bottom-16 lg:bottom-4 inset-x-4 max-w-2xl mx-auto z-40 wird-card rounded-2xl p-3.5 shadow-lg border border-[var(--wird-border-gold)] flex items-center justify-between gap-3"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] truncate">
+              {audioQueueLabel} · {audioCurrentItemTitle}
+            </p>
+            <p className="text-[11px] text-[var(--wird-muted)] font-mono tabular-nums">
+              المقطع {audioQueuePosition} من {audioQueueLength} · {formatAudioTime(audioCurrentTime)}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={toggleAudioPlayback}
+              className="min-h-10 px-3 rounded-xl bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] text-xs font-bold inline-flex items-center gap-1.5"
+            >
+              {audioIsPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+              <span>{audioIsPlaying ? 'إيقاف مؤقت' : 'استئناف'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('audio_studio')}
+              className="min-h-10 px-3 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] text-xs font-bold text-[var(--wird-text)]"
+            >
+              المشغل
+            </button>
+            <button
+              type="button"
+              onClick={stopRuqyahAudio}
+              aria-label="إيقاف الرقية المسموعة"
+              className="min-h-10 min-w-10 rounded-xl bg-[var(--wird-surface-muted)] border border-[var(--wird-border)] flex items-center justify-center text-[var(--wird-muted)] hover:text-rose-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
     </div>

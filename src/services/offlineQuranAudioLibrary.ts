@@ -25,7 +25,7 @@ export type OfflineAudioJobStatus =
   | 'failed'
   | 'cancelled';
 
-export type OfflineAudioJobScopeKind = 'surah' | 'juz' | 'plan' | 'range';
+export type OfflineAudioJobScopeKind = 'surah' | 'juz' | 'plan' | 'range' | 'ruqyah';
 
 export interface OfflineAudioJob {
   jobId: string;
@@ -530,6 +530,50 @@ export class OfflineQuranAudioLibrary {
       availableFilesCount: availableFiles.length,
       totalBytes: availableFiles.reduce((sum, f) => sum + f.byteLength, 0)
     };
+  }
+
+  /** Fast lookup of all verified offline globalAyahNumbers for a given reciter. */
+  async getAvailableGlobalAyahsForReciter(reciterId: string): Promise<Set<number>> {
+    if (!reciterId || !this.factory) return new Set();
+    try {
+      const db = await this.openDatabase();
+      const tx = db.transaction([STORE_AUDIO_FILES], 'readonly');
+      const done = idbTx(tx);
+      const files = (await idbReq(
+        tx.objectStore(STORE_AUDIO_FILES).index('reciterId').getAll(IDBKeyRange.only(reciterId))
+      )) as OfflineAudioFileRecord[];
+      await done;
+      const result = new Set<number>();
+      for (const f of files) {
+        if (f.available && !f.deletionPending) {
+          result.add(f.globalAyahNumber);
+        }
+      }
+      return result;
+    } catch {
+      return new Set();
+    }
+  }
+
+  /** Automatically resume interrupted (queued / partial / failed) jobs when network connectivity returns. */
+  async resumeInterruptedJobsOnReconnect(): Promise<number> {
+    if (!this.factory) return 0;
+    try {
+      const jobs = await this.listJobs();
+      const candidates = jobs.filter(
+        j =>
+          (j.status === 'partial' || j.status === 'failed' || j.status === 'queued') &&
+          !this.pausedJobs.has(j.jobId) &&
+          !this.cancelledJobs.has(j.jobId) &&
+          !this.runningWorkers.has(j.jobId)
+      );
+      for (const job of candidates) {
+        void this.startOrResumeJob(job.jobId).catch(() => undefined);
+      }
+      return candidates.length;
+    } catch {
+      return 0;
+    }
   }
 
   async enqueueDownloadJob(params: {
