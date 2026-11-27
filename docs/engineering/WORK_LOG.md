@@ -1146,4 +1146,41 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - `src/services/offlinePreparationService.ts`, `public/sw.js`, `src/services/mushafFacsimileService.ts`: Added `registration.active` fallback when `controller` is `null` and 3-attempt retries with backoff.
 - `src/services/cloudSyncCoordinator.ts`: Pull remote reconciliation before `flushAuxiliaryCloudSyncNow()` when local outbox is empty so fresh devices learn server revisions first.
 - **Firebase Production (`wird-quran-app`):** Executed `firebase deploy --only firestore:rules --project wird-quran-app` per explicit owner authorization (`rules file firestore.rules compiled successfully` → `released rules firestore.rules to cloud.firestore` → `Deploy complete!`).
-- **Google Sign-In Hardening (`vercel.json`, `public/sw.js`, `src/context/AuthContext.tsx`, `src/services/authService.ts`):** Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` and Firebase Auth reverse-proxy rewrites (`/__/auth/:path*`, `/__/firebase/init.json`) in `vercel.json`, excluded `/__/` from `public/sw.js` fetch interception, surfaced `getRedirectResult` errors and set `user` immediately on popup success in `AuthContext.tsx`, and added Arabic diagnostics for `auth/operation-not-allowed`, `auth/missing-initial-state`, `auth/web-storage-unsupported`, and `auth/internal-error` in `authService.ts`.
+- **Google Sign-In Hardening & Same-Origin `authDomain` (`src/lib/firebase.ts`, `vercel.json`, `public/sw.js`, `src/context/AuthContext.tsx`, `src/services/authService.ts`):** Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` and Firebase Auth reverse-proxy rewrites (`/__/auth/:path*`, `/__/firebase/init.json`) in `vercel.json`, excluded `/__/` from `public/sw.js` fetch interception, surfaced `getRedirectResult` errors and set `user` immediately on popup success in `AuthContext.tsx`, added Arabic diagnostics in `authService.ts`, verified Google OAuth acceptance of `https://wird-app.vercel.app/__/auth/handler` after owner console update, and switched Production `authDomain` in `src/lib/firebase.ts` to `'wird-app.vercel.app'` (keeping `wird-quran-app.firebaseapp.com` for local dev/tests).
+
+---
+
+## 2026-11-27 — Firebase SQL Connect (Data Connect) Setup & Type-Safe Web SDK (`main`, base `9e1666de`, uncommitted local changes)
+
+### Scope & Implementation
+- **Firebase CLI & Project Link (`.firebaserc`, `firebase.json`, `.gitignore`):** Verified Node `v26.13.0`, `firebase-tools@15.37.0` via `npx`, authenticated session (`xm8eslam@gmail.com` / `ifawz40@gmail.com`), active Firebase project `wird-quran-app` (`WIRD`, project number `741238306826`, registered Web app `1:741238306826:web:3db91a75a7b7dc5dae07f3`), and zero pre-existing SQL Connect services. Added `.firebaserc` (`default: "wird-quran-app"`), added `dataconnect` source + emulator port `9399` to `firebase.json` (preserving `firestore.rules` intact), and ignored `.dataconnect/` in `.gitignore`.
+- **Relational Schema, Authorized Operations & Local Seed Data (`dataconnect/`):**
+  - `dataconnect/dataconnect.yaml`: Configured `serviceId: "wird-quran-app-service"`, `location: "us-central1"`, PostgreSQL `database: "fdcdb"`, `instanceId: "wird-quran-app-fdc"`, `schemaValidation: "STRICT"`.
+  - `dataconnect/schema/schema.gql`: Defined `5` enums (`PlanType`, `PlanUnitType`, `PortionStatus`, `RevisionRating`, `PortionStrength`) and `7` normalized tables (`User`, `MemorizationPlan`, `MemorizationPortion`, `RevisionLog`, `WeakVerse`, `DailyActivityLog`, `AssessmentResult`) with explicit `userUid` foreign keys, composite B-tree indexes, and coordinate-only Quran references (preserving WIRD's verified local Tanzil Quran text boundary).
+  - `dataconnect/connector/connector.yaml`, `queries.gql`, `mutations.gql`: Authored `8` queries and `10` mutations (`18` total), every operation enforcing `@auth(level: USER_EMAIL_VERIFIED)` (matching `firestore.rules` `isVerifiedUser()`) and binding row ownership strictly via server-side `auth.uid` (including atomic `@transaction` mutations `AssignPortionToPlan` and `RecordRevisionReview` with `query @redact` + `@check`). Configured `javascriptSdk` (`@wird/dataconnect`, `outputDir: "../../src/lib/dataconnect"`, 5s in-memory client cache, `packageJsonDir` omitted to preserve `package.json`/`bun.lock` parity).
+  - `dataconnect/seed_data.gql`: Added local-only transactional `SeedWirdDevData` and `ResetWirdDevData` mutations without `@auth` directives.
+- **Type-Safe Web SDK Integration & Automated Tests (`src/lib/dataconnect/`, `src/lib/dataconnectEntry.js`, `src/lib/dataconnectEntry.d.ts`, `src/lib/sqlConnectClient.ts`, `tsconfig.json`, `vite.config.ts`, `src/tests/dataConnectSetup.test.ts`, `src/tests/runAllTests.ts`):**
+  - Generated `@wird/dataconnect` SDK into `src/lib/dataconnect/` and mapped `@wird/dataconnect` cleanly across `tsc`, `tsx`, and `vite` via `src/lib/dataconnectEntry.{js,d.ts}` (kept outside the generated directory so re-running `dataconnect:sdk:generate` never overwrites it).
+  - Created `src/lib/sqlConnectClient.ts` with lazy `getWirdDataConnect()` bound to canonical `wird-quran-app`, opt-in emulator configuration (`VITE_FIREBASE_DATACONNECT_EMULATOR=true`), and resilient enum mappers with explicit `default` branches.
+  - Added `src/tests/dataConnectSetup.test.ts` (`7` tests) and registered it in `src/tests/runAllTests.ts`.
+
+### Verification Executed (2026-11-27, local workspace on base `9e1666de`)
+- `npx -y firebase-tools@latest use` (inside `WIRD-APP`): **PASS** (`wird-quran-app`)
+- `npx -y firebase-tools@latest dataconnect:compile`: **PASS** (`Successfully compiled SQL Connect service: wird-quran-app-service`)
+- `npx -y firebase-tools@latest dataconnect:sdk:generate`: **PASS** (`Successfully Generated SDKs for services: wird-quran-app-service`)
+- `tsc --noEmit`: **PASS** (`0` errors)
+- `tsx src/tests/dataConnectSetup.test.ts`: **PASS** (`7 PASSED | 0 FAILED`)
+- `npm.cmd test` (`76` suites incl. Tanzil validation + 114 Surah split): **PASS** (`840 PASSED | 0 FAILED`)
+- `NODE_ENV=production vite build`: **PASS** (`3.68s`, `vendor-firebase` `159.05 kB`, `0` chunks > 500 kB)
+- `npm.cmd run smoke:api-imports`: **PASS**
+- Protected files (`firestore.rules`, `package.json`, `bun.lock`, Quran corpus, Vercel env vars/flags): **UNTOUCHED**
+- Production Cloud SQL deployment (`deploy --only dataconnect`) & live SQL Connect emulator execution: **NOT EXECUTED** (production deploy requires explicit owner Blaze/Cloud SQL authorization; recorded in `docs/OWNER_ACTIONS.md`).
+
+### Follow-Up — Typed Repository & Live Auth + SQL Connect Emulator Verification (2026-11-27)
+- Added `emulators.auth.port: 9099` to `firebase.json`, created domain-typed `src/services/sqlConnectRepository.ts` (forwarding `ExecuteQueryOptions` `fetchPolicy` and omitting undefined optional query variables so SQL Connect never receives `limit: null`), and created `scripts/dataconnectEmulator.test.ts`.
+- Executed `npx -y firebase-tools@latest emulators:exec --only auth,dataconnect --project demo-wird "node_modules\.bin\tsx.cmd scripts/dataconnectEmulator.test.ts"`: **PASS (`7 PASSED | 0 FAILED`)** against live local PostgreSQL + Auth emulator (verified unauthenticated denial, unverified-email denial, verified User A profile/plan/portion CRUD, atomic `RecordRevisionReview` `@transaction`, coordinate-only weak-verse upsert/resolve with `QueryFetchPolicy.SERVER_ONLY`, idempotent daily activity upsert, assessment results, and User B cross-user isolation).
+- Re-ran full quality gate after repository edits: `tsc --noEmit` (**PASS**, `0` errors), `npm.cmd test` (**PASS**, `840 PASSED | 0 FAILED`), `NODE_ENV=production vite build` (**PASS**, `3.26s`, `0` chunks > 500 kB), `npm.cmd run smoke:api-imports` (**PASS**).
+- Production Cloud SQL deployment (`deploy --only dataconnect`) remains **NOT EXECUTED** pending explicit owner authorization (Cloud SQL / Blaze billing).
+
+### Next Action
+- Review local diff and commit on a feature branch when ready, or explicitly authorize provisioning Cloud SQL and deploying with `npx -y firebase-tools@latest deploy --only dataconnect`.

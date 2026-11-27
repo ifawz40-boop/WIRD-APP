@@ -1,8 +1,8 @@
 # WIRD — Continuation Entry Point
 
 **Last reconciled:** 2026-11-27 (Root-cause fix for Offline Audio CORS Downloads via same-origin `/api/quran-audio?type=ayah` proxy, First-Visit Service Worker Offline Preparation via `registration.active`, 604p Mushaf retry hardening, Cloud Sync fresh-device `REMOTE_REVISION_CONFLICT` deadlock fix, and Production `firestore.rules` deployment to `wird-quran-app`)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (base `2a85d7a5`)  
-**Production URL:** https://wird-app.vercel.app/ · **Firebase Project:** `wird-quran-app` (`(default)` Firestore — `firestore.rules` deployed & released 2026-11-27)
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (base `9e1666de`)  
+**Production URL:** https://wird-app.vercel.app/ · **Firebase Project:** `wird-quran-app` (`(default)` Firestore — `firestore.rules` deployed & released 2026-11-27; SQL Connect / Data Connect configured locally, not yet deployed)
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
@@ -17,8 +17,14 @@
 3. **Cloud Sync Deadlock Fixed & `firestore.rules` Deployed (`src/services/cloudSyncCoordinator.ts`, Firebase `wird-quran-app`):**
    - **Root Cause 1:** `triggerSync()` flushed `syncMeta/auxiliaryDomainsV1` (`baseRevision: 0`) BEFORE pulling remote events, causing a permanent `REMOTE_REVISION_CONFLICT` + `blocked_pending_local` deadlock on any second device or fresh sign-in. Fixed by pulling remote state first when the local outbox is empty.
    - **Root Cause 2:** Repository `firestore.rules` had not been released to Production `wird-quran-app`. Deployed & verified compiled/released via `firebase deploy --only firestore:rules --project wird-quran-app` (authorized by owner).
-4. **Google Sign-In Hardening (`vercel.json`, `public/sw.js`, `src/context/AuthContext.tsx`, `src/services/authService.ts`):**
-   - Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` + `/__/auth/:path*` & `/__/firebase/init.json` rewrites in `vercel.json`, excluded `/__/` from Service Worker interception, surfaced `getRedirectResult` errors instead of swallowing them silently, and added clear Arabic error messages for all Google Auth failure codes.
+4. **Same-Origin Google Sign-In (`src/lib/firebase.ts`, `vercel.json`, `public/sw.js`, `src/context/AuthContext.tsx`, `src/services/authService.ts`):**
+   - Verified owner added `https://wird-app.vercel.app` & `https://wird-app.vercel.app/__/auth/handler` in Google Cloud Console OAuth 2.0 Web Client (`accounts.google.com/v3/signin/identifier` accepted with zero `redirect_uri_mismatch`).
+   - Enabled same-origin `authDomain: 'wird-app.vercel.app'` on Production in `src/lib/firebase.ts` alongside `vercel.json` `/__/auth/:path*` proxy & `Cross-Origin-Opener-Policy: same-origin-allow-popups`, eliminating cross-site third-party storage partitioning failures on mobile/PWA/Chrome/Safari.
+5. **Firebase SQL Connect (Data Connect) Setup, Repository & Live Emulator Verification (`.firebaserc`, `firebase.json`, `dataconnect/`, `src/lib/dataconnect/`, `src/lib/sqlConnectClient.ts`, `src/services/sqlConnectRepository.ts`, `src/tests/dataConnectSetup.test.ts`, `scripts/dataconnectEmulator.test.ts`):**
+   - Linked local repository to canonical Firebase project `wird-quran-app` via `.firebaserc` and added `dataconnect` config + `auth` (`9099`) and `dataconnect` (`9399`) emulators to `firebase.json` (preserving `firestore.rules` untouched).
+   - Authored normalized PostgreSQL relational schema (`dataconnect/schema/schema.gql` — `User`, `MemorizationPlan`, `MemorizationPortion`, `RevisionLog`, `WeakVerse`, `DailyActivityLog`, `AssessmentResult`; coordinates only, respecting the local Tanzil Quran text boundary), 18 `@auth(level: USER_EMAIL_VERIFIED)` queries/mutations scoped strictly to `auth.uid` (including transactional `RecordRevisionReview` and `AssignPortionToPlan`), and local-only `dataconnect/seed_data.gql`.
+   - Built domain-typed `src/services/sqlConnectRepository.ts` (with `ExecuteQueryOptions` `fetchPolicy` forwarding and omitted optional query variables) and verified live against Firebase Auth + SQL Connect PostgreSQL emulators via `scripts/dataconnectEmulator.test.ts` (`7 PASSED | 0 FAILED`: unauthenticated/unverified denial, profile/plan/portion CRUD, atomic `RecordRevisionReview` `@transaction`, coordinate-only weak verse upsert/resolve, idempotent daily activity upsert, and cross-user isolation).
+   - Verified `dataconnect:compile`, `dataconnect:sdk:generate` (zero changes to `package.json`/`bun.lock`), `tsc --noEmit`, `npm.cmd test` (`840 PASSED | 0 FAILED`), `vite build` (`3.26s`, `0` chunks > 500 kB), and `smoke:api-imports`. Production Cloud SQL deployment remains unexecuted pending explicit owner authorization (`docs/OWNER_ACTIONS.md`).
 
 ---
 

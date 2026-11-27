@@ -106,9 +106,13 @@ let googleAuthProvider: GoogleAuthProvider | null = null;
 
 if (isFirebaseConfigured()) {
   const config = getResolvedFirebaseConfig();
+  const effectiveAuthDomain =
+    typeof window !== 'undefined' && window.location.hostname === 'wird-app.vercel.app'
+      ? 'wird-app.vercel.app'
+      : config.authDomain;
   const firebaseConfig = {
     apiKey: config.apiKey,
-    authDomain: config.authDomain,
+    authDomain: effectiveAuthDomain,
     projectId: config.projectId,
     storageBucket: config.storageBucket,
     messagingSenderId: config.messagingSenderId,
