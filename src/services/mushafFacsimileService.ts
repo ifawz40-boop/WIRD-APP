@@ -314,9 +314,29 @@ export async function downloadFullMushafForOffline(
         onProgress?.({ completed, total: totalPages, cachedBytesApprox: approxBytes });
         continue;
       }
-      const response = await fetch(request, { signal });
-      if (!response.ok) {
-        throw new Error(`تعذر تحميل صفحة المصحف رقم ${pageNum}.`);
+      let response: Response | null = null;
+      let lastFetchErr: unknown = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await fetch(request, { signal });
+          if (response.ok) break;
+          if (response.status >= 500 && attempt < 2) {
+            await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+            continue;
+          }
+          break;
+        } catch (err) {
+          lastFetchErr = err;
+          if (signal?.aborted) throw new Error('تم إيقاف تنزيل صفحات المصحف مؤقتاً.');
+          if (attempt < 2) {
+            await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+          }
+        }
+      }
+      if (!response || !response.ok) {
+        throw lastFetchErr instanceof Error
+          ? lastFetchErr
+          : new Error(`تعذر تحميل صفحة المصحف رقم ${pageNum}.`);
       }
       const text = await response.text();
       parseMushafViewBox(text);

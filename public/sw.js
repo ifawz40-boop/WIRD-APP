@@ -86,7 +86,7 @@ async function precacheQuranFont(cache) {
 
 async function fetchOfflineAssetWithRetry(request, pathname) {
   let lastError = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetchWithTimeout(request, {}, OFFLINE_ASSET_REQUEST_TIMEOUT_MS);
       if (!isValidOfflineAssetResponse(pathname, response)) {
@@ -95,8 +95,8 @@ async function fetchOfflineAssetWithRetry(request, pathname) {
       return response;
     } catch (err) {
       lastError = err;
-      if (attempt === 0) {
-        await new Promise((r) => setTimeout(r, 450));
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, attempt === 0 ? 450 : 1000));
       }
     }
   }

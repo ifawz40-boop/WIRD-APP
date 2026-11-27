@@ -1130,3 +1130,19 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 
 ### Next Action
 - Per explicit owner authorization («كمل وارفع على جيت هب main و انشر على فيرسل»), merge `feat/master-app-overhaul-20261126` into `main`, push to `origin/main`, and verify GitHub Actions CI + Vercel Production deployment status.
+
+---
+
+## 2026-11-27 — Root-Cause Fix for Offline Downloads & Cloud Sync + Firebase Rules Deployment (`main`)
+
+### Root Causes Diagnosed
+1. **Offline Audio Downloads (100% browser failure):** Live HTTP probe proved `cdn.islamic.network` omits `Access-Control-Allow-Origin`, causing `fetch(..., { mode: 'cors' })` in `offlineQuranAudioLibrary.ts` to throw a CORS `TypeError` on every ayah of every reciter in real browsers (plus `ar.ahmedajamy` returned `application/octet-stream`).
+2. **Full-App Offline Preparation & 604p Mushaf Pack:** `prepareWirdForOffline()` and `getWirdOfflinePackageStatus()` rejected immediately when `navigator.serviceWorker.controller` was `null` (first visit / hard refresh) instead of using `registration.active`; `downloadFullMushafForOffline()` had no per-page retry across 604 SVGs.
+3. **Cloud Sync Deadlock & Undeployed Rules:** `cloudSyncCoordinator.ts` called `flushAuxiliaryCloudSyncNow()` (`baseRevision: 0`) BEFORE pulling remote events, causing a permanent `REMOTE_REVISION_CONFLICT` + `blocked_pending_local` deadlock on any second device or fresh sign-in. Additionally, Production `wird-quran-app` had not had repository `firestore.rules` released.
+
+### Changes Applied & Firebase Deployment
+- `api/quran-audio.ts` & `scripts/smoke-api-imports.mjs`: Added strictly allowlisted same-origin proxy `GET /api/quran-audio?type=ayah&reciter=<approvedId>&ayah=<1..6236>` (immutable Edge CDN cache `s-maxage=31536000`, `audio/mpeg` content-type, 8 MB limit, 15s timeout).
+- `src/services/offlineQuranAudioLibrary.ts` & `src/components/settings/SettingsView.tsx`: Added transparent browser CORS fallback to `/api/quran-audio?type=ayah&...`, `application/octet-stream` audio handling, and `job.lastError` visibility.
+- `src/services/offlinePreparationService.ts`, `public/sw.js`, `src/services/mushafFacsimileService.ts`: Added `registration.active` fallback when `controller` is `null` and 3-attempt retries with backoff.
+- `src/services/cloudSyncCoordinator.ts`: Pull remote reconciliation before `flushAuxiliaryCloudSyncNow()` when local outbox is empty so fresh devices learn server revisions first.
+- **Firebase Production (`wird-quran-app`):** Executed `firebase deploy --only firestore:rules --project wird-quran-app` per explicit owner authorization (`rules file firestore.rules compiled successfully` → `released rules firestore.rules to cloud.firestore` → `Deploy complete!`).

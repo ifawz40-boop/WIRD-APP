@@ -273,6 +273,8 @@ export class OfflineQuranAudioLibrary {
   private readonly cacheStorageFactory?: CacheStorageLike;
   private readonly cacheName: string;
   private readonly fetchFn?: typeof fetch;
+  private readonly isCustomFetch: boolean;
+  private directCdnCorsBlocked = false;
   private readonly storageEstimateFn?: () => Promise<StorageEstimate>;
   private readonly lockRunner?: <T>(name: string, task: () => Promise<T>) => Promise<T>;
   private readonly concurrency: number;
@@ -289,6 +291,7 @@ export class OfflineQuranAudioLibrary {
     this.cacheStorageFactory = deps.cacheStorageFactory ??
       (typeof caches !== 'undefined' ? (caches as unknown as CacheStorageLike) : undefined);
     this.cacheName = deps.cacheName ?? OFFLINE_AUDIO_CACHE_NAME;
+    this.isCustomFetch = Boolean(deps.fetchFn);
     this.fetchFn = deps.fetchFn ?? (typeof fetch === 'function' ? fetch.bind(globalThis) : undefined);
     this.storageEstimateFn = deps.storageEstimateFn ??
       (typeof navigator !== 'undefined' && navigator.storage?.estimate
@@ -929,16 +932,53 @@ export class OfflineQuranAudioLibrary {
         try {
           let response: Response | null = null;
           let lastNetErr: unknown = null;
+          const useBrowserFetch =
+            typeof window !== 'undefined' &&
+            !this.isCustomFetch;
+          const sameOriginProxyUrl = `/api/quran-audio?type=ayah&reciter=${encodeURIComponent(item.reciterId)}&ayah=${item.globalAyahNumber}`;
+
           for (let attempt = 0; attempt < 2; attempt++) {
             try {
-              response = await this.fetchFn!(item.url, {
-                method: 'GET',
-                mode: 'cors',
-                redirect: 'error',
-                credentials: 'omit',
-                cache: 'no-store',
-                signal: controller.signal
-              });
+              if (useBrowserFetch && this.directCdnCorsBlocked) {
+                response = await this.fetchFn!(sameOriginProxyUrl, {
+                  method: 'GET',
+                  mode: 'same-origin',
+                  credentials: 'same-origin',
+                  cache: 'force-cache',
+                  signal: controller.signal
+                });
+              } else {
+                try {
+                  response = await this.fetchFn!(item.url, {
+                    method: 'GET',
+                    mode: 'cors',
+                    redirect: 'error',
+                    credentials: 'omit',
+                    cache: 'no-store',
+                    signal: controller.signal
+                  });
+                } catch (directErr) {
+                  if (
+                    useBrowserFetch &&
+                    !(directErr instanceof Error && directErr.name === 'AbortError') &&
+                    !this.pausedJobs.has(jobId) &&
+                    !this.cancelledJobs.has(jobId)
+                  ) {
+                    // cdn.islamic.network omits Access-Control-Allow-Origin headers in browsers;
+                    // transparently switch to WIRD's same-origin allowlisted audio proxy.
+                    this.directCdnCorsBlocked = true;
+                    response = await this.fetchFn!(sameOriginProxyUrl, {
+                      method: 'GET',
+                      mode: 'same-origin',
+                      credentials: 'same-origin',
+                      cache: 'force-cache',
+                      signal: controller.signal
+                    });
+                  } else {
+                    throw directErr;
+                  }
+                }
+              }
               if (response.status >= 500 && attempt === 0) {
                 await new Promise(r => setTimeout(r, 320));
                 continue;
@@ -964,8 +1004,13 @@ export class OfflineQuranAudioLibrary {
           if (response.status !== 200 || response.type === 'opaque') {
             throw new Error(`استجابة غير صالحة من مصدر التلاوة (${response.status}).`);
           }
-          const contentType = (response.headers.get('content-type') || '').toLowerCase();
-          if (!contentType.startsWith('audio/')) {
+          const rawContentType = (response.headers.get('content-type') || '').toLowerCase();
+          const contentType = rawContentType.startsWith('audio/')
+            ? rawContentType
+            : rawContentType === 'application/octet-stream'
+              ? 'audio/mpeg'
+              : '';
+          if (!contentType) {
             throw new Error('نوع الملف المستلم ليس ملفاً صوتياً معتمداً.');
           }
           const declaredLength = response.headers.get('content-length');

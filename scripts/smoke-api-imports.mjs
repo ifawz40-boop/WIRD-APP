@@ -1,7 +1,8 @@
-const [metadata, tafsir, ruqyah, hadithReferences, youtubePlaylist, seerahTts] = await Promise.all([
+const [metadata, tafsir, ruqyah, quranAudio, hadithReferences, youtubePlaylist, seerahTts] = await Promise.all([
   import('../src/data/quranMeta.ts'),
   import('../api/tafsir.ts'),
   import('../api/ruqyah.ts'),
+  import('../api/quran-audio.ts'),
   import('../api/hadith-references.ts'),
   import('../api/youtube-playlist.ts'),
   import('../api/seerah-tts.ts')
@@ -11,7 +12,7 @@ if (metadata.ALL_SURAHS.length !== 114) {
   throw new Error(`Expected 114 Quran surahs, received ${metadata.ALL_SURAHS.length}`);
 }
 
-for (const [name, route] of Object.entries({ tafsir, ruqyah, hadithReferences, youtubePlaylist, seerahTts })) {
+for (const [name, route] of Object.entries({ tafsir, ruqyah, quranAudio, hadithReferences, youtubePlaylist, seerahTts })) {
   if (typeof route.default !== 'function') {
     throw new Error(`Expected ${name} route to export a handler`);
   }
@@ -34,6 +35,7 @@ async function request(route, query) {
 for (const [name, response] of [
   ['tafsir', await request(tafsir, { surah: '0', ayah: '0' })],
   ['ruqyah', await request(ruqyah, { type: 'unsupported' })],
+  ['quran audio', await request(quranAudio, { type: 'ayah', reciter: 'invalid', ayah: '0' })],
   ['hadith references', await request(hadithReferences, { surah: '0', ayah: '0' })],
   ['youtube playlist', await request(youtubePlaylist, { list: '../invalid' })],
   ['seerah tts', await request(seerahTts, { text: '' })]

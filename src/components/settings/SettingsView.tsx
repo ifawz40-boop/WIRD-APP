@@ -1019,6 +1019,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         <div className="text-[11px] text-[var(--wird-muted)] tabular-nums">
                           {statusLabel} · {job.completedItems}/{job.totalItems} آية ({percent}%) · {formatBytesLabel(job.totalBytes)}
                         </div>
+                        {job.lastError && (job.status === 'failed' || job.status === 'partial') && (
+                          <div className="text-[11px] text-rose-700 dark:text-rose-300 font-medium mt-0.5">
+                            {job.lastError}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5">

@@ -1,13 +1,26 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-26 (Master App Overhaul — Typography/Circle-Glyph Fix, New Geometric SVG Brand & PWA Icons, Written + Audio Ruqyah Rebuild with MediaSession & Offline Downloads, Gemini 2.5 Flash AI Assistant Upgrade, Internal Runtime & 100% Full-Offline Engine on `feat/master-app-overhaul-20261126` → merging & pushing to `main` per explicit owner directive)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (pre-merge base `9d97c725`) · **Active feature branch:** `feat/master-app-overhaul-20261126`  
-**Prior merged baseline:** `9d97c725` (`feat(adhkar): implement interactive Adhkar redesign`, descended from `b5d5061b` Seerah Digital Book)  
-**Last historical CI/Vercel checkpoint (2026-11-14):** `f264e4bdea7496090f60940e9e8db03e2fb15696`; app-code merge `d265bdf37e9410ad6cd99273bb595526dce63b50`.
+**Last reconciled:** 2026-11-27 (Root-cause fix for Offline Audio CORS Downloads via same-origin `/api/quran-audio?type=ayah` proxy, First-Visit Service Worker Offline Preparation via `registration.active`, 604p Mushaf retry hardening, Cloud Sync fresh-device `REMOTE_REVISION_CONFLICT` deadlock fix, and Production `firestore.rules` deployment to `wird-quran-app`)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (base `2a85d7a5`)  
+**Production URL:** https://wird-app.vercel.app/ · **Firebase Project:** `wird-quran-app` (`(default)` Firestore — `firestore.rules` deployed & released 2026-11-27)
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Checkpoint — Master App Overhaul (2026-11-26)
+## Active Checkpoint — Downloads & Cloud Sync Root-Cause Fix (2026-11-27)
+
+1. **Offline Quran & Ruqyah Audio Downloads Fixed (`api/quran-audio.ts`, `src/services/offlineQuranAudioLibrary.ts`, `src/components/settings/SettingsView.tsx`):**
+   - **Root Cause:** `cdn.islamic.network` omits `Access-Control-Allow-Origin`, causing `fetch(..., { mode: 'cors' })` to fail 100% of the time in real browsers (`ar.ahmedajamy` also returns `application/octet-stream`).
+   - **Fix:** Added strictly allowlisted same-origin proxy `GET /api/quran-audio?type=ayah&reciter=<approvedId>&ayah=<1..6236>` (immutable Edge CDN cache `s-maxage=31536000`, `Content-Type: audio/mpeg`, 8 MB bound, 15s timeout), transparent CORS-fallback in `OfflineQuranAudioLibrary` with zero mock-test regression, and visible `job.lastError` diagnostics in `SettingsView`.
+2. **Full-App Offline Package & 604p Mushaf Download Hardened (`src/services/offlinePreparationService.ts`, `public/sw.js`, `src/services/mushafFacsimileService.ts`):**
+   - **Root Cause:** `prepareWirdForOffline` and `getWirdOfflinePackageStatus` threw on first visit/hard refresh when `navigator.serviceWorker.controller` was `null` even though `registration.active` was ready; `downloadFullMushafForOffline` had no per-page retry across 604 SVGs.
+   - **Fix:** Fall back to `registration.active` when `controller` is `null`; upgraded `fetchOfflineAssetWithRetry` (`public/sw.js`) and `downloadFullMushafForOffline` (`mushafFacsimileService.ts`) to 3-attempt retries with backoff.
+3. **Cloud Sync Deadlock Fixed & `firestore.rules` Deployed (`src/services/cloudSyncCoordinator.ts`, Firebase `wird-quran-app`):**
+   - **Root Cause 1:** `triggerSync()` flushed `syncMeta/auxiliaryDomainsV1` (`baseRevision: 0`) BEFORE pulling remote events, causing a permanent `REMOTE_REVISION_CONFLICT` + `blocked_pending_local` deadlock on any second device or fresh sign-in. Fixed by pulling remote state first when the local outbox is empty.
+   - **Root Cause 2:** Repository `firestore.rules` had not been released to Production `wird-quran-app`. Deployed & verified compiled/released via `firebase deploy --only firestore:rules --project wird-quran-app` (authorized by owner).
+
+---
+
+## Prior Checkpoint — Master App Overhaul (2026-11-26 — Historical / Merged into `main`)
 
 Full phased plan and execution log: [`docs/MASTER_APP_OVERHAUL.md`](./MASTER_APP_OVERHAUL.md).
 

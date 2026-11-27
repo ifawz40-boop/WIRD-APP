@@ -1,7 +1,16 @@
 # WIRD — Master Project State
 
-**Current snapshot reconciled:** 2026-11-26 (WIRD Next Complete Platform Upgrade on `feat/wird-next-complete-platform-20261126` from `main` @ `24c05953` — Self-Hosted 18-File WOFF2 Typography & Paper Tones, Realistic 3D RTL Paper-Flip Mushaf + 4 Silk Ribbons + 604p Offline Pack, Unified 8-Reciter 6-Worker Offline Audio Manager + Inline Surah Badges, Cloud Sync V3 Full-Domain Convergent Merge, Realistic Seerah Audio Narrator (`gemini-3.8-flash-tts` + Qari Interleaving), Muhaffidh Self-Recitation Studio, Mutashabihat + Share Cards, and `gemini-4-hydrogen` Advisor)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (base `24c05953`) · **Active branch:** `feat/wird-next-complete-platform-20261126`
+**Current snapshot reconciled:** 2026-11-27 (Downloads & Cloud Sync Root-Cause Fix + Production `firestore.rules` Deployment on `wird-quran-app` + Same-Origin `/api/quran-audio?type=ayah` Offline Audio Proxy)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Production URL:** https://wird-app.vercel.app/ · **Primary branch:** `main` (base `2a85d7a5`) · **Firebase:** `wird-quran-app` (`firestore.rules` released 2026-11-27)
+
+- **Verified Fixes Implemented & Deployed (2026-11-27):**
+  - **Offline Audio Downloads (`api/quran-audio.ts`, `src/services/offlineQuranAudioLibrary.ts`, `src/components/settings/SettingsView.tsx`):** Fixed 100% browser CORS failure on `cdn.islamic.network` (which omits `Access-Control-Allow-Origin`) by adding allowlisted same-origin proxy `GET /api/quran-audio?type=ayah&reciter=<id>&ayah=<1..6236>` (`Cache-Control: public, s-maxage=31536000, immutable`, `audio/mpeg` normalization for `ar.ajamy`), transparent browser CORS fallback in `OfflineQuranAudioLibrary`, and `job.lastError` display in Settings.
+  - **App Offline Package & 604p Mushaf Downloads (`src/services/offlinePreparationService.ts`, `public/sw.js`, `src/services/mushafFacsimileService.ts`):** Resolved first-visit `navigator.serviceWorker.controller === null` failure via `registration.active` fallback and added 3-attempt retries with backoff for both SW offline assets (`327` files) and 604 Mushaf SVGs.
+  - **Cloud Sync & Firebase (`src/services/cloudSyncCoordinator.ts`, Firebase `wird-quran-app`):** Fixed fresh-device `REMOTE_REVISION_CONFLICT` + `blocked_pending_local` deadlock by pulling remote events before `flushAuxiliaryCloudSyncNow()` when the local outbox is empty; compiled and released `firestore.rules` to Production `wird-quran-app` per explicit owner authorization.
+
+> This leading section is the sole current-state summary. Older snapshots below are historical evidence and must not override these facts.
+
+## Historical Workspace Snapshot — 2026-11-26 (WIRD Next Complete Platform Upgrade — Merged into `main` @ `2a85d7a5`)
 
 - **Verified Feature Branch State (2026-11-26 — Local Feature Branch, Ready for Owner Review/Deploy):**
   - **Step 1 — Self-Hosted WOFF2 Typography & Paper Tones (`c7858261`):** Bundled `18` SIL OFL-1.1 `.woff2` font files (`742 KB` in `public/fonts/`: `Amiri Quran`, `Scheherazade New`, `Amiri`, `IBM Plex Sans Arabic`), added `src/fonts.css`, and added selectable `paperTone` (`default` | `madinah-cream` | `sepia-warm`) and `quranFont` (`amiri-quran` | `scheherazade`) in `AppearanceSelectorPanel.tsx`.

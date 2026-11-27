@@ -278,6 +278,15 @@ export class CloudSyncCoordinator {
     this.updateState({ status: 'syncing', errorMessage: null });
 
     try {
+      // Pull remote state FIRST when local outbox is empty so a fresh device
+      // learns existing server revisions before enqueuing local auxiliary snapshots.
+      const existingOutbox = await LocalSyncOutbox.listReadyEntries(Date.now(), 1, uid);
+      assertActiveSyncScope(uid);
+      if (existingOutbox.length === 0) {
+        await this.pullRemoteReconciliation(uid);
+        assertActiveSyncScope(uid);
+      }
+
       await flushAuxiliaryCloudSyncNow().catch(() => undefined);
       let hasMore = true;
       let firstPushError: string | null = null;

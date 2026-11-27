@@ -65,12 +65,12 @@ export async function prepareWirdForOffline(
     throw new Error('هذا المتصفح لا يدعم تجهيز وِرد للعمل دون إنترنت.');
   }
 
-  await withTimeout(
+  const registration = await withTimeout(
     navigator.serviceWorker.ready,
     Math.min(timeoutMs, SERVICE_WORKER_READY_TIMEOUT_MS),
     'انتهت مهلة انتظار تهيئة التخزين المحلي؛ أعد فتح التطبيق ثم حاول مجددًا.'
   );
-  const controller = navigator.serviceWorker.controller;
+  const controller = navigator.serviceWorker.controller || registration?.active || null;
   if (!controller) {
     throw new Error('افتح وِرد مرة أخرى بعد تثبيت التطبيق، ثم أعد التجهيز المحلي.');
   }
@@ -145,12 +145,12 @@ export async function getWirdOfflinePackageStatus(
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
     throw new Error('هذا المتصفح لا يدعم فحص ملفات وِرد المحفوظة.');
   }
-  await withTimeout(
+  const registration = await withTimeout(
     navigator.serviceWorker.ready,
     Math.min(timeoutMs, SERVICE_WORKER_READY_TIMEOUT_MS),
     'انتهت مهلة تهيئة التخزين المحلي؛ أعد فتح التطبيق ثم حاول مجددًا.'
   );
-  const controller = navigator.serviceWorker.controller;
+  const controller = navigator.serviceWorker.controller || registration?.active || null;
   if (!controller) throw new Error('افتح وِرد مرة أخرى بعد تثبيت التطبيق، ثم أعد الفحص.');
 
   const channel = new MessageChannel();
