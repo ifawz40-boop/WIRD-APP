@@ -307,7 +307,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
   if (req.method !== 'GET' || !url.protocol.startsWith('http')) return;
-  if (url.pathname.startsWith('/api/')) return;
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/__/')) return;
 
   // SPA navigations remain network-first, with a complete cached HTML fallback.
   if (req.mode === 'navigate') {

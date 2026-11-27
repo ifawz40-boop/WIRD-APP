@@ -17,6 +17,8 @@
 3. **Cloud Sync Deadlock Fixed & `firestore.rules` Deployed (`src/services/cloudSyncCoordinator.ts`, Firebase `wird-quran-app`):**
    - **Root Cause 1:** `triggerSync()` flushed `syncMeta/auxiliaryDomainsV1` (`baseRevision: 0`) BEFORE pulling remote events, causing a permanent `REMOTE_REVISION_CONFLICT` + `blocked_pending_local` deadlock on any second device or fresh sign-in. Fixed by pulling remote state first when the local outbox is empty.
    - **Root Cause 2:** Repository `firestore.rules` had not been released to Production `wird-quran-app`. Deployed & verified compiled/released via `firebase deploy --only firestore:rules --project wird-quran-app` (authorized by owner).
+4. **Google Sign-In Hardening (`vercel.json`, `public/sw.js`, `src/context/AuthContext.tsx`, `src/services/authService.ts`):**
+   - Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` + `/__/auth/:path*` & `/__/firebase/init.json` rewrites in `vercel.json`, excluded `/__/` from Service Worker interception, surfaced `getRedirectResult` errors instead of swallowing them silently, and added clear Arabic error messages for all Google Auth failure codes.
 
 ---
 

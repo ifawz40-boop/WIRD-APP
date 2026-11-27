@@ -6,7 +6,26 @@
       "main": true
     }
   },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://wird-quran-app.firebaseapp.com/__/auth/:path*"
+    },
+    {
+      "source": "/__/firebase/init.json",
+      "destination": "https://wird-quran-app.firebaseapp.com/__/firebase/init.json"
+    },
     {
       "source": "/api/advisor/(.*)",
       "destination": "/api/advisor"
@@ -24,7 +43,7 @@
       "destination": "/api/tafsir"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|__/).*)",
       "destination": "/index.html"
     }
   ]

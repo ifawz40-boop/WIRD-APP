@@ -165,6 +165,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }).catch((err) => {
         console.warn('[WIRD Auth] getRedirectResult error:', err);
+        setAuthError(mapAuthError(err));
       });
 
       unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -197,6 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const loggedUser = await AuthService.loginWithGoogle();
       if (loggedUser) {
+        setUser(loggedUser);
         setIsGuest(false);
         removeStorageItem(GUEST_PREFERENCE_KEY);
       }

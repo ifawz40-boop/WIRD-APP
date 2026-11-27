@@ -43,6 +43,15 @@ export function mapAuthError(error: unknown): string {
       return 'يتطلب هذا الإجراء تسجيل الدخول الحديث للأمان.';
     case 'auth/unauthorized-domain':
       return 'هذا النطاق غير مصرح به في إعدادات Firebase Authentication. أضف النطاق في لوحة تحكم Firebase، أو تابع كزائر.';
+    case 'auth/operation-not-allowed':
+      return 'مزوّد تسجيل الدخول بـ Google غير مفعّل حالياً في Firebase Console لهذا المشروع.';
+    case 'auth/account-exists-with-different-credential':
+      return 'يوجد حساب مسجل بنفس البريد الإلكتروني بطريقة دخول أخرى. جرّب الدخول بالبريد وكلمة المرور.';
+    case 'auth/missing-initial-state':
+    case 'auth/web-storage-unsupported':
+      return 'المتصفح يمنع حفظ جلسة التحويل (غالباً في التصفح الخاص أو المتصفح المدمج داخل تطبيق آخر). افتح الرابط في Chrome أو Safari مباشرة وحاول مجدداً.';
+    case 'auth/internal-error':
+      return 'تعذر إتمام الاتصال بنافذة Google في هذا المتصفح. جرّب فتح الموقع في Chrome أو Safari مباشرة أو اسمح بالنوافذ المنبثقة.';
     case 'auth/api-key-not-valid':
     case 'auth/invalid-api-key':
       return 'مفتاح Firebase غير مهيأ بعد في بيئة التشغيل. يمكنك المتابعة كزائر دون عائق.';
