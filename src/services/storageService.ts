@@ -23,6 +23,12 @@ import {
   isValidAuxiliaryDomainSnapshot,
   mergeAuxiliaryDomainSnapshots,
 } from './auxiliaryDomainsSchema';
+import {
+  SYNC_TOMBSTONES_STORAGE_KEY,
+  reconcileSnapshotArrayMutations,
+  recordProfileTouch,
+  registerTombstoneStorageAdapter,
+} from './syncTombstoneRegistry';
 
 export interface PreparedDataMigration {
   report: MigrationReport;
@@ -66,7 +72,9 @@ export const AUXILIARY_SCOPED_KEYS = [
   'wird.seerah.v2',
   'wird.prayer.cache.v1',
   'wird.video.series.v1',
-  'wird.advisor.chat.v1'
+  'wird.advisor.chat.v1',
+  'wird.sync.tombstones.v1',
+  'wird.personal.cloud.meta.v1'
 ] as const;
 
 /**
@@ -75,7 +83,9 @@ export const AUXILIARY_SCOPED_KEYS = [
  * constitute user-authored guest worship data for first-sign-in prompts.
  */
 export const CACHE_ONLY_AUXILIARY_KEYS: ReadonlySet<string> = new Set([
-  'wird.prayer.cache.v1'
+  'wird.prayer.cache.v1',
+  'wird.sync.tombstones.v1',
+  'wird.personal.cloud.meta.v1'
 ]);
 
 // In-memory fallback for test / Node / SSR environments where localStorage is not defined.
@@ -1189,7 +1199,13 @@ export const StorageService = {
         return false;
       }
     }
-    return setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+    const serialized = JSON.stringify(profile);
+    const changed = current !== serialized;
+    const saved = setItem(STORAGE_KEYS.PROFILE, serialized);
+    if (saved && changed) {
+      recordProfileTouch();
+    }
+    return saved;
   },
 
   // Plans (Returns clean empty array by default)
@@ -1211,7 +1227,21 @@ export const StorageService = {
       console.error('[WIRD Storage] savePlans rejected: existing archive contains malformed records.');
       return false;
     }
-    return setItem(STORAGE_KEYS.PLANS, JSON.stringify(plans));
+    const prevPlans = this.getPlans();
+    const prevMap = new Map(prevPlans.map(p => [p.id, JSON.stringify(p)]));
+    const changedExistingIds = plans
+      .filter(p => prevMap.has(p.id) && prevMap.get(p.id) !== JSON.stringify(p))
+      .map(p => p.id);
+    const saved = setItem(STORAGE_KEYS.PLANS, JSON.stringify(plans));
+    if (saved) {
+      reconcileSnapshotArrayMutations(
+        'plans',
+        prevPlans.map(p => p.id),
+        plans.map(p => p.id),
+        changedExistingIds
+      );
+    }
+    return saved;
   },
 
   // Engine Plans (hydrated IndexedDB archive snapshot when available; legacy compatibility localStorage fallback)
@@ -1279,6 +1309,14 @@ export const StorageService = {
       console.error('[WIRD Storage] saveEnginePlans rejected: existing engine plans archive contains malformed records.');
       return false;
     }
+    const prevEnginePlans = this.getEnginePlans();
+    const countDone = (p: EngineGeneratedPlan) => p.schedule.filter(d => d.status === 'completed').length;
+    const prevEngineSummary = new Map(
+      prevEnginePlans.map(p => [p.id, `${p.title}|${p.isActive}|${p.isPaused}|${countDone(p)}`])
+    );
+    const changedEngineIds = plans
+      .filter(p => prevEngineSummary.has(p.id) && prevEngineSummary.get(p.id) !== `${p.title}|${p.isActive}|${p.isPaused}|${countDone(p)}`)
+      .map(p => p.id);
     if (plans.length <= 100) {
       if (!setItem(STORAGE_KEYS.ENGINE_PLANS, JSON.stringify(plans))) return false;
     }
@@ -1288,6 +1326,12 @@ export const StorageService = {
         plans: JSON.parse(JSON.stringify(plans)) as EngineGeneratedPlan[]
       };
     }
+    reconcileSnapshotArrayMutations(
+      'enginePlans',
+      prevEnginePlans.map(p => p.id),
+      plans.map(p => p.id),
+      changedEngineIds
+    );
     return true;
   },
 
@@ -1421,6 +1465,16 @@ export const StorageService = {
       const legacyRevisionKey = resolveStorageKey(STORAGE_KEYS.REVISION);
       if (!setItem(STORAGE_KEYS.REVISION, revisionSerialized) || readRawStorageValue(legacyRevisionKey) !== revisionSerialized) {
         return rollback('Legacy revision compatibility projection failed.');
+      }
+
+      try {
+        const priorCanonicalRaw = transactionSnapshot.get(canonicalKey) ?? null;
+        const priorIds = priorCanonicalRaw
+          ? (JSON.parse(priorCanonicalRaw) as Array<{ id?: string }>).map(p => p?.id || '').filter(Boolean)
+          : [];
+        reconcileSnapshotArrayMutations('portions', priorIds, portions.map(p => p.id));
+      } catch {
+        // Tombstone ledger update is best-effort after durable portion verification.
       }
 
       return true;
@@ -1604,7 +1658,21 @@ export const StorageService = {
         !items.every(isValidWeakVerseRecord) ||
         !validateBackupPayload({ version: 4, weakVerses: items }).valid ||
         !canWriteJsonArrayArchive(STORAGE_KEYS.WEAK_VERSES, isValidWeakVerseRecord)) return false;
-    return setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(items));
+    let prevKeys: string[] = [];
+    try {
+      prevKeys = this.getWeakVerses().flatMap(w => [w.id, `${w.surahNumber}:${w.ayahNumber}`]);
+    } catch {
+      prevKeys = [];
+    }
+    const saved = setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(items));
+    if (saved) {
+      reconcileSnapshotArrayMutations(
+        'weakVerses',
+        prevKeys,
+        items.flatMap(w => [w.id, `${w.surahNumber}:${w.ayahNumber}`])
+      );
+    }
+    return saved;
   },
 
   /** Capture the exact local storage bytes relevant to a blocked remote projection. */
@@ -1750,6 +1818,9 @@ export const StorageService = {
       stableSerialize(actual) === stableSerialize(expected);
     try {
       if (collection === 'syncMeta') {
+        if (documentId === 'accountCloudVaultV4' && isPlainRecord(payload.vaultBundle)) {
+          return true;
+        }
         if (documentId === AUXILIARY_SYNC_DOCUMENT_ID && payload.auxiliarySnapshot !== undefined) {
           if (!isValidAuxiliaryDomainSnapshot(payload.auxiliarySnapshot)) return false;
           const currentAux = captureAuxiliaryDomainSnapshot(key => getItem(key), payload.auxiliarySnapshot.updatedAtMs);
@@ -1857,6 +1928,9 @@ export const StorageService = {
 
     if (event.collection === 'syncMeta') {
       const payload = event.payload;
+      if (event.documentId === 'accountCloudVaultV4' && isPlainRecord(payload.vaultBundle)) {
+        return true;
+      }
       if (event.documentId === AUXILIARY_SYNC_DOCUMENT_ID && payload.auxiliarySnapshot !== undefined) {
         if (!isValidAuxiliaryDomainSnapshot(payload.auxiliarySnapshot)) return false;
         const auxKeys = Object.values(SYNCED_AUXILIARY_KEYS).map(k => resolveStorageKey(k));
@@ -1911,7 +1985,9 @@ export const StorageService = {
       ruqyahProgress: [STORAGE_KEYS.RUQYAH_PROGRESS]
     };
     const seenCollections = new Set<string>();
-    const snapshotKeys = new Set<string>();
+    const snapshotKeys = new Set<string>([
+      resolveStorageKey(SYNC_TOMBSTONES_STORAGE_KEY)
+    ]);
 
     for (const operation of operations) {
       if (!isPlainRecord(operation) ||
@@ -2436,4 +2512,9 @@ export const StorageService = {
     return true;
   }
 };
+
+registerTombstoneStorageAdapter({
+  getRawItem: (key: string) => StorageService.getRawItem(key),
+  setRawItem: (key: string, value: string) => StorageService.setRawItem(key, value),
+});
 

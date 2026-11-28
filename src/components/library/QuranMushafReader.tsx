@@ -80,6 +80,7 @@ import {
   type MushafRibbonId
 } from '../../services/mushafRibbonBookmarksService';
 import { scheduleAuxiliaryCloudSync } from '../../services/auxiliaryCloudSyncService';
+import { recordSyncDeletion, recordSyncUpsert } from '../../services/syncTombstoneRegistry';
 import { PrintedMushafSpread, type PrintedMushafSpreadContext } from './PrintedMushafSpread';
 import { HorizontalScrollRail } from '../shared/HorizontalScrollRail';
 import { SurahPickerControl } from '../shared/SurahPickerControl';
@@ -216,6 +217,19 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [bookmarks, setBookmarks] = useState<number[]>(readBookmarks);
   const [ribbons, setRibbons] = useState<MushafRibbonBookmark[]>(readMushafRibbons);
+
+  useEffect(() => {
+    const handleRemoteSync = () => {
+      setBookmarks(readBookmarks());
+      setRibbons(readMushafRibbons());
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    window.addEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleRemoteSync);
+      window.removeEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    };
+  }, []);
   const [zenMode, setZenMode] = useState<boolean>(false);
   const [pinnedMushafStatus, setPinnedMushafStatus] = useState<{ cachedPages: number; totalPages: number; isComplete: boolean } | null>(null);
   const [isDownloadingMushaf, setIsDownloadingMushaf] = useState(false);
@@ -649,9 +663,15 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
 
   const toggleBookmark = () => {
     setBookmarks(current => {
-      const next = current.includes(page) ? current.filter(item => item !== page) : [...current, page].sort((a, b) => a - b);
+      const removing = current.includes(page);
+      const next = removing ? current.filter(item => item !== page) : [...current, page].sort((a, b) => a - b);
       try {
         localStorage.setItem(StorageService.resolveScopedKey(BOOKMARKS_KEY), JSON.stringify(next));
+        if (removing) {
+          recordSyncDeletion('pageBookmarks', String(page));
+        } else {
+          recordSyncUpsert('pageBookmarks', String(page));
+        }
         scheduleAuxiliaryCloudSync();
       } catch { /* Bookmark works for this view if storage is blocked. */ }
       return next;

@@ -14,6 +14,7 @@ import {
 } from '../data/videoSeriesCatalog';
 import { StorageService } from './storageService';
 import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
+import { recordSyncDeletion, recordSyncUpsert } from './syncTombstoneRegistry';
 import { getLocalDateString } from './unifiedPortionService';
 
 export const VIDEO_SERIES_STORAGE_KEY = 'wird.video.series.v1';
@@ -398,8 +399,16 @@ export function setLessonWatchStatus(
 
   if (status === 'completed') {
     completedVideoIds = [...completedVideoIds, videoId];
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      recordSyncUpsert('watchedVideos', `${seriesId}:${videoId}`);
+    }
   } else if (status === 'in_progress') {
     inProgressVideoIds = [...inProgressVideoIds, videoId];
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      recordSyncUpsert('watchedVideos', `${seriesId}:${videoId}`);
+    }
+  } else if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncDeletion('watchedVideos', `${seriesId}:${videoId}`);
   }
 
   const nextStore: VideoSeriesStoreV1 = {
@@ -511,8 +520,14 @@ export function saveLessonNote(
   const trimmed = note.trim().slice(0, 1500);
   if (trimmed) {
     nextNotes[videoId] = trimmed;
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      recordSyncUpsert('videoNotes', `${seriesId}:${videoId}`);
+    }
   } else {
     delete nextNotes[videoId];
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      recordSyncDeletion('videoNotes', `${seriesId}:${videoId}`);
+    }
   }
 
   return persistVideoSeriesStore(
@@ -597,6 +612,9 @@ export function addCustomSeries(
     storage
   );
 
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncUpsert('customVideoSeries', candidate.id);
+  }
   return { ok: true, series: candidate, store: nextStore };
 }
 
@@ -606,6 +624,10 @@ export function removeCustomSeries(
 ): VideoSeriesStoreV1 {
   const store = readVideoSeriesStore(storage);
   if (!store.customSeries.some((s) => s.id === seriesId)) return store;
+
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncDeletion('customVideoSeries', seriesId);
+  }
 
   const customSeries = store.customSeries.filter((s) => s.id !== seriesId);
   const nextProgress = { ...store.progressBySeries };

@@ -1,5 +1,6 @@
 import { StorageService } from './storageService';
 import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
+import { recordSyncDeletion, recordSyncUpsert } from './syncTombstoneRegistry';
 
 export const SEERAH_BOOK_STORAGE_KEY = 'wird.seerah.v2';
 export const SEERAH_BOOK_BASE_PATH = '/data/seerah';
@@ -452,6 +453,13 @@ export function setSeerahChapterReadState(
       ? current.completedChapterIds
       : [...current.completedChapterIds, chapterId]
     : current.completedChapterIds.filter((id) => id !== chapterId);
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    if (read) {
+      recordSyncUpsert('seerahChapters', chapterId);
+    } else {
+      recordSyncDeletion('seerahChapters', chapterId);
+    }
+  }
   return writeSeerahProgress({ ...current, completedChapterIds }, storage);
 }
 

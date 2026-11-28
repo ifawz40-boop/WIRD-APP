@@ -157,6 +157,18 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
   const [hubSearchQuery, setHubSearchQuery] = useState('');
   const [readerSearchQuery, setReaderSearchQuery] = useState('');
   const [store, setStore] = useState<AdhkarProgressStore>(() => readAdhkarProgressStore());
+
+  useEffect(() => {
+    const handleRemoteSync = () => {
+      setStore(readAdhkarProgressStore());
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    window.addEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleRemoteSync);
+      window.removeEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    };
+  }, []);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [verifiedQuranAyahsById, setVerifiedQuranAyahsById] = useState<Record<string, Ayah[]>>({});
 

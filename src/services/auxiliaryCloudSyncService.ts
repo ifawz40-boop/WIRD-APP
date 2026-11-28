@@ -4,11 +4,13 @@ import {
 } from './auxiliaryDomainsSchema';
 import { persistJournaledSnapshot } from './journaledSnapshotService';
 import { StorageService } from './storageService';
+import { isApplyingRemoteSync } from './syncTombstoneRegistry';
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-let lastEnqueuedSerialized = '';
+let lastEnqueuedByScope = new Map<string, string>();
 
 function canScheduleCloudJournalWrite(): boolean {
+  if (isApplyingRemoteSync()) return false;
   const scope = StorageService.getStorageScope();
   return (
     scope.startsWith('user:') &&
@@ -19,9 +21,35 @@ function canScheduleCloudJournalWrite(): boolean {
   );
 }
 
+export function computeAuxiliaryFingerprint(snapshot: ReturnType<typeof captureAuxiliaryDomainSnapshot>): string {
+  return JSON.stringify({
+    pageBookmarks: snapshot.pageBookmarks,
+    ribbons: snapshot.ribbons,
+    lastPage: snapshot.lastPage ? snapshot.lastPage.page : null,
+    lastReadingPositionRaw: snapshot.lastReadingPositionRaw,
+    readingKhatmasRaw: snapshot.readingKhatmasRaw,
+    adhkarProgressRaw: snapshot.adhkarProgressRaw,
+    seerahV2Raw: snapshot.seerahV2Raw,
+    videoSeriesRaw: snapshot.videoSeriesRaw,
+    tombstones: snapshot.tombstoneLedger
+      ? {
+          upsertedAtMs: snapshot.tombstoneLedger.upsertedAtMs,
+          deletedAtMs: snapshot.tombstoneLedger.deletedAtMs,
+        }
+      : null,
+  });
+}
+
+export function markAuxiliaryBaselineSynced(scope = StorageService.getStorageScope()): void {
+  if (!scope.startsWith('user:')) return;
+  const snapshot = captureAuxiliaryDomainSnapshot((key) => StorageService.getRawItem(key), Date.now());
+  lastEnqueuedByScope.set(scope, computeAuxiliaryFingerprint(snapshot));
+}
+
 /**
  * Flushes the latest auxiliary worship domains snapshot (`Khatmas`, `Ribbons`, `Bookmarks`,
- * `Adhkar`, `Seerah`, `Video Series`) into the durable IndexedDB sync journal (`syncMeta/auxiliaryDomainsV1`).
+ * `Adhkar`, `Seerah`, `Video Series`, `Tombstones`) into the durable IndexedDB sync journal (`syncMeta/auxiliaryDomainsV1`)
+ * only when user auxiliary state has genuinely changed since the last known baseline.
  */
 export async function flushAuxiliaryCloudSyncNow(): Promise<boolean> {
   if (debounceTimer !== null) {
@@ -32,13 +60,9 @@ export async function flushAuxiliaryCloudSyncNow(): Promise<boolean> {
 
   const expectedScope = StorageService.getStorageScope();
   const snapshot = captureAuxiliaryDomainSnapshot((key) => StorageService.getRawItem(key), Date.now());
-  const contentFingerprint = JSON.stringify({
-    ...snapshot,
-    updatedAtMs: 0,
-    lastPage: snapshot.lastPage ? { page: snapshot.lastPage.page } : null,
-  });
+  const contentFingerprint = computeAuxiliaryFingerprint(snapshot);
 
-  if (contentFingerprint === lastEnqueuedSerialized) {
+  if (lastEnqueuedByScope.get(expectedScope) === contentFingerprint) {
     return true;
   }
 
@@ -53,7 +77,7 @@ export async function flushAuxiliaryCloudSyncNow(): Promise<boolean> {
   );
 
   if (result.success) {
-    lastEnqueuedSerialized = contentFingerprint;
+    lastEnqueuedByScope.set(expectedScope, contentFingerprint);
   }
   return result.success;
 }

@@ -1,5 +1,6 @@
 import { StorageService } from './storageService';
 import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
+import { recordSyncDeletion, recordSyncUpsert } from './syncTombstoneRegistry';
 
 export interface ReadingKhatmaPlanOptions {
   durationDays: number;
@@ -470,6 +471,9 @@ export function createReadingKhatma(
     khatmas: [...remainingKhatmas, next],
     completedCycles
   };
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncUpsert('readingKhatmas', next.id);
+  }
   persistStore(nextStore, storage);
   return next;
 }
@@ -674,6 +678,11 @@ export function markReadingPagesRange(
     },
     storage
   );
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    for (const p of validScopedPages) {
+      recordSyncUpsert('khatmaPages', `${current.id}:${p}`);
+    }
+  }
   return next;
 }
 
@@ -726,6 +735,13 @@ export function unmarkReadingPages(
     { ...store, khatmas: store.khatmas.map(k => (k.id === current.id ? next : k)) },
     storage
   );
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    for (const p of pages) {
+      if (isValidPageNumber(p)) {
+        recordSyncDeletion('khatmaPages', `${current.id}:${p}`);
+      }
+    }
+  }
   return next;
 }
 
@@ -792,9 +808,15 @@ export function deleteReadingKhatmaById(
   const nextActive = store.activeKhatmaId === khatmaId
     ? (remaining.find(k => !k.completedAt)?.id || remaining[0]?.id || null)
     : store.activeKhatmaId;
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncDeletion('readingKhatmas', khatmaId);
+  }
   if (remaining.length === 0 && store.completedCycles.length === 0) {
     storage.removeItem(getScopedLegacyKey());
     storage.removeItem(getScopedV2Key());
+    if (typeof localStorage !== 'undefined' && storage === localStorage) {
+      scheduleAuxiliaryCloudSync();
+    }
     return;
   }
   persistStore(

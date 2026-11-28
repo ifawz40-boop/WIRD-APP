@@ -1,12 +1,42 @@
 # WIRD — Continuation Entry Point
 
-**Last reconciled:** 2026-11-27 (Root-cause fix for Offline Audio CORS Downloads via same-origin `/api/quran-audio?type=ayah` proxy, First-Visit Service Worker Offline Preparation via `registration.active`, 604p Mushaf retry hardening, Cloud Sync fresh-device `REMOTE_REVISION_CONFLICT` deadlock fix, and Production `firestore.rules` deployment to `wird-quran-app`)  
-**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main` (base `9e1666de`)  
-**Production URL:** https://wird-app.vercel.app/ · **Firebase Project:** `wird-quran-app` (`(default)` Firestore — `firestore.rules` deployed & released 2026-11-27; SQL Connect / Data Connect configured locally, not yet deployed)
+**Last reconciled:** 2026-11-28 (Cloud Sync V4 — Real-Time Firestore `onSnapshot` + HLC Tombstone Anti-Resurrection Engine across all 15 domains + Personal Per-Account Cloud Vault: Google Drive `appDataFolder`, Live Linked Cloud File & `WIRD4` Capsule + restoration of `WIRD Next` files accidentally removed in `e2bf963f`)  
+**Repository:** `ifawz40-boop/WIRD-APP` · **Primary branch:** `main`  
+**Production URL:** https://wird-app.vercel.app/ · **Firebase Project:** `wird-quran-app` (`(default)` Firestore — `firestore.rules` deployed & released 2026-11-27)
 
 > This is the authoritative current snapshot. Older dated snapshots below are historical evidence only. Re-fetch live GitHub/Vercel/Firebase state before merging or deploying.
 
-## Active Checkpoint — Downloads & Cloud Sync Root-Cause Fix (2026-11-27)
+## Active Checkpoint — Cloud Sync V4 (Additions + Deletions) & Personal Cloud Vault (2026-11-28)
+
+1. **Restored Broken `origin/main` Build (`e2bf963f` Revert) & Hardened Google Sign-In (`api/firebase-init.ts`, `src/services/authService.ts`):**
+   - **Root Cause:** Commit `e2bf963f` on `origin/main` accidentally deleted the 32 files added in `2a85d7a5` (including `auxiliaryCloudSyncService.ts`, `auxiliaryDomainsSchema.ts`, `src/fonts.css`, `MushafPaperFlipStage.tsx`, etc.) while leaving imports intact, causing GitHub Actions and Vercel deployment `dpl_141KW1A68QNc2KXCVkKriYYJKLRF` to fail.
+   - **Fix:** Reverted `e2bf963f` cleanly on fast-forward history, ported direct Google Identity Services `signInWithCredential` (`src/services/authService.ts`), and made `api/firebase-init.ts` pure Node-ESM safe (`fs.readFileSync` without bare `.json` module import attributes), validated in `scripts/smoke-api-imports.mjs`.
+2. **Bidirectional Additions + Deletions Sync via Hybrid Logical Clock Tombstones (`src/services/syncTombstoneRegistry.ts`, `src/services/accountCloudBundleService.ts`, `src/services/auxiliaryDomainsSchema.ts`):**
+   - Built UID-scoped `SyncTombstoneLedgerV1` (`wird.sync.tombstones.v1`) tracking causal monotonic `upsertedAtMs` and `deletedAtMs` across all 15 user domains (`plans`, `enginePlans`, `portions`, `weakVerses`, `tests`, `readingKhatmas`, `khatmaPages`, `pageBookmarks`, `ribbons`, `adhkarFavorites`, `adhkarCounts`, `seerahChapters`, `customVideoSeries`, `watchedVideos`, `videoNotes`).
+   - Automatic array snapshot diffing in `StorageService` (`savePlans`, `saveEnginePlans`, `saveUnifiedPortions`, `saveWeakVerses` — with atomic rollback protection in `applyJournalTransaction`) plus explicit hooks in `readingKhatmaService.ts` (including fixing last-khatma deletion), `adhkarProgressService.ts`, `seerahBookService.ts`, `videoSeriesService.ts`, `mushafRibbonBookmarksService.ts`, and `QuranMushafReader.tsx`.
+   - Built `AccountCloudBundleV4` (`users/{uid}/syncMeta/accountCloudVaultV4`, 100% compatible with deployed `firestore.rules`) with lossless `CompactEnginePlanV4` schedule compression (`< 115 KB` guaranteed) and commutative/idempotent `mergeAccountCloudBundles` preventing resurrection of deleted items while preserving concurrent additions and supporting causal re-add restores.
+3. **Real-Time Global Sync & Instant UI Re-Hydration (`src/services/cloudSyncCoordinator.ts`, `src/components/auth/AuthGate.tsx`, `src/App.tsx`, and views):**
+   - Added live Firestore `onSnapshot` subscription on `users/{uid}/syncSystem/remoteReplication`, `onAuthStateChanged` + `notifyStorageScopeChanged` triggers on boot across all tabs, self-healing `REMOTE_REVISION_CONFLICT` / first-sync `blocked_base_revision` recovery after Vault V4 convergence, and `wird:cloud-sync-applied` listeners across `App.tsx`, `QuranLibraryView`, `QuranMushafReader`, `RevisionCenterView`, `AdhkarView`, `SeerahView`, and `VideoSeriesView`.
+4. **Personal Per-Account Cloud Sync Vault (`src/services/personalCloudSyncService.ts`, `src/components/settings/PersonalCloudVaultPanel.tsx`, `src/components/settings/SettingsView.tsx`):**
+   - Added 3 user-owned personal cloud sync modes powered by the exact same `AccountCloudBundleV4` CRDT + Tombstone engine (syncing both additions and deletions):
+     1. **Google Drive Personal AppData Vault (`drive.appdata`):** Private hidden `appDataFolder` on the user's own Google Drive (`wird-account-vault-v4.json`) with optional auto-sync on local mutations/deletions and zero access to personal Drive files.
+     2. **Live Linked Cloud File (`iCloud Drive` / `OneDrive` / `Dropbox` / Universal Smart Merge):** Persistent `FileSystemFileHandle` 1-click bidirectional merge plus universal export/non-destructive merge for mobile browsers.
+     3. **Instant Compressed Sync Capsule (`WIRD4Z:...`):** Gzip-compressed base64url peer-to-peer sync code between devices.
+5. **Local Verification Executed (2026-11-28):**
+   - `npm.cmd run lint` (`tsc --noEmit` + Tanzil validation + 114 Surah split): **PASS** (`0` errors)
+   - `npm.cmd run smoke:api-imports` (all 7 API handlers incl. `api/firebase-init.ts` & `api/seerah-tts.ts`): **PASS**
+   - `npm.cmd test` (`76` suites incl. `19/19` in `cloudSyncAdditionsAndDeletions.test.ts`): **PASS** (`852 PASSED | 0 FAILED`)
+   - `$env:NODE_ENV='production'; npx.cmd vite build`: **PASS** (`2.67s`, `0` chunks > 500 kB)
+   - `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+   - Playwright E2E (`e2e/app-shell.spec.ts` + `e2e/settings-ux.spec.ts` on Desktop & Mobile Edge Chromium): **PASS** (`24 passed | 0 failed`)
+   - Protected files (`completeQuranData.json`, `quran-simple-1.1.xml`, `tanzilReferenceData.json`, `docs/seerah/MASTER_DIRECTIVE.md`, `firestore.rules`, `bun.lock`): **PASS** (`0` bytes diff)
+
+### Next Step
+- Push `main` to `origin/main` (per owner workflow authorization) and verify exact-head GitHub Actions `WIRD Quality Gate` and Vercel Production deployment (`https://wird-app.vercel.app/`).
+
+---
+
+## Prior Checkpoint — Downloads & Cloud Sync Root-Cause Fix (2026-11-27 — Historical)
 
 1. **Offline Quran & Ruqyah Audio Downloads Fixed (`api/quran-audio.ts`, `src/services/offlineQuranAudioLibrary.ts`, `src/components/settings/SettingsView.tsx`):**
    - **Root Cause:** `cdn.islamic.network` omits `Access-Control-Allow-Origin`, causing `fetch(..., { mode: 'cors' })` to fail 100% of the time in real browsers (`ar.ahmedajamy` also returns `application/octet-stream`).

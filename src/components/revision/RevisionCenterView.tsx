@@ -85,6 +85,22 @@ export const RevisionCenterView: React.FC<RevisionCenterViewProps> = ({
     try { return RetentionService.getWeakVerses(); } catch { return []; }
   });
   const [metrics, setMetrics] = useState<RetentionMetrics>(() => RetentionService.getRetentionDashboardMetrics());
+
+  useEffect(() => {
+    const handleRemoteSync = () => {
+      setPortions(RetentionService.getPortions());
+      try {
+        setWeakVerses(RetentionService.getWeakVerses());
+      } catch {
+        // Keep previous weakVerses view if archive needs recovery
+      }
+      setMetrics(RetentionService.getRetentionDashboardMetrics());
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    };
+  }, []);
   
   // Feedback toast banner
   const [actionFeedback, setActionFeedback] = useState<{ message: string; type: 'success' | 'warn' | 'info' } | null>(null);

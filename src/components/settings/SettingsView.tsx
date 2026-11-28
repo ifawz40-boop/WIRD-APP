@@ -67,6 +67,7 @@ import { PWAInstallAction } from '../shared/OfflineStatusControls';
 import { WirdAvatar } from '../brand/WirdAvatar';
 import { BrandDesignShowcase } from '../brand/BrandDesignShowcase';
 import { AppearanceSelectorPanel } from '../ui/AppearanceSelectorPanel';
+import { PersonalCloudVaultPanel } from './PersonalCloudVaultPanel';
 import {
   DEFAULT_APPEARANCE_MODE,
   loadThemePreferences,
@@ -321,7 +322,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     status: syncStatus, pendingCount, remoteInboxPendingCount,
     remoteProjectionBlockReason, remoteProjectionBlockedAtSequence,
     projectionConflictCount, latestProjectionConflict,
-    lastSyncAtMs, isOnline, errorMessage: syncErrorMessage, triggerSync
+    lastSyncAtMs, isOnline, realtimeConnected, errorMessage: syncErrorMessage, triggerSync
   } = useCloudSync();
   const [conflictDetails, setConflictDetails] = useState<RemoteProjectionConflict[]>([]);
   const [conflictIntents, setConflictIntents] = useState<Record<string, ConflictResolutionIntent | null>>({});
@@ -1168,13 +1169,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
 
         <div className="rounded-xl border border-[var(--wird-border)] bg-[var(--wird-surface-muted)] p-3 flex flex-wrap items-center justify-between gap-2">
-          <span className="font-bold text-[11px] text-[var(--wird-text)]">نطاقات المزامنة السحابية والدمج التلقائي (V3):</span>
+          <span className="font-bold text-[11px] text-[var(--wird-text)]">
+            نطاقات المزامنة السحابية الفورية للإضافات والحذف (CRDT V4{realtimeConnected ? ' · اتصال لحظي نشط' : ''}):
+          </span>
           <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">
-            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الحفظ والمراجعة</span>
-            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">ختمات القراءة والفواصل الملونة</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الخطط والمقاطع</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">ختمات القراءة والفواصل</span>
             <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الأذكار والمسبحة</span>
-            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">الرقية الشرعية</span>
-            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">تقدم السيرة والسلاسل</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border)]">السيرة والسلاسل والرقية</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--wird-surface)] border border-[var(--wird-border-gold)]">مزامنة الإضافات والحذف</span>
           </div>
         </div>
 
@@ -1429,6 +1432,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <span>مزامنة الآن</span>
           </button>
         </div>
+
+        <PersonalCloudVaultPanel
+          onSynced={() => {
+            const updated = StorageService.getProfile();
+            setFormData(updated);
+            onUpdateProfile(updated);
+            onBackupImported?.();
+          }}
+          onToast={onToast}
+        />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

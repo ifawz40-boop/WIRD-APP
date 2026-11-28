@@ -1,11 +1,15 @@
 # WIRD — Owner Actions and External Decisions
 
-**Current owner-action snapshot:** 2026-11-25 (Complete Seerah Digital Book Transformation on `feat/seerah-encyclopedia-ibn-kathir`)  
+**Current owner-action snapshot:** 2026-11-28 (Cloud Sync V4 — Bidirectional Additions & Deletions + Personal Per-Account Cloud Vault)  
 **Live technical state:** [CONTINUE_HERE.md](./CONTINUE_HERE.md) · [MASTER_PROJECT_STATE.md](./engineering/MASTER_PROJECT_STATE.md)
 
 > This page lists actions that genuinely require owner approval, external access, or physical-device testing. Dated material below the snapshot is historical unless explicitly revalidated.
 
 ## Current observed items
+
+- **Optional Google Drive API activation for Personal Google Drive Vault (`wird-quran-app`, Project `741238306826`):**
+  - Built-in Firebase Real-Time Sync V4 (additions + deletions), Live Linked Cloud Files (`iCloud Drive` / `OneDrive` / `Dropbox`), Smart JSON Merge, and `WIRD4` Sync Capsules work immediately with **zero** manual setup.
+  - If the owner wants to use the optional **خزنة Google Drive الخاصة بحسابك (`drive.appdata`)** feature in Settings, ensure **Google Drive API** is enabled once on Google Cloud project `wird-quran-app` (`https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=741238306826`). Until enabled, the UI displays a direct 1-click activation link if Google returns `403 accessNotConfigured`.
 
 0. **Complete Prophetic Seerah Digital Book (`feat/seerah-encyclopedia-ibn-kathir`) — PR push/review, CI verification & research-source license boundary:**
    - All 10 phases and all 17 acceptance criteria of `docs/seerah/MASTER_DIRECTIVE.md` (unmodified, SHA-256 `7a1e25cf...1472`) are completed and locally verified (`40` published chapters, `32` published character stories, `79,680` words, `52` verbatim Quran blocks, `43` verbatim Hadith blocks, `814 PASSED | 0 FAILED`, `vite build` PASS, Playwright E2E `4/4 PASS`).

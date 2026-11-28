@@ -1,5 +1,6 @@
 import { LocalSyncOutbox, type SyncCollection } from './localSyncOutbox';
 import { StorageService } from './storageService';
+import { withApplyingRemoteSyncGuardSync } from './syncTombstoneRegistry';
 import { areRuqyahLegacyBaselinesCompatible, isValidRuqyahProgressSnapshotV2 } from './ruqyahProgressSchema';
 import type { RuqyahProgressSnapshot } from './ruqyahProgressSchema';
 import type {
@@ -85,7 +86,7 @@ const defaultDependencies: RemoteProjectionDependencies = {
   hasPendingForDocument: (collection, documentId) => LocalSyncOutbox.hasPendingForDocument(collection, documentId),
   isRemoteCollectionInitialized: collection => LocalSyncOutbox.isRemoteCollectionInitialized(collection),
   isLocalProjectionEmpty: collection => StorageService.isLocalProjectionEmpty(collection),
-  applyJournalEvent: event => StorageService.applyJournalEvent(event),
+  applyJournalEvent: event => withApplyingRemoteSyncGuardSync(() => StorageService.applyJournalEvent(event)),
   setRemoteRevisionFromRemote: (collection, documentId, revision) =>
     LocalSyncOutbox.setRemoteRevisionFromRemote(collection, documentId, revision),
   markRemoteProjected: sequence => LocalSyncOutbox.markRemoteProjected(sequence),
@@ -213,9 +214,9 @@ export async function projectRemoteInboxBatch(
 
     const isConvergentAuxiliaryEvent =
       remoteEvent.collection === 'syncMeta' &&
-      remoteEvent.documentId === 'auxiliaryDomainsV1' &&
       remoteEvent.operation === 'upsert' &&
-      isRecord(remoteEvent.payload.auxiliarySnapshot);
+      ((remoteEvent.documentId === 'auxiliaryDomainsV1' && isRecord(remoteEvent.payload.auxiliarySnapshot)) ||
+       (remoteEvent.documentId === 'accountCloudVaultV4' && isRecord(remoteEvent.payload.vaultBundle)));
 
     const rawDecision = isResumingThisProjection
       ? (hasPendingLocalMutation
@@ -437,6 +438,10 @@ export async function projectRemoteInboxBatch(
     }
 
     projectedCount++;
+  }
+
+  if (projectedCount > 0 && typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('wird:cloud-sync-applied'));
   }
 
   return { projectedCount, blockedAtSequence: null, reason: null };

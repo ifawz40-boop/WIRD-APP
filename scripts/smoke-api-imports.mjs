@@ -1,18 +1,19 @@
-const [metadata, tafsir, ruqyah, quranAudio, hadithReferences, youtubePlaylist, seerahTts] = await Promise.all([
+const [metadata, tafsir, ruqyah, quranAudio, hadithReferences, youtubePlaylist, seerahTts, firebaseInit] = await Promise.all([
   import('../src/data/quranMeta.ts'),
   import('../api/tafsir.ts'),
   import('../api/ruqyah.ts'),
   import('../api/quran-audio.ts'),
   import('../api/hadith-references.ts'),
   import('../api/youtube-playlist.ts'),
-  import('../api/seerah-tts.ts')
+  import('../api/seerah-tts.ts'),
+  import('../api/firebase-init.ts')
 ]);
 
 if (metadata.ALL_SURAHS.length !== 114) {
   throw new Error(`Expected 114 Quran surahs, received ${metadata.ALL_SURAHS.length}`);
 }
 
-for (const [name, route] of Object.entries({ tafsir, ruqyah, quranAudio, hadithReferences, youtubePlaylist, seerahTts })) {
+for (const [name, route] of Object.entries({ tafsir, ruqyah, quranAudio, hadithReferences, youtubePlaylist, seerahTts, firebaseInit })) {
   if (typeof route.default !== 'function') {
     throw new Error(`Expected ${name} route to export a handler`);
   }

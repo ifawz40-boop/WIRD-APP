@@ -1,11 +1,19 @@
-# Current architecture evidence overlay — 2026-11-13
+# Current architecture evidence overlay — 2026-11-28 (Cloud Sync V4 & Personal Per-Account Cloud Vault)
 
-> The architecture/design below remains technical reference. Its dated operational claims are historical; current runtime and release state is maintained in `docs/CONTINUE_HERE.md` and `docs/sync/RELEASE-GATES.md`.
+> The architecture/design below remains technical reference. Historical dated entries below are preserved as implementation history; current runtime and release state is maintained in [`docs/CONTINUE_HERE.md`](../CONTINUE_HERE.md) and [`docs/engineering/MASTER_PROJECT_STATE.md`](../engineering/MASTER_PROJECT_STATE.md).
 
-- Current main SHA: `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
+- **Cloud Sync V4 (`AccountCloudBundleV4` + `SyncTombstoneLedgerV1`):**
+  - `src/services/syncTombstoneRegistry.ts`: UID-scoped Hybrid Logical Clock (HLC) ledger (`wird.sync.tombstones.v1`) recording monotonic `upsertedAtMs` and `deletedAtMs` across all 15 user domains (`plans`, `enginePlans`, `portions`, `weakVerses`, `tests`, `readingKhatmas`, `khatmaPages`, `pageBookmarks`, `ribbons`, `adhkarFavorites`, `adhkarCounts`, `seerahChapters`, `customVideoSeries`, `watchedVideos`, `videoNotes`). `isItemDeletedInLedger` suppresses resurrection when `deletedAtMs >= upsertedAtMs` while allowing causal re-adds (`upsertedAtMs > deletedAtMs`).
+  - `src/services/accountCloudBundleService.ts`: Commutative, associative, idempotent `mergeAccountCloudBundles` stored inside `users/{uid}/syncMeta/accountCloudVaultV4` (`operation: 'upsert'`, `schemaVersion: 1` envelope — 100% authorized by deployed `firestore.rules` on `wird-quran-app`) with lossless `CompactEnginePlanV4` schedule compression (`< 115 KB` guaranteed under Firestore's `128 KB` limit).
+  - `src/services/cloudSyncCoordinator.ts`: Attaches live Firestore `onSnapshot` on `users/{uid}/syncSystem/remoteReplication`, auto-triggers on `onAuthStateChanged` + `notifyStorageScopeChanged`, heals first-sync `baseRevision: 0` / `REMOTE_REVISION_CONFLICT` outbox deadlocks after Vault V4 convergence, and dispatches `wird:cloud-sync-applied` for live React state re-hydration across all routes.
+  - `src/services/personalCloudSyncService.ts`: Extends `AccountCloudBundleV4` to user-owned personal clouds: (1) Google Drive private `appDataFolder` (`drive.appdata`), (2) File System Access API Live Linked Cloud File (`iCloud Drive` / `OneDrive` / `Dropbox`) + universal Smart JSON merge, and (3) gzip-compressed `WIRD4Z:` peer-to-peer sync capsules.
+
+## Historical architecture evidence overlay — 2026-11-13
+
+- Current main SHA (historical): `8e98aa350c999b2252cc8e3b5d2a8c6d0264b86b`.
 - Production deployment `dpl_DKfbfqsBHqzS95CoTdYZCtPPPZwu` is READY on the exact same SHA.
 - Both Production sync flags are currently true; full certification remains HOLD. Do not toggle without owner approval.
-- Production Rules deployment and direct Google AI Studio sync were not verified in the 2026-11-13 audit.
+- Production Rules deployment and direct Google AI Studio sync were not verified in the 2026-11-13 audit (subsequently deployed to `wird-quran-app` on 2026-11-27).
 - CI runs without steps/logs are BLOCKED observability, not code failure/pass.
 
 ---

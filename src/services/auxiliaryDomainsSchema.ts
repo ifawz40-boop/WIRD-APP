@@ -1,4 +1,11 @@
 import { DEFAULT_MUSHAF_RIBBONS, type MushafRibbonBookmark, type MushafRibbonId } from './mushafRibbonBookmarksService';
+import {
+  SYNC_TOMBSTONES_STORAGE_KEY,
+  isItemDeletedInLedger,
+  mergeSyncTombstoneLedgers,
+  normalizeSyncTombstoneLedger,
+  type SyncTombstoneLedgerV1,
+} from './syncTombstoneRegistry';
 
 export const AUXILIARY_SYNC_DOCUMENT_ID = 'auxiliaryDomainsV1';
 
@@ -11,6 +18,7 @@ export const SYNCED_AUXILIARY_KEYS = {
   ADHKAR_PROGRESS: 'wird.adhkar.progress.v1',
   SEERAH_V2: 'wird.seerah.v2',
   VIDEO_SERIES: 'wird.video.series.v1',
+  TOMBSTONES: SYNC_TOMBSTONES_STORAGE_KEY,
 } as const;
 
 export interface AuxiliaryDomainSnapshotV1 {
@@ -24,6 +32,7 @@ export interface AuxiliaryDomainSnapshotV1 {
   adhkarProgressRaw: string | null;
   seerahV2Raw: string | null;
   videoSeriesRaw: string | null;
+  tombstoneLedger?: SyncTombstoneLedgerV1;
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
@@ -143,6 +152,7 @@ export function captureAuxiliaryDomainSnapshot(
   const ribbonsParsed = safeJsonParse(getRawItem(SYNCED_AUXILIARY_KEYS.RIBBONS));
   const lastPageRaw = getRawItem(SYNCED_AUXILIARY_KEYS.LAST_PAGE);
   const lastPageNum = lastPageRaw ? Number(lastPageRaw) : NaN;
+  const tombstonesParsed = safeJsonParse(getRawItem(SYNCED_AUXILIARY_KEYS.TOMBSTONES));
 
   return {
     schemaVersion: 1,
@@ -155,42 +165,94 @@ export function captureAuxiliaryDomainSnapshot(
     adhkarProgressRaw: pruneAdhkarRawForSync(getRawItem(SYNCED_AUXILIARY_KEYS.ADHKAR_PROGRESS)),
     seerahV2Raw: getRawItem(SYNCED_AUXILIARY_KEYS.SEERAH_V2)?.slice(0, 16_000) ?? null,
     videoSeriesRaw: getRawItem(SYNCED_AUXILIARY_KEYS.VIDEO_SERIES)?.slice(0, 48_000) ?? null,
+    tombstoneLedger: normalizeSyncTombstoneLedger(tombstonesParsed),
   };
 }
 
-function mergeReadingKhatmasJson(localRaw: string | null, remoteRaw: string | null): string | null {
-  if (!localRaw) return remoteRaw;
-  if (!remoteRaw) return localRaw;
-  const localObj = safeJsonParse(localRaw);
-  const remoteObj = safeJsonParse(remoteRaw);
-  if (!isPlainRecord(localObj)) return remoteRaw;
-  if (!isPlainRecord(remoteObj)) return localRaw;
+function mergeReadingKhatmasJson(
+  localRaw: string | null,
+  remoteRaw: string | null,
+  ledger: SyncTombstoneLedgerV1
+): string | null {
+  if (!localRaw && !remoteRaw) return null;
+  const localObj = safeJsonParse(localRaw) ?? { schemaVersion: 2, activeKhatmaId: null, khatmas: [], completedCycles: [] };
+  const remoteObj = safeJsonParse(remoteRaw) ?? { schemaVersion: 2, activeKhatmaId: null, khatmas: [], completedCycles: [] };
+  if (!isPlainRecord(localObj) && !isPlainRecord(remoteObj)) return null;
+  const safeLocal = isPlainRecord(localObj) ? localObj : {};
+  const safeRemote = isPlainRecord(remoteObj) ? remoteObj : {};
 
-  const localKhatmas = Array.isArray(localObj.khatmas) ? localObj.khatmas.filter(isPlainRecord) : [];
-  const remoteKhatmas = Array.isArray(remoteObj.khatmas) ? remoteObj.khatmas.filter(isPlainRecord) : [];
+  const localKhatmas = Array.isArray(safeLocal.khatmas) ? safeLocal.khatmas.filter(isPlainRecord) : [];
+  const remoteKhatmas = Array.isArray(safeRemote.khatmas) ? safeRemote.khatmas.filter(isPlainRecord) : [];
   const byId = new Map<string, Record<string, unknown>>();
 
+  const isKhatmaDeleted = (item: Record<string, unknown>): boolean => {
+    if (typeof item.id !== 'string') return true;
+    const startedMs = parseIsoMs(item.startedAt);
+    return isItemDeletedInLedger(ledger, 'readingKhatmas', item.id, startedMs);
+  };
+
+  const filterPagesWithTombstones = (khatmaId: string, pages: number[]): number[] =>
+    pages.filter((page) => !isItemDeletedInLedger(ledger, 'khatmaPages', `${khatmaId}:${page}`));
+
   for (const item of localKhatmas) {
-    if (typeof item.id === 'string') byId.set(item.id, item);
+    if (typeof item.id === 'string' && !isKhatmaDeleted(item)) {
+      const filteredPages = filterPagesWithTombstones(
+        item.id,
+        sanitizePageBookmarks(Array.isArray(item.completedPages) ? item.completedPages : [])
+      );
+      const filteredLogs = Array.isArray(item.dailyLogs)
+        ? item.dailyLogs
+            .filter(isPlainRecord)
+            .map((entry) => ({
+              date: String(entry.date || ''),
+              pages: filterPagesWithTombstones(item.id as string, sanitizePageBookmarks(entry.pages)),
+            }))
+            .filter((entry) => entry.date && entry.pages.length > 0)
+        : [];
+      byId.set(item.id, { ...item, completedPages: filteredPages, dailyLogs: filteredLogs });
+    }
   }
+
   for (const rItem of remoteKhatmas) {
-    if (typeof rItem.id !== 'string') continue;
+    if (typeof rItem.id !== 'string' || isKhatmaDeleted(rItem)) continue;
+    const rFilteredPages = filterPagesWithTombstones(
+      rItem.id,
+      sanitizePageBookmarks(Array.isArray(rItem.completedPages) ? rItem.completedPages : [])
+    );
     const lItem = byId.get(rItem.id);
     if (!lItem) {
-      byId.set(rItem.id, rItem);
+      const rFilteredLogs = Array.isArray(rItem.dailyLogs)
+        ? rItem.dailyLogs
+            .filter(isPlainRecord)
+            .map((entry) => ({
+              date: String(entry.date || ''),
+              pages: filterPagesWithTombstones(rItem.id as string, sanitizePageBookmarks(entry.pages)),
+            }))
+            .filter((entry) => entry.date && entry.pages.length > 0)
+        : [];
+      byId.set(rItem.id, { ...rItem, completedPages: rFilteredPages, dailyLogs: rFilteredLogs });
       continue;
     }
-    const mergedPages = sanitizePageBookmarks([
-      ...(Array.isArray(lItem.completedPages) ? lItem.completedPages : []),
-      ...(Array.isArray(rItem.completedPages) ? rItem.completedPages : []),
-    ]);
+    const mergedPages = filterPagesWithTombstones(
+      rItem.id,
+      sanitizePageBookmarks([
+        ...(Array.isArray(lItem.completedPages) ? lItem.completedPages : []),
+        ...rFilteredPages,
+      ])
+    );
     const logMap = new Map<string, number[]>();
     for (const srcLogs of [lItem.dailyLogs, rItem.dailyLogs]) {
       if (!Array.isArray(srcLogs)) continue;
       for (const entry of srcLogs) {
         if (isPlainRecord(entry) && typeof entry.date === 'string' && Array.isArray(entry.pages)) {
           const prev = logMap.get(entry.date) || [];
-          logMap.set(entry.date, sanitizePageBookmarks([...prev, ...entry.pages]));
+          const cleanPages = filterPagesWithTombstones(
+            rItem.id,
+            sanitizePageBookmarks([...prev, ...entry.pages])
+          );
+          if (cleanPages.length > 0) {
+            logMap.set(entry.date, cleanPages);
+          }
         }
       }
     }
@@ -216,20 +278,22 @@ function mergeReadingKhatmasJson(localRaw: string | null, remoteRaw: string | nu
   }
 
   const cycleUnion = new Map<string, Record<string, unknown>>();
-  for (const srcCycles of [localObj.completedCycles, remoteObj.completedCycles]) {
+  for (const srcCycles of [safeLocal.completedCycles, safeRemote.completedCycles]) {
     if (!Array.isArray(srcCycles)) continue;
     for (const c of srcCycles) {
-      if (isPlainRecord(c) && typeof c.id === 'string') cycleUnion.set(c.id, c);
+      if (isPlainRecord(c) && typeof c.id === 'string' && !isItemDeletedInLedger(ledger, 'readingKhatmas', c.id)) {
+        cycleUnion.set(c.id, c);
+      }
     }
   }
 
   const mergedKhatmas = [...byId.values()];
   const activeKhatmaId =
-    (typeof remoteObj.activeKhatmaId === 'string' && byId.has(remoteObj.activeKhatmaId)
-      ? remoteObj.activeKhatmaId
+    (typeof safeRemote.activeKhatmaId === 'string' && byId.has(safeRemote.activeKhatmaId)
+      ? safeRemote.activeKhatmaId
       : null) ??
-    (typeof localObj.activeKhatmaId === 'string' && byId.has(localObj.activeKhatmaId)
-      ? localObj.activeKhatmaId
+    (typeof safeLocal.activeKhatmaId === 'string' && byId.has(safeLocal.activeKhatmaId)
+      ? safeLocal.activeKhatmaId
       : null) ??
     (mergedKhatmas[0]?.id as string | undefined) ??
     null;
@@ -242,35 +306,42 @@ function mergeReadingKhatmasJson(localRaw: string | null, remoteRaw: string | nu
   });
 }
 
-function mergeAdhkarJson(localRaw: string | null, remoteRaw: string | null): string | null {
-  if (!localRaw) return remoteRaw;
-  if (!remoteRaw) return localRaw;
-  const localObj = safeJsonParse(localRaw);
-  const remoteObj = safeJsonParse(remoteRaw);
-  if (!isPlainRecord(localObj)) return remoteRaw;
-  if (!isPlainRecord(remoteObj)) return localRaw;
+function mergeAdhkarJson(
+  localRaw: string | null,
+  remoteRaw: string | null,
+  ledger: SyncTombstoneLedgerV1
+): string | null {
+  if (!localRaw && !remoteRaw) return null;
+  const localObj = safeJsonParse(localRaw) ?? {};
+  const remoteObj = safeJsonParse(remoteRaw) ?? {};
+  if (!isPlainRecord(localObj) && !isPlainRecord(remoteObj)) return null;
+  const safeLocal = isPlainRecord(localObj) ? localObj : {};
+  const safeRemote = isPlainRecord(remoteObj) ? remoteObj : {};
 
   const favoriteIds = [
     ...new Set([
-      ...(Array.isArray(localObj.favoriteIds) ? localObj.favoriteIds.filter((x): x is string => typeof x === 'string') : []),
-      ...(Array.isArray(remoteObj.favoriteIds) ? remoteObj.favoriteIds.filter((x): x is string => typeof x === 'string') : []),
+      ...(Array.isArray(safeLocal.favoriteIds) ? safeLocal.favoriteIds.filter((x): x is string => typeof x === 'string') : []),
+      ...(Array.isArray(safeRemote.favoriteIds) ? safeRemote.favoriteIds.filter((x): x is string => typeof x === 'string') : []),
     ]),
-  ];
+  ].filter((id) => !isItemDeletedInLedger(ledger, 'adhkarFavorites', id));
 
   const allDates = new Set<string>([
-    ...(isPlainRecord(localObj.countsByDate) ? Object.keys(localObj.countsByDate) : []),
-    ...(isPlainRecord(remoteObj.countsByDate) ? Object.keys(remoteObj.countsByDate) : []),
+    ...(isPlainRecord(safeLocal.countsByDate) ? Object.keys(safeLocal.countsByDate) : []),
+    ...(isPlainRecord(safeRemote.countsByDate) ? Object.keys(safeRemote.countsByDate) : []),
   ]);
   const countsByDate: Record<string, Record<string, number>> = {};
   for (const dateKey of [...allDates].sort((a, b) => b.localeCompare(a)).slice(0, 90)) {
-    const lDay = isPlainRecord(localObj.countsByDate) && isPlainRecord(localObj.countsByDate[dateKey])
-      ? (localObj.countsByDate[dateKey] as Record<string, unknown>)
+    const lDay = isPlainRecord(safeLocal.countsByDate) && isPlainRecord(safeLocal.countsByDate[dateKey])
+      ? (safeLocal.countsByDate[dateKey] as Record<string, unknown>)
       : {};
-    const rDay = isPlainRecord(remoteObj.countsByDate) && isPlainRecord(remoteObj.countsByDate[dateKey])
-      ? (remoteObj.countsByDate[dateKey] as Record<string, unknown>)
+    const rDay = isPlainRecord(safeRemote.countsByDate) && isPlainRecord(safeRemote.countsByDate[dateKey])
+      ? (safeRemote.countsByDate[dateKey] as Record<string, unknown>)
       : {};
     const mergedDay: Record<string, number> = {};
     for (const itemId of new Set([...Object.keys(lDay), ...Object.keys(rDay)])) {
+      if (isItemDeletedInLedger(ledger, 'adhkarCounts', `${dateKey}:${itemId}`)) {
+        continue;
+      }
       const lVal = typeof lDay[itemId] === 'number' && Number.isFinite(lDay[itemId]) ? Math.max(0, Math.trunc(lDay[itemId] as number)) : 0;
       const rVal = typeof rDay[itemId] === 'number' && Number.isFinite(rDay[itemId]) ? Math.max(0, Math.trunc(rDay[itemId] as number)) : 0;
       if (Math.max(lVal, rVal) > 0) mergedDay[itemId] = Math.max(lVal, rVal);
@@ -278,8 +349,8 @@ function mergeAdhkarJson(localRaw: string | null, remoteRaw: string | null): str
     if (Object.keys(mergedDay).length > 0) countsByDate[dateKey] = mergedDay;
   }
 
-  const lTasbih = isPlainRecord(localObj.freeTasbih) ? localObj.freeTasbih : {};
-  const rTasbih = isPlainRecord(remoteObj.freeTasbih) ? remoteObj.freeTasbih : {};
+  const lTasbih = isPlainRecord(safeLocal.freeTasbih) ? safeLocal.freeTasbih : {};
+  const rTasbih = isPlainRecord(safeRemote.freeTasbih) ? safeRemote.freeTasbih : {};
   const lLife = typeof lTasbih.totalLifetimeCount === 'number' ? lTasbih.totalLifetimeCount : 0;
   const rLife = typeof rTasbih.totalLifetimeCount === 'number' ? rTasbih.totalLifetimeCount : 0;
   const primaryTasbih = rLife >= lLife ? rTasbih : lTasbih;
@@ -297,31 +368,37 @@ function mergeAdhkarJson(localRaw: string | null, remoteRaw: string | null): str
       targetCount: typeof primaryTasbih.targetCount === 'number' ? primaryTasbih.targetCount : 100,
       totalLifetimeCount: Math.max(lLife, rLife),
     },
-    readingPrefs: isPlainRecord(localObj.readingPrefs)
-      ? localObj.readingPrefs
-      : isPlainRecord(remoteObj.readingPrefs)
-        ? remoteObj.readingPrefs
+    readingPrefs: isPlainRecord(safeLocal.readingPrefs)
+      ? safeLocal.readingPrefs
+      : isPlainRecord(safeRemote.readingPrefs)
+        ? safeRemote.readingPrefs
         : { fontScale: 'md', showVirtueAndSource: true, autoAdvance: true },
   });
 }
 
-function mergeSeerahV2Json(localRaw: string | null, remoteRaw: string | null): string | null {
-  if (!localRaw) return remoteRaw;
-  if (!remoteRaw) return localRaw;
-  const localObj = safeJsonParse(localRaw);
-  const remoteObj = safeJsonParse(remoteRaw);
-  if (!isPlainRecord(localObj)) return remoteRaw;
-  if (!isPlainRecord(remoteObj)) return localRaw;
+function mergeSeerahV2Json(
+  localRaw: string | null,
+  remoteRaw: string | null,
+  ledger: SyncTombstoneLedgerV1
+): string | null {
+  if (!localRaw && !remoteRaw) return null;
+  const localObj = safeJsonParse(localRaw) ?? {};
+  const remoteObj = safeJsonParse(remoteRaw) ?? {};
+  if (!isPlainRecord(localObj) && !isPlainRecord(remoteObj)) return null;
+  const safeLocal = isPlainRecord(localObj) ? localObj : {};
+  const safeRemote = isPlainRecord(remoteObj) ? remoteObj : {};
 
   const completedChapterIds = [
     ...new Set([
-      ...(Array.isArray(localObj.completedChapterIds) ? localObj.completedChapterIds.filter((x): x is string => typeof x === 'string') : []),
-      ...(Array.isArray(remoteObj.completedChapterIds) ? remoteObj.completedChapterIds.filter((x): x is string => typeof x === 'string') : []),
+      ...(Array.isArray(safeLocal.completedChapterIds) ? safeLocal.completedChapterIds.filter((x): x is string => typeof x === 'string') : []),
+      ...(Array.isArray(safeRemote.completedChapterIds) ? safeRemote.completedChapterIds.filter((x): x is string => typeof x === 'string') : []),
     ]),
-  ].sort();
+  ]
+    .filter((chapterId) => !isItemDeletedInLedger(ledger, 'seerahChapters', chapterId))
+    .sort();
 
-  const lPos = isPlainRecord(localObj.lastPosition) ? localObj.lastPosition : null;
-  const rPos = isPlainRecord(remoteObj.lastPosition) ? remoteObj.lastPosition : null;
+  const lPos = isPlainRecord(safeLocal.lastPosition) ? safeLocal.lastPosition : null;
+  const rPos = isPlainRecord(safeRemote.lastPosition) ? safeRemote.lastPosition : null;
   const lastPosition =
     lPos && rPos
       ? parseIsoMs(rPos.updatedAt) >= parseIsoMs(lPos.updatedAt)
@@ -331,64 +408,80 @@ function mergeSeerahV2Json(localRaw: string | null, remoteRaw: string | null): s
 
   return JSON.stringify({
     schemaVersion: 2,
-    fontSize: typeof localObj.fontSize === 'string' ? localObj.fontSize : remoteObj.fontSize || 'md',
+    fontSize: typeof safeLocal.fontSize === 'string' ? safeLocal.fontSize : safeRemote.fontSize || 'md',
     completedChapterIds,
     lastPosition,
   });
 }
 
-function mergeVideoSeriesJson(localRaw: string | null, remoteRaw: string | null): string | null {
-  if (!localRaw) return remoteRaw;
-  if (!remoteRaw) return localRaw;
-  const localObj = safeJsonParse(localRaw);
-  const remoteObj = safeJsonParse(remoteRaw);
-  if (!isPlainRecord(localObj)) return remoteRaw;
-  if (!isPlainRecord(remoteObj)) return localRaw;
+function mergeVideoSeriesJson(
+  localRaw: string | null,
+  remoteRaw: string | null,
+  ledger: SyncTombstoneLedgerV1
+): string | null {
+  if (!localRaw && !remoteRaw) return null;
+  const localObj = safeJsonParse(localRaw) ?? {};
+  const remoteObj = safeJsonParse(remoteRaw) ?? {};
+  if (!isPlainRecord(localObj) && !isPlainRecord(remoteObj)) return null;
+  const safeLocal = isPlainRecord(localObj) ? localObj : {};
+  const safeRemote = isPlainRecord(remoteObj) ? remoteObj : {};
 
   const customMap = new Map<string, unknown>();
-  for (const list of [localObj.customSeries, remoteObj.customSeries]) {
+  for (const list of [safeLocal.customSeries, safeRemote.customSeries]) {
     if (!Array.isArray(list)) continue;
     for (const item of list) {
-      if (isPlainRecord(item) && typeof item.id === 'string') customMap.set(item.id, item);
+      if (
+        isPlainRecord(item) &&
+        typeof item.id === 'string' &&
+        !isItemDeletedInLedger(ledger, 'customVideoSeries', item.id)
+      ) {
+        customMap.set(item.id, item);
+      }
     }
   }
 
-  const lProgMap = isPlainRecord(localObj.progressBySeries) ? localObj.progressBySeries : {};
-  const rProgMap = isPlainRecord(remoteObj.progressBySeries) ? remoteObj.progressBySeries : {};
+  const lProgMap = isPlainRecord(safeLocal.progressBySeries) ? safeLocal.progressBySeries : {};
+  const rProgMap = isPlainRecord(safeRemote.progressBySeries) ? safeRemote.progressBySeries : {};
   const mergedProgress: Record<string, unknown> = {};
 
   for (const seriesId of new Set([...Object.keys(lProgMap), ...Object.keys(rProgMap)])) {
+    if (seriesId.startsWith('custom:') && isItemDeletedInLedger(ledger, 'customVideoSeries', seriesId)) {
+      continue;
+    }
     const lProg = isPlainRecord(lProgMap[seriesId]) ? lProgMap[seriesId] : null;
     const rProg = isPlainRecord(rProgMap[seriesId]) ? rProgMap[seriesId] : null;
-    if (!lProg) {
-      mergedProgress[seriesId] = rProg;
-      continue;
-    }
-    if (!rProg) {
-      mergedProgress[seriesId] = lProg;
-      continue;
-    }
+    const baseProg = lProg || rProg;
+    if (!baseProg) continue;
+
     const completedVideoIds = [
       ...new Set([
-        ...(Array.isArray(lProg.completedVideoIds) ? lProg.completedVideoIds.filter((x): x is string => typeof x === 'string') : []),
-        ...(Array.isArray(rProg.completedVideoIds) ? rProg.completedVideoIds.filter((x): x is string => typeof x === 'string') : []),
+        ...(lProg && Array.isArray(lProg.completedVideoIds) ? lProg.completedVideoIds.filter((x): x is string => typeof x === 'string') : []),
+        ...(rProg && Array.isArray(rProg.completedVideoIds) ? rProg.completedVideoIds.filter((x): x is string => typeof x === 'string') : []),
       ]),
-    ];
+    ].filter((videoId) => !isItemDeletedInLedger(ledger, 'watchedVideos', `${seriesId}:${videoId}`));
+
     const completedSet = new Set(completedVideoIds);
     const inProgressVideoIds = [
       ...new Set([
-        ...(Array.isArray(lProg.inProgressVideoIds) ? lProg.inProgressVideoIds.filter((x): x is string => typeof x === 'string') : []),
-        ...(Array.isArray(rProg.inProgressVideoIds) ? rProg.inProgressVideoIds.filter((x): x is string => typeof x === 'string') : []),
+        ...(lProg && Array.isArray(lProg.inProgressVideoIds) ? lProg.inProgressVideoIds.filter((x): x is string => typeof x === 'string') : []),
+        ...(rProg && Array.isArray(rProg.inProgressVideoIds) ? rProg.inProgressVideoIds.filter((x): x is string => typeof x === 'string') : []),
       ]),
-    ].filter((id) => !completedSet.has(id));
+    ].filter((id) => !completedSet.has(id) && !isItemDeletedInLedger(ledger, 'watchedVideos', `${seriesId}:${id}`));
 
-    const remoteNewer = parseIsoMs(rProg.lastUpdatedAt) >= parseIsoMs(lProg.lastUpdatedAt);
-    const primary = remoteNewer ? rProg : lProg;
-    const secondary = remoteNewer ? lProg : rProg;
-    const videoNotes = {
+    const remoteNewer =
+      lProg && rProg ? parseIsoMs(rProg.lastUpdatedAt) >= parseIsoMs(lProg.lastUpdatedAt) : Boolean(rProg);
+    const primary = (remoteNewer ? rProg : lProg) || baseProg;
+    const secondary = (remoteNewer ? lProg : rProg) || baseProg;
+    const rawVideoNotes = {
       ...(isPlainRecord(secondary.videoNotes) ? secondary.videoNotes : {}),
       ...(isPlainRecord(primary.videoNotes) ? primary.videoNotes : {}),
     };
+    const videoNotes: Record<string, unknown> = {};
+    for (const [vid, note] of Object.entries(rawVideoNotes)) {
+      if (!isItemDeletedInLedger(ledger, 'videoNotes', `${seriesId}:${vid}`)) {
+        videoNotes[vid] = note;
+      }
+    }
 
     mergedProgress[seriesId] = {
       completedVideoIds,
@@ -399,32 +492,57 @@ function mergeVideoSeriesJson(localRaw: string | null, remoteRaw: string | null)
     };
   }
 
+  const candidateFeatured = safeRemote.featuredSeriesId ?? safeLocal.featuredSeriesId ?? 'bina-al-nafs-al-mutmainnah';
+  const featuredSeriesId =
+    typeof candidateFeatured === 'string' &&
+    !(candidateFeatured.startsWith('custom:') && isItemDeletedInLedger(ledger, 'customVideoSeries', candidateFeatured))
+      ? candidateFeatured
+      : 'bina-al-nafs-al-mutmainnah';
+
   return JSON.stringify({
     schemaVersion: 1,
-    featuredSeriesId: remoteObj.featuredSeriesId ?? localObj.featuredSeriesId ?? 'seerah-suwaidan',
-    dailySelection: localObj.dailySelection ?? remoteObj.dailySelection ?? null,
+    featuredSeriesId,
+    dailySelection: safeLocal.dailySelection ?? safeRemote.dailySelection ?? null,
     progressBySeries: mergedProgress,
     customSeries: [...customMap.values()],
   });
 }
 
 /**
- * Deterministic, commutative/idempotent CRDT merge across all auxiliary user domains.
- * Never drops completed Khatma pages, bookmarks, ribbons, Seerah chapters, Adhkar favorites, or watched lessons.
+ * Deterministic, commutative/idempotent LWW-Element-Set CRDT merge across all auxiliary user domains.
+ * Preserves concurrent additions AND honors explicit deletions/unmarks via `SyncTombstoneLedgerV1`.
  */
 export function mergeAuxiliaryDomainSnapshots(
   local: AuxiliaryDomainSnapshotV1,
-  remote: AuxiliaryDomainSnapshotV1
+  remote: AuxiliaryDomainSnapshotV1,
+  externalLedger?: SyncTombstoneLedgerV1
 ): AuxiliaryDomainSnapshotV1 {
-  const pageBookmarks = sanitizePageBookmarks([...local.pageBookmarks, ...remote.pageBookmarks]);
+  const mergedLedger = externalLedger
+    ? mergeSyncTombstoneLedgers(
+        mergeSyncTombstoneLedgers(local.tombstoneLedger, remote.tombstoneLedger),
+        externalLedger
+      )
+    : mergeSyncTombstoneLedgers(local.tombstoneLedger, remote.tombstoneLedger);
+
+  const pageBookmarks = sanitizePageBookmarks([...local.pageBookmarks, ...remote.pageBookmarks]).filter(
+    (page) => !isItemDeletedInLedger(mergedLedger, 'pageBookmarks', String(page))
+  );
 
   const localRibbons = sanitizeRibbons(local.ribbons);
   const remoteRibbons = sanitizeRibbons(remote.ribbons);
   const remoteRibbonById = new Map(remoteRibbons.map((r) => [r.id, r]));
   const ribbons = localRibbons.map((lRib) => {
     const rRib = remoteRibbonById.get(lRib.id);
-    if (!rRib) return lRib;
-    return rRib.updatedAtMs >= lRib.updatedAtMs ? rRib : lRib;
+    const chosen = !rRib ? lRib : rRib.updatedAtMs >= lRib.updatedAtMs ? rRib : lRib;
+    if (isItemDeletedInLedger(mergedLedger, 'ribbons', chosen.id, chosen.updatedAtMs)) {
+      return {
+        ...chosen,
+        page: null,
+        note: undefined,
+        updatedAtMs: Math.max(chosen.updatedAtMs, mergedLedger.deletedAtMs.ribbons?.[chosen.id] ?? 0),
+      };
+    }
+    return chosen;
   });
 
   let lastPage = local.lastPage;
@@ -439,15 +557,16 @@ export function mergeAuxiliaryDomainSnapshots(
 
   return {
     schemaVersion: 1,
-    updatedAtMs: Math.max(local.updatedAtMs, remote.updatedAtMs),
+    updatedAtMs: Math.max(local.updatedAtMs, remote.updatedAtMs, mergedLedger.updatedAtMs),
     pageBookmarks,
     ribbons,
     lastPage,
     lastReadingPositionRaw,
-    readingKhatmasRaw: mergeReadingKhatmasJson(local.readingKhatmasRaw, remote.readingKhatmasRaw),
-    adhkarProgressRaw: mergeAdhkarJson(local.adhkarProgressRaw, remote.adhkarProgressRaw),
-    seerahV2Raw: mergeSeerahV2Json(local.seerahV2Raw, remote.seerahV2Raw),
-    videoSeriesRaw: mergeVideoSeriesJson(local.videoSeriesRaw, remote.videoSeriesRaw),
+    readingKhatmasRaw: mergeReadingKhatmasJson(local.readingKhatmasRaw, remote.readingKhatmasRaw, mergedLedger),
+    adhkarProgressRaw: mergeAdhkarJson(local.adhkarProgressRaw, remote.adhkarProgressRaw, mergedLedger),
+    seerahV2Raw: mergeSeerahV2Json(local.seerahV2Raw, remote.seerahV2Raw, mergedLedger),
+    videoSeriesRaw: mergeVideoSeriesJson(local.videoSeriesRaw, remote.videoSeriesRaw, mergedLedger),
+    tombstoneLedger: mergedLedger,
   };
 }
 
@@ -455,6 +574,9 @@ export function applyMergedAuxiliaryDomainSnapshot(
   merged: AuxiliaryDomainSnapshotV1,
   setRawItem: (key: string, value: string) => boolean
 ): boolean {
+  if (merged.tombstoneLedger && !setRawItem(SYNCED_AUXILIARY_KEYS.TOMBSTONES, JSON.stringify(merged.tombstoneLedger))) {
+    return false;
+  }
   if (!setRawItem(SYNCED_AUXILIARY_KEYS.PAGE_BOOKMARKS, JSON.stringify(merged.pageBookmarks))) return false;
   if (!setRawItem(SYNCED_AUXILIARY_KEYS.RIBBONS, JSON.stringify(merged.ribbons))) return false;
   if (merged.lastPage && !setRawItem(SYNCED_AUXILIARY_KEYS.LAST_PAGE, String(merged.lastPage.page))) return false;

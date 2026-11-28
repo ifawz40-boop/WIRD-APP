@@ -1,5 +1,6 @@
 import { StorageService } from './storageService';
 import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
+import { recordSyncDeletion, recordSyncUpsert } from './syncTombstoneRegistry';
 
 export type MushafRibbonId = 'khatma' | 'hifz' | 'murajaah' | 'tadabbur';
 
@@ -101,6 +102,12 @@ export function placeMushafRibbon(
 ): MushafRibbonBookmark[] {
   const validPage =
     page !== null && Number.isInteger(page) && page >= 1 && page <= 604 ? page : null;
+  const nowMs = Date.now();
+  if (validPage === null) {
+    recordSyncDeletion('ribbons', ribbonId, nowMs);
+  } else {
+    recordSyncUpsert('ribbons', ribbonId, nowMs);
+  }
   const current = readMushafRibbons();
   const next = current.map((item) =>
     item.id === ribbonId
@@ -108,7 +115,7 @@ export function placeMushafRibbon(
           ...item,
           page: validPage,
           note: note !== undefined ? note.trim().slice(0, 160) || undefined : item.note,
-          updatedAtMs: Date.now(),
+          updatedAtMs: nowMs,
         }
       : item
   );

@@ -64,11 +64,13 @@ export const Header: React.FC<HeaderProps> = ({
   isSidebarOpen,
   onToggleSidebar,
 }) => {
-  const { status, pendingCount, triggerSync } = useCloudSync();
+  const { status, pendingCount, realtimeConnected, triggerSync } = useCloudSync();
 
   const syncLabel =
     status === 'synced'
-      ? 'مُزامن'
+      ? realtimeConnected
+        ? 'مُزامن حياً'
+        : 'مُزامن'
       : status === 'partial'
       ? 'مزامنة جزئية'
       : status === 'syncing'

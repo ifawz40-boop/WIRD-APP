@@ -1184,3 +1184,38 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 
 ### Next Action
 - Review local diff and commit on a feature branch when ready, or explicitly authorize provisioning Cloud SQL and deploying with `npx -y firebase-tools@latest deploy --only dataconnect`.
+
+
+---
+
+## 2026-11-28 — Cloud Sync V4 (Real-Time `onSnapshot` + Bidirectional Additions & HLC Tombstone Deletions) & Personal Per-Account Cloud Vault (`main`)
+
+### Root Causes Diagnosed
+1. **Broken `origin/main` Build (`e2bf963f`):** Commit `e2bf963f` on `origin/main` deleted the 32 files added in `2a85d7a5` (including `auxiliaryCloudSyncService.ts`, `auxiliaryDomainsSchema.ts`, `src/fonts.css`, `MushafPaperFlipStage.tsx`, etc.) while keeping imports to them, causing GitHub Actions and Vercel deployment `dpl_141KW1A68QNc2KXCVkKriYYJKLRF` to fail.
+2. **First-Sync `baseRevision` Deadlock & Missing Real-Time Replication:** Non-empty local outbox entries with `baseRevision: 0` skipped remote reconciliation and permanently deadlocked against existing Firestore documents (`REMOTE_REVISION_CONFLICT` + `blocked_pending_local`), while Event #1 hit `blocked_base_revision` when local storage was non-empty; `CloudSyncCoordinator` also lacked `onAuthStateChanged` / scope-change hooks and a live Firestore `onSnapshot` listener on `users/{uid}/syncSystem/remoteReplication`, and views never re-hydrated state after remote projection.
+3. **Grow-Only Union Resurrecting Deletions:** Auxiliary merges (`mergeAuxiliaryDomainSnapshots`) used grow-only set unions (`new Set([...local, ...remote])`), resurrecting deleted Reading Khatmas, unmarked Khatma pages, removed Mushaf bookmarks, removed Adhkar favorites, unmarked Seerah chapters, and deleted custom video series; additionally, `deleteReadingKhatmaById` returned early without calling `scheduleAuxiliaryCloudSync()` when deleting the last Khatma.
+
+### Implementation Completed
+- **Branch Recovery & Pure-ESM Auth Init (`e9c63135`, `73ecbc88`, `api/firebase-init.ts`, `src/services/authService.ts`):** Reverted `e2bf963f` cleanly on fast-forward history, ported direct Google Identity Services `signInWithCredential`, and hardened `api/firebase-init.ts` using `fs.readFileSync` (`smoke:api-imports` PASS).
+- **HLC Tombstone Ledger & Account Cloud Vault V4 (`src/services/syncTombstoneRegistry.ts`, `src/services/accountCloudBundleService.ts`, `src/services/auxiliaryDomainsSchema.ts`, `src/services/auxiliaryCloudSyncService.ts`):**
+  - Built UID-scoped `SyncTombstoneLedgerV1` (`wird.sync.tombstones.v1`) tracking monotonic `upsertedAtMs` and `deletedAtMs` across all 15 user domains (`plans`, `enginePlans`, `portions`, `weakVerses`, `tests`, `readingKhatmas`, `khatmaPages`, `pageBookmarks`, `ribbons`, `adhkarFavorites`, `adhkarCounts`, `seerahChapters`, `customVideoSeries`, `watchedVideos`, `videoNotes`).
+  - Wired automatic array snapshot diffing into `StorageService` (`savePlans`, `saveEnginePlans`, `saveUnifiedPortions`, `saveWeakVerses` — with atomic rollback inclusion in `applyJournalTransaction`) plus explicit upsert/delete hooks across `readingKhatmaService.ts` (including last-khatma deletion sync), `adhkarProgressService.ts`, `seerahBookService.ts`, `videoSeriesService.ts`, `mushafRibbonBookmarksService.ts`, and `QuranMushafReader.tsx`.
+  - Built `AccountCloudBundleV4` (`users/{uid}/syncMeta/accountCloudVaultV4`, 100% authorized by deployed `firestore.rules`) with lossless `CompactEnginePlanV4` schedule compression (`< 115 KB` guaranteed) and commutative/idempotent `mergeAccountCloudBundles` preventing resurrection of deleted items while preserving concurrent additions and supporting causal re-add restores.
+- **Real-Time Global Sync & Live UI Re-Hydration (`src/services/cloudSyncCoordinator.ts`, `src/services/remoteInboxProjector.ts`, `src/components/auth/AuthGate.tsx`, `src/components/layout/Header.tsx`, `src/App.tsx`, and views):**
+  - Added live Firestore `onSnapshot` on `users/{uid}/syncSystem/remoteReplication`, `onAuthStateChanged` + `notifyStorageScopeChanged` triggers across all routes, self-healing outbox/inbox revision reconciliation after Vault V4 convergence, `مُزامن حياً` header badge, and `wird:cloud-sync-applied` state re-hydration across `App.tsx`, `QuranLibraryView`, `QuranMushafReader`, `RevisionCenterView`, `AdhkarView`, `SeerahView`, and `VideoSeriesView`.
+- **Personal Per-Account Cloud Vault (`src/services/personalCloudSyncService.ts`, `src/components/settings/PersonalCloudVaultPanel.tsx`, `src/components/settings/SettingsView.tsx`):**
+  - Added `#settings-personal-cloud-vault` in Settings with 3 personal cloud modes powered by `AccountCloudBundleV4` (syncing additions + deletions): (1) Google Drive private `appDataFolder` (`drive.appdata` + auto-sync + graceful `403 accessNotConfigured` guidance), (2) File System Access API Live Linked Cloud File (`iCloud Drive` / `OneDrive` / `Dropbox`) + universal Smart JSON Merge, and (3) gzip-compressed `WIRD4Z:` peer-to-peer sync capsules.
+
+### Verification Executed (2026-11-28)
+- `npm.cmd run lint` (`tsc --noEmit` + Tanzil validation + 114 Surah split): **PASS** (`0` errors)
+- `npm.cmd run smoke:api-imports` (all 7 API handlers incl. `api/firebase-init.ts` & `api/seerah-tts.ts`): **PASS**
+- `npm.cmd test` (`76` suites incl. `19/19` in `cloudSyncAdditionsAndDeletions.test.ts` & `17/17` in `wirdNextPlatformUpgrade.test.ts`): **PASS** (`852 PASSED | 0 FAILED`)
+- `$env:NODE_ENV='production'; npx.cmd vite build`: **PASS** (`2.67s`, `0` chunks > 500 kB, `dist/wird-precache-manifest.json` emitted)
+- `node scripts/smoke-server.mjs`: **PASS** (prod `4179` + dev `4180`)
+- Production UI/service emoji scan: **PASS** (`0` hits)
+- Protected files diff (`completeQuranData.json`, `quran-simple-1.1.xml`, `tanzilReferenceData.json`, `docs/seerah/MASTER_DIRECTIVE.md`, `firestore.rules`, `bun.lock`): **PASS** (`0` bytes diff)
+- Playwright E2E (`e2e/app-shell.spec.ts` + `e2e/settings-ux.spec.ts` incl. `#settings-personal-cloud-vault` on Edge Chromium Desktop `1440×900` & Mobile `390×844`): **PASS** (`24 passed | 0 failed`)
+- `npm run test:firestore-rules`: **NOT RUN** locally (`firestore.rules` untouched; executes in GitHub Actions CI).
+
+### Next Action
+- Fast-forward merge `feat/cloud-sync-v4-add-delete-personal-cloud` into `main`, push to `origin/main` (per explicit owner authorization), and verify exact-head GitHub Actions CI and Vercel Production deployment (`https://wird-app.vercel.app/`).

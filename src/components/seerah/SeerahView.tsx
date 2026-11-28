@@ -58,6 +58,18 @@ export const SeerahView: React.FC<SeerahViewProps> = ({ onToast }) => {
   const [progress, setProgress] = useState<SeerahProgressState>(() =>
     readSeerahProgress()
   );
+
+  useEffect(() => {
+    const handleRemoteSync = () => {
+      setProgress(readSeerahProgress());
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    window.addEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleRemoteSync);
+      window.removeEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    };
+  }, []);
   const [screen, setScreen] = useState<ActiveSeerahScreen>(() =>
     screenFromCurrentHash()
   );

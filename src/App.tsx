@@ -304,6 +304,20 @@ export default function App() {
     setLogs(StorageService.getLogsForDisplay());
   };
 
+  // Re-hydrate in-memory React state immediately whenever background/realtime Cloud Sync
+  // or Personal Cloud Vault projects remote additions, edits, or deletions.
+  useEffect(() => {
+    const handleCloudSyncApplied = () => {
+      refreshJournaledSnapshots();
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleCloudSyncApplied);
+    window.addEventListener('wird:auxiliary-sync-applied', handleCloudSyncApplied);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleCloudSyncApplied);
+      window.removeEventListener('wird:auxiliary-sync-applied', handleCloudSyncApplied);
+    };
+  }, []);
+
   const handleSetThemeMode = async (newTheme: 'light' | 'dark') => {
     if (profile.theme === newTheme) return;
     const updated: UserProfile = { ...profile, theme: newTheme };

@@ -36,5 +36,12 @@ test.describe('WIRD settings UX', () => {
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: 'إلغاء التراجع' }).click();
     await expect(dialog).toHaveCount(0);
+
+    // Personal Per-Account Cloud Sync V4 panel renders cleanly with >= 44px touch targets
+    const personalVault = page.locator('#settings-personal-cloud-vault');
+    await expect(personalVault).toBeVisible();
+    await expect(personalVault.getByRole('button', { name: /Google Drive/ }).first()).toHaveCSS('min-height', '44px');
+    await expect(personalVault.getByRole('button', { name: 'حفظ ملف خزنة ذكي' })).toHaveCSS('min-height', '44px');
+    await expect(personalVault.getByRole('button', { name: 'دمج ذكي من ملف' })).toHaveCSS('min-height', '44px');
   });
 });

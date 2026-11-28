@@ -70,6 +70,18 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
   onToast,
 }) => {
   const [store, setStore] = useState<VideoSeriesStoreV1>(() => readVideoSeriesStore());
+
+  useEffect(() => {
+    const handleRemoteSync = () => {
+      setStore(readVideoSeriesStore());
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    window.addEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleRemoteSync);
+      window.removeEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    };
+  }, []);
   const allSeries = useMemo(
     () => getAllSeriesMerged(store.customSeries),
     [store.customSeries]

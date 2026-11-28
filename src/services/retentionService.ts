@@ -7,6 +7,7 @@ import {
   WirdPortion 
 } from '../types/quran';
 import { StorageService, STORAGE_KEYS as APP_STORAGE_KEYS, isValidWeakVerseRecord, type JournalProjectionOperation } from './storageService';
+import { reconcileSnapshotArrayMutations } from './syncTombstoneRegistry';
 import { createSecureId } from './secureId';
 import { getPagesForAyahRange } from './pageProgressService';
 import { ALL_SURAHS } from '../data/quranMeta';
@@ -819,7 +820,19 @@ export const RetentionService = {
 
   saveWeakVerses(items: WeakVerseItem[]): boolean {
     if (!isValidWeakVerseArray(items)) return false;
-    return StorageService.setRawItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(items));
+    let prevKeys: string[] = [];
+    try {
+      const prev = this.getWeakVerses();
+      prevKeys = prev.flatMap(w => [w.id, `${w.surahNumber}:${w.ayahNumber}`]);
+    } catch {
+      prevKeys = [];
+    }
+    const saved = StorageService.setRawItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(items));
+    if (saved) {
+      const nextKeys = items.flatMap(w => [w.id, `${w.surahNumber}:${w.ayahNumber}`]);
+      reconcileSnapshotArrayMutations('weakVerses', prevKeys, nextKeys);
+    }
+    return saved;
   },
 
   /** @deprecated Local-only compatibility API. Use buildWeakVerseFailureTransaction for authenticated mutations. */

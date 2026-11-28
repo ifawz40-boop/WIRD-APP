@@ -9,6 +9,7 @@ import {
 } from '../data/adhkarData';
 import { StorageService } from './storageService';
 import { scheduleAuxiliaryCloudSync } from './auxiliaryCloudSyncService';
+import { recordSyncDeletion, recordSyncUpsert } from './syncTombstoneRegistry';
 import { getLocalDateString } from './unifiedPortionService';
 
 export const ADHKAR_PROGRESS_KEY = 'wird.adhkar.progress.v1';
@@ -230,6 +231,9 @@ export function incrementAdhkarItemCount(
       [dateKey]: dayCounts
     }
   };
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncUpsert('adhkarCounts', `${dateKey}:${canonicalId}`);
+  }
   persistAdhkarProgressStore(nextStore, storage);
 
   return {
@@ -257,6 +261,9 @@ export function resetAdhkarItemCount(
       [dateKey]: dayCounts
     }
   };
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncDeletion('adhkarCounts', `${dateKey}:${canonicalId}`);
+  }
   return persistAdhkarProgressStore(nextStore, storage);
 }
 
@@ -267,7 +274,8 @@ export function resetAdhkarCategoryCounts(
 ): AdhkarProgressStore {
   const store = readAdhkarProgressStore(storage);
   const dayCounts = { ...(store.countsByDate[dateKey] || {}) };
-  for (const item of getAdhkarItemsByCategory(category)) {
+  const categoryItems = getAdhkarItemsByCategory(category);
+  for (const item of categoryItems) {
     delete dayCounts[item.id];
   }
   const nextStore: AdhkarProgressStore = {
@@ -277,6 +285,11 @@ export function resetAdhkarCategoryCounts(
       [dateKey]: dayCounts
     }
   };
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    for (const item of categoryItems) {
+      recordSyncDeletion('adhkarCounts', `${dateKey}:${item.id}`);
+    }
+  }
   return persistAdhkarProgressStore(nextStore, storage);
 }
 
@@ -291,6 +304,13 @@ export function toggleAdhkarFavorite(
   const favoriteIds = exists
     ? store.favoriteIds.filter(id => id !== canonicalId)
     : [...store.favoriteIds, canonicalId];
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    if (exists) {
+      recordSyncDeletion('adhkarFavorites', canonicalId);
+    } else {
+      recordSyncUpsert('adhkarFavorites', canonicalId);
+    }
+  }
   return persistAdhkarProgressStore({ ...store, favoriteIds }, storage);
 }
 

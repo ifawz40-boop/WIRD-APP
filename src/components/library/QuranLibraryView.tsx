@@ -150,6 +150,19 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
   const refreshKhatmaStore = () => setKhatmaStore(readAllReadingKhatmas());
   const [readingKhatmaError, setReadingKhatmaError] = useState('');
 
+  useEffect(() => {
+    const handleRemoteSync = () => {
+      setKhatmaStore(readAllReadingKhatmas());
+      setLastReadingPosition(readLastReadingPosition());
+    };
+    window.addEventListener('wird:cloud-sync-applied', handleRemoteSync);
+    window.addEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    return () => {
+      window.removeEventListener('wird:cloud-sync-applied', handleRemoteSync);
+      window.removeEventListener('wird:auxiliary-sync-applied', handleRemoteSync);
+    };
+  }, []);
+
   // Audio state (reconciled live across all audio views)
   const [activeReciter, setActiveReciter] = useState<ReciterId>(() =>
     getSavedPreferredReciter(initialReciter || 'alafasy')

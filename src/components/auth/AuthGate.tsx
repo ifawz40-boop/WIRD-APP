@@ -5,6 +5,7 @@ import { StorageService } from '../../services/storageService';
 import { replayJournalProjection } from '../../services/journalProjectionReplayer';
 import { migrateLegacyPortionsJournaled } from '../../services/backupPersistence';
 import { initializeEnginePlansArchiveForScope } from '../../services/enginePlanArchive';
+import { cloudSyncCoordinator } from '../../services/cloudSyncCoordinator';
 import { AuthScreen } from './AuthScreen';
 import { WirdAvatar } from '../brand/WirdAvatar';
 import { WirdBrandLockup } from '../brand/WirdLogo';
@@ -53,6 +54,7 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
         if (!migration.success) throw new Error(migration.message);
         if (!cancelled && StorageService.getStorageScope() === storageScope) {
           setReadyScope(storageScope);
+          cloudSyncCoordinator.notifyStorageScopeChanged();
         }
       } catch (error) {
         if (!cancelled) {
@@ -88,7 +90,10 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
       if (StorageService.getStorageScope() !== targetScope) return;
       const migration = await migrateLegacyPortionsJournaled();
       if (!migration.success) throw new Error(migration.message);
-      if (StorageService.getStorageScope() === targetScope) setReadyScope(targetScope);
+      if (StorageService.getStorageScope() === targetScope) {
+        setReadyScope(targetScope);
+        cloudSyncCoordinator.notifyStorageScopeChanged();
+      }
     } catch (error) {
       setScopeErrorMessage(error instanceof Error ? error.message : 'تعذر استعادة سجل المزامنة المحلي.');
       setScopeError(true);
