@@ -31,6 +31,7 @@ if ('serviceWorker' in navigator && (import.meta.env.PROD || process.env.NODE_EN
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
         console.log('[WIRD PWA] Service Worker registered successfully with scope:', registration.scope);
+        void registration.update().catch(() => undefined);
 
         // Check for updates
         registration.addEventListener('updatefound', () => {

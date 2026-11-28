@@ -1,6 +1,8 @@
 import { 
   signInWithPopup, 
   signInWithRedirect,
+  signInWithCredential,
+  GoogleAuthProvider,
   getRedirectResult,
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -10,7 +12,7 @@ import {
   User, 
   AuthError 
 } from 'firebase/auth';
-import { auth, googleAuthProvider, isFirebaseConfigured } from '../lib/firebase';
+import { auth, googleAuthProvider, isFirebaseConfigured, WIRD_GOOGLE_OAUTH_CLIENT_ID } from '../lib/firebase';
 
 export function mapAuthError(error: unknown): string {
   if (!error) return 'حدث خطأ غير معروف.';
@@ -88,6 +90,56 @@ export const AuthService = {
     if (!isFirebaseConfigured() || !auth || !googleAuthProvider) {
       throw new Error('auth/api-key-not-valid');
     }
+
+    // Primary path: Google Identity Services (GIS) direct OAuth2 token -> Firebase signInWithCredential.
+    // Bypasses legacy cross-domain /__/auth/iframe & third-party cookie partitioning on Chrome/Safari/Mobile/PWA.
+    const gisOauth2 = typeof window !== 'undefined' ? (window as any).google?.accounts?.oauth2 : undefined;
+    if (gisOauth2?.initTokenClient && WIRD_GOOGLE_OAUTH_CLIENT_ID) {
+      try {
+        const accessToken = await new Promise<string>((resolve, reject) => {
+          let settled = false;
+          const client = gisOauth2.initTokenClient({
+            client_id: WIRD_GOOGLE_OAUTH_CLIENT_ID,
+            scope: 'openid email profile',
+            callback: (resp: any) => {
+              if (settled) return;
+              settled = true;
+              if (resp?.access_token) {
+                resolve(String(resp.access_token));
+              } else {
+                reject({ code: resp?.error || 'auth/internal-error', message: resp?.error_description });
+              }
+            },
+            error_callback: (err: any) => {
+              if (settled) return;
+              settled = true;
+              if (err?.type === 'popup_closed') {
+                reject({ code: 'auth/popup-closed-by-user' });
+              } else if (err?.type === 'popup_failed_to_open') {
+                reject({ code: 'auth/popup-blocked' });
+              } else {
+                reject({ code: 'auth/internal-error', message: err?.message || err?.type });
+              }
+            }
+          });
+          client.requestAccessToken({ prompt: 'select_account' });
+        });
+
+        const credential = GoogleAuthProvider.credential(null, accessToken);
+        const userCredential = await signInWithCredential(auth, credential);
+        return userCredential.user;
+      } catch (gisErr: any) {
+        if (gisErr?.code === 'auth/popup-closed-by-user') {
+          throw gisErr;
+        }
+        if (gisErr?.code === 'auth/popup-blocked') {
+          await signInWithRedirect(auth, googleAuthProvider);
+          return null;
+        }
+        console.warn('[WIRD Auth] GIS token sign-in failed, falling back to Firebase popup/redirect:', gisErr);
+      }
+    }
+
     try {
       const result = await signInWithPopup(auth, googleAuthProvider);
       return result.user;

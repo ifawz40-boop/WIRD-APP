@@ -10,6 +10,9 @@ import appletConfig from '../../firebase-applet-config.json';
  */
 export const WIRD_FIREBASE_PROJECT_ID = 'wird-quran-app';
 export const WIRD_FIRESTORE_DATABASE_ID = '(default)';
+export const WIRD_GOOGLE_OAUTH_CLIENT_ID =
+  (appletConfig as Record<string, string>)?.oAuthClientId ||
+  '741238306826-04omrq5hh4fmg6q9rqcoc8s77evh5qht.apps.googleusercontent.com';
 
 function getEnvVar(key: string): string {
   if (typeof import.meta !== 'undefined' && import.meta && import.meta.env && import.meta.env[key]) {
