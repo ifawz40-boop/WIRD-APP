@@ -322,8 +322,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     status: syncStatus, pendingCount, remoteInboxPendingCount,
     remoteProjectionBlockReason, remoteProjectionBlockedAtSequence,
     projectionConflictCount, latestProjectionConflict,
-    lastSyncAtMs, isOnline, realtimeConnected, errorMessage: syncErrorMessage, triggerSync
+    lastSyncAtMs, isOnline, realtimeConnected, errorMessage: syncErrorMessage,
+    triggerSync, reconcileStuckOperations
   } = useCloudSync();
+  const [isReconcilingStuckOps, setIsReconcilingStuckOps] = useState(false);
   const [conflictDetails, setConflictDetails] = useState<RemoteProjectionConflict[]>([]);
   const [conflictIntents, setConflictIntents] = useState<Record<string, ConflictResolutionIntent | null>>({});
   const [confirmRemoteConflictId, setConfirmRemoteConflictId] = useState<string | null>(null);
@@ -592,8 +594,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const handleManualSync = async () => {
     setIsManualSyncing(true);
     try {
-      const ok = await triggerSync();
+      const ok = await triggerSync({ manual: true });
       if (ok) {
+        setConflictDetails([]);
+        setConflictIntents({});
         onToast?.("تمت المزامنة السحابية مع Cloud Firestore بنجاح", "success");
       } else {
         if (!isOnline) {
@@ -604,6 +608,43 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       }
     } finally {
       setIsManualSyncing(false);
+    }
+  };
+
+  const handleSmartReconcileStuckOps = async () => {
+    if (isReconcilingStuckOps || !user || isGuest || !isEmailVerified) return;
+    setIsReconcilingStuckOps(true);
+    try {
+      const summary = await reconcileStuckOperations();
+      if (summary.success) {
+        setConflictDetails([]);
+        setConflictIntents({});
+        setConfirmRemoteConflictId(null);
+        setConfirmLocalConflictId(null);
+        const updated = StorageService.getProfile();
+        setFormData(updated);
+        onUpdateProfile(updated);
+        onBackupImported?.();
+        const totalCleared =
+          summary.acknowledgedCount + summary.inboxAdvancedCount + summary.resolvedConflictCount;
+        onToast?.(
+          totalCleared > 0
+            ? `تم دمج البيانات وحسم ${totalCleared} عملية عالقة/متعارضة بأمان دون فقد أي إضافة أو حذف.`
+            : 'تم التحقق ومطابقة خزنة الحساب السحابية بالكامل؛ لا توجد عمليات عالقة.',
+          'success'
+        );
+      } else if (!isOnline) {
+        onToast?.('تأكد من الاتصال بالإنترنت لإتمام مصالحة العمليات العالقة.', 'warn');
+      } else {
+        onToast?.('تعذر إتمام المصالحة حالياً؛ بقيت جميع بياناتك محفوظة محلياً.', 'warn');
+      }
+    } catch (error) {
+      onToast?.(
+        error instanceof Error ? error.message : 'تعذر حسم العمليات العالقة حالياً.',
+        'error'
+      );
+    } finally {
+      setIsReconcilingStuckOps(false);
     }
   };
 
@@ -1329,13 +1370,33 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                               </div>
                             </div>
                           ) : conflict.event.operation === 'tombstone' ? (
-                            <p className="text-[11px] text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)]" role="status">
-                              لا يمكن اختيار النسخة البعيدة لحدث حذف قبل اكتمال سياسة Tombstones؛ لم نفعّل هذا المسار.
-                            </p>
+                            <div className="space-y-2" role="status">
+                              <p className="text-[11px] text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)]">
+                                حدث حذف قديم؛ يمكنك دمجه وحسمه بأمان عبر محرك خزنة الحساب الذكية (CRDT V4).
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void handleSmartReconcileStuckOps()}
+                                disabled={isReconcilingStuckOps || !isOnline || syncStatus === 'syncing'}
+                                className="min-h-11 px-3 py-2 rounded-lg bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] text-[11px] font-bold disabled:opacity-50"
+                              >
+                                {isReconcilingStuckOps ? 'جارٍ الدمج والحسم...' : 'دمج ذكي وحسم التعارض دون فقد بيانات'}
+                              </button>
+                            </div>
                           ) : isUnsafeFullSnapshot ? (
-                            <p className="text-[11px] text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)] leading-5" role="status">
-                              هذا التعارض يشمل قائمة الآيات المتعثرة أو سجل النشاط اليومي المحفوظ كلقطة كاملة؛ لم نفعّل خيارات الاستبدال الكلي هنا لأن اختيار نسخة واحدة قد يفقد تغييرات جهاز آخر، وما زالت جميع الأدلة محفوظة.
-                            </p>
+                            <div className="space-y-2" role="status">
+                              <p className="text-[11px] text-[var(--wird-accent-hover)] dark:text-[var(--wird-accent)] leading-5">
+                                هذا التعارض يشمل لقطة مركبة (آيات متعثرة أو معاملة مجمعة)؛ بدلاً من استبدال نسخة بأخرى، يمكنك دمج الإضافات والحذوفات من الجهازين معاً وحسم التعارض بأمان.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void handleSmartReconcileStuckOps()}
+                                disabled={isReconcilingStuckOps || !isOnline || syncStatus === 'syncing'}
+                                className="min-h-11 px-3 py-2 rounded-lg bg-[var(--wird-primary)] text-[var(--wird-primary-ink)] text-[11px] font-bold disabled:opacity-50"
+                              >
+                                {isReconcilingStuckOps ? 'جارٍ الدمج والحسم...' : 'دمج ذكي وحسم التعارض دون فقد بيانات'}
+                              </button>
+                            </div>
                           ) : (
                             <div className="space-y-2">
                               <button
@@ -1418,19 +1479,49 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleManualSync}
-            disabled={isManualSyncing || syncStatus === 'syncing' || !user || isGuest || !isEmailVerified}
-            className={`min-h-11 px-4 py-2 font-bold rounded-xl text-xs transition-colors flex items-center gap-2 shrink-0 ${
-              !user || isGuest || !isEmailVerified
-                ? 'bg-[var(--wird-surface-muted)] text-[#8B9E9B] border border-[var(--wird-border)] cursor-not-allowed'
-                : 'bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] shadow-xs'
-            }`}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isManualSyncing || syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
-            <span>مزامنة الآن</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {(pendingCount > 0 ||
+              remoteInboxPendingCount > 0 ||
+              projectionConflictCount > 0 ||
+              syncStatus === 'partial' ||
+              syncStatus === 'error') && (
+              <button
+                type="button"
+                onClick={() => void handleSmartReconcileStuckOps()}
+                disabled={
+                  isReconcilingStuckOps ||
+                  isManualSyncing ||
+                  syncStatus === 'syncing' ||
+                  !user ||
+                  isGuest ||
+                  !isEmailVerified ||
+                  !isOnline
+                }
+                className="min-h-11 px-3.5 py-2 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 border border-[var(--wird-border-gold)] bg-[var(--wird-accent-soft)] text-[var(--wird-text)] hover:border-[var(--wird-primary)] disabled:opacity-50"
+              >
+                <CheckCircle2 className={`w-3.5 h-3.5 text-[var(--wird-primary)] dark:text-[var(--wird-accent)] ${isReconcilingStuckOps ? 'animate-pulse' : ''}`} />
+                <span>
+                  {isReconcilingStuckOps
+                    ? 'جارٍ حسم العمليات العالقة...'
+                    : 'حسم العمليات العالقة الآن'}
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleManualSync}
+              disabled={isManualSyncing || isReconcilingStuckOps || syncStatus === 'syncing' || !user || isGuest || !isEmailVerified}
+              className={`min-h-11 px-4 py-2 font-bold rounded-xl text-xs transition-colors flex items-center gap-2 shrink-0 ${
+                !user || isGuest || !isEmailVerified
+                  ? 'bg-[var(--wird-surface-muted)] text-[#8B9E9B] border border-[var(--wird-border)] cursor-not-allowed'
+                  : 'bg-[var(--wird-primary)] hover:bg-[var(--wird-primary-hover)] text-[var(--wird-primary-ink)] shadow-xs'
+              }`}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isManualSyncing || syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+              <span>مزامنة الآن</span>
+            </button>
+          </div>
         </div>
 
         <PersonalCloudVaultPanel

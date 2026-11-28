@@ -3608,6 +3608,299 @@ export class IndexedDbSyncJournal {
     });
   }
 
+  async resetPendingBackoff(nowMs: number = Date.now()): Promise<number> {
+    const uid = activeUid();
+    if (!Number.isSafeInteger(nowMs) || nowMs < 0) {
+      throw new Error('وقت إعادة تنشيط صندوق المزامنة غير صالح.');
+    }
+    const database = await this.openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_OUTBOX], 'readwrite');
+      const outbox = transaction.objectStore(STORE_OUTBOX);
+      const request = outbox.index('uid').getAll(IDBKeyRange.only(uid));
+      let resetCount = 0;
+      request.onsuccess = () => {
+        const entries = (request.result as JournalOutboxEntry[]) || [];
+        for (const item of entries) {
+          if (item.nextAttemptAtMs > nowMs) {
+            outbox.put({
+              ...item,
+              nextAttemptAtMs: 0,
+            } satisfies JournalOutboxEntry);
+            resetCount++;
+          }
+        }
+      };
+      transaction.oncomplete = () => resolve(resetCount);
+      transaction.onabort = () =>
+        reject(normalizeError(transaction.error || new Error('IndexedDB backoff reset aborted.')));
+    });
+  }
+
+  /**
+   * Atomically reconcile superseded outbox entries, blocked historical remoteInbox
+   * events, stale projection intents, and open projection conflicts ONLY AFTER
+   * `AccountCloudBundleV4` has been durably merged and persisted on Firestore.
+   * Historical conflict snapshots and mutation evidence are preserved with
+   * `status: 'resolved'` and `resolution: 'reconciled'`.
+   */
+  async reconcileVaultConvergedState(options: {
+    supersededMutations?: Array<{ mutationId: string; resolvedRevision?: number }>;
+    advanceInboxToCursor?: boolean;
+    resolveOpenConflicts?: boolean;
+    nowMs?: number;
+  }): Promise<{
+    acknowledgedCount: number;
+    inboxAdvancedCount: number;
+    resolvedConflictCount: number;
+  }> {
+    const uid = activeUid();
+    const nowMs = options.nowMs ?? Date.now();
+    if (!Number.isSafeInteger(nowMs) || nowMs < 0) {
+      throw new Error('وقت المصالحة السحابية غير صالح.');
+    }
+    const superseded = Array.isArray(options.supersededMutations)
+      ? options.supersededMutations.filter((item) => item && validMutationId(item.mutationId))
+      : [];
+    const advanceInboxToCursor = Boolean(options.advanceInboxToCursor);
+    const resolveOpenConflicts = Boolean(options.resolveOpenConflicts);
+
+    const database = await this.openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction(
+        [
+          STORE_OUTBOX,
+          STORE_ACKNOWLEDGEMENTS,
+          STORE_REMOTE_INBOX,
+          STORE_PROJECTION_CONFLICTS,
+          STORE_CONFLICT_RESOLUTION_INTENTS,
+          STORE_METADATA,
+        ],
+        'readwrite'
+      );
+      const outbox = transaction.objectStore(STORE_OUTBOX);
+      const acknowledgements = transaction.objectStore(STORE_ACKNOWLEDGEMENTS);
+      const inbox = transaction.objectStore(STORE_REMOTE_INBOX);
+      const conflicts = transaction.objectStore(STORE_PROJECTION_CONFLICTS);
+      const intents = transaction.objectStore(STORE_CONFLICT_RESOLUTION_INTENTS);
+      const metadataStore = transaction.objectStore(STORE_METADATA);
+
+      const metadataReq = metadataStore.get(uid);
+      const outboxReq = outbox.index('uid').getAll(IDBKeyRange.only(uid));
+      const ackReq = acknowledgements.index('uid').getAll(IDBKeyRange.only(uid));
+      const inboxReq = inbox.index('uid').getAll(IDBKeyRange.only(uid));
+      const conflictsReq = conflicts.index('uid').getAll(IDBKeyRange.only(uid));
+      const intentsReq = intents.index('uid').getAll(IDBKeyRange.only(uid));
+
+      let metadata: DeviceMetadata | undefined;
+      let outboxEntries: JournalOutboxEntry[] = [];
+      let allAcks: AcknowledgementRecord[] = [];
+      let inboxEvents: RemoteInboxEvent[] = [];
+      let conflictRecords: RemoteProjectionConflict[] = [];
+      let intentRecords: ConflictResolutionIntent[] = [];
+      let readsRemaining = 6;
+
+      let acknowledgedCount = 0;
+      let inboxAdvancedCount = 0;
+      let resolvedConflictCount = 0;
+
+      const finishReads = () => {
+        readsRemaining--;
+        if (readsRemaining !== 0) return;
+
+        const remoteRevisions = { ...(metadata?.remoteRevisions || {}) };
+        const initialized = new Set<SyncCollection>(metadata?.remoteInitializedCollections || []);
+        const nextSeq = metadata?.nextSequence ?? 1;
+        const outboxById = new Map(outboxEntries.map((entry) => [entry.mutationId, entry]));
+        const newAckKeys = new Set<string>();
+
+        for (const item of superseded) {
+          const entry = outboxById.get(item.mutationId);
+          if (!entry) continue;
+          const ackRecord: AcknowledgementRecord = {
+            key: entry.key,
+            uid,
+            mutationId: entry.mutationId,
+            fingerprint: entry.fingerprint,
+            acknowledgedAtMs: nowMs,
+          };
+          acknowledgements.put(ackRecord);
+          newAckKeys.add(entry.key);
+          outbox.delete(entry.key);
+          outboxById.delete(item.mutationId);
+          acknowledgedCount++;
+
+          initialized.add(entry.collection);
+          if (
+            item.resolvedRevision !== undefined &&
+            Number.isSafeInteger(item.resolvedRevision) &&
+            item.resolvedRevision >= 1
+          ) {
+            const revKey = `${entry.collection}:${entry.documentId}`;
+            const currentRev = remoteRevisions[revKey];
+            if (
+              currentRev ||
+              Object.keys(remoteRevisions).length < MAX_REMOTE_REVISION_RECORDS
+            ) {
+              remoteRevisions[revKey] = {
+                revision: Math.max(currentRev?.revision ?? 0, item.resolvedRevision),
+                localSequence: Math.max(currentRev?.localSequence ?? 0, nextSeq - 1),
+              };
+            }
+          }
+        }
+
+        if (acknowledgedCount > 0) {
+          const mergedAcks = [
+            ...allAcks.filter((a) => !newAckKeys.has(a.key)),
+            ...Array.from(newAckKeys).map((key) => ({
+              key,
+              uid,
+              mutationId: key.slice(uid.length + 1),
+              fingerprint: 'ack',
+              acknowledgedAtMs: nowMs,
+            })),
+          ].sort((a, b) => a.acknowledgedAtMs - b.acknowledgedAtMs);
+          const excess = Math.max(0, mergedAcks.length - MAX_ACKNOWLEDGED_IDS);
+          for (let i = 0; i < excess; i++) {
+            acknowledgements.delete(mergedAcks[i].key);
+          }
+        }
+
+        let nextProjectionCursor = metadata?.remoteProjectionCursor ?? 0;
+        const remoteCursor = metadata?.remoteCursor ?? 0;
+        let clearProjectionIntent = false;
+
+        if (advanceInboxToCursor) {
+          const sortedInbox = [...inboxEvents].sort(
+            (a, b) => a.serverSequence - b.serverSequence
+          );
+          for (const evt of sortedInbox) {
+            if (evt.serverSequence <= remoteCursor) {
+              const revKey = `${evt.collection}:${evt.documentId}`;
+              const currentRev = remoteRevisions[revKey];
+              if (
+                currentRev ||
+                Object.keys(remoteRevisions).length < MAX_REMOTE_REVISION_RECORDS
+              ) {
+                remoteRevisions[revKey] = {
+                  revision: Math.max(currentRev?.revision ?? 0, evt.revision),
+                  localSequence: Math.max(currentRev?.localSequence ?? 0, nextSeq - 1),
+                };
+              }
+              if (evt.collection !== 'syncMeta') {
+                initialized.add(evt.collection);
+              } else if (
+                isRecord(evt.payload.transaction) &&
+                Array.isArray(evt.payload.transaction.operations)
+              ) {
+                for (const op of evt.payload.transaction.operations) {
+                  if (
+                    isRecord(op) &&
+                    typeof op.collection === 'string' &&
+                    ALLOWED_COLLECTIONS.has(op.collection as SyncCollection)
+                  ) {
+                    initialized.add(op.collection as SyncCollection);
+                  }
+                }
+              }
+              inbox.delete(evt.key);
+              inboxAdvancedCount++;
+            }
+          }
+          if (remoteCursor > nextProjectionCursor) {
+            nextProjectionCursor = remoteCursor;
+          }
+          if (metadata?.remoteProjectionIntent) {
+            clearProjectionIntent = true;
+          }
+        }
+
+        if (resolveOpenConflicts) {
+          for (const conflict of conflictRecords) {
+            if (conflict.status === 'open') {
+              conflicts.put({
+                ...conflict,
+                status: 'resolved',
+                resolution: 'reconciled',
+                resolvedAtMs: nowMs,
+                updatedAtMs: nowMs,
+              } satisfies RemoteProjectionConflict);
+              resolvedConflictCount++;
+            }
+          }
+          for (const intent of intentRecords) {
+            intents.delete(intent.key);
+          }
+        }
+
+        if (
+          acknowledgedCount > 0 ||
+          inboxAdvancedCount > 0 ||
+          resolvedConflictCount > 0 ||
+          clearProjectionIntent ||
+          nextProjectionCursor !== (metadata?.remoteProjectionCursor ?? 0)
+        ) {
+          const updatedMeta: DeviceMetadata = {
+            ...(metadata || {
+              uid,
+              deviceId: createSecureId(),
+              schemaVersion: 1,
+              nextSequence: 1,
+              lastProjectedSequence: 0,
+            }),
+            remoteRevisions,
+            remoteInitializedCollections: [...initialized],
+            remoteCursor,
+            remoteProjectionCursor: nextProjectionCursor,
+          };
+          if (clearProjectionIntent) {
+            delete updatedMeta.remoteProjectionIntent;
+          }
+          metadataStore.put(updatedMeta);
+        }
+      };
+
+      metadataReq.onsuccess = () => {
+        metadata = metadataReq.result as DeviceMetadata | undefined;
+        finishReads();
+      };
+      outboxReq.onsuccess = () => {
+        outboxEntries = (outboxReq.result as JournalOutboxEntry[]) || [];
+        finishReads();
+      };
+      ackReq.onsuccess = () => {
+        allAcks = (ackReq.result as AcknowledgementRecord[]) || [];
+        finishReads();
+      };
+      inboxReq.onsuccess = () => {
+        inboxEvents = (inboxReq.result as RemoteInboxEvent[]) || [];
+        finishReads();
+      };
+      conflictsReq.onsuccess = () => {
+        conflictRecords = (conflictsReq.result as RemoteProjectionConflict[]) || [];
+        finishReads();
+      };
+      intentsReq.onsuccess = () => {
+        intentRecords = (intentsReq.result as ConflictResolutionIntent[]) || [];
+        finishReads();
+      };
+
+      transaction.oncomplete = () =>
+        resolve({
+          acknowledgedCount,
+          inboxAdvancedCount,
+          resolvedConflictCount,
+        });
+      transaction.onabort = () =>
+        reject(
+          normalizeError(
+            transaction.error || new Error('Vault converged state reconciliation aborted.')
+          )
+        );
+    });
+  }
+
   close(): void {
     if (!this.databasePromise) return;
     void this.databasePromise.then(database => database.close()).catch(() => undefined);

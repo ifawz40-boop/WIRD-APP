@@ -342,6 +342,32 @@ export const LocalSyncOutbox = {
     return getIndexedDbJournal().listReady(nowMs, limit);
   },
 
+  /** Wake backoff-delayed outbox entries immediately for manual sync or Vault V4 reconciliation. */
+  async resetPendingBackoff(nowMs: number = Date.now(), expectedUid?: string): Promise<number> {
+    await migrateLegacyOutboxToIndexedDb(expectedUid);
+    assertExpectedUid(expectedUid);
+    return getIndexedDbJournal().resetPendingBackoff(nowMs);
+  },
+
+  /** Atomically reconcile Vault-V4-backed outbox entries, blocked inbox events, and open conflicts. */
+  async reconcileVaultConvergedState(
+    options: {
+      supersededMutations?: Array<{ mutationId: string; resolvedRevision?: number }>;
+      advanceInboxToCursor?: boolean;
+      resolveOpenConflicts?: boolean;
+      nowMs?: number;
+    },
+    expectedUid?: string
+  ): Promise<{
+    acknowledgedCount: number;
+    inboxAdvancedCount: number;
+    resolvedConflictCount: number;
+  }> {
+    await migrateLegacyOutboxToIndexedDb(expectedUid);
+    assertExpectedUid(expectedUid);
+    return getIndexedDbJournal().reconcileVaultConvergedState(options);
+  },
+
   /** Acknowledge only after the remote server confirms the mutation. */
   async acknowledge(mutationIds: string[], nowMs: number = Date.now()): Promise<number> {
     await migrateLegacyOutboxToIndexedDb();

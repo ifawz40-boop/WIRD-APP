@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Honest Cloud Sync Trigger */}
         <button
           type="button"
-          onClick={() => triggerSync()}
+          onClick={() => void triggerSync({ manual: true })}
           disabled={status === 'syncing'}
           className={`min-h-11 inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-[var(--wird-radius-control)] transition-colors whitespace-nowrap shrink-0 wird-focus-ring ${
             status === 'synced'

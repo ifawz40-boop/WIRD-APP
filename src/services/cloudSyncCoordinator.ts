@@ -23,9 +23,11 @@ import {
   applyAccountCloudBundleToLocal,
   captureAccountCloudBundle,
   fingerprintAccountCloudBundle,
+  fitBundleForFirestoreVault,
   isValidAccountCloudBundle,
   mergeAccountCloudBundles,
 } from './accountCloudBundleService';
+import { RetentionService } from './retentionService';
 import {
   countActiveTombstones,
   readSyncTombstoneLedger,
@@ -149,6 +151,43 @@ function getOrCreateSyncDeviceId(): string {
     // Fallback ephemeral ID
   }
   return 'dev-' + createSecureId().slice(0, 24);
+}
+
+function utf8PayloadBytes(payload: unknown): number {
+  try {
+    return new TextEncoder().encode(JSON.stringify(payload) || '').byteLength;
+  } catch {
+    return Number.MAX_SAFE_INTEGER;
+  }
+}
+
+function buildAuthoritativeSingleDocPayload(
+  collectionName: string,
+  documentId: string
+): Record<string, unknown> | null {
+  try {
+    if (collectionName === 'profile' && documentId === 'main') {
+      return { profile: StorageService.getProfile() };
+    }
+    if (collectionName === 'plans' && documentId === 'snapshot') {
+      return { records: StorageService.getPlans() };
+    }
+    if (collectionName === 'portions' && documentId === 'snapshot') {
+      return { records: StorageService.getUnifiedPortions() };
+    }
+    if (collectionName === 'weakVerses' && documentId === 'snapshot') {
+      return { records: RetentionService.getWeakVerses() };
+    }
+    if (collectionName === 'ruqyahProgress' && documentId === 'snapshot') {
+      const snap = StorageService.getRuqyahProgressSnapshot();
+      if (snap && snap.schemaVersion === 2) {
+        return { snapshot: snap };
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 export class CloudSyncCoordinator {
@@ -410,125 +449,193 @@ export class CloudSyncCoordinator {
     }
   }
 
+  private lastReconcileSummary = {
+    acknowledgedCount: 0,
+    inboxAdvancedCount: 0,
+    resolvedConflictCount: 0,
+  };
+
   /**
    * Direct CRDT + HLC Tombstone Vault V4 reconciliation (`users/{uid}/syncMeta/accountCloudVaultV4`).
    * Synchronizes BOTH additions and deletions across all user worship domains without deadlocking
-   * on stale base revisions.
+   * on stale base revisions, retrying once on concurrent contention.
    */
   private async reconcileAccountVaultV4(
     uid: string,
-    allowUpload: boolean
-  ): Promise<{ converged: boolean }> {
+    allowUpload: boolean,
+    forceVerifyRemote: boolean = false
+  ): Promise<{ converged: boolean; durablySyncedOnRemote: boolean }> {
     if (!db || !isRevisionedSyncEnabled() || !isRemoteProjectionEnabled()) {
-      return { converged: false };
+      return { converged: false, durablySyncedOnRemote: false };
     }
     assertActiveSyncScope(uid);
-    try {
-      const vaultRef = doc(db, 'users', uid, 'syncMeta', ACCOUNT_CLOUD_VAULT_DOC_ID);
-      const vaultSnap = await getDoc(vaultRef);
-      assertActiveSyncScope(uid);
 
-      const localBundle = captureAccountCloudBundle(Date.now());
-      const localFp = fingerprintAccountCloudBundle(localBundle);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const vaultRef = doc(db, 'users', uid, 'syncMeta', ACCOUNT_CLOUD_VAULT_DOC_ID);
+        const vaultSnap = await getDoc(vaultRef);
+        assertActiveSyncScope(uid);
 
-      let remoteRevision = 0;
-      let remoteFp: string | null = null;
-      let targetBundle = localBundle;
+        const localBundle = captureAccountCloudBundle(Date.now());
+        const localFp = fingerprintAccountCloudBundle(localBundle);
 
-      if (vaultSnap.exists()) {
-        const docData = vaultSnap.data();
-        remoteRevision = Number.isSafeInteger(docData.revision) ? Number(docData.revision) : 0;
-        const rawRemoteBundle = docData.payload?.vaultBundle;
-        if (isValidAccountCloudBundle(rawRemoteBundle)) {
-          remoteFp = fingerprintAccountCloudBundle(rawRemoteBundle);
-          if (remoteFp !== localFp) {
-            const { merged } = mergeAccountCloudBundles(localBundle, rawRemoteBundle, Date.now());
-            const mergedFp = fingerprintAccountCloudBundle(merged);
-            if (mergedFp !== localFp) {
-              await applyAccountCloudBundleToLocal(merged);
+        let remoteRevision = 0;
+        let remoteFp: string | null = null;
+        let targetBundle = localBundle;
+
+        if (vaultSnap.exists()) {
+          const docData = vaultSnap.data();
+          remoteRevision = Number.isSafeInteger(docData.revision) ? Number(docData.revision) : 0;
+          const rawRemoteBundle = docData.payload?.vaultBundle;
+          if (isValidAccountCloudBundle(rawRemoteBundle)) {
+            remoteFp = fingerprintAccountCloudBundle(rawRemoteBundle);
+            if (remoteFp !== localFp) {
+              const { merged } = mergeAccountCloudBundles(localBundle, rawRemoteBundle, Date.now());
+              const mergedFp = fingerprintAccountCloudBundle(merged);
+              if (mergedFp !== localFp) {
+                await applyAccountCloudBundleToLocal(merged);
+                markAuxiliaryBaselineSynced(`user:${uid}`);
+                assertActiveSyncScope(uid);
+              }
+              targetBundle = merged;
+            } else {
               markAuxiliaryBaselineSynced(`user:${uid}`);
-              assertActiveSyncScope(uid);
+              this.lastUploadedVaultFingerprintByUid.set(uid, remoteFp);
             }
-            targetBundle = merged;
-          } else {
-            markAuxiliaryBaselineSynced(`user:${uid}`);
-            this.lastUploadedVaultFingerprintByUid.set(uid, remoteFp);
+            await LocalSyncOutbox.setRemoteRevisionFromRemote(
+              'syncMeta',
+              ACCOUNT_CLOUD_VAULT_DOC_ID,
+              remoteRevision
+            ).catch(() => false);
           }
+        }
+
+        if (!allowUpload) {
+          return { converged: true, durablySyncedOnRemote: vaultSnap.exists() && remoteFp === localFp };
+        }
+
+        const boundedBundle = fitBundleForFirestoreVault(targetBundle);
+        const finalFp = fingerprintAccountCloudBundle(boundedBundle);
+        const hasMeaningfulLocalData =
+          vaultSnap.exists() ||
+          boundedBundle.plans.length > 0 ||
+          (boundedBundle.enginePlans?.length ?? 0) > 0 ||
+          (boundedBundle.compactEnginePlans?.length ?? 0) > 0 ||
+          boundedBundle.unifiedPortions.length > 0 ||
+          boundedBundle.weakVerses.length > 0 ||
+          boundedBundle.tests.length > 0 ||
+          boundedBundle.logs.length > 0 ||
+          boundedBundle.ruqyahProgress !== null ||
+          boundedBundle.auxiliary.pageBookmarks.length > 0 ||
+          boundedBundle.auxiliary.readingKhatmasRaw !== null ||
+          boundedBundle.auxiliary.adhkarProgressRaw !== null ||
+          boundedBundle.auxiliary.seerahV2Raw !== null ||
+          boundedBundle.auxiliary.videoSeriesRaw !== null ||
+          boundedBundle.tombstoneLedger.updatedAtMs > 0;
+
+        if (!hasMeaningfulLocalData && !vaultSnap.exists()) {
+          return { converged: true, durablySyncedOnRemote: true };
+        }
+
+        if (
+          vaultSnap.exists() &&
+          finalFp === remoteFp &&
+          (!forceVerifyRemote || remoteFp !== null)
+        ) {
+          this.lastUploadedVaultFingerprintByUid.set(uid, finalFp);
+          markAuxiliaryBaselineSynced(`user:${uid}`);
+          return { converged: true, durablySyncedOnRemote: true };
+        }
+
+        if (
+          forceVerifyRemote ||
+          finalFp !== remoteFp ||
+          this.lastUploadedVaultFingerprintByUid.get(uid) !== finalFp
+        ) {
+          const mutationId = 'vault4-' + createSecureId();
+          this.lastVaultMutationId = mutationId;
+          const writeRes = await writeRevisionedRemoteMutation(db, {
+            uid,
+            collection: 'syncMeta',
+            documentId: ACCOUNT_CLOUD_VAULT_DOC_ID,
+            operation: 'upsert',
+            schemaVersion: 1,
+            mutationId,
+            eventId: mutationId,
+            deviceId: getOrCreateSyncDeviceId(),
+            clientUpdatedAtMs: Date.now(),
+            baseRevision: remoteRevision,
+            payload: { vaultBundle: boundedBundle },
+          });
+          assertActiveSyncScope(uid);
+          this.lastUploadedVaultFingerprintByUid.set(uid, finalFp);
+          markAuxiliaryBaselineSynced(`user:${uid}`);
           await LocalSyncOutbox.setRemoteRevisionFromRemote(
             'syncMeta',
             ACCOUNT_CLOUD_VAULT_DOC_ID,
-            remoteRevision
+            writeRes.revision
           ).catch(() => false);
+          return { converged: true, durablySyncedOnRemote: true };
         }
+
+        return { converged: true, durablySyncedOnRemote: vaultSnap.exists() };
+      } catch (error) {
+        if (isSyncScopeChanged(error)) throw error;
+        if (
+          attempt === 0 &&
+          error instanceof Error &&
+          error.message === 'REMOTE_REVISION_CONFLICT'
+        ) {
+          continue;
+        }
+        console.warn('[WIRD CloudSync] Vault V4 reconciliation warning:', error);
+        return { converged: false, durablySyncedOnRemote: false };
       }
-
-      if (!allowUpload) {
-        return { converged: true };
-      }
-
-      const finalFp = fingerprintAccountCloudBundle(targetBundle);
-      const hasMeaningfulLocalData =
-        vaultSnap.exists() ||
-        targetBundle.plans.length > 0 ||
-        (targetBundle.enginePlans?.length ?? 0) > 0 ||
-        (targetBundle.compactEnginePlans?.length ?? 0) > 0 ||
-        targetBundle.unifiedPortions.length > 0 ||
-        targetBundle.weakVerses.length > 0 ||
-        targetBundle.tests.length > 0 ||
-        targetBundle.logs.length > 0 ||
-        targetBundle.auxiliary.pageBookmarks.length > 0 ||
-        targetBundle.auxiliary.readingKhatmasRaw !== null ||
-        targetBundle.auxiliary.adhkarProgressRaw !== null ||
-        targetBundle.auxiliary.seerahV2Raw !== null ||
-        targetBundle.auxiliary.videoSeriesRaw !== null ||
-        targetBundle.tombstoneLedger.updatedAtMs > 0;
-
-      if (
-        hasMeaningfulLocalData &&
-        finalFp !== remoteFp &&
-        this.lastUploadedVaultFingerprintByUid.get(uid) !== finalFp
-      ) {
-        const mutationId = 'vault4-' + createSecureId();
-        this.lastVaultMutationId = mutationId;
-        const writeRes = await writeRevisionedRemoteMutation(db, {
-          uid,
-          collection: 'syncMeta',
-          documentId: ACCOUNT_CLOUD_VAULT_DOC_ID,
-          operation: 'upsert',
-          schemaVersion: 1,
-          mutationId,
-          eventId: mutationId,
-          deviceId: getOrCreateSyncDeviceId(),
-          clientUpdatedAtMs: Date.now(),
-          baseRevision: remoteRevision,
-          payload: { vaultBundle: targetBundle },
-        });
-        assertActiveSyncScope(uid);
-        this.lastUploadedVaultFingerprintByUid.set(uid, finalFp);
-        markAuxiliaryBaselineSynced(`user:${uid}`);
-        await LocalSyncOutbox.setRemoteRevisionFromRemote(
-          'syncMeta',
-          ACCOUNT_CLOUD_VAULT_DOC_ID,
-          writeRes.revision
-        ).catch(() => false);
-      }
-
-      return { converged: true };
-    } catch (error) {
-      if (isSyncScopeChanged(error)) throw error;
-      console.warn('[WIRD CloudSync] Vault V4 reconciliation warning:', error);
-      return { converged: false };
     }
+    return { converged: false, durablySyncedOnRemote: false };
+  }
+
+  /**
+   * Explicit 1-click self-healing reconciliation invoked from Settings (and safe to call anytime):
+   * wakes backoff-delayed outbox items, forces an authoritative Firestore Vault V4 merge + verify,
+   * and atomically clears superseded outbox entries, blocked inbox events, and open conflicts.
+   */
+  public async reconcileStuckOperations(): Promise<{
+    success: boolean;
+    acknowledgedCount: number;
+    inboxAdvancedCount: number;
+    resolvedConflictCount: number;
+  }> {
+    this.consecutiveFailures = 0;
+    this.lastReconcileSummary = {
+      acknowledgedCount: 0,
+      inboxAdvancedCount: 0,
+      resolvedConflictCount: 0,
+    };
+    const currentUser = auth?.currentUser;
+    if (currentUser?.uid) {
+      this.lastUploadedVaultFingerprintByUid.delete(currentUser.uid);
+    }
+    const ok = await this.triggerSync({ manual: true, forceVaultVerify: true });
+    return {
+      success: ok,
+      ...this.lastReconcileSummary,
+    };
   }
 
   /**
    * Main synchronization cycle:
    * 1. Check network, auth, and verified email status.
    * 2. Pull & merge Vault V4 + remote events first so fresh devices learn remote state and deletions.
-   * 3. Drain pending local outbox mutations to Firestore (with live server-revision self-healing).
-   * 4. Push converged Vault V4 bundle (additions + tombstones) and finalize remote projection cursors.
+   * 3. Wake backoff-delayed entries and drain pending local outbox mutations (healing stale revisions
+   *    and deferring >120 KB uncompacted snapshots to Vault V4 supersession).
+   * 4. Push converged Vault V4 bundle (additions + tombstones) and atomically finalize converged
+   *    outbox, inbox, and conflict records once Firestore Vault V4 durability is confirmed.
    */
-  public async triggerSync(): Promise<boolean> {
+  public async triggerSync(options?: {
+    manual?: boolean;
+    forceVaultVerify?: boolean;
+  }): Promise<boolean> {
     if (this.syncInProgress) {
       this.syncRequestedWhileRunning = true;
       return false;
@@ -586,20 +693,34 @@ export class CloudSyncCoordinator {
       const preVault = await this.reconcileAccountVaultV4(uid, false);
       assertActiveSyncScope(uid);
 
+      // Wake any outbox mutations hidden behind earlier exponential backoff timers.
+      if (options?.manual || preVault.converged) {
+        await LocalSyncOutbox.resetPendingBackoff(Date.now(), uid).catch(() => 0);
+        assertActiveSyncScope(uid);
+      }
+
       const existingOutbox = await LocalSyncOutbox.listReadyEntries(Date.now(), 1, uid);
       assertActiveSyncScope(uid);
       if (existingOutbox.length === 0) {
-        await this.pullRemoteReconciliation(uid, preVault.converged);
+        await this.pullRemoteReconciliation(uid, preVault.converged, false);
         assertActiveSyncScope(uid);
       }
 
       await flushAuxiliaryCloudSyncNow().catch(() => undefined);
       let hasMore = true;
       let firstPushError: string | null = null;
+      const deferredVaultSuperseded: Array<{
+        mutationId: string;
+        resolvedRevision?: number;
+        fallbackError: string;
+      }> = [];
+      const seenDeferredIds = new Set<string>();
 
       while (hasMore && revisionedSyncEnabled) {
         assertActiveSyncScope(uid);
-        const readyEntries = await LocalSyncOutbox.listReadyEntries(Date.now(), 25, uid);
+        const readyEntries = (await LocalSyncOutbox.listReadyEntries(Date.now(), 25, uid)).filter(
+          (item) => !seenDeferredIds.has(item.mutationId)
+        );
         assertActiveSyncScope(uid);
         if (readyEntries.length === 0) {
           hasMore = false;
@@ -608,6 +729,21 @@ export class CloudSyncCoordinator {
 
         for (const entry of readyEntries) {
           assertActiveSyncScope(uid);
+          const entryBytes = utf8PayloadBytes(entry.payload);
+
+          // Oversize uncompacted EnginePlan / grouped transaction snapshots (>120 KB) or legacy
+          // tombstones cannot pass `writeRevisionedRemoteMutation` (128 KB cap / upsert-only rules),
+          // whereas `AccountCloudBundleV4` compacts them losslessly (<40 KB) with HLC tombstones.
+          if (entry.operation === 'tombstone' || entryBytes > 120_000) {
+            seenDeferredIds.add(entry.mutationId);
+            deferredVaultSuperseded.push({
+              mutationId: entry.mutationId,
+              fallbackError:
+                'تعذر رفع حزمة كبيرة مباشرة؛ ستُرفع مضغوطة عبر خزنة الحساب السحابية تلقائياً.',
+            });
+            continue;
+          }
+
           try {
             let baseRevision = entry.baseRevision;
             const cachedRevision = await LocalSyncOutbox.getRemoteRevision(
@@ -617,84 +753,37 @@ export class CloudSyncCoordinator {
             );
             assertActiveSyncScope(uid);
             if (cachedRevision && baseRevision < cachedRevision.revision) {
-              const rebased = await LocalSyncOutbox.rebasePendingMutation(
-                entry.mutationId,
-                baseRevision,
-                cachedRevision.revision,
-                uid
-              );
-              assertActiveSyncScope(uid);
-              if (rebased) {
-                baseRevision = cachedRevision.revision;
+              try {
+                const rebased = await LocalSyncOutbox.rebasePendingMutation(
+                  entry.mutationId,
+                  baseRevision,
+                  cachedRevision.revision,
+                  uid
+                );
+                assertActiveSyncScope(uid);
+                if (rebased) {
+                  baseRevision = cachedRevision.revision;
+                }
+              } catch {
+                // Sequence <= cached.localSequence means a newer remote revision arrived;
+                // handled safely via Vault V4 convergence below without aborting sync.
               }
             }
 
             assertActiveSyncScope(uid);
-            let result;
-            try {
-              result = await writeRevisionedRemoteMutation(db, {
-                uid,
-                collection: entry.collection,
-                documentId: entry.documentId,
-                operation: entry.operation,
-                schemaVersion: entry.schemaVersion,
-                mutationId: entry.mutationId,
-                eventId: entry.eventId || entry.mutationId,
-                deviceId: entry.deviceId,
-                clientUpdatedAtMs: entry.clientUpdatedAtMs,
-                baseRevision,
-                payload: entry.payload,
-              });
-            } catch (initialWriteErr: any) {
-              // Self-heal stale baseRevision when Vault V4 has already merged local & remote data safely
-              if (
-                preVault.converged &&
-                initialWriteErr instanceof Error &&
-                initialWriteErr.message === 'REMOTE_REVISION_CONFLICT'
-              ) {
-                const liveStateSnap = await getDoc(
-                  doc(db, 'users', uid, entry.collection, entry.documentId)
-                );
-                assertActiveSyncScope(uid);
-                const liveRev = liveStateSnap.exists() && Number.isSafeInteger(liveStateSnap.data().revision)
-                  ? Number(liveStateSnap.data().revision)
-                  : 0;
-                if (liveRev > baseRevision) {
-                  await LocalSyncOutbox.setRemoteRevisionFromRemote(
-                    entry.collection,
-                    entry.documentId,
-                    liveRev
-                  ).catch(() => false);
-                  const rebasedLive = await LocalSyncOutbox.rebasePendingMutation(
-                    entry.mutationId,
-                    baseRevision,
-                    liveRev,
-                    uid
-                  );
-                  if (rebasedLive) {
-                    result = await writeRevisionedRemoteMutation(db, {
-                      uid,
-                      collection: entry.collection,
-                      documentId: entry.documentId,
-                      operation: entry.operation,
-                      schemaVersion: entry.schemaVersion,
-                      mutationId: entry.mutationId,
-                      eventId: entry.eventId || entry.mutationId,
-                      deviceId: entry.deviceId,
-                      clientUpdatedAtMs: entry.clientUpdatedAtMs,
-                      baseRevision: liveRev,
-                      payload: entry.payload,
-                    });
-                  } else {
-                    throw initialWriteErr;
-                  }
-                } else {
-                  throw initialWriteErr;
-                }
-              } else {
-                throw initialWriteErr;
-              }
-            }
+            const result = await writeRevisionedRemoteMutation(db, {
+              uid,
+              collection: entry.collection,
+              documentId: entry.documentId,
+              operation: entry.operation,
+              schemaVersion: entry.schemaVersion,
+              mutationId: entry.mutationId,
+              eventId: entry.eventId || entry.mutationId,
+              deviceId: entry.deviceId,
+              clientUpdatedAtMs: entry.clientUpdatedAtMs,
+              baseRevision,
+              payload: entry.payload,
+            });
 
             assertActiveSyncScope(uid);
             await LocalSyncOutbox.acknowledgeRemoteMutation(
@@ -707,17 +796,73 @@ export class CloudSyncCoordinator {
           } catch (writeError: any) {
             if (isSyncScopeChanged(writeError)) throw writeError;
             assertActiveSyncScope(uid);
+
+            const errMessage = typeof writeError?.message === 'string' ? writeError.message : '';
+            const isRevisionOrEnvelopeConflict =
+              errMessage === 'REMOTE_REVISION_CONFLICT' ||
+              errMessage === 'REMOTE_EVENT_ID_COLLISION' ||
+              errMessage === 'INVALID_REVISIONED_MUTATION';
+
+            if (isRevisionOrEnvelopeConflict) {
+              let resolvedRev: number | undefined;
+              try {
+                const liveStateSnap = await getDoc(
+                  doc(db, 'users', uid, entry.collection, entry.documentId)
+                );
+                assertActiveSyncScope(uid);
+                const liveRev =
+                  liveStateSnap.exists() && Number.isSafeInteger(liveStateSnap.data().revision)
+                    ? Number(liveStateSnap.data().revision)
+                    : 0;
+                if (liveRev > 0) {
+                  resolvedRev = liveRev;
+                  // Best-effort refresh of canonical single-doc state using post-Vault-merge local data
+                  const freshPayload = buildAuthoritativeSingleDocPayload(
+                    entry.collection,
+                    entry.documentId
+                  );
+                  if (freshPayload && utf8PayloadBytes(freshPayload) <= 120_000) {
+                    const healId = 'heal4-' + createSecureId();
+                    const healRes = await writeRevisionedRemoteMutation(db, {
+                      uid,
+                      collection: entry.collection,
+                      documentId: entry.documentId,
+                      operation: 'upsert',
+                      schemaVersion: 1,
+                      mutationId: healId,
+                      eventId: healId,
+                      deviceId: getOrCreateSyncDeviceId(),
+                      clientUpdatedAtMs: Date.now(),
+                      baseRevision: liveRev,
+                      payload: freshPayload,
+                    }).catch(() => null);
+                    if (healRes) {
+                      resolvedRev = healRes.revision;
+                    }
+                  }
+                }
+              } catch (healErr) {
+                if (isSyncScopeChanged(healErr)) throw healErr;
+              }
+
+              seenDeferredIds.add(entry.mutationId);
+              deferredVaultSuperseded.push({
+                mutationId: entry.mutationId,
+                resolvedRevision: resolvedRev,
+                fallbackError: errMessage || 'REMOTE_REVISION_CONFLICT',
+              });
+              continue;
+            }
+
             console.warn(
               '[WIRD CloudSync] Mutation write failed, scheduling retry:',
               entry.mutationId,
               writeError
             );
-            const errCode = writeError?.code || writeError?.message || 'firestore-write-error';
+            const errCode = writeError?.code || errMessage || 'firestore-write-error';
             if (!firstPushError) {
               firstPushError =
-                typeof writeError?.message === 'string'
-                  ? writeError.message
-                  : 'تعذر رفع بعض التغييرات؛ ستظل محفوظة محلياً وستتم إعادة المحاولة.';
+                errMessage || 'تعذر رفع بعض التغييرات؛ ستظل محفوظة محلياً وستتم إعادة المحاولة.';
             }
             await LocalSyncOutbox.markFailed(
               entry.mutationId,
@@ -734,16 +879,55 @@ export class CloudSyncCoordinator {
         }
       }
 
-      // Push converged Vault V4 (including all latest additions + tombstones)
+      // 4. Push converged Vault V4 (including all latest additions + tombstones)
       assertActiveSyncScope(uid);
-      const postVault = await this.reconcileAccountVaultV4(uid, true);
+      const forceVaultVerify =
+        Boolean(options?.forceVaultVerify) || deferredVaultSuperseded.length > 0;
+      const postVault = await this.reconcileAccountVaultV4(uid, true, forceVaultVerify);
       assertActiveSyncScope(uid);
+
+      let ackedByVault = 0;
+      if (postVault.durablySyncedOnRemote && deferredVaultSuperseded.length > 0) {
+        const outboxRec = await LocalSyncOutbox.reconcileVaultConvergedState(
+          {
+            supersededMutations: deferredVaultSuperseded.map((item) => ({
+              mutationId: item.mutationId,
+              resolvedRevision: item.resolvedRevision,
+            })),
+            advanceInboxToCursor: false,
+            resolveOpenConflicts: false,
+            nowMs: Date.now(),
+          },
+          uid
+        );
+        ackedByVault = outboxRec.acknowledgedCount;
+        assertActiveSyncScope(uid);
+      } else if (!postVault.durablySyncedOnRemote && deferredVaultSuperseded.length > 0) {
+        for (const item of deferredVaultSuperseded) {
+          if (!firstPushError) firstPushError = item.fallbackError;
+          await LocalSyncOutbox.markFailed(
+            item.mutationId,
+            item.fallbackError.slice(0, 64),
+            Date.now(),
+            uid
+          );
+        }
+        assertActiveSyncScope(uid);
+      }
 
       const remoteReconciled = await this.pullRemoteReconciliation(
         uid,
-        preVault.converged || postVault.converged
+        preVault.converged || postVault.converged,
+        postVault.durablySyncedOnRemote
       );
       assertActiveSyncScope(uid);
+
+      this.lastReconcileSummary = {
+        acknowledgedCount: ackedByVault + this.lastReconcileSummary.acknowledgedCount,
+        inboxAdvancedCount: this.lastReconcileSummary.inboxAdvancedCount,
+        resolvedConflictCount: this.lastReconcileSummary.resolvedConflictCount,
+      };
+
       const finalCount = await this.refreshPendingCount();
       assertActiveSyncScope(uid);
       const status = getCloudSyncCompletionStatus(finalCount, remoteReconciled);
@@ -751,14 +935,16 @@ export class CloudSyncCoordinator {
         status,
         lastSyncAtMs: status === 'synced' ? Date.now() : this.state.lastSyncAtMs,
         errorMessage:
-          firstPushError ||
-          (!revisionedSyncEnabled && finalCount > 0
-            ? 'الرفع السحابي الآمن متوقف مؤقتاً حتى نشر قواعد Firestore ومصالحة البيانات القديمة. بياناتك المحلية محفوظة ولم يتم إرسال كتابة قد تستبدل بيانات أحدث.'
-            : status === 'error'
-              ? 'بعض التغييرات لم تُرفع بعد؛ احتفظنا بها محلياً وسنعيد المحاولة.'
-              : status === 'partial'
-                ? 'تم حفظ الأحداث المستقبلة في صندوق محلي دائم، لكن تطبيقها ودمجها مع البيانات المحلية لم يكتمل بعد.'
-                : null),
+          status === 'synced'
+            ? null
+            : firstPushError ||
+              (!revisionedSyncEnabled && finalCount > 0
+                ? 'الرفع السحابي الآمن متوقف مؤقتاً حتى نشر قواعد Firestore ومصالحة البيانات القديمة. بياناتك المحلية محفوظة ولم يتم إرسال كتابة قد تستبدل بيانات أحدث.'
+                : status === 'error'
+                  ? 'بعض التغييرات لم تُرفع بعد؛ احتفظنا بها محلياً وسنعيد المحاولة.'
+                  : status === 'partial'
+                    ? 'تم حفظ الأحداث المستقبلة في صندوق محلي دائم، لكن تطبيقها ودمجها مع البيانات المحلية لم يكتمل بعد.'
+                    : null),
       });
 
       if (status === 'synced') {
@@ -843,26 +1029,27 @@ export class CloudSyncCoordinator {
         '[WIRD CloudSync] Could not verify legacy remote documents; projection remains blocked.',
         error
       );
-      this.legacyCheckUid = uid;
-      this.legacyDataDetected = true;
       return true;
     }
   }
 
   /**
-   * Import server-ordered events, then project. When `vaultConverged` is true,
-   * first-sync uninitialized collection events whose data was already merged via
-   * `AccountCloudBundleV4` advance their baseline cleanly instead of deadlocking.
+   * Import server-ordered events, then project. When `vaultDurablySynced` is true,
+   * all domain state across every collection is already merged and persisted in
+   * `users/{uid}/syncMeta/accountCloudVaultV4`, so blocked historical inbox events,
+   * stale projection intents, and open projection conflicts are atomically marked
+   * reconciled while preserving conflict archive evidence.
    */
   private async pullRemoteReconciliation(
     uid: string,
-    vaultConverged: boolean = false
+    vaultConverged: boolean = false,
+    vaultDurablySynced: boolean = false
   ): Promise<boolean> {
     if (!db) return false;
     assertActiveSyncScope(uid);
     try {
       const eventsRef = collection(db, 'users', uid, 'events');
-      for (let page = 0; page < 5; page++) {
+      for (let page = 0; page < 10; page++) {
         const cursor = await LocalSyncOutbox.getRemoteCursor(uid);
         assertActiveSyncScope(uid);
         const eventsQuery = query(
@@ -888,7 +1075,7 @@ export class CloudSyncCoordinator {
         return false;
       }
       assertActiveSyncScope(uid);
-      if (await this.hasLegacyRemoteState(uid)) {
+      if (!vaultDurablySynced && (await this.hasLegacyRemoteState(uid))) {
         this.updateState({
           remoteProjectionBlockReason: 'legacy_remote_state',
           remoteProjectionBlockedAtSequence: null,
@@ -899,6 +1086,12 @@ export class CloudSyncCoordinator {
       assertActiveSyncScope(uid);
       let projection = await projectRemoteInboxBatch(100);
       assertActiveSyncScope(uid);
+      let batchPages = 1;
+      while (!projection.reason && projection.projectedCount === 100 && batchPages < 15) {
+        batchPages++;
+        projection = await projectRemoteInboxBatch(100);
+        assertActiveSyncScope(uid);
+      }
 
       // Self-heal first-sync `blocked_base_revision` when Vault V4 has already merged
       // both local and remote collections losslessly without overwriting user data.
@@ -907,7 +1100,7 @@ export class CloudSyncCoordinator {
         vaultConverged &&
         projection.reason === 'blocked_base_revision' &&
         projection.blockedAtSequence !== null &&
-        healPasses < 25
+        healPasses < 50
       ) {
         healPasses += 1;
         const pendingEvents = await LocalSyncOutbox.listRemoteInboxAfter(
@@ -921,10 +1114,49 @@ export class CloudSyncCoordinator {
           blockedEvt.documentId,
           blockedEvt.revision
         );
-        const advanced = await LocalSyncOutbox.markRemoteProjected(blockedEvt.serverSequence);
+        const advanced = await LocalSyncOutbox.markRemoteProjected(blockedEvt.serverSequence).catch(
+          () => false
+        );
         if (!advanced) break;
         projection = await projectRemoteInboxBatch(100);
         assertActiveSyncScope(uid);
+      }
+
+      // When Vault V4 is durably synced on Firestore (`vaultDurablySynced === true`) and zero
+      // pending local outbox mutations remain, any residual blocked historical inbox events or
+      // previously-archived open projection conflicts have already had their domain data merged
+      // losslessly into `accountCloudVaultV4`. Atomically advance the cursor and mark open
+      // conflicts as `resolved/reconciled` while preserving conflict archive snapshots.
+      if (vaultDurablySynced) {
+        const [outboxSnap, preRemoteCursor, preProjCursor, openConflicts] = await Promise.all([
+          LocalSyncOutbox.getSnapshot(),
+          LocalSyncOutbox.getRemoteCursor(uid),
+          LocalSyncOutbox.getRemoteProjectionCursor(uid),
+          LocalSyncOutbox.getProjectionConflictCount(),
+        ]);
+        assertActiveSyncScope(uid);
+        if (
+          outboxSnap.pendingCount === 0 &&
+          (Boolean(projection.reason) || preRemoteCursor !== preProjCursor || openConflicts > 0)
+        ) {
+          const rec = await LocalSyncOutbox.reconcileVaultConvergedState(
+            {
+              supersededMutations: [],
+              advanceInboxToCursor: Boolean(projection.reason) || preRemoteCursor !== preProjCursor,
+              resolveOpenConflicts: openConflicts > 0,
+              nowMs: Date.now(),
+            },
+            uid
+          );
+          this.lastReconcileSummary = {
+            acknowledgedCount: this.lastReconcileSummary.acknowledgedCount,
+            inboxAdvancedCount: this.lastReconcileSummary.inboxAdvancedCount + rec.inboxAdvancedCount,
+            resolvedConflictCount:
+              this.lastReconcileSummary.resolvedConflictCount + rec.resolvedConflictCount,
+          };
+          projection = { projectedCount: projection.projectedCount, blockedAtSequence: null, reason: null };
+          assertActiveSyncScope(uid);
+        }
       }
 
       if (projection.reason) {

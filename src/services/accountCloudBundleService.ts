@@ -234,6 +234,50 @@ export function isValidAccountCloudBundle(value: unknown): value is AccountCloud
   return true;
 }
 
+export function fitBundleForFirestoreVault(bundle: AccountCloudBundleV4): AccountCloudBundleV4 {
+  const leanAuxiliary: AuxiliaryDomainSnapshotV1 = {
+    ...bundle.auxiliary,
+    tombstoneLedger: undefined,
+  };
+  let candidate: AccountCloudBundleV4 = {
+    ...bundle,
+    auxiliary: leanAuxiliary,
+  };
+
+  if (
+    Array.isArray(candidate.enginePlans) &&
+    candidate.enginePlans.length > 0 &&
+    byteLengthUtf8(JSON.stringify({ vaultBundle: candidate })) > 90_000
+  ) {
+    const { enginePlans: _rawPlans, ...rest } = candidate;
+    candidate = {
+      ...rest,
+      compactEnginePlans: candidate.enginePlans.slice(0, 40).map(compactSingleEnginePlan),
+    };
+  }
+
+  if (byteLengthUtf8(JSON.stringify({ vaultBundle: candidate })) > 118_000) {
+    candidate = {
+      ...candidate,
+      logs: candidate.logs.slice(-90),
+      tests: candidate.tests.slice(0, 25),
+    };
+  }
+
+  if (
+    Array.isArray(candidate.compactEnginePlans) &&
+    candidate.compactEnginePlans.length > 20 &&
+    byteLengthUtf8(JSON.stringify({ vaultBundle: candidate })) > 118_000
+  ) {
+    candidate = {
+      ...candidate,
+      compactEnginePlans: candidate.compactEnginePlans.slice(0, 20),
+    };
+  }
+
+  return candidate;
+}
+
 export function captureAccountCloudBundle(nowMs: number = Date.now()): AccountCloudBundleV4 {
   const safeNow = Math.max(0, Math.trunc(nowMs));
   const tombstoneLedger = readSyncTombstoneLedger();

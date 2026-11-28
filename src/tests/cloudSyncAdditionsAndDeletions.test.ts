@@ -5,9 +5,12 @@ import {
   decodeCompactSyncCapsule,
   encodeCompactSyncCapsule,
   expandCompactEnginePlan,
+  fitBundleForFirestoreVault,
   mergeAccountCloudBundles,
   type AccountCloudBundleV4,
 } from '../services/accountCloudBundleService';
+import { IndexedDbSyncJournal } from '../services/indexedDbSyncJournal';
+import { IDBFactory } from 'fake-indexeddb';
 import {
   mergeInstantSyncCapsule,
   mergeSmartCloudVaultJson,
@@ -452,6 +455,153 @@ export async function runCloudSyncAdditionsAndDeletionsTests(): Promise<SuiteRes
       globalThis.fetch = prevFetch;
       if (prevWindow) Object.defineProperty(globalThis, 'window', prevWindow);
       else Reflect.deleteProperty(globalThis, 'window');
+    }
+
+    // =========================================================================
+    // 7. Self-Healing Stuck Outbox Backoff, Oversize EnginePlans, Blocked Inbox & Open Conflicts
+    // =========================================================================
+    {
+      StorageService.__resetStorageForTests();
+      StorageService.setStorageScope('user:sync-v4-stuck-heal');
+      const journal = new IndexedDbSyncJournal({
+        indexedDBFactory: new IDBFactory(),
+        databaseName: 'wird-sync-v4-stuck-heal-test',
+      });
+
+      // 7a. Enqueue two mutations (including a large EnginePlan snapshot) and simulate exponential backoff
+      const bigPlan = buildDemoEnginePlan();
+      const q1 = await journal.enqueue({
+        mutationId: 'stuck-plans-conflict-1',
+        collection: 'plans',
+        documentId: 'snapshot',
+        payload: { records: [{ id: 'p-1' }] },
+        nowMs: 1_000,
+      });
+      const q2 = await journal.enqueue({
+        mutationId: 'stuck-oversize-engine-2',
+        collection: 'enginePlans',
+        documentId: 'snapshot',
+        payload: { records: [bigPlan] },
+        nowMs: 1_010,
+      });
+      assert(
+        q1.status === 'queued' && q2.status === 'queued',
+        'Outbox enqueues conflict and enginePlans mutations cleanly'
+      );
+
+      // Simulate 8 prior failures pushing nextAttemptAtMs ~256s into the future
+      for (let i = 0; i < 8; i++) {
+        await journal.markFailed('stuck-plans-conflict-1', 'REMOTE_REVISION_CONFLICT', 2_000);
+        await journal.markFailed('stuck-oversize-engine-2', 'INVALID_REVISIONED_MUTATION', 2_000);
+      }
+      const readyBeforeWake = await journal.listReady(5_000, 25);
+      assert(
+        readyBeforeWake.length === 0 && (await journal.getSnapshot()).pendingCount === 2,
+        'Backoff-frozen mutations hide from listReady while keeping pendingCount = 2'
+      );
+
+      const wokenCount = await journal.resetPendingBackoff(5_000);
+      const readyAfterWake = await journal.listReady(5_000, 25);
+      assert(
+        wokenCount === 2 && readyAfterWake.length === 2,
+        'resetPendingBackoff wakes all backoff-delayed outbox mutations immediately'
+      );
+
+      // 7b. Import remote events and archive an open unsafe weakVerses conflict + prepared intent
+      await journal.importRemotePage([
+        {
+          uid: 'sync-v4-stuck-heal',
+          eventId: 'remote-evt-weak-1',
+          mutationId: 'remote-evt-weak-1',
+          eventType: 'domain-mutation',
+          collection: 'weakVerses',
+          documentId: 'snapshot',
+          operation: 'upsert',
+          schemaVersion: 2,
+          deviceId: 'other-device',
+          occurredAtMs: 3_000,
+          payload: { records: [{ id: 'w-1', surahNumber: 67, ayahNumber: 2 }] },
+          baseRevision: 0,
+          revision: 1,
+          serverSequence: 1,
+        },
+        {
+          uid: 'sync-v4-stuck-heal',
+          eventId: 'remote-evt-plans-2',
+          mutationId: 'remote-evt-plans-2',
+          eventType: 'domain-mutation',
+          collection: 'plans',
+          documentId: 'snapshot',
+          operation: 'upsert',
+          schemaVersion: 2,
+          deviceId: 'other-device',
+          occurredAtMs: 3_100,
+          payload: { records: [{ id: 'p-remote' }] },
+          baseRevision: 0,
+          revision: 1,
+          serverSequence: 2,
+        },
+      ]);
+
+      const inboxBefore = await journal.listRemoteInboxAfter(0, 10);
+      await journal.saveProjectionConflict(
+        inboxBefore[0],
+        'blocked_base_revision',
+        { weakVerses: '[{"id":"w-local"}]' },
+        3_200
+      );
+      assert(
+        (await journal.getProjectionConflictCount()) === 1 &&
+          (await journal.getRemoteCursor()) === 2 &&
+          (await journal.getRemoteProjectionCursor()) === 0,
+        'Blocked inbox event creates open conflict and leaves projection cursor at 0'
+      );
+
+      // 7c. Verify fitBundleForFirestoreVault keeps Vault V4 strictly < 120 KB
+      const rawBundle = captureAccountCloudBundle(6_000);
+      const fittedBundle = fitBundleForFirestoreVault({
+        ...rawBundle,
+        enginePlans: [bigPlan, { ...bigPlan, id: 'big-2' }, { ...bigPlan, id: 'big-3' }],
+      });
+      const fittedBytes = new TextEncoder().encode(
+        JSON.stringify({ vaultBundle: fittedBundle })
+      ).byteLength;
+      assert(
+        fittedBytes < 120_000 && fittedBundle.auxiliary.tombstoneLedger === undefined,
+        `fitBundleForFirestoreVault keeps Firestore Vault V4 payload under 120 KB (${fittedBytes} bytes)`
+      );
+
+      // 7d. Reconcile converged state atomically once Vault V4 is durably persisted on Firestore
+      const recRes = await journal.reconcileVaultConvergedState({
+        supersededMutations: [
+          { mutationId: 'stuck-plans-conflict-1', resolvedRevision: 3 },
+          { mutationId: 'stuck-oversize-engine-2' },
+        ],
+        advanceInboxToCursor: true,
+        resolveOpenConflicts: true,
+        nowMs: 7_000,
+      });
+
+      const snapAfter = await journal.getSnapshot();
+      const projCursorAfter = await journal.getRemoteProjectionCursor();
+      const openConflictsAfter = await journal.getProjectionConflictCount();
+      const learnedPlansRev = await journal.getRemoteRevision('plans', 'snapshot');
+      const learnedWeakRev = await journal.getRemoteRevision('weakVerses', 'snapshot');
+
+      assert(
+        recRes.acknowledgedCount === 2 &&
+          recRes.inboxAdvancedCount === 2 &&
+          recRes.resolvedConflictCount === 1 &&
+          snapAfter.pendingCount === 0 &&
+          snapAfter.acknowledgedCount === 2 &&
+          projCursorAfter === 2 &&
+          openConflictsAfter === 0 &&
+          learnedPlansRev?.revision === 3 &&
+          learnedWeakRev?.revision === 1,
+        'reconcileVaultConvergedState atomically clears stuck outbox, advances blocked inbox cursor, and closes open conflicts'
+      );
+
+      journal.close();
     }
   } catch (error: any) {
     assert(false, `Cloud Sync V4 additions & deletions test threw unexpectedly: ${error?.message || error}`);

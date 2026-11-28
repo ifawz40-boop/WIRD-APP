@@ -1219,3 +1219,24 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 
 ### Next Action
 - Fast-forward merge `feat/cloud-sync-v4-add-delete-personal-cloud` into `main`, push to `origin/main` (per explicit owner authorization), and verify exact-head GitHub Actions CI and Vercel Production deployment (`https://wird-app.vercel.app/`).
+
+
+---
+
+## 2026-11-28 (Follow-Up) — Root-Cause Fix for Stuck Outbox, Blocked Inbox & Open Projection Conflicts (`main`)
+
+### Owner Report & Root Causes Diagnosed
+- Owner reported Cloud Sync V4 was working well, with a few historical sync operations still appearing stuck or failed (`عالقة أو متعذرة`).
+- Code audit identified 5 interacting root causes:
+  1. **Exponential Backoff Hiding Outbox Entries (`nextAttemptAtMs > Date.now()`):** Prior failed attempts set `nextAttemptAtMs` up to 60 minutes in the future via `markFailed`, so `listReadyEntries(Date.now())` returned `0` items while `refreshPendingCount()` still counted `pendingCount > 0`, forcing `status = 'error'` (`X تغيير معلق`).
+  2. **`rebasePendingMutation` Aborting After `setRemoteRevisionFromRemote`:** `setRemoteRevisionFromRemote` sets `cached.localSequence = nextSequence - 1 >= entry.sequence`, causing `IndexedDbSyncJournal.rebasePendingMutation` (`mutation.sequence <= cached.localSequence`) to abort on every `REMOTE_REVISION_CONFLICT`.
+  3. **Oversize `> 128 KB` `enginePlans` / `syncMeta` Outbox Entries:** `IndexedDbSyncJournal` allows `450 KB` for `enginePlans` and session transactions, whereas `writeRevisionedRemoteMutation` rejects `> 128 KB` with `INVALID_REVISIONED_MUTATION`.
+  4. **Duplicate `tombstoneLedger` Inside `auxiliary` & Vault Contention:** `captureAccountCloudBundle` serialized `tombstoneLedger` twice (`bundle.tombstoneLedger` and `bundle.auxiliary.tombstoneLedger`), and `reconcileAccountVaultV4` lacked a contention retry.
+  5. **Residual Blocked Remote Inbox Events & Open `projectionConflicts`:** Previously archived open conflicts (including `weakVerses`/`activityEvents`/`syncMeta` where `containsUnsafeFullSnapshotProjection` hid manual resolution buttons) and blocked inbox events remained open even after `AccountCloudBundleV4` merged all local and remote data losslessly.
+
+### Changes Implemented
+- `src/services/accountCloudBundleService.ts`: Added `fitBundleForFirestoreVault` deduplicating inner `auxiliary.tombstoneLedger` and guaranteeing `{ vaultBundle }` stays `< 120 KB`.
+- `src/services/indexedDbSyncJournal.ts` & `src/services/localSyncOutbox.ts`: Added `resetPendingBackoff` and atomic `reconcileVaultConvergedState` (acknowledging Vault-backed superseded outbox entries, advancing converged remote inbox cursors, clearing stale projection intents, and transitioning open `RemoteProjectionConflict` records to `status: 'resolved', resolution: 'reconciled'` while preserving conflict archive snapshots).
+- `src/services/cloudSyncCoordinator.ts` & `src/hooks/useCloudSync.ts`: Added 2-attempt contention retry and `durablySyncedOnRemote` verification in `reconcileAccountVaultV4`, woke backoff-delayed items via `resetPendingBackoff`, deferred oversize (`> 120 KB`) / `REMOTE_REVISION_CONFLICT` mutations to post-Vault atomic supersession (refreshing canonical single-doc state via `buildAuthoritativeSingleDocPayload` without calling aborting `rebasePendingMutation`), looped `projectRemoteInboxBatch(100)` across multiple pages, and exposed `reconcileStuckOperations()`.
+- `src/components/settings/SettingsView.tsx` & `src/components/layout/Header.tsx`: Wired `{ manual: true }` into manual sync triggers and added 1-click «حسم العمليات العالقة الآن» + smart CRDT merge buttons on unsafe/tombstone conflict cards.
+- `src/tests/cloudSyncAdditionsAndDeletions.test.ts`: Added Section 7 regression tests (`25/25` passing; overall `858 PASSED | 0 FAILED`).

@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import { cloudSyncCoordinator, CloudSyncState } from '../services/cloudSyncCoordinator';
 
-export function useCloudSync(): CloudSyncState & { triggerSync: () => Promise<boolean> } {
+export function useCloudSync(): CloudSyncState & {
+  triggerSync: (options?: { manual?: boolean }) => Promise<boolean>;
+  reconcileStuckOperations: () => Promise<{
+    success: boolean;
+    acknowledgedCount: number;
+    inboxAdvancedCount: number;
+    resolvedConflictCount: number;
+  }>;
+} {
   const [syncState, setSyncState] = useState<CloudSyncState>(cloudSyncCoordinator.getState());
 
   useEffect(() => {
@@ -16,6 +24,7 @@ export function useCloudSync(): CloudSyncState & { triggerSync: () => Promise<bo
 
   return {
     ...syncState,
-    triggerSync: () => cloudSyncCoordinator.triggerSync()
+    triggerSync: (options?: { manual?: boolean }) => cloudSyncCoordinator.triggerSync(options),
+    reconcileStuckOperations: () => cloudSyncCoordinator.reconcileStuckOperations(),
   };
 }
