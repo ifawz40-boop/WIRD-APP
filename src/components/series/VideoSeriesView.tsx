@@ -177,7 +177,6 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
   const [customSpeaker, setCustomSpeaker] = useState('');
   const [customCategory, setCustomCategory] =
     useState<VideoSeriesCategory>('tazkiyah');
-  const [customDescription, setCustomDescription] = useState('');
   const [featureNewSeries, setFeatureNewSeries] = useState(true);
 
   const handleSelectSeries = (series: VideoSeriesDefinition) => {
@@ -255,7 +254,6 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
       setFetchedPayload(payload);
       setCustomTitle(payload.title);
       setCustomSpeaker(payload.speaker);
-      setCustomDescription(`قائمة تشغيل من يوتيوب تضم ${payload.videos.length} درساً.`);
     } catch (err: any) {
       setFetchError(err?.message || 'تعذر جلب قائمة التشغيل.');
     } finally {
@@ -270,7 +268,6 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
       title: customTitle || fetchedPayload.title,
       speaker: customSpeaker || fetchedPayload.speaker,
       category: customCategory,
-      description: customDescription,
       videos: fetchedPayload.videos,
       featureOnDashboard: featureNewSeries,
     });
@@ -346,9 +343,11 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
             >
               {activeSeries.title}
             </h2>
-            <p className="text-xs sm:text-sm text-[#F6F1E6]/88 leading-relaxed">
-              {activeSeries.description}
-            </p>
+            {activeSeries.sourceType !== 'custom' && activeSeries.description && (
+              <p className="text-xs sm:text-sm text-[#F6F1E6]/88 leading-relaxed">
+                {activeSeries.description}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
@@ -562,7 +561,7 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
               <h3 className="text-lg font-extrabold text-[var(--wird-text)] leading-snug">
                 {activeLesson.title}
               </h3>
-              {activeLesson.description && (
+              {activeSeries.sourceType !== 'custom' && activeLesson.description && (
                 <p className="text-xs sm:text-sm text-[var(--wird-muted)] leading-relaxed">
                   {activeLesson.description}
                 </p>
@@ -1005,22 +1004,6 @@ export const VideoSeriesView: React.FC<VideoSeriesViewProps> = ({
                     )}
                   </select>
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="wird-new-series-desc"
-                  className="block text-xs font-bold text-[var(--wird-text)]"
-                >
-                  وصف مختصر
-                </label>
-                <textarea
-                  id="wird-new-series-desc"
-                  rows={2}
-                  value={customDescription}
-                  onChange={(e) => setCustomDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-[var(--wird-radius-control)] border border-[var(--wird-border-strong)] bg-[var(--wird-surface)] text-xs text-[var(--wird-text)]"
-                />
               </div>
 
               <label className="flex items-center gap-2.5 text-xs text-[var(--wird-text)] cursor-pointer">

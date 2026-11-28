@@ -59,4 +59,9 @@ if ('serviceWorker' in navigator && (import.meta.env.PROD || process.env.NODE_EN
   } else {
     registerServiceWorker();
   }
+} else if ('serviceWorker' in navigator) {
+  // In development mode, remove any previously registered Service Worker so Vite dev modules are never served stale.
+  void navigator.serviceWorker.getRegistrations()
+    .then((registrations) => Promise.all(registrations.map((reg) => reg.unregister())))
+    .catch(() => undefined);
 }

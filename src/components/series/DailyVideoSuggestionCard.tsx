@@ -223,7 +223,7 @@ export const DailyVideoSuggestionCard: React.FC<DailyVideoSuggestionCardProps> =
               {lesson.title}
             </h4>
 
-            {lesson.description && (
+            {series.sourceType !== 'custom' && lesson.description && (
               <p className="text-xs sm:text-sm text-[var(--wird-muted)] leading-relaxed line-clamp-2">
                 {lesson.description}
               </p>

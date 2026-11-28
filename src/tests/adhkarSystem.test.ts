@@ -13,13 +13,17 @@ import {
 import { ALL_SURAHS } from '../data/quranMeta';
 import {
   ADHKAR_PROGRESS_KEY,
+  addCustomTasbihPhrase,
   getAdhkarCategoryProgressSummary,
+  getAdhkarCountKey,
   getAdhkarCountsForDate,
+  getAdhkarItemCount,
   getAdhkarRemainingCount,
   getOverallDailyAdhkarSummary,
   incrementAdhkarItemCount,
   incrementFreeTasbihCount,
   readAdhkarProgressStore,
+  removeCustomTasbihPhrase,
   resetAdhkarCategoryCounts,
   resetAdhkarItemCount,
   resetFreeTasbihCount,
@@ -118,7 +122,7 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
     }
   });
 
-  test('Category-specific counting (1x after_prayer vs 3x morning), countdown math, and legacy Arabic ID alias migrate losslessly', () => {
+  test('Category-isolated counting keeps morning/evening/after_prayer independent, and legacy Arabic ID alias migrates losslessly', () => {
     StorageService.__resetStorageForTests();
     const map = new Map<string, string>();
     const mockStorage = {
@@ -148,11 +152,14 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
       const afterPrayerSummary = getAdhkarCategoryProgressSummary('after_prayer', getAdhkarCountsForDate(dateKey, mockStorage));
       assert(afterPrayerSummary.completedItems === 1, 'after_prayer summary must count Al-Ikhlas as completed at 1');
 
-      // 2. Morning target for Al-Ikhlas continues to 3/3 and is NOT downgraded if tapped again in after_prayer
-      const morningSummaryBefore = getAdhkarCategoryProgressSummary('morning', getAdhkarCountsForDate(dateKey, mockStorage));
-      assert(morningSummaryBefore.completedItems === 0, 'Morning summary must not mark Al-Ikhlas complete at count 1');
-      const morningTap2 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
-      assert(morningTap2.remainingCount === 1, 'Morning Al-Ikhlas must show 1 remaining at count 2/3');
+      // 2. Morning & Evening counters for the SAME dhikr (Al-Ikhlas) must remain completely unaffected (0/3)
+      const countsAfterPrayer = getAdhkarCountsForDate(dateKey, mockStorage);
+      assert(getAdhkarItemCount(countsAfterPrayer, 'adhkar-ikhlas', 'morning') === 0, 'Morning count must remain 0 after counting in after_prayer');
+      assert(getAdhkarItemCount(countsAfterPrayer, 'adhkar-ikhlas', 'evening') === 0, 'Evening count must remain 0 after counting in after_prayer');
+
+      const morningTap1 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
+      assert(morningTap1.currentCount === 1 && morningTap1.remainingCount === 2, 'Morning Al-Ikhlas must start from 0 -> 1 independently');
+      incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
       const morningTap3 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
       assert(
         morningTap3.currentCount === 3 &&
@@ -161,11 +168,19 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
         morningTap3.justCompleted === true,
         'Al-Ikhlas in morning must complete on count 3'
       );
-      const afterPrayerRetap = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'after_prayer');
-      assert(
-        afterPrayerRetap.currentCount === 3 && afterPrayerRetap.justCompleted === false,
-        'Tapping an already-completed item in a lower-target category must not downgrade its stored count'
-      );
+
+      // Evening must STILL be at 0 even after both after_prayer and morning completed Al-Ikhlas
+      const countsAfterMorning = getAdhkarCountsForDate(dateKey, mockStorage);
+      assert(getAdhkarItemCount(countsAfterMorning, 'adhkar-ikhlas', 'evening') === 0, 'Evening count must remain 0 after completing morning');
+      assert(getAdhkarCategoryProgressSummary('evening', countsAfterMorning).completedItems === 0, 'Evening summary must remain 0%');
+
+      // Count in evening, then reset morning -> evening and after_prayer must remain intact
+      incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'evening');
+      resetAdhkarCategoryCounts('morning', dateKey, mockStorage);
+      const countsAfterMorningReset = getAdhkarCountsForDate(dateKey, mockStorage);
+      assert(getAdhkarItemCount(countsAfterMorningReset, 'adhkar-ikhlas', 'morning') === 0, 'Resetting morning must clear morning count');
+      assert(getAdhkarItemCount(countsAfterMorningReset, 'adhkar-ikhlas', 'evening') === 1, 'Resetting morning must NOT clear evening count');
+      assert(getAdhkarItemCount(countsAfterMorningReset, 'adhkar-ikhlas', 'after_prayer') === 1, 'Resetting morning must NOT clear after_prayer count');
 
       // 3. Backward-compatible migration of legacy Arabic-character sleep dhikr ID (including missing readingPrefs)
       const legacyId = 'adhkar-sleep-bismika-ربي-wadatu';
@@ -177,14 +192,15 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
         scopedKey,
         JSON.stringify({
           schemaVersion: 1,
-          countsByDate: { [dateKey]: { [legacyId]: 1 } },
+          countsByDate: { [dateKey]: { [legacyId]: 1, [`sleeping:${legacyId}`]: 1 } },
           favoriteIds: [legacyId],
           freeTasbih: { presetId: FREE_TASBIH_PRESETS[0].id, currentCount: 0, targetCount: 33, totalLifetimeCount: 0 }
         })
       );
 
       const migrated = readAdhkarProgressStore(mockStorage);
-      assert(migrated.countsByDate[dateKey]?.[canonicalId] === 1, 'Legacy ID daily count must migrate to canonical ID');
+      assert(migrated.countsByDate[dateKey]?.[canonicalId] === 1, 'Legacy bare ID daily count must migrate to canonical ID');
+      assert(migrated.countsByDate[dateKey]?.[`sleeping:${canonicalId}`] === 1, 'Legacy scoped ID daily count must migrate to canonical scoped ID');
       assert(migrated.countsByDate[dateKey]?.[legacyId] === undefined, 'Legacy ID key must not remain after normalization');
       assert(migrated.favoriteIds.includes(canonicalId) && !migrated.favoriteIds.includes(legacyId), 'Legacy ID favorite must migrate to canonical ID');
       assert(migrated.readingPrefs.fontScale === 'md' && migrated.readingPrefs.showVirtueAndSource === true, 'Older stores without readingPrefs must hydrate safe defaults');
@@ -192,8 +208,8 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
       // Calling mutators with legacy ID must still operate cleanly on canonical ID
       const toggledOff = toggleAdhkarFavorite(legacyId, mockStorage);
       assert(!toggledOff.favoriteIds.includes(canonicalId), 'Toggling favorite via legacy ID must toggle canonical ID');
-      const resetStore = resetAdhkarItemCount(legacyId, dateKey, mockStorage);
-      assert(resetStore.countsByDate[dateKey]?.[canonicalId] === undefined, 'Resetting via legacy ID must clear canonical ID');
+      const resetStore = resetAdhkarItemCount(legacyId, dateKey, mockStorage, 'sleeping');
+      assert(resetStore.countsByDate[dateKey]?.[`sleeping:${canonicalId}`] === undefined, 'Resetting scoped legacy ID must clear canonical scoped ID');
     } finally {
       StorageService.__resetStorageForTests();
     }
@@ -205,7 +221,7 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
     assert(getRecommendedAdhkarCategoryForHour(23) === 'sleeping', '11 PM should recommend sleeping adhkar');
   });
 
-  test('Adhkar progress counter, reading prefs, customizable Tasbih target, favorites, and UID isolation work cleanly', () => {
+  test('Adhkar progress counter, custom Tasbih phrases, reading prefs, favorites, and UID isolation work cleanly', () => {
     StorageService.__resetStorageForTests();
     const map = new Map<string, string>();
     const mockStorage = {
@@ -217,17 +233,20 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
     try {
       assert(StorageService.setStorageScope('user:alpha'), 'Alpha scope should activate');
       const dateKey = '2026-11-25';
-      const firstResult = incrementAdhkarItemCount('adhkar-ayat-alkursi', dateKey, mockStorage);
-      assert(firstResult.currentCount === 1 && firstResult.remainingCount === 0 && firstResult.justCompleted === true, 'Ayat Al-Kursi (target 1) must complete on first count');
+      const firstResult = incrementAdhkarItemCount('adhkar-ayat-alkursi', dateKey, mockStorage, 'morning');
+      assert(firstResult.currentCount === 1 && firstResult.remainingCount === 0 && firstResult.justCompleted === true, 'Ayat Al-Kursi (target 1) must complete on first count in morning');
 
-      const ikhlas1 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage);
+      const ikhlas1 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
       assert(ikhlas1.currentCount === 1 && ikhlas1.remainingCount === 2 && ikhlas1.justCompleted === false, 'Al-Ikhlas (target 3) must have 2 remaining on count 1');
-      incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage);
-      const ikhlas3 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage);
+      incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
+      const ikhlas3 = incrementAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
       assert(ikhlas3.currentCount === 3 && ikhlas3.remainingCount === 0 && ikhlas3.justCompleted === true, 'Al-Ikhlas must complete on count 3');
 
       const summary = getAdhkarCategoryProgressSummary('morning', getAdhkarCountsForDate(dateKey, mockStorage));
       assert(summary.completedItems === 2 && summary.totalItems >= 20, `Morning summary must reflect 2 completed items out of >= 20, got ${summary.totalItems}`);
+
+      const eveningSummary = getAdhkarCategoryProgressSummary('evening', getAdhkarCountsForDate(dateKey, mockStorage));
+      assert(eveningSummary.completedItems === 0, 'Evening summary must remain 0 when only morning items were counted');
 
       const overall = getOverallDailyAdhkarSummary(getAdhkarCountsForDate(dateKey, mockStorage));
       assert(overall.totalCategories === 18 && overall.totalRepetitionsToday === 4, 'Overall daily summary must aggregate repetitions across 18 categories');
@@ -252,32 +271,67 @@ export function runAdhkarSystemTests(): { passed: number; failed: number } {
       assert(readAdhkarProgressStore(mockStorage).freeTasbih.currentCount === 0, 'Resetting current Tasbih count sets it to 0');
       assert(readAdhkarProgressStore(mockStorage).freeTasbih.totalLifetimeCount === 2, 'Resetting current Tasbih preserves lifetime total');
 
+      // Custom Tasbih phrase creation, persistence, duplicate rejection, selection, and deletion
+      const badCustom = addCustomTasbihPhrase({ phrase: 'أ' }, mockStorage);
+      assert(badCustom.ok === false, 'Too-short custom Tasbih phrase must be rejected');
+
+      const addedCustom = addCustomTasbihPhrase(
+        { phrase: 'اللهم إنك عفو تحب العفو فاعف عني', defaultTarget: 33, virtue: 'دعاء ليلة القدر' },
+        mockStorage,
+        1700000000000
+      );
+      assert(addedCustom.ok === true, 'Valid custom Tasbih phrase must be added');
+      if (addedCustom.ok) {
+        const reloaded = readAdhkarProgressStore(mockStorage);
+        assert(reloaded.customTasbihPhrases.length === 1, 'Custom Tasbih phrase must persist across reload');
+        assert(reloaded.freeTasbih.presetId === addedCustom.item.id, 'Newly added custom Tasbih phrase must become active');
+        assert(reloaded.freeTasbih.targetCount === 33, 'Custom Tasbih target must apply when selected');
+
+        const dupCustom = addCustomTasbihPhrase({ phrase: 'اللهم إنك عفو تحب العفو فاعف عني' }, mockStorage);
+        assert(dupCustom.ok === false, 'Duplicate custom Tasbih phrase must be rejected');
+
+        // Switch away and back to custom phrase
+        selectFreeTasbihPreset(FREE_TASBIH_PRESETS[0].id, mockStorage);
+        selectFreeTasbihPreset(addedCustom.item.id, mockStorage);
+        assert(readAdhkarProgressStore(mockStorage).freeTasbih.presetId === addedCustom.item.id, 'Custom Tasbih phrase must be selectable');
+
+        // Delete active custom phrase -> falls back to default built-in preset
+        const afterRemove = removeCustomTasbihPhrase(addedCustom.item.id, mockStorage);
+        assert(afterRemove.customTasbihPhrases.length === 0, 'Deleted custom Tasbih phrase must be removed');
+        assert(afterRemove.freeTasbih.presetId === FREE_TASBIH_PRESETS[0].id, 'Deleting active custom Tasbih must fall back to default preset');
+      }
+
       // Switch to user:beta and verify complete UID isolation
       assert(StorageService.setStorageScope('user:beta'), 'Beta scope should activate');
       assert(Object.keys(getAdhkarCountsForDate(dateKey, mockStorage)).length === 0, 'Beta must not see Alpha Adhkar counts');
       assert(readAdhkarProgressStore(mockStorage).favoriteIds.length === 0, 'Beta must not see Alpha favorite Adhkar');
+      assert(readAdhkarProgressStore(mockStorage).customTasbihPhrases.length === 0, 'Beta must not see Alpha custom Tasbih phrases');
       assert(readAdhkarProgressStore(mockStorage).readingPrefs.fontScale === 'md', 'Beta must have independent default reading preferences');
 
-      // Switch back to user:alpha and verify item & category reset
+      // Switch back to user:alpha and verify category-scoped item & category reset
       assert(StorageService.setStorageScope('user:alpha'), 'Alpha scope should reactivate');
-      resetAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage);
-      assert((getAdhkarCountsForDate(dateKey, mockStorage)['adhkar-ikhlas'] ?? 0) === 0, 'Item reset must clear count');
+      resetAdhkarItemCount('adhkar-ikhlas', dateKey, mockStorage, 'morning');
+      assert((getAdhkarCountsForDate(dateKey, mockStorage)[getAdhkarCountKey('adhkar-ikhlas', 'morning')] ?? 0) === 0, 'Item reset must clear scoped count');
       resetAdhkarCategoryCounts('morning', dateKey, mockStorage);
-      assert((getAdhkarCountsForDate(dateKey, mockStorage)['adhkar-ayat-alkursi'] ?? 0) === 0, 'Category reset must clear all items in category');
+      assert((getAdhkarCountsForDate(dateKey, mockStorage)[getAdhkarCountKey('adhkar-ayat-alkursi', 'morning')] ?? 0) === 0, 'Category reset must clear all scoped items in category');
     } finally {
       StorageService.__resetStorageForTests();
     }
   });
 
-  test('AdhkarView integrates verified local Quran chunks, offline audio playback, separated tabs, and CircularCountdownRing', () => {
+  test('AdhkarView integrates verified local Quran chunks, offline audio playback, separated tabs, custom Tasbih, and QuranLibraryView avoids Sparkles icon', () => {
     const viewSource = fs.readFileSync(path.resolve(process.cwd(), 'src/components/adhkar/AdhkarView.tsx'), 'utf8');
     const cardSource = fs.readFileSync(path.resolve(process.cwd(), 'src/components/adhkar/AdhkarCard.tsx'), 'utf8');
+    const tasbihSource = fs.readFileSync(path.resolve(process.cwd(), 'src/components/adhkar/TasbihStudioPanel.tsx'), 'utf8');
+    const quranLibrarySource = fs.readFileSync(path.resolve(process.cwd(), 'src/components/library/QuranLibraryView.tsx'), 'utf8');
     assert(viewSource.includes('loadSurahVerses(item.surahNumber!)'), 'AdhkarView must load verified local Quran chunks for Quranic adhkar');
     assert(viewSource.includes('offlineQuranAudioLibrary.resolvePlaybackSource('), 'AdhkarView must support local-first offline audio playback');
     assert(viewSource.includes("globalAudioCoordinator.register('adhkar'"), 'AdhkarView must register with globalAudioCoordinator');
     assert(viewSource.includes("item.kind === 'quran'") || cardSource.includes("item.kind === 'quran'"), 'Only verified Quranic adhkar expose recitation audio playback');
     assert(viewSource.includes('TasbihStudioPanel'), 'AdhkarView must separate Electronic Tasbih into TasbihStudioPanel');
+    assert(tasbihSource.includes('onAddCustomPhrase') && tasbihSource.includes('onRemoveCustomPhrase'), 'TasbihStudioPanel must support adding and removing custom Tasbih phrases');
     assert(cardSource.includes('CircularCountdownRing'), 'AdhkarCard must render CircularCountdownRing countdown counter');
+    assert(!quranLibrarySource.includes('Sparkles'), 'QuranLibraryView (Surahs list) must not render Gemini-like Sparkles icon');
   });
 
   return { passed, failed };

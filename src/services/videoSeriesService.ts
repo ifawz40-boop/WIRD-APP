@@ -103,7 +103,6 @@ function sanitizeCustomVideo(raw: unknown, idx: number, fallbackSpeaker: string)
     order: typeof r.order === 'number' && Number.isInteger(r.order) && r.order > 0 ? r.order : idx + 1,
     videoId,
     title,
-    description: typeof r.description === 'string' ? r.description.trim().slice(0, 800) : undefined,
     durationText,
     durationSeconds,
     publishedAt: typeof r.publishedAt === 'string' ? r.publishedAt.slice(0, 32) : undefined,
@@ -155,7 +154,7 @@ function sanitizeCustomSeries(raw: unknown): VideoSeriesDefinition | null {
     description:
       typeof r.description === 'string' && r.description.trim()
         ? r.description.trim().slice(0, 600)
-        : `قائمة تشغيل تعليمية مضافة (${videos.length} درساً).`,
+        : '',
     isFeaturedOnDashboard: Boolean(r.isFeaturedOnDashboard),
     sourceType: 'custom',
     addedAt: typeof r.addedAt === 'string' ? r.addedAt.slice(0, 32) : getLocalDateString(),

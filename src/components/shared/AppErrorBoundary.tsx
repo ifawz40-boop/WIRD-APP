@@ -10,34 +10,72 @@ interface AppErrorBoundaryProps {
 
 interface AppErrorBoundaryState {
   hasError: boolean;
+  isModuleLoadError: boolean;
+}
+
+const STALE_MODULE_RELOAD_KEY = 'wird:stale-module-reload-at';
+const STALE_MODULE_RELOAD_COOLDOWN_MS = 15_000;
+
+function isStaleModuleError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error || '');
+  return (
+    message.includes('does not provide an export named') ||
+    message.includes('Failed to fetch dynamically imported module') ||
+    message.includes('Importing a module script failed') ||
+    message.includes('ChunkLoadError')
+  );
+}
+
+function tryGuardedModuleReload(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const lastReloadRaw = window.sessionStorage.getItem(STALE_MODULE_RELOAD_KEY);
+    const lastReloadAt = lastReloadRaw ? Number(lastReloadRaw) : 0;
+    const now = Date.now();
+    if (Number.isFinite(lastReloadAt) && now - lastReloadAt < STALE_MODULE_RELOAD_COOLDOWN_MS) {
+      return false;
+    }
+    window.sessionStorage.setItem(STALE_MODULE_RELOAD_KEY, String(now));
+    window.location.reload();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export class AppErrorBoundary extends React.Component<
   AppErrorBoundaryProps,
   AppErrorBoundaryState
 > {
-  public state: AppErrorBoundaryState = { hasError: false };
+  public state: AppErrorBoundaryState = { hasError: false, isModuleLoadError: false };
 
-  public static getDerivedStateFromError(): AppErrorBoundaryState {
-    return { hasError: true };
+  public static getDerivedStateFromError(error: unknown): AppErrorBoundaryState {
+    return { hasError: true, isModuleLoadError: isStaleModuleError(error) };
   }
 
   public componentDidCatch(error: unknown): void {
     console.error('[WIRD ErrorBoundary] View failed to render:', error);
+    if (isStaleModuleError(error)) {
+      tryGuardedModuleReload();
+    }
   }
 
   public componentDidUpdate(prevProps: AppErrorBoundaryProps): void {
     if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
-      this.setState({ hasError: false });
+      this.setState({ hasError: false, isModuleLoadError: false });
     }
   }
 
   private handleRetry = (): void => {
-    this.setState({ hasError: false });
+    if (this.state.isModuleLoadError && typeof window !== 'undefined') {
+      window.location.reload();
+      return;
+    }
+    this.setState({ hasError: false, isModuleLoadError: false });
   };
 
   private handleGoHome = (): void => {
-    this.setState({ hasError: false });
+    this.setState({ hasError: false, isModuleLoadError: false });
     this.props.onGoHome?.();
   };
 

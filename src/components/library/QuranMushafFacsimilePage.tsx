@@ -19,6 +19,9 @@ interface QuranMushafFacsimilePageProps {
   onFallback: () => void;
   maxWidthClass?: string;
   sessionAyahKeys?: Set<string>;
+  bookHalf?: 'single' | 'right' | 'left';
+  showPageHeader?: boolean;
+  isActiveReadingPage?: boolean;
 }
 
 interface MatchedAyahArea {
@@ -34,7 +37,10 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
   onSelectAyah,
   onFallback,
   maxWidthClass = 'max-w-3xl',
-  sessionAyahKeys
+  sessionAyahKeys,
+  bookHalf = 'single',
+  showPageHeader = false,
+  isActiveReadingPage = false,
 }) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [pageData, setPageData] = useState<MushafFacsimilePageData | null>(() =>
@@ -223,11 +229,26 @@ export const QuranMushafFacsimilePage: React.FC<QuranMushafFacsimilePageProps> =
     );
   }
 
+  const bookHalfClass =
+    bookHalf === 'right'
+      ? 'md:rounded-r-2xl md:rounded-l-none md:border-l-0 rounded-2xl'
+      : bookHalf === 'left'
+        ? 'md:rounded-l-2xl md:rounded-r-none md:border-r-0 rounded-2xl'
+        : 'rounded-2xl';
+
   return (
-    <figure className={`mushaf-printed-leaf isolate mx-auto w-full ${maxWidthClass} overflow-hidden rounded-2xl border border-[#C59B27]/45 bg-[var(--wird-mushaf-paper)] p-2 shadow-xl dark:border-[#E0A96D]/35 dark:bg-[#0E1A2F] sm:p-4 transition-colors`}>
+    <figure className={`mushaf-printed-leaf isolate mx-auto flex h-full w-full flex-col justify-between ${maxWidthClass} overflow-hidden ${bookHalfClass} border border-[#C59B27]/45 bg-[var(--wird-mushaf-paper)] p-2 shadow-xl dark:border-[#E0A96D]/35 dark:bg-[#0E1A2F] sm:p-4 transition-colors`}>
+      {showPageHeader && (
+        <div className="mb-1.5 flex items-center justify-between px-1 text-[11px] font-bold text-[var(--wird-muted)] tabular-nums">
+          <span>صفحة {page}</span>
+          {isActiveReadingPage && (
+            <span className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الصفحة الحالية</span>
+          )}
+        </div>
+      )}
       <div
         ref={hostRef}
-        className="mushaf-facsimile-svg w-full"
+        className="mushaf-facsimile-svg w-full flex-1"
         dangerouslySetInnerHTML={{ __html: pageData.svgMarkup }}
       />
       <figcaption className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#C59B27]/30 px-2 pt-2 text-[10px] text-[#5B6F6B] dark:border-[#E0A96D]/25 dark:text-[#8B9E9B]">

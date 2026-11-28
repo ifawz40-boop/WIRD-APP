@@ -5,7 +5,7 @@ import {
   Pause,
   Volume2,
   BookOpen,
-  Sparkles,
+  BookMarked,
   ChevronLeft,
   ChevronRight,
   Filter,
@@ -757,7 +757,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl text-right">
             <p className="text-xs font-semibold text-[#E6B85C] flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
               <span>المصحف المطبوع والقراءة · برواية حفص عن عاصم</span>
             </p>
             <h1 className="text-3xl md:text-4xl font-black font-quran text-[#F9F6EE] tracking-wide leading-tight">
@@ -1037,7 +1037,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                         aria-label={`بدء جلسة حفظ لسورة ${surah.name}`}
                         className="min-h-10 min-w-10 flex items-center justify-center rounded-lg hover:bg-[var(--wird-accent-soft)] text-[var(--wird-muted)] hover:text-[var(--wird-accent)] transition-colors"
                       >
-                        <Sparkles className="w-4 h-4" />
+                        <BookMarked className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -1194,7 +1194,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                   onClick={() => onStartSession(selectedSurah.number, sessionRangeStart, sessionRangeEnd)}
                   className="min-h-11 inline-flex items-center gap-2 px-4 py-2 rounded-[var(--wird-radius-control)] wird-btn-accent text-xs font-bold shadow-xs"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <BookMarked className="w-3.5 h-3.5" />
                   <span>
                     {sessionRangeStart === 1 && sessionRangeEnd === selectedSurah.versesCount
                       ? 'بدء حفظ السورة كاملة'
@@ -1454,7 +1454,7 @@ export const QuranLibraryView: React.FC<QuranLibraryViewProps> = ({
                           title="تدريب وحفظ هذه الآية"
                           className="min-h-10 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[var(--wird-accent-soft)] text-[#8A6914] dark:text-[#E0A96D] hover:bg-[#C59B27]/25 transition-colors font-bold text-xs border border-[#C59B27]/30"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+                          <BookMarked className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
                           <span className="hidden sm:inline">تدريب وحفظ</span>
                         </button>
                       </div>

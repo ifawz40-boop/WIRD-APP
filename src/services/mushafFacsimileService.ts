@@ -243,9 +243,11 @@ export function preloadAdjacentMushafPages(anchorPage: number): void {
   const neighbors = [
     anchorPage + 1,
     anchorPage + 2,
+    anchorPage + 3,
+    anchorPage + 4,
     anchorPage - 1,
     anchorPage - 2,
-    anchorPage + 3,
+    anchorPage - 3,
   ].filter((p) => Number.isInteger(p) && p >= 1 && p <= 604);
 
   for (const neighbor of neighbors) {

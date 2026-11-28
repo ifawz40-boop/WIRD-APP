@@ -195,7 +195,7 @@ export async function runVideoSeriesSystemTests(): Promise<{ passed: number; fai
       );
       assert(dup.ok === false, 'Must reject duplicate built-in playlist');
 
-      // Add a new custom series
+      // Add a new custom series (with raw YouTube descriptions passed in -> must be stripped cleanly)
       const added = addCustomSeries(
         {
           playlistId: 'PLCustomSeriesTest123456',
@@ -204,14 +204,19 @@ export async function runVideoSeriesSystemTests(): Promise<{ passed: number; fai
           category: 'quran',
           featureOnDashboard: true,
           videos: [
-            { videoId: 'dQw4w9WgXcQ', title: 'مقدمة التدبر', durationText: '42:15' },
-            { videoId: '9bZkp7q19f0', title: 'تأملات سورة ق', durationText: '38:40' },
+            { videoId: 'dQw4w9WgXcQ', title: 'مقدمة التدبر', durationText: '42:15', description: 'وصف يوتيوب طويل جداً لا ينبغي عرضه' },
+            { videoId: '9bZkp7q19f0', title: 'تأملات سورة ق', durationText: '38:40', description: 'روابط القناة والاشتراك...' },
           ],
         },
         storage
       );
       assert(added.ok === true, 'Valid custom series should be added');
       if (added.ok) {
+        assert(added.series.description === '', 'Custom playlist should not fabricate boilerplate description');
+        assert(
+          added.series.videos.every((v) => v.description === undefined),
+          'Custom playlist videos must strip raw YouTube descriptions'
+        );
         const merged = getAllSeriesMerged(added.store.customSeries);
         assert(merged.length === VIDEO_SERIES_CATALOG.length + 1, 'Merged catalog should include custom series');
         const daily = getDailySuggestedLesson(added.store, '2026-11-23');

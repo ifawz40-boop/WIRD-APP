@@ -309,6 +309,18 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || !url.protocol.startsWith('http')) return;
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/__/')) return;
 
+  // Never intercept or cache Vite dev-server source modules or virtual endpoints.
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith('/src/') ||
+      url.pathname.startsWith('/node_modules/') ||
+      url.pathname.startsWith('/@') ||
+      url.pathname.endsWith('.ts') ||
+      url.pathname.endsWith('.tsx'))
+  ) {
+    return;
+  }
+
   // SPA navigations remain network-first, with a complete cached HTML fallback.
   if (req.mode === 'navigate') {
     event.respondWith(

@@ -11,7 +11,6 @@ import {
   BookOpen,
   RefreshCw,
   Search,
-  Sparkles,
   Layers,
   X,
   Check,
@@ -277,7 +276,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
   };
   const autoPlayNextPageRef = useRef(false);
   const pendingTargetRef = useRef<{ surahNumber: number; ayahNumber: number } | null>(null);
-  const touchStartX = useRef<number | null>(null);
+  const touchStartPoint = useRef<{ x: number; y: number } | null>(null);
   const onPageVisitedRef = useRef(onPageVisited);
   onPageVisitedRef.current = onPageVisited;
 
@@ -1383,12 +1382,26 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
         ref={mushafStageRef}
         key={readerLayout === 'printed' ? 'printed-mushaf-surface' : page}
         style={{ zoom: uiScale / 100 }}
-        onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
+        onTouchStart={event => {
+          // Printed Mushaf delegates all pointer/touch turning exclusively to MushafPaperFlipStage.
+          if (readerLayout === 'printed' || event.touches.length !== 1) {
+            touchStartPoint.current = null;
+            return;
+          }
+          const t = event.touches[0];
+          touchStartPoint.current = t ? { x: t.clientX, y: t.clientY } : null;
+        }}
         onTouchEnd={event => {
-          const startX = touchStartX.current; touchStartX.current = null;
-          if (startX === null || event.changedTouches.length === 0) return;
-          const delta = event.changedTouches[0].clientX - startX;
-          if (Math.abs(delta) > 65) changePage(stepSpreadPage(page, delta > 0 ? 'prev' : 'next', isTwoPageSpreadActive, { isOppositeTafsirActive }));
+          const start = touchStartPoint.current;
+          touchStartPoint.current = null;
+          if (readerLayout === 'printed' || !start || event.changedTouches.length === 0) return;
+          const end = event.changedTouches[0];
+          const dx = end.clientX - start.x;
+          const dy = end.clientY - start.y;
+          // Require clear horizontal swipe (> 85px and >= 1.8x vertical movement) to avoid accidental flips on scroll/tap
+          if (Math.abs(dx) >= 85 && Math.abs(dx) >= Math.abs(dy) * 1.8) {
+            changePage(stepSpreadPage(page, dx > 0 ? 'next' : 'prev', isTwoPageSpreadActive, { isOppositeTafsirActive }));
+          }
         }}
         aria-label={`صفحة المصحف ${page}`}
         data-mushaf-page-width={isFullWidth ? 'full' : isWidePage ? 'wide' : 'comfortable'}
@@ -1648,7 +1661,7 @@ export const QuranMushafReader: React.FC<QuranMushafReaderProps> = ({
 
       {/* Helpful Hint */}
       <div className="text-center text-xs text-[var(--wird-muted)] flex items-center justify-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+        <BookOpen className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
         <span>انقر على أي آية لفتح التفسير المنقح من Quran.com مع إمكانية التبديل بين التفسير المقابل أو اللوحة الجانبية.</span>
       </div>
 

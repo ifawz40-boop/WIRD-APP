@@ -13,7 +13,6 @@ import {
   Loader2,
   PanelLeft,
   RefreshCw,
-  Sparkles,
   X,
   ZoomIn,
   ZoomOut
@@ -550,7 +549,7 @@ export const TafsirContentPane: React.FC<TafsirContentPaneProps> = ({
         {!isLoading && !error && segments.length > 0 && (
           <article className={`p-1 space-y-3 text-[var(--wird-text)] ${currentSizeConfig.sizeClass} text-justify font-sans-ui`}>
             <div className="flex items-center gap-2 pb-2 text-xs font-bold text-[var(--wird-primary)] dark:text-[var(--wird-accent)] border-b border-[var(--wird-border)]">
-              <Sparkles className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
+              <BookOpen className="w-3.5 h-3.5 text-[var(--wird-accent)]" />
               <span>بيان المعنى والشرح:</span>
             </div>
 

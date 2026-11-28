@@ -349,18 +349,81 @@ function mergeAdhkarJson(
     if (Object.keys(mergedDay).length > 0) countsByDate[dateKey] = mergedDay;
   }
 
+  const customPhraseMap = new Map<string, {
+    id: string;
+    phrase: string;
+    virtue?: string;
+    defaultTarget: number;
+    createdAtMs: number;
+    updatedAtMs: number;
+  }>();
+  const ingestCustomList = (rawList: unknown, preferOnTie: boolean) => {
+    if (!Array.isArray(rawList)) return;
+    for (const entry of rawList) {
+      if (!isPlainRecord(entry)) continue;
+      const id = typeof entry.id === 'string' ? entry.id.trim() : '';
+      const phrase = typeof entry.phrase === 'string' ? entry.phrase.trim().replace(/\s+/g, ' ').slice(0, 240) : '';
+      if (!/^custom-tasbih-[a-zA-Z0-9_-]{4,64}$/.test(id) || phrase.length < 2) continue;
+      const createdAtMs =
+        typeof entry.createdAtMs === 'number' && Number.isFinite(entry.createdAtMs) && entry.createdAtMs >= 0
+          ? Math.trunc(entry.createdAtMs)
+          : 0;
+      const updatedAtMs =
+        typeof entry.updatedAtMs === 'number' && Number.isFinite(entry.updatedAtMs) && entry.updatedAtMs >= 0
+          ? Math.max(createdAtMs, Math.trunc(entry.updatedAtMs))
+          : createdAtMs;
+      if (isItemDeletedInLedger(ledger, 'customTasbih', id, updatedAtMs)) {
+        continue;
+      }
+      const virtue =
+        typeof entry.virtue === 'string' && entry.virtue.trim()
+          ? entry.virtue.trim().replace(/\s+/g, ' ').slice(0, 180)
+          : undefined;
+      const defaultTarget =
+        typeof entry.defaultTarget === 'number' && Number.isSafeInteger(entry.defaultTarget) && entry.defaultTarget >= 0
+          ? Math.min(10000, entry.defaultTarget)
+          : 33;
+      const existing = customPhraseMap.get(id);
+      if (
+        !existing ||
+        updatedAtMs > existing.updatedAtMs ||
+        (updatedAtMs === existing.updatedAtMs && preferOnTie)
+      ) {
+        customPhraseMap.set(id, {
+          id,
+          phrase,
+          ...(virtue ? { virtue } : {}),
+          defaultTarget,
+          createdAtMs,
+          updatedAtMs,
+        });
+      }
+    }
+  };
+  ingestCustomList(safeLocal.customTasbihPhrases, false);
+  ingestCustomList(safeRemote.customTasbihPhrases, true);
+  const customTasbihPhrases = [...customPhraseMap.values()]
+    .sort((a, b) => b.createdAtMs - a.createdAtMs || a.id.localeCompare(b.id))
+    .slice(0, 50);
+
   const lTasbih = isPlainRecord(safeLocal.freeTasbih) ? safeLocal.freeTasbih : {};
   const rTasbih = isPlainRecord(safeRemote.freeTasbih) ? safeRemote.freeTasbih : {};
   const lLife = typeof lTasbih.totalLifetimeCount === 'number' ? lTasbih.totalLifetimeCount : 0;
   const rLife = typeof rTasbih.totalLifetimeCount === 'number' ? rTasbih.totalLifetimeCount : 0;
   const primaryTasbih = rLife >= lLife ? rTasbih : lTasbih;
+  const candidatePresetId =
+    typeof primaryTasbih.presetId === 'string' ? primaryTasbih.presetId : 'subhanallah_wabihamdihi';
+  const resolvedPresetId =
+    candidatePresetId.startsWith('custom-tasbih-') && !customPhraseMap.has(candidatePresetId)
+      ? 'subhanallah_wabihamdihi'
+      : candidatePresetId;
 
   return JSON.stringify({
     schemaVersion: 1,
     countsByDate,
     favoriteIds,
     freeTasbih: {
-      presetId: typeof primaryTasbih.presetId === 'string' ? primaryTasbih.presetId : 'subhanallah_wabihamdihi',
+      presetId: resolvedPresetId,
       currentCount: Math.max(
         typeof lTasbih.currentCount === 'number' ? lTasbih.currentCount : 0,
         typeof rTasbih.currentCount === 'number' ? rTasbih.currentCount : 0
@@ -368,6 +431,7 @@ function mergeAdhkarJson(
       targetCount: typeof primaryTasbih.targetCount === 'number' ? primaryTasbih.targetCount : 100,
       totalLifetimeCount: Math.max(lLife, rLife),
     },
+    customTasbihPhrases,
     readingPrefs: isPlainRecord(safeLocal.readingPrefs)
       ? safeLocal.readingPrefs
       : isPlainRecord(safeRemote.readingPrefs)

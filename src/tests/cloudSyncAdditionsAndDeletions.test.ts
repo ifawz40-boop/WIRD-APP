@@ -27,7 +27,11 @@ import {
 } from '../services/readingKhatmaService';
 import { placeMushafRibbon, readMushafRibbons } from '../services/mushafRibbonBookmarksService';
 import {
+  addCustomTasbihPhrase,
+  getAdhkarItemCount,
+  incrementAdhkarItemCount,
   readAdhkarProgressStore,
+  removeCustomTasbihPhrase,
   toggleAdhkarFavorite,
 } from '../services/adhkarProgressService';
 import { ADHKAR_ITEMS } from '../data/adhkarData';
@@ -277,6 +281,71 @@ export async function runCloudSyncAdditionsAndDeletionsTests(): Promise<SuiteRes
         JSON.stringify(JSON.parse(mergedRestore.merged.auxiliary.seerahV2Raw || '{}').completedChapterIds) ===
           JSON.stringify(['ch-01', 'ch-02']),
       'Explicitly re-adding a previously deleted bookmark or Seerah chapter cleanly restores it even under clock skew'
+    );
+
+    // =========================================================================
+    // 3B. Custom Tasbih Phrases & Category-Isolated Adhkar Counts Cross-Device Sync
+    // =========================================================================
+    StorageService.__resetStorageForTests();
+    StorageService.setStorageScope('user:sync-v4-tasbih-a');
+
+    const customA = addCustomTasbihPhrase(
+      { phrase: 'يا حي يا قيوم برحمتك أستغيث', defaultTarget: 33, virtue: 'ذكر مخصص من الجهاز الأول' },
+      localStorage,
+      10_000
+    );
+    const customKeep = addCustomTasbihPhrase(
+      { phrase: 'حسبي الله لا إله إلا هو عليه توكلت', defaultTarget: 7 },
+      localStorage,
+      10_100
+    );
+    incrementAdhkarItemCount('adhkar-ikhlas', '2026-11-28', localStorage, 'morning');
+    assert(customA.ok === true && customKeep.ok === true, 'Device A adds two custom Tasbih phrases and counts morning Al-Ikhlas');
+
+    const tasbihSnapA1 = cloneBundle(captureAccountCloudBundle(10_500));
+
+    // Device B syncs from A1, adds its own custom phrase, and counts evening Al-Ikhlas
+    StorageService.__resetStorageForTests();
+    StorageService.setStorageScope('user:sync-v4-tasbih-b');
+    await applyAccountCloudBundleToLocal(tasbihSnapA1);
+
+    const customB = addCustomTasbihPhrase(
+      { phrase: 'اللهم صل على محمد وعلى آل محمد', defaultTarget: 100 },
+      localStorage,
+      11_000
+    );
+    incrementAdhkarItemCount('adhkar-ikhlas', '2026-11-28', localStorage, 'evening');
+    const tasbihSnapB = cloneBundle(captureAccountCloudBundle(11_500));
+
+    // Meanwhile Device A deletes customA
+    StorageService.__resetStorageForTests();
+    StorageService.setStorageScope('user:sync-v4-tasbih-a2');
+    await applyAccountCloudBundleToLocal(tasbihSnapA1);
+    if (customA.ok) {
+      removeCustomTasbihPhrase(customA.item.id, localStorage);
+    }
+    const tasbihSnapA2 = cloneBundle(captureAccountCloudBundle(12_000));
+
+    // Merge Device A2 (deleted customA) with Device B (added customB, still has stale customA)
+    const mergedTasbih = mergeAccountCloudBundles(tasbihSnapB, tasbihSnapA2, 12_500);
+    await applyAccountCloudBundleToLocal(mergedTasbih.merged);
+    const syncedAdhkar = readAdhkarProgressStore(localStorage);
+    const syncedPhraseIds = syncedAdhkar.customTasbihPhrases.map((p) => p.id);
+
+    assert(
+      customA.ok &&
+        customKeep.ok &&
+        customB.ok &&
+        !syncedPhraseIds.includes(customA.item.id) &&
+        syncedPhraseIds.includes(customKeep.item.id) &&
+        syncedPhraseIds.includes(customB.item.id),
+      'Custom Tasbih cross-device merge keeps concurrent additions (keep + B) and prevents resurrection of deleted custom phrase A'
+    );
+    assert(
+      getAdhkarItemCount(syncedAdhkar.countsByDate['2026-11-28'] || {}, 'adhkar-ikhlas', 'morning') === 1 &&
+        getAdhkarItemCount(syncedAdhkar.countsByDate['2026-11-28'] || {}, 'adhkar-ikhlas', 'evening') === 1 &&
+        getAdhkarItemCount(syncedAdhkar.countsByDate['2026-11-28'] || {}, 'adhkar-ikhlas', 'after_prayer') === 0,
+      'Category-scoped Adhkar counts sync independently per category across devices'
     );
 
     // =========================================================================

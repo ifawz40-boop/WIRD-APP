@@ -12,6 +12,7 @@ export type SyncTombstoneDomain =
   | 'ribbons'
   | 'adhkarFavorites'
   | 'adhkarCounts'
+  | 'customTasbih'
   | 'seerahChapters'
   | 'customVideoSeries'
   | 'watchedVideos'
@@ -29,6 +30,7 @@ export const ALL_SYNC_TOMBSTONE_DOMAINS: readonly SyncTombstoneDomain[] = [
   'ribbons',
   'adhkarFavorites',
   'adhkarCounts',
+  'customTasbih',
   'seerahChapters',
   'customVideoSeries',
   'watchedVideos',

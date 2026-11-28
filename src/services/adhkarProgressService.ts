@@ -22,6 +22,15 @@ export interface AdhkarReadingPrefs {
   autoAdvance: boolean;
 }
 
+export interface CustomTasbihPhrase {
+  id: string;
+  phrase: string;
+  virtue?: string;
+  defaultTarget: number;
+  createdAtMs: number;
+  updatedAtMs: number;
+}
+
 export interface AdhkarProgressStore {
   schemaVersion: 1;
   countsByDate: Record<string, Record<string, number>>;
@@ -32,6 +41,7 @@ export interface AdhkarProgressStore {
     targetCount: number;
     totalLifetimeCount: number;
   };
+  customTasbihPhrases: CustomTasbihPhrase[];
   readingPrefs: AdhkarReadingPrefs;
 }
 
@@ -53,8 +63,11 @@ export interface OverallDailyAdhkarSummary {
 }
 
 const VALID_ITEM_IDS = new Set(ADHKAR_ITEMS.map(item => item.id));
+const VALID_CATEGORY_IDS = new Set<AdhkarCategory>(ADHKAR_CATEGORIES.map(c => c.id));
 const VALID_PRESET_IDS = new Set(FREE_TASBIH_PRESETS.map(p => p.id));
 const VALID_FONT_SCALES = new Set<AdhkarFontScale>(['sm', 'md', 'lg', 'xl']);
+const CUSTOM_TASBIH_ID_RE = /^custom-tasbih-[a-zA-Z0-9_-]{4,64}$/;
+export const MAX_CUSTOM_TASBIH_PHRASES = 50;
 
 export const DEFAULT_ADHKAR_READING_PREFS: AdhkarReadingPrefs = {
   fontScale: 'md',
@@ -64,6 +77,82 @@ export const DEFAULT_ADHKAR_READING_PREFS: AdhkarReadingPrefs = {
 
 function normalizeAdhkarItemId(itemId: string): string {
   return LEGACY_ADHKAR_ITEM_ID_ALIASES[itemId] ?? itemId;
+}
+
+/**
+ * Resolves the storage key for an Adhkar item count.
+ * When `category` is provided, counters are strictly isolated per category
+ * (e.g., counting Ayat Al-Kursi in `morning` never increments `evening` or `after_prayer`).
+ */
+export function getAdhkarCountKey(itemId: string, category?: AdhkarCategory): string {
+  const canonicalId = normalizeAdhkarItemId(itemId);
+  return category ? `${category}:${canonicalId}` : canonicalId;
+}
+
+/**
+ * Reads the stored daily count for an Adhkar item in a given category context.
+ */
+export function getAdhkarItemCount(
+  countsForDate: Record<string, number>,
+  itemId: string,
+  category?: AdhkarCategory
+): number {
+  const key = getAdhkarCountKey(itemId, category);
+  const value = countsForDate[key];
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+
+function normalizeCountRecordKey(rawKey: string): string | null {
+  const colonIdx = rawKey.indexOf(':');
+  if (colonIdx > 0) {
+    const rawCat = rawKey.slice(0, colonIdx) as AdhkarCategory;
+    const rawItem = rawKey.slice(colonIdx + 1);
+    const canonicalItem = normalizeAdhkarItemId(rawItem);
+    if (VALID_CATEGORY_IDS.has(rawCat) && VALID_ITEM_IDS.has(canonicalItem)) {
+      return `${rawCat}:${canonicalItem}`;
+    }
+    return null;
+  }
+  const canonicalItem = normalizeAdhkarItemId(rawKey);
+  return VALID_ITEM_IDS.has(canonicalItem) ? canonicalItem : null;
+}
+
+export function sanitizeCustomTasbihPhrases(raw: unknown): CustomTasbihPhrase[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  const clean: CustomTasbihPhrase[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
+    const r = entry as Record<string, unknown>;
+    const id = typeof r.id === 'string' ? r.id.trim() : '';
+    if (!CUSTOM_TASBIH_ID_RE.test(id) || seen.has(id)) continue;
+    const phrase = typeof r.phrase === 'string' ? r.phrase.trim().replace(/\s+/g, ' ').slice(0, 240) : '';
+    if (phrase.length < 2) continue;
+    const virtueRaw = typeof r.virtue === 'string' ? r.virtue.trim().replace(/\s+/g, ' ').slice(0, 180) : '';
+    const defaultTarget =
+      typeof r.defaultTarget === 'number' && Number.isSafeInteger(r.defaultTarget) && r.defaultTarget >= 0
+        ? Math.min(10000, r.defaultTarget)
+        : 33;
+    const createdAtMs =
+      typeof r.createdAtMs === 'number' && Number.isFinite(r.createdAtMs) && r.createdAtMs >= 0
+        ? Math.trunc(r.createdAtMs)
+        : 0;
+    const updatedAtMs =
+      typeof r.updatedAtMs === 'number' && Number.isFinite(r.updatedAtMs) && r.updatedAtMs >= 0
+        ? Math.max(createdAtMs, Math.trunc(r.updatedAtMs))
+        : createdAtMs;
+    seen.add(id);
+    clean.push({
+      id,
+      phrase,
+      ...(virtueRaw ? { virtue: virtueRaw } : {}),
+      defaultTarget,
+      createdAtMs,
+      updatedAtMs
+    });
+    if (clean.length >= MAX_CUSTOM_TASBIH_PHRASES) break;
+  }
+  return clean;
 }
 
 function normalizeReadingPrefs(raw: Partial<AdhkarReadingPrefs> | undefined): AdhkarReadingPrefs {
@@ -97,6 +186,7 @@ function createDefaultStore(): AdhkarProgressStore {
       targetCount: FREE_TASBIH_PRESETS[0].defaultTarget,
       totalLifetimeCount: 0
     },
+    customTasbihPhrases: [],
     readingPrefs: { ...DEFAULT_ADHKAR_READING_PREFS }
   };
 }
@@ -132,10 +222,10 @@ export function readAdhkarProgressStore(
       const dayRecord = parsed.countsByDate[dateKey];
       if (!dayRecord || typeof dayRecord !== 'object') continue;
       const cleanDay: Record<string, number> = {};
-      for (const [rawItemId, val] of Object.entries(dayRecord)) {
-        const itemId = normalizeAdhkarItemId(rawItemId);
-        if (VALID_ITEM_IDS.has(itemId) && typeof val === 'number' && Number.isSafeInteger(val) && val >= 0 && val <= 10000) {
-          cleanDay[itemId] = Math.max(cleanDay[itemId] ?? 0, val);
+      for (const [rawKey, val] of Object.entries(dayRecord)) {
+        const normalizedKey = normalizeCountRecordKey(rawKey);
+        if (normalizedKey && typeof val === 'number' && Number.isSafeInteger(val) && val >= 0 && val <= 10000) {
+          cleanDay[normalizedKey] = Math.max(cleanDay[normalizedKey] ?? 0, val);
         }
       }
       countsByDate[dateKey] = cleanDay;
@@ -150,11 +240,19 @@ export function readAdhkarProgressStore(
         )]
       : [];
 
+    const customTasbihPhrases = sanitizeCustomTasbihPhrases(parsed.customTasbihPhrases);
+    const customPhraseMap = new Map(customTasbihPhrases.map(p => [p.id, p]));
+
     const rawTasbih = parsed.freeTasbih;
-    const presetId = rawTasbih && typeof rawTasbih.presetId === 'string' && VALID_PRESET_IDS.has(rawTasbih.presetId)
-      ? rawTasbih.presetId
-      : FREE_TASBIH_PRESETS[0].id;
-    const defaultTarget = FREE_TASBIH_PRESETS.find(p => p.id === presetId)?.defaultTarget ?? 100;
+    const rawPresetId = rawTasbih && typeof rawTasbih.presetId === 'string' ? rawTasbih.presetId : '';
+    const presetId =
+      VALID_PRESET_IDS.has(rawPresetId) || customPhraseMap.has(rawPresetId)
+        ? rawPresetId
+        : FREE_TASBIH_PRESETS[0].id;
+    const defaultTarget =
+      FREE_TASBIH_PRESETS.find(p => p.id === presetId)?.defaultTarget ??
+      customPhraseMap.get(presetId)?.defaultTarget ??
+      100;
     const currentCount = rawTasbih && typeof rawTasbih.currentCount === 'number' && Number.isSafeInteger(rawTasbih.currentCount) && rawTasbih.currentCount >= 0
       ? Math.min(100000, rawTasbih.currentCount)
       : 0;
@@ -176,6 +274,7 @@ export function readAdhkarProgressStore(
         targetCount,
         totalLifetimeCount
       },
+      customTasbihPhrases,
       readingPrefs: normalizeReadingPrefs(parsed.readingPrefs)
     };
   } catch {
@@ -218,11 +317,12 @@ export function incrementAdhkarItemCount(
     throw new Error('لم يتم العثور على الذكر المطلوب.');
   }
   const targetCount = getAdhkarRepeatTarget(item, category);
+  const countKey = getAdhkarCountKey(canonicalId, category);
   const store = readAdhkarProgressStore(storage);
   const dayCounts = { ...(store.countsByDate[dateKey] || {}) };
-  const prevCount = dayCounts[canonicalId] ?? 0;
+  const prevCount = dayCounts[countKey] ?? 0;
   const nextCount = prevCount >= targetCount ? prevCount : Math.min(targetCount, prevCount + 1);
-  dayCounts[canonicalId] = nextCount;
+  dayCounts[countKey] = nextCount;
 
   const nextStore: AdhkarProgressStore = {
     ...store,
@@ -232,7 +332,7 @@ export function incrementAdhkarItemCount(
     }
   };
   if (typeof localStorage !== 'undefined' && storage === localStorage) {
-    recordSyncUpsert('adhkarCounts', `${dateKey}:${canonicalId}`);
+    recordSyncUpsert('adhkarCounts', `${dateKey}:${countKey}`);
   }
   persistAdhkarProgressStore(nextStore, storage);
 
@@ -248,12 +348,13 @@ export function incrementAdhkarItemCount(
 export function resetAdhkarItemCount(
   itemId: string,
   dateKey: string = getLocalDateString(),
-  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
+  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage,
+  category?: AdhkarCategory
 ): AdhkarProgressStore {
-  const canonicalId = normalizeAdhkarItemId(itemId);
+  const countKey = getAdhkarCountKey(itemId, category);
   const store = readAdhkarProgressStore(storage);
   const dayCounts = { ...(store.countsByDate[dateKey] || {}) };
-  delete dayCounts[canonicalId];
+  delete dayCounts[countKey];
   const nextStore: AdhkarProgressStore = {
     ...store,
     countsByDate: {
@@ -262,7 +363,7 @@ export function resetAdhkarItemCount(
     }
   };
   if (typeof localStorage !== 'undefined' && storage === localStorage) {
-    recordSyncDeletion('adhkarCounts', `${dateKey}:${canonicalId}`);
+    recordSyncDeletion('adhkarCounts', `${dateKey}:${countKey}`);
   }
   return persistAdhkarProgressStore(nextStore, storage);
 }
@@ -276,7 +377,7 @@ export function resetAdhkarCategoryCounts(
   const dayCounts = { ...(store.countsByDate[dateKey] || {}) };
   const categoryItems = getAdhkarItemsByCategory(category);
   for (const item of categoryItems) {
-    delete dayCounts[item.id];
+    delete dayCounts[getAdhkarCountKey(item.id, category)];
   }
   const nextStore: AdhkarProgressStore = {
     ...store,
@@ -287,7 +388,7 @@ export function resetAdhkarCategoryCounts(
   };
   if (typeof localStorage !== 'undefined' && storage === localStorage) {
     for (const item of categoryItems) {
-      recordSyncDeletion('adhkarCounts', `${dateKey}:${item.id}`);
+      recordSyncDeletion('adhkarCounts', `${dateKey}:${getAdhkarCountKey(item.id, category)}`);
     }
   }
   return persistAdhkarProgressStore(nextStore, storage);
@@ -358,20 +459,110 @@ export function selectFreeTasbihPreset(
   presetId: string,
   storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
 ): AdhkarProgressStore {
-  const preset = FREE_TASBIH_PRESETS.find(item => item.id === presetId) || FREE_TASBIH_PRESETS[0];
   const store = readAdhkarProgressStore(storage);
+  const builtInPreset = FREE_TASBIH_PRESETS.find(item => item.id === presetId);
+  const customPreset = store.customTasbihPhrases.find(item => item.id === presetId);
+  const resolved = builtInPreset || customPreset || FREE_TASBIH_PRESETS[0];
   return persistAdhkarProgressStore(
     {
       ...store,
       freeTasbih: {
         ...store.freeTasbih,
-        presetId: preset.id,
+        presetId: resolved.id,
         currentCount: 0,
-        targetCount: preset.defaultTarget
+        targetCount: resolved.defaultTarget
       }
     },
     storage
   );
+}
+
+export function addCustomTasbihPhrase(
+  input: { phrase: string; defaultTarget?: number; virtue?: string },
+  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage,
+  nowMs: number = Date.now()
+): { ok: true; item: CustomTasbihPhrase; store: AdhkarProgressStore } | { ok: false; errorAr: string } {
+  const phrase = typeof input.phrase === 'string' ? input.phrase.trim().replace(/\s+/g, ' ').slice(0, 240) : '';
+  if (phrase.length < 2) {
+    return { ok: false, errorAr: 'يرجى كتابة صيغة الذكر (حرفان على الأقل).' };
+  }
+
+  const store = readAdhkarProgressStore(storage);
+  if (store.customTasbihPhrases.length >= MAX_CUSTOM_TASBIH_PHRASES) {
+    return { ok: false, errorAr: `وصلت إلى الحد الأقصى للأذكار المخصصة (${MAX_CUSTOM_TASBIH_PHRASES}).` };
+  }
+
+  const duplicate = store.customTasbihPhrases.find(p => p.phrase === phrase);
+  if (duplicate) {
+    return { ok: false, errorAr: 'هذا الذكر مضاف بالفعل إلى مسبحتك.' };
+  }
+
+  const safeTarget =
+    typeof input.defaultTarget === 'number' && Number.isSafeInteger(input.defaultTarget) && input.defaultTarget >= 0
+      ? Math.min(10000, input.defaultTarget)
+      : 33;
+  const virtue =
+    typeof input.virtue === 'string' ? input.virtue.trim().replace(/\s+/g, ' ').slice(0, 180) : '';
+
+  const safeNow = Number.isFinite(nowMs) && nowMs > 0 ? Math.trunc(nowMs) : Date.now();
+  const suffix = Math.random().toString(36).slice(2, 8);
+  const item: CustomTasbihPhrase = {
+    id: `custom-tasbih-${safeNow.toString(36)}-${suffix}`,
+    phrase,
+    ...(virtue ? { virtue } : {}),
+    defaultTarget: safeTarget,
+    createdAtMs: safeNow,
+    updatedAtMs: safeNow
+  };
+
+  const nextStore: AdhkarProgressStore = {
+    ...store,
+    customTasbihPhrases: [item, ...store.customTasbihPhrases],
+    freeTasbih: {
+      ...store.freeTasbih,
+      presetId: item.id,
+      currentCount: 0,
+      targetCount: item.defaultTarget
+    }
+  };
+
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncUpsert('customTasbih', item.id, safeNow);
+  }
+  const persisted = persistAdhkarProgressStore(nextStore, storage);
+  return { ok: true, item, store: persisted };
+}
+
+export function removeCustomTasbihPhrase(
+  phraseId: string,
+  storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage
+): AdhkarProgressStore {
+  const store = readAdhkarProgressStore(storage);
+  if (!store.customTasbihPhrases.some(p => p.id === phraseId)) {
+    return store;
+  }
+
+  const remaining = store.customTasbihPhrases.filter(p => p.id !== phraseId);
+  const wasActive = store.freeTasbih.presetId === phraseId;
+  const fallback = FREE_TASBIH_PRESETS[0];
+
+  const nextStore: AdhkarProgressStore = {
+    ...store,
+    customTasbihPhrases: remaining,
+    freeTasbih: wasActive
+      ? {
+          ...store.freeTasbih,
+          presetId: fallback.id,
+          currentCount: 0,
+          targetCount: fallback.defaultTarget
+        }
+      : store.freeTasbih
+  };
+
+  if (typeof localStorage !== 'undefined' && storage === localStorage) {
+    recordSyncDeletion('customTasbih', phraseId);
+  }
+  return persistAdhkarProgressStore(nextStore, storage);
 }
 
 export function setFreeTasbihTarget(
@@ -406,7 +597,7 @@ export function getAdhkarCategoryProgressSummary(
 
   for (const item of items) {
     const target = getAdhkarRepeatTarget(item, category);
-    const count = Math.min(target, Math.max(0, countsForDate[item.id] ?? 0));
+    const count = Math.min(target, getAdhkarItemCount(countsForDate, item.id, category));
     totalRepetitionsTarget += target;
     completedRepetitions += count;
     if (count >= target) {
@@ -433,24 +624,31 @@ export function getOverallDailyAdhkarSummary(
   countsForDate: Record<string, number>
 ): OverallDailyAdhkarSummary {
   let completedCategories = 0;
+  let completedItemsToday = 0;
   for (const cat of ADHKAR_CATEGORIES) {
-    if (getAdhkarCategoryProgressSummary(cat.id, countsForDate).isComplete) {
+    const summary = getAdhkarCategoryProgressSummary(cat.id, countsForDate);
+    if (summary.isComplete) {
       completedCategories += 1;
     }
+    completedItemsToday += summary.completedItems;
   }
 
-  let completedItemsToday = 0;
   let totalRepetitionsToday = 0;
-  for (const item of ADHKAR_ITEMS) {
-    const rawCount = Math.max(0, countsForDate[item.id] ?? 0);
-    if (rawCount > 0) {
-      totalRepetitionsToday += rawCount;
+  for (const [key, val] of Object.entries(countsForDate)) {
+    if (typeof val === 'number' && Number.isFinite(val) && val > 0) {
+      totalRepetitionsToday += Math.floor(val);
     }
-    const minTarget = item.repeatTargetByCategory
-      ? Math.min(item.repeatTarget, ...Object.values(item.repeatTargetByCategory).filter((v): v is number => typeof v === 'number'))
-      : item.repeatTarget;
-    if (rawCount >= minTarget) {
-      completedItemsToday += 1;
+    // Count uncategorized (favorites/global search) completions if bare item key meets its minimum target
+    if (!key.includes(':')) {
+      const item = ADHKAR_ITEMS.find(entry => entry.id === key);
+      if (item) {
+        const minTarget = item.repeatTargetByCategory
+          ? Math.min(item.repeatTarget, ...Object.values(item.repeatTargetByCategory).filter((v): v is number => typeof v === 'number'))
+          : item.repeatTarget;
+        if (Math.floor(val) >= minTarget) {
+          completedItemsToday += 1;
+        }
+      }
     }
   }
 

@@ -1240,3 +1240,54 @@ Reviewed full PR #371 codec source and tests. Confirmed canonical JSON validatio
 - `src/services/cloudSyncCoordinator.ts` & `src/hooks/useCloudSync.ts`: Added 2-attempt contention retry and `durablySyncedOnRemote` verification in `reconcileAccountVaultV4`, woke backoff-delayed items via `resetPendingBackoff`, deferred oversize (`> 120 KB`) / `REMOTE_REVISION_CONFLICT` mutations to post-Vault atomic supersession (refreshing canonical single-doc state via `buildAuthoritativeSingleDocPayload` without calling aborting `rebasePendingMutation`), looped `projectRemoteInboxBatch(100)` across multiple pages, and exposed `reconcileStuckOperations()`.
 - `src/components/settings/SettingsView.tsx` & `src/components/layout/Header.tsx`: Wired `{ manual: true }` into manual sync triggers and added 1-click «حسم العمليات العالقة الآن» + smart CRDT merge buttons on unsafe/tombstone conflict cards.
 - `src/tests/cloudSyncAdditionsAndDeletions.test.ts`: Added Section 7 regression tests (`25/25` passing; overall `858 PASSED | 0 FAILED`).
+
+---
+
+## 2026-11-28 (AI Studio Workspace) — Stale `/src/lib/firebase.ts` Module Export Error & Dev Service Worker Bypass
+
+### Error Observed
+- Runtime `AppErrorBoundary` error in preview browser: `SyntaxError: The requested module '/src/lib/firebase.ts' does not provide an export named 'WIRD_GOOGLE_OAUTH_CLIENT_ID'`.
+
+### Root Cause
+- `src/lib/firebase.ts` already exported `WIRD_GOOGLE_OAUTH_CLIENT_ID` on disk and over Vite (`http://127.0.0.1:3000/src/lib/firebase.ts`), but `public/sw.js` intercepted and cached same-origin Vite dev module paths (`/src/*.ts`) cache-first whenever a Service Worker was registered on the preview origin, and `src/main.tsx` did not unregister leftover Service Workers in non-production dev mode. In addition, `AppErrorBoundary` only reset component state on retry rather than reloading to pick up the updated ES module graph when HMR is disabled.
+
+### Changes Implemented
+- `public/sw.js`: Bypassed fetch interception and Cache Storage for Vite dev-server paths (`/src/`, `/node_modules/`, `/@*`, `.ts`, `.tsx`).
+- `src/main.tsx`: Added non-production cleanup calling `navigator.serviceWorker.getRegistrations()` to unregister stale Service Workers in dev mode.
+- `src/components/shared/AppErrorBoundary.tsx`: Detected stale ES module/chunk errors (`does not provide an export named`, `Failed to fetch dynamically imported module`, `ChunkLoadError`) and triggered a cooldown-guarded (15s via `sessionStorage`) single page reload to fetch the fresh module graph.
+
+### Verification Executed (2026-11-28, AI Studio Workspace)
+- `restart_dev_server` + live module check on `http://127.0.0.1:3000/src/lib/firebase.ts`: **PASS** (`HTTP 200`, `WIRD_GOOGLE_OAUTH_CLIENT_ID` exported).
+- `npm run smoke:api-imports`: **PASS**.
+- `npm test` (`76` suites incl. `pwaIntegration.test.ts` & `cloudSyncAdditionsAndDeletions.test.ts`): **PASS** (`858 PASSED | 0 FAILED`).
+- `compile_applet` & `lint_applet`: verified in final build check.
+- `npm run test:firestore-rules`: **BLOCKED** locally (`java` absent).
+- Protected files (`completeQuranData.json`, `src/data/sources/`, `firestore.rules`, `bun.lock`, Vercel env vars/flags): **UNTOUCHED**.
+
+---
+
+## 2026-11-28 (AI Studio Workspace) — Category-Isolated Adhkar Counters, Synced Custom Tasbih, Compact YouTube Playlists & Surahs Icon Cleanup
+
+### Owner Requests Implemented
+1. **Category-Isolated Adhkar Counters (`src/services/adhkarProgressService.ts`, `src/components/adhkar/AdhkarView.tsx`):**
+   - Keyed category-scoped daily counts by `${category}:${canonicalId}` via `getAdhkarCountKey` and `getAdhkarItemCount` (preserving backward-compatible normalization for legacy bare IDs and legacy Arabic sleep alias).
+   - Updated `incrementAdhkarItemCount`, `resetAdhkarItemCount(..., category?)`, `resetAdhkarCategoryCounts`, `getAdhkarCategoryProgressSummary`, `getOverallDailyAdhkarSummary`, and `AdhkarView.tsx` so counting or resetting a shared dhikr in Morning Adhkar never increments or clears Evening, After-Prayer, or Sleeping Adhkar.
+2. **Custom Tasbih Phrases + Cross-Device Cloud Sync V4 (`src/services/adhkarProgressService.ts`, `src/services/syncTombstoneRegistry.ts`, `src/services/auxiliaryDomainsSchema.ts`, `src/components/adhkar/TasbihStudioPanel.tsx`, `src/components/adhkar/AdhkarView.tsx`):**
+   - Added bounded `customTasbihPhrases` (`max 50`, `2..240` chars, target `0..10000`, optional virtue) to `AdhkarProgressStore` with `addCustomTasbihPhrase` and `removeCustomTasbihPhrase` mutators.
+   - Added `'customTasbih'` to `SyncTombstoneDomain` and wired HLC tombstone anti-resurrection + newest-timestamp convergence into `mergeAdhkarJson` (with safe active-preset fallback if deleted remotely).
+   - Added inline «إضافة ذكر للمسبحة» creation form, custom phrases section, and accessible delete action to `TasbihStudioPanel.tsx`.
+3. **Hide YouTube Descriptions on Custom Added Video Playlists (`api/youtube-playlist.ts`, `src/services/videoSeriesService.ts`, `src/components/series/VideoSeriesView.tsx`, `src/components/series/DailyVideoSuggestionCard.tsx`):**
+   - Stopped extracting raw YouTube `media:description` in `api/youtube-playlist.ts` and stripped custom video descriptions in `sanitizeCustomVideo`.
+   - Removed the auto-filled description field from the add-playlist sheet and suppressed hero/lesson descriptions for `sourceType === 'custom'` series across `VideoSeriesView.tsx` and `DailyVideoSuggestionCard.tsx`.
+4. **Remove/Replace Gemini-like `Sparkles` Icon on Surahs View (`src/components/library/QuranLibraryView.tsx`, `src/components/library/QuranMushafReader.tsx`, `src/components/library/TafsirContentPane.tsx`):**
+   - Replaced all 4 `Sparkles` icons in `QuranLibraryView.tsx` (hero eyebrow -> `BookOpen`, all 114 Surah card hifz buttons -> `BookMarked`, Surah study header & Ayah hifz buttons -> `BookMarked`) plus `QuranMushafReader.tsx` and `TafsirContentPane.tsx` (`BookOpen`).
+
+### Verification Executed (2026-11-28, AI Studio Workspace)
+- `npm test` (`76` suites incl. updated `adhkarSystem.test.ts`, `cloudSyncAdditionsAndDeletions.test.ts`, `videoSeriesSystem.test.ts`): **PASS** (`861 PASSED | 0 FAILED`).
+- `npm run smoke:api-imports`: **PASS**.
+- Live browser verification (`playwright-cli`, Chromium `1440×900` against `http://localhost:3000`): **PASS** across all 4 journeys (Morning `1/24` vs Evening `0/24`; Custom Tasbih add/persist-on-reload/delete; Custom YouTube playlist zero leaked descriptions; Surahs view `114` cards with `0` `lucide-sparkles` SVGs; `0` console errors).
+- `compile_applet` & `lint_applet`: verified together in final build check.
+- `npm run test:firestore-rules`: **BLOCKED** locally (`java` absent).
+- Protected files (`completeQuranData.json`, `src/data/sources/`, `firestore.rules`, `bun.lock`, Vercel env vars/flags): **UNTOUCHED**.
+
+

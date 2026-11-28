@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, Columns2, FileText, PanelLeft } from 'lucide-react';
 import type { Ayah } from '../../types/quran';
 import {
@@ -15,7 +15,10 @@ import {
   type MushafTafsirDesktopLayout
 } from '../../services/mushafSpreadService';
 import type { MushafRibbonBookmark } from '../../services/mushafRibbonBookmarksService';
-import { MushafPaperFlipStage } from './MushafPaperFlipStage';
+import {
+  MushafPaperFlipStage,
+  type ProgrammaticTurnRequest
+} from './MushafPaperFlipStage';
 import { QuranMushafFacsimilePage } from './QuranMushafFacsimilePage';
 import { TafsirContentPane } from './TafsirContentPane';
 import { TafsirSheet } from './TafsirSheet';
@@ -73,6 +76,10 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   );
   const [resolvedByPage, setResolvedByPage] = useState<Record<number, Ayah[]>>({});
   const [activeTafsirPage, setActiveTafsirPage] = useState<number | null>(null);
+  const [settledAnchorPage, setSettledAnchorPage] = useState<number>(anchorPage);
+  const [programmaticTurn, setProgrammaticTurn] = useState<ProgrammaticTurnRequest | null>(null);
+  const dragCommittedTargetRef = useRef<number | null>(null);
+  const turnRequestCounterRef = useRef<number>(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -88,16 +95,97 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
   const isControlledTafsir = tafsirAyah !== undefined;
   const activeTafsirAyah = isControlledTafsir ? tafsirAyah : selectedAyah;
 
+  // Reset any in-flight programmatic curl cleanly when layout switches between 1-page and 2-page
+  const prevIsTwoPageRef = useRef<boolean>(isTwoPage);
+  useEffect(() => {
+    if (prevIsTwoPageRef.current !== isTwoPage) {
+      prevIsTwoPageRef.current = isTwoPage;
+      dragCommittedTargetRef.current = null;
+      setProgrammaticTurn(null);
+      setSettledAnchorPage(anchorPage);
+    }
+  }, [isTwoPage, anchorPage]);
+
+  // Determine whether an external anchorPage change (buttons/arrows) is a 1-spread step
+  // that should play the smooth single-leaf curl animation, vs a completed drag or big jump.
+  useEffect(() => {
+    if (anchorPage === settledAnchorPage) return;
+
+    if (dragCommittedTargetRef.current === anchorPage) {
+      dragCommittedTargetRef.current = null;
+      setProgrammaticTurn(null);
+      setSettledAnchorPage(anchorPage);
+      return;
+    }
+
+    const isOppositeTafsir =
+      isDesktopViewport &&
+      Boolean(activeTafsirAyah) &&
+      isTwoPage &&
+      desktopTafsirLayout === 'replace_opposite';
+    const nextStep = stepSpreadPage(settledAnchorPage, 'next', isTwoPage, {
+      isOppositeTafsirActive: isOppositeTafsir,
+    });
+    const prevStep = stepSpreadPage(settledAnchorPage, 'prev', isTwoPage, {
+      isOppositeTafsirActive: isOppositeTafsir,
+    });
+
+    if (anchorPage === nextStep && anchorPage !== settledAnchorPage) {
+      turnRequestCounterRef.current += 1;
+      setProgrammaticTurn({
+        id: turnRequestCounterRef.current,
+        direction: 'next',
+        targetAnchorPage: anchorPage,
+      });
+      return;
+    }
+    if (anchorPage === prevStep && anchorPage !== settledAnchorPage) {
+      turnRequestCounterRef.current += 1;
+      setProgrammaticTurn({
+        id: turnRequestCounterRef.current,
+        direction: 'prev',
+        targetAnchorPage: anchorPage,
+      });
+      return;
+    }
+
+    // Large multi-page jump (e.g. Surah/Juz selector) -> settle immediately
+    setProgrammaticTurn(null);
+    setSettledAnchorPage(anchorPage);
+  }, [
+    anchorPage,
+    settledAnchorPage,
+    isDesktopViewport,
+    activeTafsirAyah,
+    isTwoPage,
+    desktopTafsirLayout,
+  ]);
+
+  const handleProgrammaticTurnComplete = useCallback(
+    (requestId: number) => {
+      setProgrammaticTurn((current) => {
+        if (!current || current.id !== requestId) return current;
+        setSettledAnchorPage(current.targetAnchorPage);
+        return null;
+      });
+    },
+    []
+  );
+
+  // Use settledAnchorPage for visual layout during an in-flight programmatic curl so the
+  // old spread stays underneath until the turning leaf finishes landing seamlessly.
+  const visualAnchorPage = programmaticTurn ? settledAnchorPage : anchorPage;
+
   const spreadLayout = useMemo(
     () =>
       resolveSpreadLayout({
-        anchorPage,
+        anchorPage: visualAnchorPage,
         isTwoPage,
         isDesktopViewport,
         desktopTafsirLayout,
         isTafsirOpen: Boolean(activeTafsirAyah)
       }),
-    [anchorPage, isTwoPage, isDesktopViewport, desktopTafsirLayout, activeTafsirAyah]
+    [visualAnchorPage, isTwoPage, isDesktopViewport, desktopTafsirLayout, activeTafsirAyah]
   );
 
   const {
@@ -312,34 +400,17 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
         )}
       </div>
 
-      {/* Main Facing Spread inside 3D RTL Physical Paper-Curl Stage + Optional Desktop Side Panel */}
+      {/* Main Facing Spread inside Planar RTL Physical Paper-Curl Stage + Optional Desktop Side Panel */}
       <div className="flex flex-col lg:flex-row items-stretch gap-4" dir="rtl">
         <div className="flex-1 min-w-0">
-          <MushafPaperFlipStage
-            anchorPage={readingPage}
-            isTwoPage={isTwoPage && !isOppositeTafsirActive}
-            canTurnNext={readingPage < 604}
-            canTurnPrev={readingPage > 1}
-            onTurnNext={() =>
-              onAnchorPageChange?.(
-                stepSpreadPage(readingPage, 'next', isTwoPage, { isOppositeTafsirActive })
-              )
-            }
-            onTurnPrev={() =>
-              onAnchorPageChange?.(
-                stepSpreadPage(readingPage, 'prev', isTwoPage, { isOppositeTafsirActive })
-              )
-            }
-            ribbons={ribbons}
-            visiblePages={visiblePages}
-          >
-            <div className={`grid gap-3 sm:gap-5 ${isTwoPage ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+          {isOppositeTafsirActive && activeTafsirAyah ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 items-stretch">
               {spreadSlots.map(pageNum => {
                 const shouldReplaceThisSlot =
                   (pageNum === rightPage && replaceRightSlotWithTafsir) ||
                   (pageNum === leftPage && replaceLeftSlotWithTafsir);
 
-                if (shouldReplaceThisSlot && activeTafsirAyah) {
+                if (shouldReplaceThisSlot) {
                   return (
                     <section
                       key={`opposite-tafsir-${pageNum}`}
@@ -366,15 +437,81 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                 }
 
                 return (
-                  <div key={`spread-page-${pageNum}`} className="min-w-0 flex flex-col gap-1.5">
-                    {isTwoPage && (
-                      <div className="flex items-center justify-between px-2 text-[11px] font-bold text-[var(--wird-muted)] tabular-nums">
-                        <span>صفحة {pageNum}</span>
-                        {pageNum === readingPage && (
-                          <span className="text-[var(--wird-primary)] dark:text-[var(--wird-accent)]">الصفحة الحالية</span>
-                        )}
-                      </div>
-                    )}
+                  <div key={`opposite-mushaf-slot-${pageNum}`} className="min-w-0">
+                    <MushafPaperFlipStage
+                      anchorPage={readingPage}
+                      isTwoPage={false}
+                      canTurnNext={readingPage < 604}
+                      canTurnPrev={readingPage > 1}
+                      onTurnNext={() => {
+                        const target = stepSpreadPage(readingPage, 'next', isTwoPage, {
+                          isOppositeTafsirActive: true,
+                        });
+                        dragCommittedTargetRef.current = target;
+                        onAnchorPageChange?.(target);
+                      }}
+                      onTurnPrev={() => {
+                        const target = stepSpreadPage(readingPage, 'prev', isTwoPage, {
+                          isOppositeTafsirActive: true,
+                        });
+                        dragCommittedTargetRef.current = target;
+                        onAnchorPageChange?.(target);
+                      }}
+                      ribbons={ribbons}
+                      visiblePages={visiblePages}
+                      programmaticTurn={programmaticTurn}
+                      onProgrammaticTurnComplete={handleProgrammaticTurnComplete}
+                    >
+                      <QuranMushafFacsimilePage
+                        page={pageNum}
+                        onAyahsResolved={handleAyahsResolved}
+                        selectedAyah={autoOpenTafsirOnSelect ? (activeTafsirAyah || selectedAyah) : (selectedAyah || activeTafsirAyah)}
+                        playingAyah={playingAyah}
+                        onSelectAyah={ayah => handleSelectAyahFromPage(ayah, pageNum)}
+                        onFallback={onFallback}
+                        maxWidthClass="max-w-none"
+                        sessionAyahKeys={sessionAyahKeys}
+                        bookHalf="single"
+                        showPageHeader
+                        isActiveReadingPage={pageNum === readingPage}
+                      />
+                    </MushafPaperFlipStage>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <MushafPaperFlipStage
+              anchorPage={readingPage}
+              isTwoPage={isTwoPage}
+              canTurnNext={isTwoPage ? leftPage < 604 : readingPage < 604}
+              canTurnPrev={isTwoPage ? rightPage > 1 : readingPage > 1}
+              onTurnNext={() => {
+                const target = stepSpreadPage(readingPage, 'next', isTwoPage, {
+                  isOppositeTafsirActive: false,
+                });
+                dragCommittedTargetRef.current = target;
+                onAnchorPageChange?.(target);
+              }}
+              onTurnPrev={() => {
+                const target = stepSpreadPage(readingPage, 'prev', isTwoPage, {
+                  isOppositeTafsirActive: false,
+                });
+                dragCommittedTargetRef.current = target;
+                onAnchorPageChange?.(target);
+              }}
+              ribbons={ribbons}
+              visiblePages={visiblePages}
+              programmaticTurn={programmaticTurn}
+              onProgrammaticTurnComplete={handleProgrammaticTurnComplete}
+            >
+              <div
+                className={`grid items-stretch ${
+                  isTwoPage ? 'grid-cols-1 md:grid-cols-2 gap-0' : 'grid-cols-1'
+                }`}
+              >
+                {spreadSlots.map(pageNum => (
+                  <div key={`spread-page-${pageNum}`} className="min-w-0 h-full">
                     <QuranMushafFacsimilePage
                       page={pageNum}
                       onAyahsResolved={handleAyahsResolved}
@@ -384,12 +521,21 @@ export const PrintedMushafSpread: React.FC<PrintedMushafSpreadProps> = ({
                       onFallback={onFallback}
                       maxWidthClass="max-w-none"
                       sessionAyahKeys={sessionAyahKeys}
+                      bookHalf={
+                        isTwoPage
+                          ? pageNum === rightPage
+                            ? 'right'
+                            : 'left'
+                          : 'single'
+                      }
+                      showPageHeader={isTwoPage}
+                      isActiveReadingPage={pageNum === readingPage}
                     />
                   </div>
-                );
-              })}
-            </div>
-          </MushafPaperFlipStage>
+                ))}
+              </div>
+            </MushafPaperFlipStage>
+          )}
         </div>
 
         {/* Desktop Slide-Over Side Panel Option (keeps both facing pages visible) */}

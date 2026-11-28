@@ -40,12 +40,15 @@ import {
   type AdhkarItem
 } from '../../data/adhkarData';
 import {
+  addCustomTasbihPhrase,
   getAdhkarCategoryProgressSummary,
+  getAdhkarItemCount,
   getAdhkarRemainingCount,
   getOverallDailyAdhkarSummary,
   incrementAdhkarItemCount,
   incrementFreeTasbihCount,
   readAdhkarProgressStore,
+  removeCustomTasbihPhrase,
   resetAdhkarCategoryCounts,
   resetAdhkarItemCount,
   resetFreeTasbihCount,
@@ -337,7 +340,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
       const currentIdx = listContext.findIndex(entry => entry.id === item.id);
       const nextUnfinished = listContext.slice(currentIdx + 1).find(
         entry =>
-          (result.store.countsByDate[todayStr]?.[entry.id] ?? 0) <
+          getAdhkarItemCount(result.store.countsByDate[todayStr] || {}, entry.id, category) <
           getAdhkarRepeatTarget(entry, category)
       );
       if (nextUnfinished) {
@@ -653,7 +656,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
 
   const renderItemCard = (item: AdhkarItem, idx: number, listContext: AdhkarItem[], category?: AdhkarCategory) => {
     const targetCount = getAdhkarRepeatTarget(item, category);
-    const currentCount = countsForToday[item.id] ?? 0;
+    const currentCount = getAdhkarItemCount(countsForToday, item.id, category);
     const remainingCount = getAdhkarRemainingCount(currentCount, targetCount);
     const isCompleted = remainingCount === 0;
 
@@ -677,7 +680,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
         onPlayAudio={() => void handlePlayQuranicDhikr(item)}
         onToggleFavorite={() => setStore(toggleAdhkarFavorite(item.id))}
         onCopy={() => handleCopyDhikr(item)}
-        onResetItem={() => setStore(resetAdhkarItemCount(item.id, todayStr))}
+        onResetItem={() => setStore(resetAdhkarItemCount(item.id, todayStr, localStorage, category))}
       />
     );
   };
@@ -789,6 +792,7 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
       {activeTab === 'tasbih' && (
         <TasbihStudioPanel
           tasbih={store.freeTasbih}
+          customPhrases={store.customTasbihPhrases}
           onIncrement={() => setStore(incrementFreeTasbihCount())}
           onResetCurrent={() => {
             setStore(resetFreeTasbihCount());
@@ -796,6 +800,19 @@ export const AdhkarView: React.FC<AdhkarViewProps> = ({
           }}
           onSelectPreset={presetId => setStore(selectFreeTasbihPreset(presetId))}
           onSelectTarget={target => setStore(setFreeTasbihTarget(target))}
+          onAddCustomPhrase={input => {
+            const result = addCustomTasbihPhrase(input);
+            if (result.ok === false) {
+              return { ok: false, errorAr: result.errorAr };
+            }
+            setStore(result.store);
+            onToast?.('تمت إضافة الذكر المخصص إلى المسبحة وحفظه للمزامنة.', 'success');
+            return { ok: true };
+          }}
+          onRemoveCustomPhrase={phraseId => {
+            setStore(removeCustomTasbihPhrase(phraseId));
+            onToast?.('تم حذف الذكر المخصص من المسبحة.', 'info');
+          }}
         />
       )}
 

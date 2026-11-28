@@ -165,7 +165,6 @@ export default async function handler(req: any, res: any) {
           title: decodeXmlEntities(get('title')).trim().slice(0, 180),
           durationText: '—',
           durationSeconds: 0,
-          description: decodeXmlEntities(get('media:description')).trim().slice(0, 800),
           publishedAt: get('published').trim().slice(0, 10),
           speaker: decodeXmlEntities(
             (block.match(/<author>\s*<name>([\s\S]*?)<\/name>/) || [])[1] || ''
@@ -207,7 +206,6 @@ export default async function handler(req: any, res: any) {
               const feedItem = feedById.get(v.videoId);
               return {
                 ...v,
-                description: feedItem?.description || v.description,
                 publishedAt: feedItem?.publishedAt || v.publishedAt,
               };
             });
